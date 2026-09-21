@@ -5,8 +5,9 @@ when_to_use: "Reached when the dev asks for an autonomous loop - a scheduled swe
 argument-hint: "[scaffold | verify | remove]"
 # Internal, and deliberately so: an autonomous loop is machinery a repo opts into
 # once (`policy/automation.yml`, `loops: true`), not a skill a user browses to.
-# Rule 53 - the only always-on surface that names `/steer:loop` - is injected only
-# where that marker exists, so the opt-in is what puts the door in front of anyone.
+# Going internal takes away the typing, not the routing: a plain-language ask for a
+# scheduled sweep still reaches here. What the marker gates is rule 53, the always-on
+# boundary prose; what refuses a repo that never opted in is scaffold's step 1.
 user-invocable: false
 allowed-tools:
   - Bash(git status *)

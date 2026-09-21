@@ -146,11 +146,12 @@ the org stack defaults in rule `10-stack`:
   secret-store rules; any other value leaves only the vendor-neutral core.
 - **`policy/automation.yml`** - `loops: true` declares the autonomous-loop
   opt-in, which is what puts rule `53-autonomous-loops` in the always-on
-  payload - and, since that rule is the only always-on surface naming the
-  model-only `/steer:loop`, what puts the door in front of anyone. Written by
-  `/steer:loop scaffold`, but only on the dev's confirmation, taken before the
-  workflow is instantiated: the opt-in is a decision, not a file the skill
-  writes for them.
+  payload - the boundary prose a session is held to once the repo runs a loop.
+  It does not gate the model-only `/steer:loop` itself, which a plain-language
+  ask still reaches; what refuses a repo that never opted in is the skill's own
+  first step. Written by `/steer:loop scaffold`, but only on the dev's
+  confirmation, taken before the workflow is instantiated: the opt-in is a
+  decision, not a file the skill writes for them.
 - **`STEER_NO_WORKTREE_TEARDOWN`** - set to any non-empty value to stop the
   `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack.
 - **`STEER_WORKTREE_OFFSET`** - pin one worktree's host-port offset when two

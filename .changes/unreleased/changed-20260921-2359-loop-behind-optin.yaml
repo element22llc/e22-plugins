@@ -2,10 +2,12 @@ kind: Changed
 body: |
   - **`/steer:loop` is model-only,** `user-invocable: false`. An autonomous loop
     is machinery a repo opts into once, not a skill a user browses to: rule
-    `53-autonomous-loops` is the only always-on surface that names `/steer:loop`,
-    and it reaches a repo only where `policy/automation.yml` declares
-    `loops: true`. The opt-in is therefore what puts the door in front of anyone
-    - the frontmatter never had to be conditional. The capability menu drops its
+    `53-autonomous-loops` - the boundary prose a looping repo is held to - reaches
+    a repo only where `policy/automation.yml` declares `loops: true`, and the
+    frontmatter never had to be conditional to match that: going internal takes
+    away the typing, not the routing, so a plain-language ask for a scheduled
+    sweep still arrives here and the skill's own first step is what refuses a
+    repo that never opted in. The capability menu drops its
     hand-written `loop` entry, and `scan-invocations.sh` exempts the skill by
     name for the same reason as `reference` and `report`: rule 53 names it as a
     delegation, and it has no front door a `noncallable-gateway` finding could
