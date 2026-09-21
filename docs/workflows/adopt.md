@@ -1,4 +1,4 @@
-# `/steer:adopt`
+# `/steer:setup adopt`
 
 Reverse-engineer a `/spec` spine from an existing codebase and add the bundled
 scaffold, leaving the repo working spec-first.
@@ -38,7 +38,7 @@ flowchart TD
 7. If the tracker is GitHub Issues, bootstraps the label taxonomy
    (`/steer:issues bootstrap-labels`) and verifies the org-level
    Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) -
-   the same tracker setup `/steer:init` performs.
+   the same tracker setup `/steer:setup init` performs.
 8. Stamps `/spec/.version` with the plugin version.
 
 ## Guardrails
@@ -64,4 +64,4 @@ flowchart TD
 ## After adopting
 
 - Run `/steer:audit spec` to compare the as-built spine against the tracker's intent.
-- Run `/steer:sync` after future plugin releases to stay current.
+- Run `/steer:setup sync` after future plugin releases to stay current.

@@ -29,8 +29,8 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
 
 ### Flow
 
-1. **Locate the spine.** No `/spec` -> redirect to `/steer-setup` (or
-   `/steer-init` / `/steer-adopt`) and **stop**. No argument = the **whole
+1. **Locate the spine.** No `/spec` -> redirect to `/steer-setup` and
+   **stop**. No argument = the **whole
    spine, every feature**; an unknown or ambiguous `<feature-id>` -> list the
    features under `spec/features/*/` and ask which, never guess.
 

@@ -1,11 +1,10 @@
 ---
 name: sync
-description: "Bring a bootstrapped repo up to date with the current plugin - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers."
-when_to_use: >-
-  Use on a steady-state or OpenSpec repo after a plugin release, when an upstream
-  rename or missing capability wiring needs repair, or with --check for a
-  read-only capability + drift report with no branch or PR.
+description: "Internal steady-state update - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers."
+when_to_use: "Reached via /steer:setup sync - not a direct entry point."
 argument-hint: "[--check]"
+# Internal update path behind `/steer:setup sync` - see the note on `init`.
+user-invocable: false
 allowed-tools:
   - Bash(git status *)
   - Bash(git branch *)
@@ -29,7 +28,7 @@ allowed-tools:
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
-# Sync a repo to the current plugin
+# Sync a repo to the current plugin (`/steer:setup sync`)
 
 A repo materializes part of the plugin into itself at bootstrap time - the
 `/spec` spine, the bundled scaffold (CI, `mise.toml`, PR template, ...). Those

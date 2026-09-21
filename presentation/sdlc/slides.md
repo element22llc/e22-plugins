@@ -676,7 +676,7 @@ A read-only reviewer agent examines plans and diffs in an **isolated context** -
 <div v-click class="p-3 rounded-xl border border-cyan-400/25 bg-cyan-400/5">
 
 ### ♻️ Standards that update
-One plugin version, all repos: <code>/steer:sync</code> applies the latest standards as a normal, reviewable PR.
+One plugin version, all repos: <code>/steer:setup sync</code> applies the latest standards as a normal, reviewable PR.
 
 </div>
 

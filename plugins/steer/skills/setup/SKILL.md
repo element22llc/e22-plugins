@@ -1,11 +1,14 @@
 ---
 name: setup
-description: "One front door for getting a repo onto the standards - detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, flagging missing prerequisites before routing."
+description: "One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of the spec spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing vibe-coded repo), or `sync` (apply migrations and reconcile drift after a plugin release), flagging missing prerequisites before routing."
 when_to_use: >-
   Use when asked to set up, onboard, bootstrap, or adopt a repo, or to sync to
   the latest plugin - the single entry point whenever you would otherwise guess
-  between /steer:init, /steer:adopt, and /steer:sync.
-argument-hint: "[init | adopt | sync]"
+  which path fits. `init` covers a brand-new repo and a template fork with
+  bracketed fill-in placeholders left; `adopt` covers an existing repo whose code
+  has no spec spine; `sync` brings a managed or openspec repo up to date after a
+  plugin release, with `sync --check` the read-only drift report.
+argument-hint: "[init | adopt | sync] [--check]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -20,6 +23,22 @@ This is the **one door** for onboarding a repo. The init / adopt / sync split is
 real distinction, but it's one the tool can decide from repo state - so the user
 should never have to. Detect the state, announce the path you're taking, then hand
 off to the owning skill. Do **not** re-implement their steps here.
+
+## Modes
+
+Each mode **delegates** to the internal skill that owns the work - load it on
+entry and follow it; never restate its steps here.
+
+| Mode | What it does | Owning skill |
+|---|---|---|
+| `default` | Detect the spine state and route to one of the three below | - |
+| `init` | Greenfield bootstrap: spine + scaffold + pinned toolchain, or a legacy template fork's placeholders | `/steer:init` |
+| `adopt` | Brownfield: reverse-engineer the spine from working code, triage productionization | `/steer:adopt` |
+| `sync` | Steady state: ledger migrations, spine/scaffold reconcile, capability + invocation repair, lands a PR. `sync --check` reports and writes nothing | `/steer:sync` |
+
+The three are `user-invocable: false` - a user reaches them **only** through this
+door, so a recommendation you hand back names `/steer:setup <mode>`, never the
+owning skill.
 
 ## Detect, then route
 
@@ -106,13 +125,15 @@ prototype-ceremony handling. This section governs the developer path that lands 
 
 ## Explicit override
 
-Power users can skip detection by naming the path: `setup init`, `setup adopt`, or
-`setup sync`. Honor the explicit mode, but if it clearly contradicts the detected
-state (e.g. `setup init` on a repo that's already `managed`), say what you detected
-and confirm before proceeding.
+Power users can skip detection by naming the mode: `setup init`, `setup adopt`, or
+`setup sync` (`setup sync --check` for the read-only report). Honor the explicit
+mode, but if it clearly contradicts the detected state (e.g. `setup init` on a repo
+that's already `managed`), say what you detected and confirm before proceeding.
 
 ## Why this exists
 
-`init`, `adopt`, and `sync` remain the skills that do the work - they're just no
-longer something a user has to choose between. They stay directly invocable - this
-front door just auto-routes to them, so users never have to choose which one fits.
+`init`, `adopt`, and `sync` remain the skills that do the work - they are just no
+longer a choice the user has to get right. Picking the wrong one is expensive:
+`init` on a repo with code lays a spine over work it never read, and `adopt` on an
+empty repo has nothing to reverse-engineer. The state that decides it is
+detectable, so detection belongs here and the three stay behind this door.

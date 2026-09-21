@@ -107,7 +107,7 @@ resuming once the build is handed off - every box in its handoff gate checked.
     and `apps/README.md` - and a doc-reconciliation step before the hand-off
     confirms none are left as template stubs. The
     [Living docs](../reference/configuration.md) rule makes this the same in-flight
-    upkeep across `/steer:init` and [`/steer:work`](work.md).
+    upkeep across `/steer:setup init` and [`/steer:work`](work.md).
 
 ## Relationship to other skills
 
@@ -115,7 +115,7 @@ resuming once the build is handed off - every box in its handoff gate checked.
   **no-build counterpart** - spec-only, ends at an approved intent without
   writing code.
 - `/steer:build` is a **bootstrap front door in its own right**. The PO never runs
-  [`/steer:init`](../reference/skills.md) directly, so `build` installs the spine
+  [`/steer:setup init`](../reference/skills.md) directly, so `build` installs the spine
   itself and stamps `spec/.version` once `vision.md`, `users.md`, `glossary.md` and
   `tracker.md` are in place - that stamp is what makes the repo `managed`. Without
   it the spine would be complete while every state check still read the repo as

@@ -33,7 +33,7 @@ flowchart LR
    the release that names it, so the number is always a guess. This bites hardest in
    the spec-spine [migration ledger](../reference/repository-contract.md)
    (`templates/reference/MIGRATIONS.md`), whose entries are *keyed* by the version
-   that introduced them: `/steer:sync` skips every entry at or below a repo's
+   that introduced them: `/steer:setup sync` skips every entry at or below a repo's
    `spec/.version` stamp, so an entry keyed **below** the release it actually shipped
    in is silently skipped by every repo stamped in between - the migration never runs
    and nothing reports it. Author ledger entries as `### [Unreleased] - <what>`, the

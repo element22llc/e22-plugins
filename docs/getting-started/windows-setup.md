@@ -75,9 +75,9 @@ Both sides of this are handled, but they arrive by different routes:
   on the host. You get this automatically with any install or reinstall.
 - **Your repo** gets the same normalization from the bundled scaffold, so a
   Windows contributor can't commit CRLF into `scripts/*.sh`, a Docker
-  entrypoint, or the generated `.github/` Copilot surface. `/steer:init` and
-  `/steer:adopt` install it, merging *additively* if you already have one rather
-  than replacing it. For a repo **already** managed by steer, `/steer:sync`
+  entrypoint, or the generated `.github/` Copilot surface. `/steer:setup init` and
+  `/steer:setup adopt` install it, merging *additively* if you already have one rather
+  than replacing it. For a repo **already** managed by steer, `/steer:setup sync`
   reconciles it the same additive way - the scaffold has carried a
   `.gitattributes` since 3.12.0, so most managed repos have the file, and the
   merge adds the new pins without removing your own lines.
@@ -102,7 +102,7 @@ Both sides of this are handled, but they arrive by different routes:
     `.gitattributes` only governs *future* checkouts, so a plugin installed
     before this fix shipped can still be sitting on disk with CRLF. The symptom
     is unmistakable once you know it: **every** steer script fails at once with a
-    `syntax error near unexpected token` - most visibly `/steer:sync`, which
+    `syntax error near unexpected token` - most visibly `/steer:setup sync`, which
     breaks on its opening move.
 
     `/steer:doctor` checks for this **first**, before anything else, and names

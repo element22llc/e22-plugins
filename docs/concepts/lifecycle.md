@@ -67,10 +67,10 @@ solo-trunk mode is the only durable opt-out, and it drops the PR, not the issue.
 
 The full out-of-scope set (no issue needed) is: a **Trivial** change, an ordinary
 Behavioral fix nobody is tracking, `/spec` edits, documentation, generated output,
-lockfiles, and a plugin-maintenance `/steer:sync` on its own `feat/sync` branch.
+lockfiles, and a plugin-maintenance `/steer:setup sync` on its own `feat/sync` branch.
 
 Plugin-maintenance flows are exempt, just as editing the `/spec` spine is:
-`/steer:sync` reconciles the materialized spine and scaffold against the plugin's
+`/steer:setup sync` reconciles the materialized spine and scaffold against the plugin's
 own templates on its own `feat/sync` branch - structural, not feature work - so the
 issue-first hooks stay silent there (unless app source changes, which sync's
 contract forbids).

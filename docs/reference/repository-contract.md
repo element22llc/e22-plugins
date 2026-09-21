@@ -1,7 +1,7 @@
 # Repository contract
 
-When `steer` manages a repo, it expects a known shape. `/steer:init` and
-`/steer:adopt` install it; `/steer:sync` keeps it current. The scaffold is bundled
+When `steer` manages a repo, it expects a known shape. `/steer:setup init` and
+`/steer:setup adopt` install it; `/steer:setup sync` keeps it current. The scaffold is bundled
 in `plugins/steer/templates/scaffold/` and mapped to install paths by its
 `MANIFEST.md`.
 
@@ -21,17 +21,17 @@ flowchart TD
 | Element | Source | Notes |
 | --- | --- | --- |
 | `/spec` spine | `templates/spec/` | Product truth. See [Product spine](../concepts/product-spine.md). |
-| `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. mise is the single task entry surface: tasks declare ordering with `depends` (never `run = ["mise run ..."]` chains), and `[deps.pnpm]`/`[deps.uv]` (`auto = true`, gated by `[settings] experimental`) auto-install workspace deps on lockfile change - no hand-rolled install task (so never run a bare `pnpm install`; route a manual one through `mise exec -- pnpm install`). Because that runs non-interactively, the bundled `pnpm-workspace.yaml` sets `confirmModulesPurge: false`; and for the **pinned** pnpm to win, `mise activate` must be sourced after any nvm/asdf/volta in your shell rc - otherwise a global copy shadows it (`/steer:doctor` flags this). App-level Node scripts stay in `package.json`; a mise task may delegate to them, but delegation is **one-way** - a `package.json` script never shells out to `uv`/Python nor re-defines a mise task, and no task lives in both files. A polyglot app's Python backend (e.g. `apps/api`) is a mise/`uv run` task, composed with a `[tasks.dev]` `depends = ["dev:*"]` fan-out so mise stays the single entry point. Three verification tiers share one definition with CI: **`mise run pre-commit`** (hygiene + lint - wired to `.git/hooks/pre-commit` at bootstrap via `mise generate git-pre-commit` - unless the repo already owns a commit gate of its own, in which case `/steer:init`/`/steer:adopt` report the collision and leave it alone - and per-clone state rather than a committed file, so a teammate's fresh clone has no hook until `/steer:sync` re-establishes it), **`mise run check`** (adds typecheck), and **`mise run ci`** (everything the required check runs). Run `/steer:reference conventions` for the full task model. |
-| `mise.lock` | created at pin time | The real version pin. The scaffold ships **no** lock - `/steer:init`/`/steer:adopt` create it when they pin the toolchain (`touch mise.lock`, `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums - CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock). Until a populated lock is committed, CI runs a plain unlocked install; never commit an empty / comment-only lock. Run `/steer:reference conventions` for the full toolchain rationale. |
+| `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. mise is the single task entry surface: tasks declare ordering with `depends` (never `run = ["mise run ..."]` chains), and `[deps.pnpm]`/`[deps.uv]` (`auto = true`, gated by `[settings] experimental`) auto-install workspace deps on lockfile change - no hand-rolled install task (so never run a bare `pnpm install`; route a manual one through `mise exec -- pnpm install`). Because that runs non-interactively, the bundled `pnpm-workspace.yaml` sets `confirmModulesPurge: false`; and for the **pinned** pnpm to win, `mise activate` must be sourced after any nvm/asdf/volta in your shell rc - otherwise a global copy shadows it (`/steer:doctor` flags this). App-level Node scripts stay in `package.json`; a mise task may delegate to them, but delegation is **one-way** - a `package.json` script never shells out to `uv`/Python nor re-defines a mise task, and no task lives in both files. A polyglot app's Python backend (e.g. `apps/api`) is a mise/`uv run` task, composed with a `[tasks.dev]` `depends = ["dev:*"]` fan-out so mise stays the single entry point. Three verification tiers share one definition with CI: **`mise run pre-commit`** (hygiene + lint - wired to `.git/hooks/pre-commit` at bootstrap via `mise generate git-pre-commit` - unless the repo already owns a commit gate of its own, in which case `/steer:setup init`/`/steer:setup adopt` report the collision and leave it alone - and per-clone state rather than a committed file, so a teammate's fresh clone has no hook until `/steer:setup sync` re-establishes it), **`mise run check`** (adds typecheck), and **`mise run ci`** (everything the required check runs). Run `/steer:reference conventions` for the full task model. |
+| `mise.lock` | created at pin time | The real version pin. The scaffold ships **no** lock - `/steer:setup init`/`/steer:setup adopt` create it when they pin the toolchain (`touch mise.lock`, `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums - CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock). Until a populated lock is committed, CI runs a plain unlocked install; never commit an empty / comment-only lock. Run `/steer:reference conventions` for the full toolchain rationale. |
 | CI workflows + PR template | scaffold | Quality gates and review template. The required `ci` check is **defined once, run two ways**: every step in `.github/workflows/ci.yml` is a single `mise run ci:<stage>`, so the same code gates a PR and a laptop. Reproduce any CI failure with `mise run ci` - it is the whole check, not an approximation, which is also what keeps a repo verifiable when no runner is available (an org out of Actions minutes, an air-gapped checkout). Three advisory jobs (`design-lint`, `spec-drift`, `ai-slop`) stay inline in the workflow and are not part of the local gate. **Minute discipline:** every job is guarded on `github.event.pull_request.draft == false` and the trigger carries `ready_for_review`, so a PR costs nothing while it is a draft; a `concurrency:` block cancels a PR's in-flight run when it is pushed again, but never on `main`. Both are safe against branch protection because a *skipped* job satisfies a required check - an **absent** one does not, which is why no `paths-ignore` filter is used. The corollary matters on the skill side: a skipped check reads as green to `gh pr checks`, so `/steer:work finish` runs `gh pr ready` **before** it watches CI. |
 | `scripts/ci-*.sh` | scaffold | The body of the required check, one POSIX-sh script per stage (`ci-hygiene`, `ci-deps`, `ci-lint`, `ci-typecheck`, `ci-test`, `ci-iac`, `ci-image`, `ci-coverage`, `ci-changelog`) plus the shared `ci-lib.sh`. Each **self-detects its stack** and no-ops with a `::notice::` when it is absent, so pruning `mise.toml` to the product's stack never orphans a `depends`; `ci-lib.sh`'s predicates are kept in lockstep with the plugin's `hooks/lib/scope.sh`, so CI and the always-on rules agree on what stack a repo is. Three stages fail **closed** on a real defect and open otherwise: `ci-test` rejects a detected stack whose packages define no real `test` script or whose pytest run collects nothing (exit 5), and `ci-coverage` rejects changed lines below `COVERAGE_DIFF_MIN` (80) while skipping when no report exists or the base ref is unresolvable. `ci-changelog` rejects a change that touches **shipping** code without *adding* a changelog fragment, and skips when no base ref resolves or the repo has no `.changie.yaml`. It is deliberately delivery-mode-blind, so it is also part of the solo-trunk push-time floor. Its base comes from `steer_ci_base()` in `ci-lib.sh`; `ci-coverage` still inlines its own equivalent, because its `push` branch carries coverage-specific solo-trunk policy. A product adapts the stage scripts to its toolchain; `ci-lib.sh` is copied verbatim. |
-| `.gitattributes` | scaffold | **Normalizes line endings to LF** (`* text=auto eol=lf` plus per-extension pins) so a Windows contributor's `core.autocrlf=true` can't check the repo out - or commit into it - with CRLF. That matters more than whitespace: a CRLF shell script does not warn, it fails to *parse*, which takes out `scripts/*.sh` and every CI step that runs them, and makes a Docker image's entrypoint unrunnable. Marks binaries (images, fonts) `binary` so they are never newline-normalized, and lockfiles (`pnpm-lock.yaml`, `uv.lock`, `mise.lock`) `-diff` - so a dependency-bump PR shows `Binary files differ` rather than thousands of lines; that suppresses only the *rendered diff*, never the content, so any gate reading committed state is unaffected and a reviewer can still run `git diff --text`. `CHANGELOG.md` deliberately carries **no** attribute: it is generated by `changie merge` and its entries live one-per-file under `.changes/unreleased/`, so concurrent PRs write different paths and never conflict - the `merge=union` row this file used to carry is retired from the scaffold, because union is line-based and splices multi-line entries together wrongly. Reconcile is additive and never deletes, so an **already-adopted** repo keeps its copy until `/steer:sync` applies the migration that drops it. `/steer:init` and `/steer:adopt` install it where absent and reconcile it additively where one already exists. `/steer:sync` covers both cases by different routes: its step-5 additive reconcile splices missing pins into a `.gitattributes` the repo already has, and its step-6 **capability repair** (`line-ending-normalization`) detects the file being absent entirely and *proposes* creating it from the scaffold, waiting for a yes - it never creates it unasked and never runs `git add --renormalize .`. See [Windows setup](../getting-started/windows-setup.md#line-endings). Adding it does **not** convert CRLF already committed to history; that needs a one-shot `git add --renormalize .`. |
-| `CHANGELOG.md`, `.changie.yaml`, `.changes/` | scaffold (+ generated) | **The curated changelog.** Entries are written as one YAML **fragment** per change under `.changes/unreleased/` (`mise run changelog:new`); `changie merge` assembles them into `CHANGELOG.md`, which is **generated - never edited by hand**. Curated, not commit-derived: Conventional Commits buy readable history, not release notes (see `/steer:reference conventions` -> Changelog). One file per change is what makes concurrent PRs conflict-free, the same reason `/spec/history/` is a directory. The `ci:changelog` stage fails a PR that changes shipping code without adding a fragment. Release cut: `library`/`cli` run `changie batch auto` (semver from each fragment's kind); `app`/`service` deploy continuously and have no artifact version, so they cut a CalVer ship date at the `prod` promotion. `.changie.yaml` is seeded once and then **the product's** - tune `kinds`, or enable `replacements` to stamp a version into `package.json`. `.changie.yaml` and `.changes/` come from the scaffold; `CHANGELOG.md` itself appears at the first `changelog:merge`. `/steer:sync` *proposes* the repair when they are missing (`changelog-fragments` capability), waiting for a yes, and never parses a pre-existing hand-written `CHANGELOG.md` - it renames it to `CHANGELOG-archive.md` and starts fresh. |
+| `.gitattributes` | scaffold | **Normalizes line endings to LF** (`* text=auto eol=lf` plus per-extension pins) so a Windows contributor's `core.autocrlf=true` can't check the repo out - or commit into it - with CRLF. That matters more than whitespace: a CRLF shell script does not warn, it fails to *parse*, which takes out `scripts/*.sh` and every CI step that runs them, and makes a Docker image's entrypoint unrunnable. Marks binaries (images, fonts) `binary` so they are never newline-normalized, and lockfiles (`pnpm-lock.yaml`, `uv.lock`, `mise.lock`) `-diff` - so a dependency-bump PR shows `Binary files differ` rather than thousands of lines; that suppresses only the *rendered diff*, never the content, so any gate reading committed state is unaffected and a reviewer can still run `git diff --text`. `CHANGELOG.md` deliberately carries **no** attribute: it is generated by `changie merge` and its entries live one-per-file under `.changes/unreleased/`, so concurrent PRs write different paths and never conflict - the `merge=union` row this file used to carry is retired from the scaffold, because union is line-based and splices multi-line entries together wrongly. Reconcile is additive and never deletes, so an **already-adopted** repo keeps its copy until `/steer:setup sync` applies the migration that drops it. `/steer:setup init` and `/steer:setup adopt` install it where absent and reconcile it additively where one already exists. `/steer:setup sync` covers both cases by different routes: its step-5 additive reconcile splices missing pins into a `.gitattributes` the repo already has, and its step-6 **capability repair** (`line-ending-normalization`) detects the file being absent entirely and *proposes* creating it from the scaffold, waiting for a yes - it never creates it unasked and never runs `git add --renormalize .`. See [Windows setup](../getting-started/windows-setup.md#line-endings). Adding it does **not** convert CRLF already committed to history; that needs a one-shot `git add --renormalize .`. |
+| `CHANGELOG.md`, `.changie.yaml`, `.changes/` | scaffold (+ generated) | **The curated changelog.** Entries are written as one YAML **fragment** per change under `.changes/unreleased/` (`mise run changelog:new`); `changie merge` assembles them into `CHANGELOG.md`, which is **generated - never edited by hand**. Curated, not commit-derived: Conventional Commits buy readable history, not release notes (see `/steer:reference conventions` -> Changelog). One file per change is what makes concurrent PRs conflict-free, the same reason `/spec/history/` is a directory. The `ci:changelog` stage fails a PR that changes shipping code without adding a fragment. Release cut: `library`/`cli` run `changie batch auto` (semver from each fragment's kind); `app`/`service` deploy continuously and have no artifact version, so they cut a CalVer ship date at the `prod` promotion. `.changie.yaml` is seeded once and then **the product's** - tune `kinds`, or enable `replacements` to stamp a version into `package.json`. `.changie.yaml` and `.changes/` come from the scaffold; `CHANGELOG.md` itself appears at the first `changelog:merge`. `/steer:setup sync` *proposes* the repair when they are missing (`changelog-fragments` capability), waiting for a yes, and never parses a pre-existing hand-written `CHANGELOG.md` - it renames it to `CHANGELOG-archive.md` and starts fresh. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` - worktrees start from git refs only, so without it the app can't boot there. Its header also documents worktree **`mise trust`**: trust is path-keyed, so a new worktree starts untrusted and every `mise run ...` there fails on trust until someone trusts it. A Claude Code session inherits the primary checkout's trust automatically - at `SessionStart` for a session started in the worktree, and on `CwdChanged` for one it enters mid-session (the `check-worktree-trust` script, registered twice - see [Hooks](hooks.md)). A **plain terminal**, where no session is watching, is not reached by either registration: run `mise trust` there once. Nor is any Copilot surface, which has no trust hook at all. |
 | `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged) and keeps its bare directory name; a linked worktree's project name is `<repo>-<worktree>`, because a worktree basename alone is not unique across repos. **Re-taking this file renames an existing linked worktree's stack**, so tear a running one down first - under the new project name Compose no longer sees the old containers or volumes (recover with `docker compose -p <old-name> down -v`) - in a polyrepo the same feature branch runs in several members, and a shared project name meant one member's `docker:clean` tore down another's containers and volumes. `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree - spelled `mise run ws:docker:clean` in a **workspace** repo, whose profile replaces core `mise.toml` and prefixes every whole-product task. This `[env]._.source` line is also what makes a new worktree need `mise trust`: mise loads a data-only config untrusted but refuses one that executes code at load time (see the `.worktreeinclude` row above). See the **Parallel worktrees** section of rule `45-delivery`. |
 | `CLAUDE.md` | product | **Only** product-specific context - standards prose is never duplicated here. Carries the `<!-- steer:profile=... -->` marker (see Repo profiles). |
-| `/apps`, `/packages` | product | **Empty at bootstrap - the scaffold ships no starter app.** The bundled scaffold deliberately carries no placeholder to delete: the *first real app* is created for the chosen stack, by `/steer:build` step 5 in a PO build or by the dev following the spec-first loop. `pnpm dev` / `db:migrate` / `db:seed` no-op harmlessly until it exists, and `apps/README.md` says the folder starts empty until the app that fills it lands. The one exception is a fork of the retired static `repository-template`, which does carry `apps/web` + `packages/core` - `/steer:init` **Path A** swaps or removes it. |
+| `/apps`, `/packages` | product | **Empty at bootstrap - the scaffold ships no starter app.** The bundled scaffold deliberately carries no placeholder to delete: the *first real app* is created for the chosen stack, by `/steer:build` step 5 in a PO build or by the dev following the spec-first loop. `pnpm dev` / `db:migrate` / `db:seed` no-op harmlessly until it exists, and `apps/README.md` says the folder starts empty until the app that fills it lands. The one exception is a fork of the retired static `repository-template`, which does carry `apps/web` + `packages/core` - `/steer:setup init` **Path A** swaps or removes it. |
 | `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root - narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Its staleness is checked by `/steer:audit code` (the DX & docs dimension), not by `/steer:audit spec` - that mode is spec-vs-spec, diffing the as-built `/spec` spine against the tracker spec export and reading neither the code nor this file. Required at the root by rule `30-spec` § Living documentation (and the layout conventions in `/steer:reference conventions`), and allowlisted there by the housekeeping standard (`HOUSEKEEPING.md`) so `/steer:work tidy` never proposes relocating it. |
 
 ## Repo profiles
@@ -48,7 +48,7 @@ never from this marker - so the marker follows the topology rather than declarin
 it.
 
 The profile is a **bootstrap-time** choice that selects an **additive** set of
-scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*):
+scaffold layers `/steer:setup init` / `/steer:setup adopt` lay down (later layers only *add*):
 
 - **Layer 0 - Core** (every profile): `mise.toml` toolchain pinning
   (`node`/`python`/`uv` mandatory - agent tooling needs them), the `/spec` spine,
@@ -59,7 +59,7 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
 - **Layer 1 - Node baseline** (`profiles/_node/`, Node-stack profiles only):
   `package.json`, `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`.
   Every Node profile is a pnpm workspace (monorepo-by-default). The root
-  `package.json` ships a `packageManager` placeholder that `/steer:init` stamps
+  `package.json` ships a `packageManager` placeholder that `/steer:setup init` stamps
   with the mise-pinned pnpm version, so corepack (e.g. in a Docker build) uses
   the same pnpm that wrote `pnpm-lock.yaml`. Skipped for
   `infra`, and replaced by `pyproject.toml`/Ruff for a Python-only product.
@@ -79,7 +79,7 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   including `ws:dev`, which as shipped boots the members' backing **services**
   via Compose `include:`; the *app* half (each member's own dev server) needs
   mise monorepo mode enabled plus one `depends` entry per member with a `dev`
-  task, which `/steer:init` resolves from the manifest. Every task the workspace
+  task, which `/steer:setup init` resolves from the manifest. Every task the workspace
   profile defines is `ws:`-prefixed (bar `convert:doc`) so that it cannot shadow
   a member's own task; its `compose.yaml` declares **no services**
   and `include:`s each member's file. The member checkouts are git-ignored
@@ -126,7 +126,7 @@ the infra-stack rule when it is on the e22 org pack, since `has-iac` holds and
 it regardless: since the 6.6 rule diet that is a section of `45-delivery`, which
 is `code-project`, and a repo that deploys nowhere says so in
 `policy/delivery.yml` (`environments: []`) rather than being skipped. The
-profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
+profile is read by `/steer:setup sync` and `scripts/scan-capabilities.sh`
 (an informational `profile` fingerprint) for reporting and overlay decisions.
 
 ## Org packs - which house defaults reach the repo
@@ -146,7 +146,7 @@ pack: e22   # any other value drops the pack
 **An absent file reads as `e22`.** That is the upgrade contract, not a fallback:
 every repo bootstrapped before packs existed was built against these defaults,
 so absence has to mean the status quo and opting out has to be the deliberate
-edit. `/steer:sync` seeds the file from a migration-ledger entry, changing
+edit. `/steer:setup sync` seeds the file from a migration-ledger entry, changing
 nothing, so the choice becomes visible and editable.
 
 | | `pack: e22` | any other value |
@@ -205,7 +205,7 @@ plugin repo itself. `MANIFEST.md` maps each stored file to its installed path
 (adding the dot back). When a standard implies concrete scaffolding, the scaffold
 bundle is updated in the **same change** as the rule.
 
-When `/steer:init`, `/steer:adopt`, or `/steer:sync` install a scaffold file that
+When `/steer:setup init`, `/steer:setup adopt`, or `/steer:setup sync` install a scaffold file that
 already exists in the target repo, they **merge additively and never clobber**:
 Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.sh`),
 and the structured-config files - the line-based `.gitignore` / `.gitattributes` /
@@ -239,7 +239,7 @@ that already governed, effective behavior is unchanged.
 ## Versioning the contract
 
 `/spec/.version` records the plugin version the spine was last reconciled
-against. After a plugin release, `/steer:sync` applies pending structural
+against. After a plugin release, `/steer:setup sync` applies pending structural
 migrations from the ledger, reconciles additively, and re-stamps `.version`.
 Ledger migrations cover the non-additive changes reconciliation cannot express -
 renames and moves (`git mv`), deletions (`git rm`), **in-file token
@@ -257,7 +257,7 @@ Two ledger entries landed in **3.23.0**: the living global architecture diagram 
 and the links to it are updated), and the retired `markitdown` MCP server is
 cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs - the converter is now the on-demand `mise run convert:doc` task). Neither
-requires manual work; `/steer:sync` proposes both.
+requires manual work; `/steer:setup sync` proposes both.
 
 **Six** further entries landed in **3.24.0**. Four are non-additive
 edits to materialized files that reconciliation cannot carry: `scripts/worktree-env.sh`
@@ -279,7 +279,7 @@ config in every member cloned inside it and shadows any member that does not def
 that name. `mise.toml` is materialized and product-owned, so additive
 reconciliation cannot carry a *rename* - it splices in what is missing and would
 leave both the old and the new names in place. That is exactly the case a ledger
-entry exists for, so the rename ships as one: `/steer:sync` proposes the four task
+entry exists for, so the rename ships as one: `/steer:setup sync` proposes the four task
 headers, repoints every reference to a renamed task (including the live `ws:dev`
 `depends`, which resolves in the *caller's* task set and would otherwise bind to a
 member's `docker:up`), **re-takes `scripts/ws.sh`** whole - the new script carries
@@ -304,7 +304,7 @@ longer wants. The entry rewrites **only those two lines** and is precondition-ga
 one of the stale tokens still being present. It deliberately stops at the prose: moving
 a *live* state backend off a DynamoDB lock table is an infrastructure change with its
 own plan, review, and blast radius, so if the repo's `root.hcl` still configures
-`dynamodb_table`, `/steer:sync` lands the prose fix, says so, and hands the backend
+`dynamodb_table`, `/steer:setup sync` lands the prose fix, says so, and hands the backend
 migration to a dev as separate work.
 
 One further entry landed in **4.0.0**, and it makes the action history a **directory of
@@ -353,7 +353,7 @@ own**. The first retires the Copilot **prompt-file** surface in
 favour of the cross-tool `.agents/skills/` tree: it copies
 `templates/agents/skills/` in verbatim (that tree is `Verbatim: yes` under
 `agent-surface-current`, so it is copied, never reconciled - the migration exists
-only to create it the first time, after which `/steer:sync` keeps it current),
+only to create it the first time, after which `/steer:setup sync` keeps it current),
 then deletes the `steer-*.prompt.md` files and the `.github/prompts/` directory
 **only if nothing else remains** - a prompt file the team wrote themselves is
 theirs and stays, directory and all. Two live pointers are rewritten because
@@ -382,7 +382,7 @@ does **not** restore anyone's access: the human must supply the token to the
 plugin once per machine, and the entry says so explicitly rather than implying the
 file edit was the whole job.
 
-Ledger entries are keyed by the release that **introduced** them, and `/steer:sync` skips
+Ledger entries are keyed by the release that **introduced** them, and `/steer:setup sync` skips
 every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut
 is keyed `[Unreleased]` - never a guessed number, since an implementation PR merges before
 the release that names it - and the release PR renames it. A `[Unreleased]` heading is

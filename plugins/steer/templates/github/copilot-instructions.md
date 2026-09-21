@@ -193,7 +193,7 @@ MCP server - never from training-data memory.
 
 These bullets are the **app / service** profile, the default. An infra,
 library, cli or workspace repo keeps the universal core - mise pinning, the
-`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:init`
+`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:setup`
 records which.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
@@ -359,7 +359,7 @@ secrets, compliance, change size - applies unchanged.
 
 **`openspec/` IS this repo's spine**, so the router's bootstrap precedence and
 Durable decisions' "no `/spec` spine yet?" check are already satisfied: do not
-announce `/steer:setup`, `/steer:init` or `/steer:adopt` as the first move here,
+announce `/steer:setup` or its `init` / `adopt` path as the first move here,
 and do not read the absent `spec/features/**` as an unbootstrapped repo. Those
 bootstrap routes would lay a second, competing spine.
 
@@ -395,12 +395,12 @@ repo they live under `openspec/steer/`, NOT in `spec/`:**
 three.** A skill body still says `spec/decisions/`, `spec/tracker.md` or
 `spec/app/` - read it as `openspec/steer/...` here. The `steer/` segment keeps steer's durable artifacts
 out of the namespace the `openspec` CLI regenerates. If you find them at the old
-`spec/` paths, the repo predates the move: run **`/steer:sync`**.
+`spec/` paths, the repo predates the move: run **`/steer:setup sync`**.
 
 Toolchain and CI scaffolding are still steer's - the bundled scaffold (mise,
 compose, CI, PR template) applies here unchanged. Reach it via **`/steer:setup`**
-*only when that scaffold is missing*, and do not let it route into
-`/steer:init` / `/steer:adopt`: those write a `spec/` spine from the templates
+*only when that scaffold is missing*, and do not let it route into its
+`init` / `adopt` path: those write a `spec/` spine from the templates
 and stamp `spec/.version`, which is the competing spine this rule exists to
 prevent. Missing `openspec/steer/tracker.md`? Instantiate
 `templates/spec/tracker.md` there directly - it is one file, not a bootstrap.

@@ -30,7 +30,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | **0 · Bootstrap** | [`/steer:setup`](../workflows/index.md) -> `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | - (enablement, not a gate) |
 | **1 · Shape** | [`/steer:spec`](../workflows/spec.md), `questions`, `adr`, `roadmap` | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` - blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
-| **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:sync` let the PR be the record |
+| **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:setup sync` let the PR be the record |
 | **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change classification + high-risk scoping; **merge/deploy never implied** |
 | **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
 | **5 · Deliver** | merge -> [deploy](deployment.md); [`/steer:protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
@@ -123,7 +123,7 @@ and updated by hand, so every merge had to be replayed into the spec and `reconc
 existed largely to repair what that missed. Those two values were retired; what
 remains of reconciliation is pointer and question consistency, plus
 [`/steer:audit spec`](../reference/skills.md), which compares the **as-built
-`/spec` spine** (reverse-engineered from the code by `/steer:adopt`, standing in
+`/spec` spine** (reverse-engineered from the code by `/steer:setup adopt`, standing in
 for it) against the tracker spec - a genuinely different comparison from syncing
 two status fields.
 

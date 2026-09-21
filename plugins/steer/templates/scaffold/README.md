@@ -1,6 +1,6 @@
 # [Product Name]
 
-> Replace this section after bootstrapping the repo (`/steer:init`).
+> Replace this section after bootstrapping the repo (`/steer:setup`).
 
 One-sentence description of what this product does and who it serves.
 
@@ -28,7 +28,7 @@ Defaults for package managers: **pnpm** for Node, **uv** for Python (rationale
 via the `steer` plugin - run `/steer:reference conventions`). They're biases, not mandates -
 record a different choice in an ADR under `/spec/decisions`. On Windows, develop
 inside **WSL2** - see [Windows: develop in WSL](#windows-develop-in-wsl).
-- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up. The scaffold ships **no** `mise.lock` - `/steer:init`/`/steer:adopt` create it when they pin the toolchain. To pin (or re-pin) by hand: create the lock first (`touch mise.lock`, or `mise lock` - mise only writes the lock when the file already exists), run `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the committed `mise.lock` carries asset URLs for CI (`linux-x64`) as well as your host - otherwise CI's `mise install --locked` fails with "No lockfile URL found ... on platform linux-x64". Until a `mise.lock` is committed, CI runs a plain unlocked `mise install`; never commit an empty / comment-only lock. Bump later with `mise upgrade`. Run `/steer:reference conventions` for the latest-in-config / pinned-in-lockfile rationale.
+- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up. The scaffold ships **no** `mise.lock` - `/steer:setup` creates it when it pins the toolchain. To pin (or re-pin) by hand: create the lock first (`touch mise.lock`, or `mise lock` - mise only writes the lock when the file already exists), run `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the committed `mise.lock` carries asset URLs for CI (`linux-x64`) as well as your host - otherwise CI's `mise install --locked` fails with "No lockfile URL found ... on platform linux-x64". Until a `mise.lock` is committed, CI runs a plain unlocked `mise install`; never commit an empty / comment-only lock. Bump later with `mise upgrade`. Run `/steer:reference conventions` for the latest-in-config / pinned-in-lockfile rationale.
 
 ## Quick links
 
@@ -98,7 +98,7 @@ uv run <your-dev-command>
 > environment. The baseline starts the PostgreSQL in [`compose.yaml`](./compose.yaml)
 > and fans `db:migrate` / `db:seed` out to workspace packages that define them
 > (those steps no-op until the first real app lands).
-> Adapt the tasks in `mise.toml` to the product during `/steer:init`.
+> Adapt the tasks in `mise.toml` to the product during `/steer:setup`.
 
 > Local config vars are documented in [`.env.example`](./.env.example) - copy it
 > to a git-ignored `.env` and fill in real values. Running several products
@@ -152,7 +152,7 @@ mise run convert:doc path/to/document.docx        # Markdown on stdout
 1. **Prerequisite - `uv`** (provided by default): the task runs `uvx markitdown`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box - no per-product opt-in. First use auto-fetches the `markitdown` package from PyPI - no token or env var required.
 2. **Verify**: `mise run convert:doc --help`, or just convert a document.
 
-Earlier plugin versions wired markitdown as an MCP server instead. That spawned a `uvx markitdown-mcp` subprocess in **every** session - including the overwhelming majority that never convert a document - so it was replaced by this on-demand task. If your repo still lists a `markitdown` server in `.mcp.json` or `.vscode/mcp.json`, the entry is stale but harmless; `/steer:sync` clears it.
+Earlier plugin versions wired markitdown as an MCP server instead. That spawned a `uvx markitdown-mcp` subprocess in **every** session - including the overwhelming majority that never convert a document - so it was replaced by this on-demand task. If your repo still lists a `markitdown` server in `.mcp.json` or `.vscode/mcp.json`, the entry is stale but harmless; `/steer:setup sync` clears it.
 
 ## Library docs MCP server (context7, local Claude Code only)
 

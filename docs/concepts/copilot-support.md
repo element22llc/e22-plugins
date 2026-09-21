@@ -106,8 +106,8 @@ copy of the standards.
 
 ## Using it as a Copilot teammate
 
-The standards file and the skill tree are installed by `/steer:init` (new repos)
-or `/steer:adopt` (existing repos), run **from Claude Code** during bootstrap -
+The standards file and the skill tree are installed by `/steer:setup init` (new repos)
+or `/steer:setup adopt` (existing repos), run **from Claude Code** during bootstrap -
 see the [Adopt workflow](../workflows/adopt.md). Copilot teammates only consume
 the files; they do not need to generate them.
 
@@ -151,25 +151,25 @@ rules arrive only through the committed `.github/copilot-instructions.md`, so a
 must be regenerated to match. The **committed** Copilot files - the instructions
 fallback, the cross-tool skill tree, custom agents, path-scoped instructions -
 are a **static snapshot**, so they go stale when steer's rules or skills change.
-Refresh them with **`/steer:sync`** from Claude Code:
+Refresh them with **`/steer:setup sync`** from Claude Code:
 
 ```shell
 copilot plugin update steer       # CLI only: pull the new plugin version
 # then, from Claude Code in the repo:
-/steer:sync                       # re-copies copilot-instructions.md,
+/steer:setup sync                 # re-copies copilot-instructions.md,
                                   # .agents/skills/, agents/, instructions/
-/steer:sync --check               # read-only: reports the surface as mis-wired
+/steer:setup sync --check         # read-only: reports the surface as mis-wired
                                   # when it has fallen behind
 ```
 
-`/steer:sync` owns this because the refresh is a **capability repair**:
+`/steer:setup sync` owns this because the refresh is a **capability repair**:
 `agent-surface-current` is wired only when every generated file is
 byte-identical to its plugin source **and** no retired `steer-*.prompt.md`
 lingers under `.github/prompts/`. The repair is a verbatim re-copy **plus** the
 deletion of any lingering `steer-`-prefixed prompt file - a copy cannot remove
 one, so without that half the capability reports `mis-wired` after every repair.
 A prompt file the team wrote themselves is theirs and stays.
-**`/steer:init` is not the refresh path** - it installs the surface at bootstrap
+**`/steer:setup init` is not the refresh path** - it installs the surface at bootstrap
 and then deliberately stops on an already-initialized repo, so re-running it does
 nothing.
 
@@ -332,7 +332,7 @@ template **in this repo**.
 
 That byte-gate governs the plugin-side template only. Unlike the four artifacts
 under `.github/`, the **installed** `.vscode/mcp.json` is not steer-managed: it sits
-outside `/steer:sync`'s `agent-surface-current` capability, so a consumer owns
+outside `/steer:setup sync`'s `agent-surface-current` capability, so a consumer owns
 their copy and is expected to merge additively and remove servers they don't use.
 Nothing re-copies it over their edits; only a one-shot ledger migration amends it.
 
@@ -347,7 +347,7 @@ toolchain and runs `dev:setup`. The job name `copilot-setup-steps` is required;
 MCP + firewall for the agent are set in repo **Settings -> Copilot -> Coding agent**,
 not in-repo.
 
-It is **opt-in** - `/steer:init` does not install it automatically; add it only
+It is **opt-in** - `/steer:setup init` does not install it automatically; add it only
 for repos that use the coding agent. It fits steer's autonomous-loop rules: the
 coding agent opens draft PRs and never merges, so the human merge gate stands.
 Point it only at PR-flow repos (protected `main`), never solo-trunk.
@@ -409,8 +409,8 @@ the standards in `.github/copilot-instructions.md`.
   `gen_agent_skills.py`.
 - **Standards delivery on the CLI is the committed file, not a hook.** Nothing
   steer ships executes on the Copilot CLI, so `.github/copilot-instructions.md`
-  is the whole always-on surface there. It is installed by `/steer:init` and
-  refreshed by `/steer:sync`; a repo that never ran either gets no standards on
+  is the whole always-on surface there. It is installed by `/steer:setup init` and
+  refreshed by `/steer:setup sync`; a repo that never ran either gets no standards on
   that surface.
 - **Polyrepo topology is Claude-only.** Workspace/member role detection is emitted
   by the `orient-session.sh` SessionStart hook as raw text, which the Copilot

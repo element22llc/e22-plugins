@@ -20,8 +20,8 @@ Blocking now
 
 ## Expected suggested command
 
-`/steer:adopt` (existing code). For a greenfield repo with no code yet, the
-command would instead be `/steer:init`.
+`/steer:setup` - it detects the existing code and takes the `adopt` path; a
+greenfield repo with no code yet takes `init` instead.
 
 ## Must not recommend first
 

@@ -113,14 +113,14 @@ moves a repo between the two and reconciles the marker.
     that allow-list. In a repo **missing** it, that same fallback is instead
     prompted (interactive) or **silently auto-denied** (headless), surfacing as
     "the whole `gh` surface is walled off". The scaffold `permissions.allow` list is
-    therefore the **real backstop** for the orchestrated path. `/steer:sync`'s `github-issue-permissions` capability
+    therefore the **real backstop** for the orchestrated path. `/steer:setup sync`'s `github-issue-permissions` capability
     (see [Repository contract](../reference/repository-contract.md)) detects a repo
     missing that allow-list - `absent` / `mis-wired` (a read-only-era `settings.json`
     with `gh issue list`/`view` but no `create`) / `present-wired` - so the gap is
     named up front rather than discovered mid-workflow.
 
 !!! note "Exception - solo trunk mode (pre-MVP greenfield)"
-    When one person is both PO and dev with no MVP yet, `/steer:init` can put the
+    When one person is both PO and dev with no MVP yet, `/steer:setup init` can put the
     repo in **solo trunk mode** (declared in the product `CLAUDE.md` `## Delivery
     mode` section): commits land **directly on `main`** and are pushed
     autonomously, with no `feat/*` branch and
@@ -155,13 +155,13 @@ inspection was the bulk of the "asks for approval constantly" friction without
 protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
 `/steer:setup`, `/steer:status`) carry read-only `allowed-tools` grants in their
 frontmatter, so inspection stays silent even in a repo that predates the scaffold
-allowlist. `/steer:sync`, `/steer:work`, and `/steer:issues` grant an overlapping
+allowlist. `/steer:setup sync`, `/steer:work`, and `/steer:issues` grant an overlapping
 subset of those inspection commands, but are **not** read-only overall - `sync` and
 `work` also carry `git add`/`commit`/`push` + `gh pr create` (and `work`,
 `gh pr edit`), and `issues` carries `gh label create` plus its own
 `gh issue list`/`view` and `gh search issues` reads; their delivery grants are
 enumerated above. The setup and build flows
-(`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
+(`/steer:setup init`, `/steer:setup adopt`, `/steer:intake`, `/steer:build`) likewise declare
 scoped grants for the operations they routinely run - git inspection and
 branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
 `git push` / `gh pr create` delivery grants as the other delivery skills, and - in
@@ -171,12 +171,12 @@ wildcard, so `gh pr merge` and unknown commands still prompt. Each flow also
 pre-approves the bundled plugin helper scripts it executes **by literal path in its
 own files**, under a matching interpreter
 (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
-prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` and
-`/steer:adopt` and `/steer:sync`, `template-reconcile.sh` in `/steer:adopt`,
-`/steer:build`, `/steer:spec-scaffold` and `/steer:sync`, `scan-capabilities.sh` +
-`scan-invocations.sh` in `/steer:sync`,
+prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:setup init` and
+`/steer:setup adopt` and `/steer:setup sync`, `template-reconcile.sh` in `/steer:setup adopt`,
+`/steer:build`, `/steer:spec-scaffold` and `/steer:setup sync`, `scan-capabilities.sh` +
+`scan-invocations.sh` in `/steer:setup sync`,
 `scan-prereqs.sh` in `/steer:doctor`, `workspace-snapshot.sh` in `/steer:next`, and
-`scan-spine-state.sh` in `/steer:setup`, `/steer:sync`, `/steer:work`,
+`scan-spine-state.sh` in `/steer:setup`, `/steer:setup sync`, `/steer:work`,
 `/steer:status` and `/steer:audit`.
 `/steer:doctor` carries one grant that is deliberately *not* a helper script:
 `Bash(grep -rl *)`, for the §0 plugin-integrity check that greps the installed
@@ -244,7 +244,7 @@ grants the bundled plugin helper scripts its body - including a factored-out
 the skill's own directory** (`_SCRIPT_INVOCATION` matches
 `${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`), so a helper reached through a
 cross-referenced convention is outside it. That blind spot has bitten once:
-`/steer:sync` step 5 delegates to the Template-reconciliation convention in
+`/steer:setup sync` step 5 delegates to the Template-reconciliation convention in
 `templates/reference/SPEC-FRAMEWORK.md`, whose command is
 `template-reconcile.sh`, and `sync` did not grant it - the gate stayed green while
 the step prompted. Sync now grants it, and no skill currently reaches a helper it
@@ -252,7 +252,7 @@ hasn't pre-approved, but the gap is structural: the next indirectly-reached help
 will be just as invisible. So the prompt-on-every-run class is narrowed by this
 assertion, not closed by it.
 
-A second blind spot in the same gate ran deeper. `/steer:setup`, `/steer:sync` and
+A second blind spot in the same gate ran deeper. `/steer:setup`, `/steer:setup sync` and
 `/steer:work`'s `CLOSING-REF.md` reached their detection helpers by **`.`-sourcing**
 `hooks/lib/*.sh` directly, then calling the sourced functions - a compound snippet,
 which the chained-command rule below defeats on its own, and one no skill grants in

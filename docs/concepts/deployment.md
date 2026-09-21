@@ -71,7 +71,7 @@ flowchart LR
 Deployable apps ship as **container images** (default target: AWS ECS). Each
 `apps/<app>` that deploys as a container carries its own `Dockerfile`, instantiated
 from the plugin's `templates/docker/` reference when the app is first created - by
-[`/steer:build`](../workflows/build.md) or [`/steer:adopt`](../workflows/adopt.md),
+[`/steer:build`](../workflows/build.md) or [`/steer:setup adopt`](../workflows/adopt.md),
 which copy-and-adapt it and never clobber an existing one. A Node/Next.js template
 and a Python/uv template are provided; the base-image major must satisfy
 `policy/versions.yml` (enforced by the version-pin scanner).

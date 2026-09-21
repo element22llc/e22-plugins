@@ -11,7 +11,7 @@ it never re-runs the focused skills: correctness bugs defer to `/code-review`,
 security to `/security-review`, mechanical cleanup to `/simplify` (name the
 skill; don't run it here). A cluttered repo root is handed to `/steer-work tidy`, not
 reported stray-by-stray. **If there is no `/spec` spine yet,** the spec-coverage
-dimension can't run - note that, redirect to `/steer-adopt` for the spec, and
+dimension can't run - note that, redirect to `/steer-setup adopt` for the spec, and
 run the code-health dimensions (2-10) without it.
 
 ## When to run
@@ -47,7 +47,7 @@ clean bill of health.
 Detect the stack from the repo itself (`package.json` / `pyproject.toml`,
 frameworks, database, auth) - don't trust training-data memory. Map the apps,
 entry points, and user-facing features. Check whether a `/spec` spine exists; if
-not, note it and mark dimension 1 as **not run - redirect to `/steer-adopt`**.
+not, note it and mark dimension 1 as **not run - redirect to `/steer-setup adopt`**.
 Decide which dimensions apply.
 
 ## Phase 1 - Audit

@@ -9,8 +9,9 @@
 #   this hook: a brand-new non-template repo where code was written from scratch
 #   with the plugin active, but the spec spine never appeared). The drift and
 #   open-questions hooks only fire once /spec ALREADY exists - they cannot catch
-#   a repo that never got a spine. /steer:init (plugin-driven bootstrap, or a
-#   legacy fork) and /steer:adopt (reverse-engineer existing code) are the fixes,
+#   a repo that never got a spine. /steer:setup init (plugin-driven bootstrap,
+#   or a legacy fork) and /steer:setup adopt (reverse-engineer existing code) are
+#   the fixes,
 #   but a skill is pull, not push: it only runs when someone invokes it, and the
 #   router prose that mentions it is easy to deprioritize while coding. This hook
 #   makes the missing spine a high-salience session-start signal so the bootstrap
@@ -66,7 +67,7 @@ if [ "${STATE}" = "openspec" ]; then
 		printf '<!-- steer: openspec spine, pre-fold artifacts present -->\n'
 		printf '⚠ **This OpenSpec repo still carries steer artifacts at their old '
 		printf 'location** (`spec/tracker.md` and/or `spec/decisions/`). They now '
-		printf 'live under `openspec/steer/`. Run **`/steer:sync`** to apply the '
+		printf 'live under `openspec/steer/`. Run **`/steer:setup sync`** to apply the '
 		printf 'migration - until then the tracker declaration being read may not '
 		printf 'be the one you are editing.\n'
 	fi
@@ -91,9 +92,9 @@ if [ "${STATE}" = "openspec-setup" ]; then
 	printf -- '- **ADRs** -> `openspec/steer/decisions/`, written by '
 	printf '**`/steer:adr`** when the first hard-to-reverse choice comes up. '
 	printf 'Nothing to create up front.\n\n'
-	printf 'Do **not** run `/steer:init` or `/steer:adopt` to get these - they '
-	printf 'lay a competing `spec/features/**` spine. `/steer:setup` is for the '
-	printf 'toolchain/CI scaffold only, and only if that is missing.\n'
+	printf 'Do **not** run `/steer:setup init` or `/steer:setup adopt` to get '
+	printf 'these - they lay a competing `spec/features/**` spine. `/steer:setup` '
+	printf 'is for the toolchain/CI scaffold only, and only if that is missing.\n'
 	exit 0
 fi
 
@@ -103,7 +104,7 @@ if [ "${STATE}" = "foreign" ]; then
 	printf '<!-- steer: spec/ without spec-spine marker -->\n'
 	printf '⚠ **This repo has a `spec/` directory but no spec-spine marker (`spec/.version`).** '
 	printf 'The org standards are loaded, but this is not a recognized spec spine. If this repo '
-	printf 'should be standards-managed, run **`/steer:adopt`** to reconstruct the spine '
+	printf 'should be standards-managed, run **`/steer:setup adopt`** to reconstruct the spine '
 	printf 'from the code; otherwise ignore this notice.\n'
 	exit 0
 fi
@@ -112,7 +113,7 @@ fi
 if [ "${STATE}" = "damaged" ]; then
 	printf '<!-- steer: incomplete /spec spine -->\n'
 	printf '⚠ **This repo has an incomplete spec spine** (`spec/.version` is present but spine '
-	printf 'files are missing). Run **`/steer:sync`** to reconcile it against the '
+	printf 'files are missing). Run **`/steer:setup sync`** to reconcile it against the '
 	printf 'current templates before continuing feature work.\n'
 	exit 0
 fi
@@ -134,18 +135,18 @@ printf -- '- **"Build my app idea"** (non-technical owner, not writing code) -> 
 printf '**`/steer:build`** - the guided idea->working-app flow; it bootstraps for '
 printf 'you and drives interview, spec, scaffold, and build.\n'
 printf -- '- **"Set this repo up properly"** -> **`/steer:setup`** - the one front '
-printf 'door: it detects the repo state and routes to `/steer:init` (developer '
-printf 'greenfield: spine + scaffold + pinned toolchain) or `/steer:adopt` '
+printf 'door: it detects the repo state and takes the `init` path (developer '
+printf 'greenfield: spine + scaffold + pinned toolchain) or `adopt` '
 printf '(substantial existing code: reverse-engineer the spec, triage '
 printf 'productionization).\n\n'
 printf '**Before feature CODE is written, the bootstrap is required** - spec-only '
 printf 'work is the one sanctioned exception. A "prototype" / "quick" / '
 printf '"throwaway" build does not skip it (quick relaxes ceremony, never the '
-printf 'scaffold or spine), and a non-app repo does not either: `/steer:init` '
+printf 'scaffold or spine), and a non-app repo does not either: `/steer:setup` '
 printf 'detects the profile (app / infra / service / library / cli / workspace) '
 printf 'and lays the universal '
 printf 'core plus only the matching extras - never hand-write toolchain/CI from '
 printf 'scratch here.\n\n'
 printf 'This notice clears itself once the repo has a complete, version-stamped '
-printf 'spec spine - which `/steer:init` or `/steer:adopt` creates. (Not a managed '
+printf 'spec spine - which `/steer:setup` creates. (Not a managed '
 printf 'product repo? Ignore it.)\n'

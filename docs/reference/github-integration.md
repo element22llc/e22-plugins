@@ -10,7 +10,7 @@ coding agent (see [Copilot support](../concepts/copilot-support.md)).
 
 ## `claude.yml` - the `@claude` mention workflow (default)
 
-`/steer:init` and `/steer:adopt` install `.github/workflows/claude.yml` (source:
+`/steer:setup init` and `/steer:setup adopt` install `.github/workflows/claude.yml` (source:
 `plugins/steer/templates/github/workflows/claude.yml`). It runs
 [`anthropics/claude-code-action@v1`](https://github.com/anthropics/claude-code-action)
 when someone mentions `@claude` on an issue or PR.
@@ -64,7 +64,7 @@ product-repo-facing version of this.
 
 ## Dependabot - dependency updates + scoped auto-merge (default)
 
-`/steer:init` and `/steer:adopt` install two files (sources under
+`/steer:setup init` and `/steer:setup adopt` install two files (sources under
 `plugins/steer/templates/github/`):
 
 - **`.github/dependabot.yml`** - the `github-actions` ecosystem is enabled live
@@ -102,7 +102,7 @@ branch-protection section.
 `/steer:protect` enables the repo settings the exception relies on - Dependabot
 **alerts** and **security updates** (so security PRs get opened) - alongside secret
 scanning. It configures settings only; the merge itself is enacted by the workflow.
-`/steer:sync` keeps both files wired (the `dependency-automation` capability).
+`/steer:setup sync` keeps both files wired (the `dependency-automation` capability).
 
 ## Production promotion gate
 
@@ -118,7 +118,7 @@ only GitHub Enterprise provides. Merging the `prod` PR auto-deploys production, 
 nothing is ever pushed to `prod` directly.
 
 `/steer:protect` reads `protected_branches` and configures each branch's rules
-(required PR, required `ci` check, no direct pushes); `/steer:sync` keeps the
+(required PR, required `ci` check, no direct pushes); `/steer:setup sync` keeps the
 policy file and the protection in step as the plugin evolves.
 
 Because `ci` is a *required* check on `prod`, the shipped `ci.yml` must trigger on
@@ -133,7 +133,7 @@ promotion model.
 
 `/steer:loop` instantiates `.github/workflows/steer-loop.yml` from
 `plugins/steer/templates/github/workflows/steer-loop.yml`. It is **not**
-bootstrapped by `/steer:init` or `/steer:adopt` and is deliberately absent from
+bootstrapped by `/steer:setup init` or `/steer:setup adopt` and is deliberately absent from
 `MANIFEST.md`'s install map - a repo runs a loop only when someone asks for one
 (rule `53-autonomous-loops`).
 
@@ -158,8 +158,8 @@ natural-language Markdown rather than a fixed loop.)
 steer ships **one example** workflow,
 `plugins/steer/templates/github/agentic/triage.md` (unattended issue triage that
 runs when an issue is opened/reopened and classifies it against the steer label
-taxonomy and Issue Types). It is **not** installed by `/steer:init` or
-`/steer:adopt` and is deliberately absent from `MANIFEST.md`'s install map
+taxonomy and Issue Types). It is **not** installed by `/steer:setup init` or
+`/steer:setup adopt` and is deliberately absent from `MANIFEST.md`'s install map
 (the manifest names the directory only to say it does not ship) - you opt in
 deliberately.
 

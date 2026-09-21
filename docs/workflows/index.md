@@ -40,8 +40,8 @@ For the full per-command catalog (including internal helpers), see the
 flowchart LR
     subgraph Setup
       setup["/steer:setup<br/>detect & route"]
-      init["/steer:init<br/>new repo"]
-      adopt["/steer:adopt<br/>existing app"]
+      init["init mode<br/>new repo"]
+      adopt["adopt mode<br/>existing app"]
       setup --> init & adopt
     end
     subgraph Build loop
@@ -50,7 +50,7 @@ flowchart LR
       work["/steer:work"]
     end
     subgraph Steady state
-      sync["/steer:sync"]
+      sync["/steer:setup sync"]
       drift["/steer:audit spec"]
       audit["/steer:audit"]
     end
@@ -68,8 +68,8 @@ below give the detail.
 | I want to ... | Run |
 | --- | --- |
 | Get set up - I'm not sure what state the repo is in | `/steer:setup` (detects & routes) |
-| Start a brand-new repo from scratch | `/steer:init` |
-| Bring an existing app under steer | [`/steer:adopt`](adopt.md) |
+| Start a brand-new repo from scratch | `/steer:setup init` |
+| Bring an existing app under steer | [`/steer:setup adopt`](adopt.md) |
 | Absorb a product owner's spec / roadmap document | [`/steer:intake`](intake.md) |
 | Capture, triage, or decompose ideas into issues | [`/steer:issues`](issues.md) |
 | Shape or approve a feature spec | [`/steer:spec`](spec.md) |
@@ -81,7 +81,7 @@ below give the detail.
 | Show or share a visual, plain-language page of one feature | `/steer:status feature <id>` |
 | Give a client a progress/status report ("what did we ship this week?") | `/steer:status` |
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code` · `/steer:audit spec` |
-| Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
+| Apply a new plugin release (migrations, scaffold, spine) | `/steer:setup sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |
 | Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | `/steer:loop` |
 | Lock branch protection or flip the delivery mode | `/steer:protect` |
@@ -98,9 +98,9 @@ below give the detail.
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:setup` | **The front door** - detects the repo state and routes to the right path below. Start here. |
-| `/steer:init` | (via setup) A new repo with no `/spec` spine - installs the bundled scaffold + spine. |
-| [`/steer:adopt`](adopt.md) | (via setup) An existing app with working code but no spine. |
+| `/steer:setup` | **The front door** - detects the repo state and routes to one of its modes below. Start here. |
+| `/steer:setup init` | A new repo with no `/spec` spine - installs the bundled scaffold + spine. Naming the mode skips detection. |
+| [`/steer:setup adopt`](adopt.md) | An existing app with working code but no spine. |
 
 ## Build loop
 
@@ -115,7 +115,7 @@ below give the detail.
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:sync` | (via `/steer:setup`) After a plugin release - apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
+| `/steer:setup sync` | After a plugin release - apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to diff the as-built `/spec` spine against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace. Read-only itself: it reconstructs, arbitrates, and names the one action that matters most. When that action is unambiguous and non-gated it is then announced and **continued into** (rule `00-router`'s bounded auto-continue), handing over at the first step that writes; a close call, a gated step, or an action no command performs waits for you. |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
