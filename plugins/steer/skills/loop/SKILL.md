@@ -34,7 +34,7 @@ steer's skills without a human in each turn - the "loop engineering" pattern.
 A repo runs one only because someone **declared the opt-in**
 (`policy/automation.yml`, `loops: true`), which is also what puts rule
 `53-autonomous-loops` into its always-on context. Where the marker is absent, the
-declaration is the first gate this skill asks for - step 2 below.
+declaration is the first thing this skill asks for - step 1 below.
 What it installs is a GitHub Actions workflow on a `cron` schedule that runs the
 same `steer` plugin an interactive session runs, so the loop obeys the identical
 ruleset.
@@ -81,23 +81,22 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
 
 ## Scaffold (default mode)
 
-1. **Instantiate the workflow.** Copy
+1. **Get the automation opt-in declared - it is a decision, not a file you write
+   for the dev.** Where `policy/automation.yml` already declares `loops: true`,
+   the repo has opted in; carry on to step 2. Where it does not, put it to the
+   dev **before writing anything**, with the trade stated plainly: unattended API
+   spend on every scheduled run, draft-PR noise for reviewers, and the PR flow
+   this skill requires. On confirmation, write the marker (create the file if
+   absent; leave any other key alone) and record who decided and when; without
+   one, stop here, having written nothing. That marker is what puts rule
+   `53-autonomous-loops` into the repo's always-on context - a repo running no
+   loop pays nothing for the rule, and a repo running one has the boundary in
+   front of every session.
+2. **Instantiate the workflow.** Copy
    `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/steer-loop.yml` to
    `.github/workflows/steer-loop.yml`. This template is **on-demand** - it is not
    part of the bootstrap scaffold, so a repo only gets a loop when someone asks
    for one here.
-2. **Get the automation opt-in declared - it is a gate, not a file you write.**
-   Where `policy/automation.yml` already declares `loops: true`, the repo has
-   opted in; carry on. Where it does not, put the decision to the dev in-session
-   (rule 61) before scaffolding anything, with the tradeoff stated: unattended
-   API spend on every scheduled run, draft-PR noise for reviewers, and the PR
-   flow this skill requires. **Approve** -> write the marker (create the file if
-   absent; leave any other key alone), recording the decider and the date;
-   **Reject** or **Decide later** -> stop, having written nothing. Only on
-   Approve does the rest of this run proceed, and the marker commits with the
-   workflow in step 5. That marker is what puts rule `53-autonomous-loops` into
-   the repo's always-on context - a repo running no loop pays nothing for the
-   rule, and a repo running one has the boundary in front of every session.
 3. **Resolve the two choices with the dev - don't guess:**
    - **Schedule (`cron`).** The template defaults to weekday mornings
      (`0 13 * * 1-5`, 13:00 UTC). Confirm or adjust the cadence. Keep it modest -
@@ -117,7 +116,7 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    `.github/workflows/steer-loop.yml` and `policy/automation.yml` on a `feat/*` branch, push, and open the
    PR without asking, announcing it (Commit autonomy - the merge review is the
    dev's gate). Arming an unattended agent on the repo is a repo-level event:
-   where step 2 took the opt-in decision this session, write the
+   where step 1 took the opt-in decision this session, write the
    `/spec/history/` entry naming the decider, the date, and the schedule. The scheduled loop only arms once that PR merges, so the human
    decision to run a loop at all is the merge itself.
 6. **Report the follow-ups honestly:** the `ANTHROPIC_API_KEY` secret if missing,
@@ -140,7 +139,9 @@ Report whether `.github/workflows/steer-loop.yml` exists and is wired:
   loop pushes only its own work branches);
 - `ANTHROPIC_API_KEY` is present in `gh secret list`;
 - `policy/automation.yml` declares `loops: true` - without it the repo runs the
-  loop but no session is told the boundary; report it as a gap to close.
+  loop but no session is told the boundary, and nobody is on record as having
+  opted into it; report it as a gap that closes through the same decision
+  `scaffold` step 1 asks for, not as a file to write.
 
 If everything holds, say the loop is wired and name its schedule. If nothing is
 installed, say so and offer `scaffold`.

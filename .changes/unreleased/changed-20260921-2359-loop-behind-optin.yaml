@@ -10,14 +10,16 @@ body: |
     name for the same reason as `reference` and `report`: rule 53 names it as a
     delegation, and it has no front door a `noncallable-gateway` finding could
     be rewritten to.
-  - **The automation opt-in is a gate the dev answers, not a file the skill
-    writes for itself.** `/steer:loop scaffold` on a repo that has not declared
-    `loops: true` now puts the decision in-session first, with the tradeoff
-    stated - unattended API spend per scheduled run, draft-PR noise, the PR flow
-    a loop requires - and writes the marker only on approve, recording the
-    decider. Arming an unattended agent is a repo-level event, so an in-session
-    approval also writes its `/spec/history/` entry. `verify` and `remove` are
-    unchanged.
+  - **The automation opt-in is a decision the dev makes, not a file the skill
+    writes for them.** It is now `scaffold`'s **first** step, ahead of
+    instantiating the workflow: on a repo that has not declared `loops: true`,
+    the trade goes to the dev first - unattended API spend per scheduled run,
+    draft-PR noise, the PR flow a loop requires - and the marker is written only
+    on confirmation, with who decided and when recorded. Arming an unattended
+    agent is a repo-level event, so a decision taken in-session also writes its
+    `/spec/history/` entry. `verify` now reports a missing marker as a gap that
+    closes through that same decision rather than as a file to write; `remove`
+    is unchanged.
   - The Copilot port of `steer-reviewer` no longer points at a `/steer-loop`
     prompt: that prompt file stops being generated when the skill goes internal,
     so the cross-link would have dangled.
