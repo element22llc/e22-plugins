@@ -160,7 +160,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    instead.
 4. **Record the initial stack as the first ADR** - run `/steer:adr`, then fill
    `ARCHITECTURE.md`. Whether that ADR is `Accepted` (the dev explicitly chose,
-   with the `61-gate-prompts` ratification stamps) or `Proposed` (Claude merely
+   with the `61-gates` ratification stamps) or `Proposed` (Claude merely
    recommended a default) follows who decided - the rule, and the
    `ARCHITECTURE.md` fields to fill, are in `INTERVIEW.md` step 4.
 5. **Pin the toolchain and lock the workspace - for every CI/dev platform.** If

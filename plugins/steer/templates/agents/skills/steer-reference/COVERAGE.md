@@ -247,7 +247,7 @@ It covers, in detail:
 - **Never promptable** - PR merge, deploy, real secrets, `/infra`, protected-branch
   pushes. Gates become answerable, never removable.
 
-This backs the always-on rule `61-gate-prompts` and the gate-owning skills
+This backs the always-on rule `61-gates` and the gate-owning skills
 (`/steer-adr`, `/steer-spec approve`, `/steer-work --reviewed`).
 
 ## polyrepo

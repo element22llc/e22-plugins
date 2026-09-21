@@ -1,0 +1,17 @@
+kind: Changed
+body: |
+  - **Secrets handling folds into high-risk; hotfix folds into gates.** Secrets
+    were already declared a high-risk area by the first line of their own rule,
+    so `70-secrets` is now `60-high-risk`'s *Secrets handling* section - the
+    never-commit rule, the local `.env` bootstrap and "deployed secrets live in
+    the declared store", unchanged. `62-hotfix` becomes `61-gates`' *Hotfix /
+    incident fast-path* section: the objective entry condition, what the lane
+    relaxes (ceremony and ordering, never authority) and the mandatory
+    follow-up, with the step-by-step procedure left to `/steer:work --hotfix`,
+    which is where it is executed. `61-gate-prompts` is renamed `61-gates`. A
+    cross-reference now reads `` `60-high-risk` § Secrets handling `` or
+    `` `61-gates` § Hotfix ``. An e22 app repo's payload: 56,234 -> 54,718; a
+    knowledge folder pays 312 more (25,016), the cost of hotfix moving into an
+    always-on file.
+custom:
+  Slug: fold-risk-gates

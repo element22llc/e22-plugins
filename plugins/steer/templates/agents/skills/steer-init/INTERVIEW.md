@@ -35,7 +35,7 @@ guardrails.
    **`Accepted`** with the dev as the named **Decider** and today's date - and
    stamp the ratification fields the template carries, `> Ratified by:` (the dev),
    `> Ratified at:` (today) and `> Ratified via: in-session`. Every `Accepted` ADR
-   carries them (rule `61-gate-prompts`; `/steer-next` reports one that doesn't as
+   carries them (rule `61-gates`; `/steer-next` reports one that doesn't as
    incomplete), and the channel stamp is what makes an in-session decision
    auditable. When
    Claude merely *recommended* a default and the dev made no explicit choice,

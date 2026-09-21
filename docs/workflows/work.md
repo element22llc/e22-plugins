@@ -18,7 +18,7 @@ never edits code).
 !!! warning "`--hotfix` - the production-incident fast-path"
     Add `--hotfix` **only** for a genuine production incident - a change to an
     already-deployed system with real users/data **and** an active outage or
-    regression (rule `62-hotfix`). "Urgent" feature work is not a hotfix. The lane
+    regression (rule `61-gates` § Hotfix). "Urgent" feature work is not a hotfix. The lane
     relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
     `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and

@@ -101,7 +101,7 @@ step, never a precondition for the spec work itself.
    (the exact predicate lives in approve mode, in `MODES.md`); resolve or
    explicitly reclassify it first. Then present the intent
    for PO approval - as an **answerable prompt** (Approve · Reject · Decide later,
-   rule `61-gate-prompts`) when the PO is in the session, rather than leaving a
+   rule `61-gates`) when the PO is in the session, rather than leaving a
    `draft` for them to come back and flip. On PO approval, run **`approve <id>`**
    (`MODES.md`) to record the approval and flip `Status:` to `approved` in one change,
    then offer:

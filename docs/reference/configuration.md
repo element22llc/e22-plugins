@@ -35,10 +35,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `50-done.md` | **What finishing a change means**, in four sections. *Definition of Done* - five items: intent understood, appropriately tested, CI green, the contracts and docs this change actually affected updated, merge and deploy through the required human gates; deliberately not a restatement of every other rule, and deferred (never waived) under a declared production hotfix. *Verify loop* - name the check that proves the task done, loop against the harness until green, cap the loop and report what blocked you, never loop on uncheckable work. *Drift gates* - surface drift before merge by flagging its class in the PR; a flagged class blocks merge and you may not waive your own flag. *Audit-aligned delivery* - aligned with SOC 2 / ISO 27001, never "compliant". *End-of-session checklist* - report open items only. |
 | `52-deployment.md` | Deployment & environments - **the repo declares its model in `policy/delivery.yml`** (environments, `deploy_on_merge`, `production_gate`, review apps, observability) and the rule follows it; merge and deploy stay human in every model, plus the observability, rollback and secrets-at-rest baselines. The org default it is seeded with - AWS, `non-prod`/`prod`, branch-driven promotion - and why prod is gated on a branch, are in [Deployment & environments](../concepts/deployment.md). |
 | `53-autonomous-loops.md` | Autonomous loops - automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). **Opt-in** (`inject-when=automation-optin`): injected only where the repo declares `policy/automation.yml` with `loops: true`, which `/steer:loop scaffold` writes alongside the workflow. |
-| `60-high-risk.md` | High-risk areas. |
-| `61-gate-prompts.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Full protocol in the `gates` reference. |
-| `62-hotfix.md` | Hotfix / incident fast-path - the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
-| `70-secrets.md` | Secrets handling - never commit one; local config in a git-ignored `.env`; deployed secrets live in **the declared store** (the org pack's, or an ADR's) and are injected at deploy/runtime. |
+| `60-high-risk.md` | High-risk areas - auth, authorization, migrations, infrastructure, secrets, deletion, billing, deploy/release logic: scope with the dev before any code, contract or ADR first. Relaxed only while the **product** is pre-production, and never for real secrets, `/infra`, deploys or real third-party calls. Its *Secrets handling* section carries the never-commit rule, the local `.env` bootstrap, and "deployed secrets live in the declared store". |
+| `61-gates.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Its *Hotfix / incident fast-path* section holds the one sanctioned speed lever for a production incident (`/steer:work --hotfix`), which relaxes ceremony and ordering, keeps every authority gate, and owes a mandatory follow-up. Full protocol in the `gates` reference. |
 | `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first takes its threshold from it, and the Definition of Done holds in full for every class. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
 | `85-practices.md` | Baseline patterns, stated as principles so they hold on any stack (the org pack names the instances) - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
 | `87-output-discipline.md` | Earn every line - tight responses, comments the exception (governed by `08-code-comments.md`), least code that does the job, lean durable prose. |
@@ -52,7 +50,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     [`inject-standards.sh`](hooks.md)). The code-loop rules - `08-code-comments`,
     `10-stack`, `15-commands`, `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-done`,
-    `62-hotfix`, `80-change-class`, `85-practices`,
+    `80-change-class`, `85-practices`,
     `92-user-facing-copy` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
@@ -84,8 +82,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
     `/clear`, a resume, auto-compaction and a forked session. The router, spec-workflow,
     decision-capture, living-docs, responses (`03`), roles,
-    **gate-prompts (`61`)**, high-risk,
-    not-the-gate, self-report, secrets and output rules carry no
+    **gates (`61`)**, high-risk,
+    not-the-gate, self-report and output rules carry no
     `inject-when` marker and so stay always-on.
 
 !!! note "Standards that are not always-on rules"

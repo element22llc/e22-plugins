@@ -292,7 +292,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 
 !!! note "Answerable in-session - the channel, not the authority"
     A gate requires the deciding *human*, never a particular channel. Rule
-    `61-gate-prompts.md` therefore lets Claude collect the answer where that human
+    `61-gates.md` therefore lets Claude collect the answer where that human
     already is: an **Approve · Reject · Decide later** prompt carrying the actual
     tradeoff (an ADR's rejected alternatives and negative consequences, an intent's
     criteria and locked scope, a plan's residual risk). On `Approve` the owning

@@ -1,6 +1,6 @@
 # Human gates - answering one in-session
 
-Full-detail companion to rule `61-gate-prompts`. It covers what a human authority
+Full-detail companion to rule `61-gates`. It covers what a human authority
 gate *is*, which gates are answerable by a prompt in the session, the exact shape
 of that prompt, how ratification is recorded, and the gates that no prompt can
 ever satisfy.
@@ -141,7 +141,7 @@ system, and **asking is not authorization**:
   reads the diff on the PR; an in-session "yes" is not that review, because the
   diff is not what was shown.
 - **Deploy** - including a hotfix whose deploy is policy-permitted (rule
-  `62-hotfix`). Permitted ≠ auto-executed.
+  `61-gates` § Hotfix). Permitted ≠ auto-executed.
 - **Real secrets and credentials**, and **`/infra`** - never relaxed, not even
   pre-production (rule `60-high-risk`).
 - **Pushing to a protected branch** - the server-side wall is the authorization;

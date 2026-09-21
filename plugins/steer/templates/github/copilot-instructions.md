@@ -799,7 +799,7 @@ architectural changes here speculatively:
 - **Auth & sessions** - sign-in/up, password reset, token issuance, session invalidation
 - **Authorization & permissions** - role checks, access control, multi-tenancy boundaries
 - **Database migrations** - schema changes, backfills, migration scripts
-- **Infrastructure** - anything in `/infra`, especially networking, IAM, secret stores (Parameter Store / Secrets Manager)
+- **Infrastructure** - anything in `/infra`, especially networking, IAM, secret stores
 - **Secrets handling** - anything reading, writing, or transmitting credentials/keys/tokens
 - **Deletion logic** - hard deletes, cascading deletes, retention/cleanup jobs
 - **Billing & payments** - pricing, charging, refunds, subscription state
@@ -809,18 +809,32 @@ Handling: scope with the dev **before** any code; contract or ADR first;
 smaller PRs; line-by-line review; validate in non-prod before prod. `@claude
 implement this` is not appropriate here without explicit in/out scope.
 
-**Pre-production relaxation:** these gates protect real systems and real data.
-While a product is **pre-production** (nothing deployed, no real users or
-data), high-risk areas may be built for real locally without prior dev
-scoping - document the choices as you go (`contract.md`, ADR for
-hard-to-reverse picks, the feature's `intent.md` -> `## Open questions` for open
-items) and list them
-in the PR description so dev review hardens them at productionization.
-"Pre-production" is a property of the **product, not the laptop**: working
-locally in a deployed product still produces migrations/deletions that reach
-real data on merge - no relaxation there. **Never relaxed**, even
-pre-production: real secrets/credentials, `/infra`, deploys, real third-party
-calls.
+**Pre-production relaxation:** while a product is **pre-production** (nothing
+deployed, no real users or data), these areas may be built for real locally
+without prior dev scoping - document the choices as you go (`contract.md`, an
+ADR for a hard-to-reverse pick, `## Open questions` for the rest) and list them
+in the PR so dev review hardens them at productionization. "Pre-production" is a
+property of the **product, not the laptop**: working locally in a deployed
+product still produces migrations and deletions that reach real data on merge.
+**Never relaxed**, even pre-production: real secrets or credentials, `/infra`,
+deploys, real third-party calls.
+
+### Secrets handling
+
+- **Never commit a secret** - not in code, configs, `mise.toml`, specs, or
+  commit messages. A committed one is compromised: stop, tell the dev, and
+  rotate it; don't just delete the line.
+- **Local development:** config lives in a git-ignored `.env` / `.env.local`.
+  Make sure it exists with the variables the app needs to boot - local Compose
+  service URLs and freshly generated local-only values, never anything copied
+  from a deployed environment. Document the *names* in `.env.example`. A
+  worktree starts from git refs only, so the repo-root `.worktreeinclude`
+  carries `.env` into each new one.
+- **Deployed environments:** secrets live in **the declared store** - the org
+  pack's, or an ADR's if this repo chose another - injected at deploy/runtime,
+  never baked into images or CI logs. No declared store yet is a question for
+  the dev, not a default you pick. Non-secret config may live in `mise.toml`'s
+  `[env]`; secrets may not.
 
 
 ## Answering a human gate in-session
@@ -842,79 +856,37 @@ Ask once, three options - **Approve · Reject · Decide later**:
 - **Never pre-select, never infer.** An unambiguous answer *to the decision
   presented* ratifies it; ambient agreement ("ok", "thanks", silence, or sign-off
   on an earlier plan) does not. Never bundle two decisions into one prompt.
-- **`Decide later` is always offered** and leaves every field untouched - the
-  artifact stays `Proposed` / `draft` exactly as before.
+- **`Decide later` is always offered** and leaves every field untouched.
 - **Record who decided, when, and that it was in-session**, plus the
   `/spec/history/` entry. Self-ratification is legitimate; the *unrecorded*
   kind is the audit hole this rule prevents.
 - **Preconditions fire first** - never show a gate the human cannot legitimately
   pass (an unresolved blocking question -> `/steer:questions`).
-- **Wrong decider?** Surface the mismatch and leave the state alone; you may not
-  record someone else's decision for them.
+- **Wrong decider?** Surface the mismatch and leave the state alone.
 - **Never promptable, in any mode:** merge, deploy, real secrets, `/infra`,
   protected-branch pushes. These need a human acting in the real system - asking
   does not authorize them, and this rule never relaxes them.
 
 Full protocol: `/steer:reference gates`.
 
+### Hotfix / incident fast-path
 
-## Hotfix / incident fast-path
+A production incident is high-risk and time-critical at once - the only case
+where ceremony and speed genuinely conflict, and the only sanctioned speed
+lever. Run it via **`/steer:work --hotfix`**, which carries the procedure.
 
-A production incident is **high-risk and time-critical at once** - the one case
-where full ceremony and speed genuinely conflict. The hotfix lane is the **only
-sanctioned speed lever**. Run it via `/steer:work --hotfix`.
+The lane opens on an objective condition, never a self-assessment: an
+already-**deployed production** system with real users or data, **and** an
+active incident, outage or regression. Urgent feature work, a looming demo and
+a pre-MVP repo are not hotfixes.
 
-**Objective entry condition (not self-asserted).** The lane opens only when the
-change targets an already-**deployed production** system with real users or data
-(the rule 60 predicate) **and** there is an active incident, outage, or
-regression. "Urgent" feature work, a looming demo, or a pre-MVP repo with nothing
-deployed are **not** hotfixes - they take the normal lane.
-
-**What the lane relaxes - ceremony and ordering, never authority:**
-
-- **Issue after-the-fact.** File or backfill the GitHub issue as soon as
-  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch
-  so the lane reads as sanctioned rather than as a skipped step. This relaxes
-  issue-first *timing* (rule 36), not its existence.
-- **Expedited single-reviewer.** One reviewer approval suffices, in place of the
-  high-risk scoping ceremony (rules 60, 80). The PR / merge **human gate still
-  stands** - no self-merge.
-- **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 -
-  validate in non-prod where feasible). Pushing the `hotfix/` branch and opening
-  the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy
-  is **never auto-executed** - merge and deploy stay human-gated.
-
-**Mandatory follow-up once the fire is out (not optional).** Restore traceability:
-backfill/finish the issue, write the spec or ADR if a durable decision was made,
-and write a `/spec/history/` entry. Definition of Done is **deferred under this
-lane, never waived** (rule 50) - a hotfix without its follow-up is unfinished
-work, not a shortcut earned.
-
-
-## Secrets handling
-
-Secrets (DSNs, API tokens, DB credentials, `AUTH_SECRET`, cloud access keys)
-are a high-risk area - scope with the dev before touching how they are read, written,
-or transmitted.
-
-- **Never commit secrets** - not in code, configs, `mise.toml`, specs, or
-  commit messages.
-- **Local development:** config lives in a git-ignored `.env` / `.env.local`.
-  When setting up or running an app, make sure it exists with the base
-  variables the app needs to boot - local Compose service URLs (e.g.
-  `DATABASE_URL` -> the local PostgreSQL) and freshly generated local-only
-  secrets, never values copied from deployed environments. Document variable
-  *names* (not values) in the app's `.env.example`. A Claude Code worktree
-  (`claude --worktree`) starts from git refs only, so the git-ignored `.env` is
-  absent there - the repo-root `.worktreeinclude` carries it (and other local
-  config) into each new worktree so the app still boots.
-- **Deployed environments:** secrets live in **the declared store** - the one
-  the org pack names, or an ADR if this repo chose another - and are injected
-  at deploy/runtime, never baked into images or CI logs. No declared store yet
-  is a question for the dev, not a default you pick. Non-secret config may live
-  in `mise.toml`'s `[env]` block; secrets must not.
-- A committed secret is compromised: stop, tell the dev, and rotate it - don't
-  just delete the line.
+It relaxes **ceremony and ordering, never authority**: the issue is backfilled
+instead of filed first (work on `hotfix/<n>-slug`), one reviewer suffices
+instead of high-risk scoping, and deploying the fix is policy-permitted. Merge
+and deploy stay human-gated, as everywhere. Once the fire is out the follow-up
+is **mandatory**: backfill the issue, write the spec or ADR if a durable
+decision was made, and write the `/spec/history/` entry. Definition of Done is
+deferred under this lane, never waived.
 
 
 ## Change classification

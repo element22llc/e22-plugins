@@ -47,7 +47,7 @@ These hold for the whole run, in every mode.
   blocks). Human content is never overwritten.
 - **Never auto-resolve product decisions or drift** - those wait for the named
   human (see `ISSUE-WORKFLOW.md`). **Asking** that human in-session is how you
-  obtain their answer (rule `61-gate-prompts`), never a licence to supply one.
+  obtain their answer (rule `61-gates`), never a licence to supply one.
   The PR **merge** is not promptable in any mode.
 - **The merge is the human gate** (rule 45) - push and open the PR yourself;
   never merge or deploy. Watching CI to conclusion and fixing a red build is
@@ -154,7 +154,7 @@ phase reconciles rather than duplicates.
   gate + code gate) plus a bounded fix loop, so the delivery is vetted rather
   than first-draft. Triage trivial work out of the gates.
   -> procedure: [`modes/reviewed.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/reviewed.md)
-- **`--hotfix`** - the production-incident fast path (rule `62-hotfix`): a
+- **`--hotfix`** - the production-incident fast path (rule `61-gates` § Hotfix): a
   `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
   mandatory traceability follow-up. Relaxes ceremony, never the human gates.
   Use it **only** for an active incident on a deployed production system.
