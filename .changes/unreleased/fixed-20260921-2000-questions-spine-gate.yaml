@@ -1,0 +1,19 @@
+kind: Fixed
+body: |
+  - **The open-question sweep reported a clean bill of health on a repo with no
+    spine.** `/steer:spec questions` gathers questions by grepping
+    `spec/vision.md`, `spec/features/*/intent.md` and `spec/PRODUCTIONIZATION.md`;
+    on an unmanaged repo those match nothing, and the skill's own "if there are
+    none, say so and stop" turned *nothing was searched* into *nothing to
+    answer* - the worst shape a check can fail in, because it looks like good
+    news. It now requires a stamped spine as step 0 and routes to
+    `/steer:setup`, the gate `adr` has always carried. The check lives in the
+    skill rather than in the `/steer:spec` front door on purpose: `/steer:issues`
+    and `/steer:intake` reach the sweep directly, so a door-level gate would
+    leave exactly the callers that pass a spine-less repo to it unguarded. It
+    tests `spec/.version` rather than `spec/`, since a bare `spec/` directory can
+    be an empty folder or a foreign OpenAPI tree, and it takes no bootstrap
+    exception - unlike `adr`, no bootstrap invokes this skill mid-install, so a
+    spine-less call is always a direct one.
+custom:
+  Slug: questions-spine-gate

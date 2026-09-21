@@ -25,7 +25,7 @@ the product repo, from the bundled template.
    OpenAPI `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`.
 
    **The exception is a bootstrap calling *in*.** `/steer:init`, `/steer:adopt`
-   and `/steer:build` all invoke `/steer:spec adr` while bootstrapping - `init` and
+   and `/steer:build` all invoke `/steer:adr` while bootstrapping - `init` and
    `adopt` before they stamp, `build` after - so gating on the stamp would abort
    callers this step exists to route to, and send the agent back into the skill
    already running. When any of them is the caller, proceed and let the bootstrap

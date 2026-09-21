@@ -77,6 +77,16 @@ as "stale by that same test".
 
 ## Steps
 
+0. **Require a spine.** If `spec/.version` is absent, stop and route to
+   **`/steer-setup`**, which resolves greenfield-vs-adopt from
+   `scan-spine-state.sh`. Without this the sweep is worse than useless: step 2's
+   grep matches no files on an unmanaged repo, so "no open questions" reads as
+   good news when the truth is that nothing was searched. Test the **stamp**, not
+   `spec/` - a bare directory can be an empty folder or a foreign OpenAPI
+   `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`. Unlike
+   `adr` there is no bootstrap exception: no bootstrap invokes this skill
+   mid-install, so a spine-less call is always a direct one.
+
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first - before you answer
    anything.** If that file exists (a fork from a pre-1.25.0 template revision),
    healing it is a **hard gate before gathering**: read

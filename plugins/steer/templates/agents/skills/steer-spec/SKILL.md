@@ -92,8 +92,10 @@ step, never a precondition for the spec work itself.
 `/steer-spec-scaffold` creates, so they run. `questions` sweeps a spine that
 does not exist and `adr` writes `/spec/decisions/`, which decision capture
 presumes a bootstrap installed (rule `30-spec` § Durable decisions) - so both
-**stop and route to `/steer-setup`** on an unmanaged repo, exactly as the owning
-skills already do. Say which mode was asked for and why it needs the spine;
+**stop and route to `/steer-setup`** on an unmanaged repo, which each owning
+skill gates on itself (`adr` step 1, `questions` step 0) - so the same thing
+happens when `/steer-issues` or `/steer-intake` reaches the sweep without coming
+through this door. Say which mode was asked for and why it needs the spine;
 don't silently downgrade it to the brainstorm loop.
 
 ## Steps
