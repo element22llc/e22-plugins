@@ -18,8 +18,8 @@ the rollup of its child features.]
 ## Child features
 
 - [ ] #N - [feature title. Maintained as features are linked via
-  `/steer:issues epic #E --add #N`; each linked feature is a native sub-issue of
-  this epic.]
+  `/steer:work issues epic #E --add #N`; each linked feature is a native
+  sub-issue of this epic.]
 
 ## Out of scope
 

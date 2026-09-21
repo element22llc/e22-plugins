@@ -70,8 +70,8 @@ transition has a named owner.
 
 ```mermaid
 flowchart LR
-    issue["/steer:issues<br/>captured idea"] --> spec["/steer:spec<br/>shape + approve"]
-    spec --> decompose["/steer:issues decompose"]
+    issue["/steer:work issues<br/>captured idea"] --> spec["/steer:spec<br/>shape + approve"]
+    spec --> decompose["/steer:work issues decompose"]
     decompose --> work["/steer:work"]
     work -. compare later .-> drift["/steer:audit spec"]
     spec -. is the as-built side of .-> drift

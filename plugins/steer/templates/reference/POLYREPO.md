@@ -127,7 +127,7 @@ never read as "nothing there".
 
 - **Sub-issues cross repositories.** GitHub supports a parent and child in
   different repos within an org - 100 sub-issues per parent, 8 levels of nesting.
-  `/steer:issues` decomposition works across members unmodified.
+  `/steer:work issues` decomposition works across members unmodified.
 - **Projects v2 is already cross-repo**, so a roadmap spans a polyrepo for free.
 - **Milestones are per-repo.** Release grouping must move to a Project
   iteration or single-select field; a milestone cannot span members.

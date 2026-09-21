@@ -46,4 +46,4 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
   `/steer:audit spec`'s optional `/spec/DRIFT-REPORT.md`) happen **in-run,
   post-confirmation**. Publication to
   the tracker is a genuinely separate step because it is a different skill:
-  `/steer:issues publish-*`. See `/steer:reference artifacts`.
+  `/steer:work issues publish-*`. See `/steer:reference artifacts`.

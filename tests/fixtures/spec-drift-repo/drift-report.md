@@ -21,4 +21,4 @@ Human decision required
 ### Current recommended action
 
 PO/dev rules on the two drift findings for `customer-export`.
-Suggested command: `/steer:issues`
+Suggested command: `/steer:work issues`

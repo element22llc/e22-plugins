@@ -49,8 +49,8 @@ gateways and the skills a front door has absorbed as a mode, this one included.
 A user cannot type them, so listing them as commands would hand out invocations
 the harness rejects. You may mention that a front door auto-routes to specialized skills
 (`setup` -> `init` / `adopt` / `sync` / `doctor` / `protect`; `spec` ->
-`questions` / `adr` / `intake` / `roadmap`; `audit` -> `work tidy`), but don't
-enumerate those unless the user asks to zoom in.
+`questions` / `adr` / `intake` / `roadmap`; `work` -> `issues` / `tidy`), but
+don't enumerate those unless the user asks to zoom in.
 
 ## Phase 1 - Read the listing
 
@@ -85,14 +85,16 @@ to its group; omit an empty group:
 - **Start** - empty, and omitted. `init`, `adopt`, `sync`, `doctor` and
   `protect` are all `setup`'s modes, not skills a user types, so they never
   appear here as entries of their own.
-- **Spec & backlog** - capture and sequence the backlog (`issues`). Absorbing a
-  PO document, laying out a release timeline, sweeping open questions and
-  recording a decision are `spec`'s `intake`, `roadmap`, `questions` and `adr`
-  modes, not skills a user types.
+- **Spec & backlog** - empty, and omitted. Capturing and sequencing the backlog
+  is `work`'s `issues` mode; absorbing a PO document, laying out a release
+  timeline, sweeping open questions and recording a decision are `spec`'s
+  `intake`, `roadmap`, `questions` and `adr` modes. None is a skill a user
+  types.
 - **Ship & respond** - the emergency door: `/steer-work --hotfix` for a
   production incident on a deployed system (from `work`'s `argument-hint`).
 - **Track & automate** - repo health and drift, the scheduled loop (`audit`,
-  `loop`); the tidy-up itself is `/steer-work tidy`.
+  `loop`); the tidy-up itself is `/steer-work tidy`, the backlog
+  `/steer-work issues`.
 - **Govern & plumbing** - report a steer defect (`report`); load the manual or
   reference prose on chat-only surfaces (`standards`, `reference`).
 

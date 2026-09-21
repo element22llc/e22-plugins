@@ -17,7 +17,7 @@ stakeholder or research input, or could outlive the session - then put the ref
 in the question's `tracker:` field. The issue is the decision *workflow*; the
 spec or an ADR is the durable *record*.
 
-On **GitHub Issues**, **`/steer:issues`** is the lifecycle workflow and
-**`/steer:tracker-sync`** the gateway it routes every read and write through.
+On **GitHub Issues**, **`/steer:work issues`** is the lifecycle workflow and
+**`/steer:tracker-sync`** the gateway it routes all reads and writes through.
 Agent-authored issues follow the machine-readable contract (stable headings,
 hidden markers). Other trackers use the manual export.

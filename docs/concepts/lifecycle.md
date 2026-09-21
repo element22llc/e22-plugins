@@ -29,7 +29,7 @@ stateDiagram-v2
 
 | Phase | Skill |
 | --- | --- |
-| Capture / triage / decompose | [`/steer:issues`](../workflows/issues.md) |
+| Capture / triage / decompose | [`/steer:work issues`](../workflows/issues.md) |
 | Shape & approve the spec | [`/steer:spec`](../workflows/spec.md) |
 | Implement & finish | [`/steer:work`](../workflows/work.md) |
 | Implement, review-gated | [`/steer:work --reviewed`](../workflows/work.md) (plan -> independent plan-gate review -> implement -> independent `/code-review` -> bounded fix loop) |

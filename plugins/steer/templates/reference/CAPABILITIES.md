@@ -329,7 +329,7 @@ and **Repair**.
 - **Wired-when:** `.github/ISSUE_TEMPLATE/config.yml` present; the individual
   forms beside it are not probed.
 - **Repair:** create from `templates/github/ISSUE_TEMPLATE/*`; then labels need
-  **`/steer:issues bootstrap-labels`** (a follow-up, not this repair).
+  **`/steer:work issues bootstrap-labels`** (a follow-up, not this repair).
 - **Verbatim:** no
 - **Why it matters:** the Issue Forms carry the Issue Type + `source:`/`needs:`
   label taxonomy the issue-first workflow depends on.
@@ -354,14 +354,14 @@ and **Repair**.
 - **Why it matters:** the write verbs live in `/steer:tracker-sync`'s
   `allowed-tools`, but a skill's `allowed-tools` grant applies **only while that
   skill is the invoked one**. The lifecycle reaches the gateway transitively - a
-  PO runs `/steer:issues capture` (or `/steer:work`, `/steer:issues materialize`),
-  which *delegates to* tracker-sync in prose - so tracker-sync's grants never take
-  effect and the `gh issue create/edit/comment` write falls through to
-  `.claude/settings.json`. Without these allow entries the write is prompted
-  (interactive) or **silently auto-denied** (headless/non-interactive), which is
-  the failure that looks like "the whole `gh` surface is walled off." The scaffold
-  allow-list - verified by this capability - is the real backstop for that
-  orchestrated path.
+  PO runs `/steer:work issues capture` (or `/steer:work`, `/steer:work issues
+  materialize`), which *delegates to* tracker-sync in prose - so tracker-sync's
+  grants never take effect and the `gh issue create/edit/comment` write falls
+  through to `.claude/settings.json`. Without these allow entries the write is
+  prompted (interactive) or **silently auto-denied** (headless/non-interactive),
+  which is the failure that looks like "the whole `gh` surface is walled off."
+  The scaffold allow-list - verified by this capability - is the real backstop
+  for that orchestrated path.
 
 ### changelog-fragments - every shipped change is recorded
 - **Files:** `.changie.yaml`, `.changes/unreleased/`

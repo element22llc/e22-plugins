@@ -126,9 +126,9 @@ split-brain spine the topology removes.
 All GitHub templates live in one home, `templates/github/`. The installable
 ones are listed here; the agent-authored issue **bodies**
 (`../github/issue-bodies/*.md`) are **not** installed - they are read by the
-plugin at runtime (`/steer:issues`, `/steer:audit spec`, `/steer:audit`) to author
-issue bodies that satisfy the contract in `reference/ISSUE-SCHEMA.md`. The
-YAML Issue **Forms** below are the human capture UI; the two are different
+plugin at runtime (`/steer:work issues`, `/steer:audit spec`, `/steer:audit`) to
+author issue bodies that satisfy the contract in `reference/ISSUE-SCHEMA.md`.
+The YAML Issue **Forms** below are the human capture UI; the two are different
 artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`). The optional
 gh-aw agentic workflow under `../github/agentic/` (e.g. `triage.md`) is **not
 installed** by `/steer:init` or `/steer:adopt` - opt in deliberately per the docs
@@ -154,7 +154,7 @@ coding agent), even though its install path is listed below for when you do.
 | `../github/instructions/*.instructions.md` | `.github/instructions/*.instructions.md` | **GitHub Copilot path-scoped instructions.** Standards for a specific area (currently the infra/IaC stack rule) carrying an `applyTo` glob so Copilot loads them only when working on matching files - the Copilot analog of the Claude SessionStart hook's `inject-when` trait gating. **Generated** from the correspondingly-scoped `plugins/steer/rules/` (via `mise run gen:copilot`), which are therefore **excluded from the flat `copilot-instructions.md`** to avoid double-loading; **fully steer-managed - overwrite on refresh, never hand-edit** (repo-specific Copilot guidance goes in a *separate* `*.instructions.md` you own). Refresh after a plugin update with **`/steer:setup sync`** (the `agent-surface-current` capability re-copies it verbatim). Harmless for repos with no matching files. |
 | `../github/workflows/copilot-setup-steps.yml` | `.github/workflows/copilot-setup-steps.yml` | **GitHub Copilot coding-agent environment setup.** Boots the mise toolchain + `dev:setup` so the cloud coding agent (assign an issue -> it opens a PR) runs steer repos under the pinned versions. The job **must** stay named `copilot-setup-steps`. Opt-in: install only for repos that use the coding agent; MCP + firewall for the agent are configured in repo Settings -> Copilot -> Coding agent (not in-repo). Adapt/remove `dev:setup` for a `library`/`cli`. Fits steer's autonomous-loop rules - the agent opens draft PRs and never merges. |
 | `../github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
-| `../github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms - feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels - run `/steer:issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) - offer to enable it and point it at the team's discussions/chat during init/adopt. |
+| `../github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms - feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels - run `/steer:work issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) - offer to enable it and point it at the team's discussions/chat during init/adopt. |
 
 ## Profile overlays
 

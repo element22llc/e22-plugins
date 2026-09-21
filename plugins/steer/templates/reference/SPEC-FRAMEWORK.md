@@ -114,7 +114,7 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `tracker:` ref - not yet promoted (**warns**, mirroring the closed-issue trap:
   it nudges you to promote or defer, it does not block the gate).
 
-`validate` runs at `/steer:spec approve` and is called by `/steer:issues`
+`validate` runs at `/steer:spec approve` and is called by `/steer:work issues`
 (`materialize`, `status`, `reconcile`); a spec-changing PR should run it too.
 A failing check blocks the relevant gate - e.g. an approval cannot proceed while
 a blocking question gated at `required_before: intent-approval` is **unresolved**,
@@ -126,8 +126,8 @@ keeps blocking until its `impact:` is explicitly reclassified `non-blocking`.
 
 Contract **readiness is a derived quality signal, not a human "approved"
 decision** - there is no `Status:` field on `contract.md`. Any consumer
-(`/steer:issues status`, the `decompose` precondition) derives one of three values
-the same way, so `validate` and `decompose` can never disagree:
+(`/steer:work issues status`, the `decompose` precondition) derives one of three
+values the same way, so `validate` and `decompose` can never disagree:
 
 - **`missing`** - `contract.md` does not exist.
 - **`ready`** - all of:

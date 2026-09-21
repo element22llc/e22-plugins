@@ -47,18 +47,19 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   purely spec-thinking intent -> **`/steer:spec`**, with setup as the follow-up.
   "Prototype" changes ceremony, **never whether scaffold and spine come first**.
 - **Intent-switches** - a new ask mid-flow: name it and offer to switch or
-  capture it (`/steer:issues capture`), never silently drop the current thread.
+  capture it (`/steer:work issues capture`), never silently drop the current
+  thread.
 
-**`work` vs `issues`:** to implement a change now, with or without an issue
-number, route to `/steer:work` - it find-or-creates the issue where Issue-first
-requires one. Promotion to production is `/steer:work promote` (it cuts the
-changelog, opens the PR, and stops at the merge); a production incident is
-`/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`. Pure backlog management with no implementation this turn
-is `/steer:issues`.
+**`/steer:work` owns both moments of the work.** To implement a change now, with
+or without an issue number, route to it - it find-or-creates the issue where
+Issue-first requires one. Backlog work with no implementation this turn is
+`/steer:work issues`. Promotion to production is `/steer:work promote` (it cuts
+the changelog, opens the PR, and stops at the merge); a production incident is
+`/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`.
 
 **Front doors** detect context and hand off (`setup` -> `init` / `adopt` /
-`sync`; `audit` -> `work tidy`; `issues` / `spec` -> `questions`; `issues` ->
-`roadmap`), so you rarely route to a specialized skill directly;
+`sync`; `audit` -> `work tidy`; `work` -> `issues`; `spec` ->
+`questions`), so you rarely route to a specialized skill directly;
 `/steer:tracker-sync` and `/steer:spec-scaffold` are internal gateways, not
 front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
@@ -283,8 +284,8 @@ Create the artifact when the trigger fires - don't defer it:
 - **Open questions** -> the feature's `intent.md` -> `## Open questions`
   (product-level ones in `vision.md`); answer them with
   **`/steer:spec questions`** before they rot.
-- **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
-  shapes it in the issue, **`materialize`** writes the approved intent as
+- **A feature that began as a tracker issue** -> **`/steer:work issues
+  brainstorm`** shapes it in the issue, **`materialize`** writes that intent as
   `Status: draft`, and an explicit `/steer:spec approve` flips it to `approved`.
   The issue is the work record; the spec stays product truth.
 
@@ -424,8 +425,8 @@ stakeholder or research input, or could outlive the session - then put the ref
 in the question's `tracker:` field. The issue is the decision *workflow*; the
 spec or an ADR is the durable *record*.
 
-On **GitHub Issues**, **`/steer:issues`** is the lifecycle workflow and
-**`/steer:tracker-sync`** the gateway it routes every read and write through.
+On **GitHub Issues**, **`/steer:work issues`** is the lifecycle workflow and
+**`/steer:tracker-sync`** the gateway it routes all reads and writes through.
 Agent-authored issues follow the machine-readable contract (stable headings,
 hidden markers). Other trackers use the manual export.
 

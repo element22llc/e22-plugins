@@ -179,9 +179,9 @@ must survive a locked-down iframe:
   byte-identical. **One deliberate exception:** `/steer:audit`'s triage export
   carries the audited commit in its `<!-- steer:audit-triage sha=<audited-sha> -->`
   marker. Findings are only meaningful relative to a commit, and the SHA is fixed
-  for the run (so it is stable, not volatile) - `/steer:issues publish-audit` reads
-  it to flag keys that went stale because the code moved. A `questions` bundle has
-  no such scope and embeds no SHA.
+  for the run (so it is stable, not volatile) - `/steer:work issues
+  publish-audit` reads it to flag keys that went stale because the code moved. A
+  `questions` bundle has no such scope and embeds no SHA.
 
 ### The return leg - how filled answers come back
 
@@ -200,14 +200,15 @@ only data channel back**, and it is a contract, not a convenience:
   answer to its key and routes it to `/steer:spec questions` to fold into the spec -
   the full key + routing contract is
   [`CLARIFICATION-LOOP.md`](CLARIFICATION-LOOP.md);
-  for the audit triage form it is **`/steer:issues publish-audit <triage-doc>`**,
-  which files exactly the checked findings and flags stale or unknown keys.
+  for the audit triage form it is **`/steer:work issues publish-audit
+  <triage-doc>`**, which files exactly the checked findings and flags stale or
+  unknown keys.
 - **Do not bolt an ad-hoc input onto a read-only page.** A fillable Artifact
   exists only where an ingest path exists to receive it - today:
   `/steer:spec questions bundle` -> `/steer:spec intake clarify` (PO answers) and the audit
-  dashboard's triage form -> `/steer:issues publish-audit` (finding selection). A
-  new fillable page needs its own declared key scheme and ingest route before it
-  ships.
+  dashboard's triage form -> `/steer:work issues publish-audit` (finding
+  selection). A new fillable page needs its own declared key scheme and ingest
+  route before it ships.
 
 ## Markdown fallback - not a failure
 
@@ -249,7 +250,7 @@ render unless the user supplies a URL to update.
 |---|---|---|
 | `/steer:status feature <id>` | Feature summary - status pipeline, acceptance meter, clickable journey, scope + open-question boards | one feature's `intent.md` (+ `contract.md`) |
 | `/steer:spec questions bundle` | Fillable PO questionnaire (see [Fillable pages](#fillable-pages-the-copy-out-floor)) | open questions across the spine |
-| `/steer:audit` | Findings dashboard - dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
+| `/steer:audit` | Findings dashboard - dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:work issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
 | `/steer:spec roadmap` | Release timeline - milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
 | `/steer:status` | Client-facing period report - shipped / in-progress / needs-input / next | the whole spine over the reporting window |
 | `/steer:next capabilities` | Capability menu - skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |

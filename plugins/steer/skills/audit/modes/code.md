@@ -173,7 +173,7 @@ of dimension.
    | Spec coverage / conformance gap | Required before next production release | `/steer:spec questions` |
    | Suspected spec-vs-build drift | Required before next production release | Run `/steer:audit spec` |
    | `main` unprotected / branch-protection drift (GitHub) - unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation (and settled for good by a recorded graduation waiver, unless a second collaborator has joined) | Recommended | `/steer:setup protect` |
-   | Vetted code-health findings ready for tracking | Recommended | `/steer:issues publish-audit` |
+   | Vetted code-health findings ready for tracking | Recommended | `/steer:work issues publish-audit` |
    | Mechanical cleanup only | Recommended | `/simplify` |
    | Nothing actionable | Complete | `No action is currently required.` |
 

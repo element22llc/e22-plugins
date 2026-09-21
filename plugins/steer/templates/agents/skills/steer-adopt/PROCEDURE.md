@@ -390,8 +390,8 @@ Derive it from the adoption state observed, mapping these states to categories:
 | Unresolved production blocker, app not yet live | Required before initial production | Fix or explicitly accept it |
 | Unresolved blocker on an already-live app, actively harming users | Urgent live-system remediation | Fix or explicitly accept it now |
 | Unresolved blocker on an already-live app, not an active incident | Required before next production release | Fix or explicitly accept it |
-| Selected findings not published | Recommended | `/steer-issues publish-adoption` |
-| Findings published, not shaped | Recommended | `/steer-issues triage` / `decompose` |
+| Selected findings not published | Recommended | `/steer-work issues publish-adoption` |
+| Findings published, not shaped | Recommended | `/steer-work issues triage` / `decompose` |
 | `/spec/.version` stale | Recommended | `/steer-sync` |
 | `main` not yet protected on GitHub (GitHub remote - the tracker system is irrelevant) | Recommended | Establish the PR gate - `/steer-setup protect` (advisory locally; sets the real server-side wall). **In solo trunk mode this row does not apply** - protection is deferred to graduation, and a recorded waiver (`/steer-setup protect waive`) means the dev has already decided; don't re-raise it. |
 | Nothing remaining | Complete | Optional: begin feature work - `/steer-spec` |

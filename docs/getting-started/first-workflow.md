@@ -14,10 +14,10 @@ links to its full reference.
 
 ```mermaid
 flowchart LR
-    A[Idea] -->|/steer:issues capture| B[Issue]
+    A[Idea] -->|/steer:work issues capture| B[Issue]
     B -->|/steer:spec| C[Draft spec]
     C -->|/steer:spec approve| D[Approved spec]
-    D -->|/steer:issues decompose| E[Work items]
+    D -->|/steer:work issues decompose| E[Work items]
     E -->|/steer:work start| F[Implementation]
     F -->|/steer:work finish| G[PR]
 ```
@@ -45,7 +45,7 @@ graduate to the PR flow with `/steer:setup protect`.
 ## 2. Capture the idea
 
 ```text
-/steer:issues capture
+/steer:work issues capture
 ```
 
 Captures a product idea as an issue without losing open questions. *Expected:* a
@@ -66,7 +66,7 @@ evidence. *Expected:* an `intent.md` you review, with its `Status:` flipped to
 ## 4. Decompose into work
 
 ```text
-/steer:issues decompose
+/steer:work issues decompose
 ```
 
 Breaks the approved spec into tracked work items. *Expected:* one issue per work

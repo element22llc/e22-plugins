@@ -12,7 +12,7 @@
 # label taxonomy and GitHub Issue Type, then post one advisory triage comment.
 # It is ADVISORY ONLY - it never closes issues and never resolves product or
 # technical questions. Those stay human-gated (rule 95 "not the gate" + the
-# /steer:issues lifecycle). The only writes are the declared safe-outputs.
+# /steer:work issues lifecycle). The only writes are the declared safe-outputs.
 on:
   issues:
     types: [opened, reopened]
@@ -70,7 +70,7 @@ Set the GitHub **Issue Type** to the best fit:
 - **Task** - chore, refactor, docs, or maintenance with no new product behavior.
 
 Then apply labels from this fixed taxonomy **only** (do not invent labels - GitHub
-silently drops unknown ones, and these are reconciled by `/steer:issues
+silently drops unknown ones, and these are reconciled by `/steer:work issues
 bootstrap-labels`):
 
 - **`needs:*`** - replace `needs:triage` with the real blocker, or remove it if
@@ -101,8 +101,8 @@ Leave exactly one comment that:
   the author for precisely what's needed.
 - If it `needs:product-decision` or `needs:technical-decision`, names the open
   question and explicitly defers to a human - do not answer it yourself.
-- Points the author at `/steer:issues` for the full lifecycle (brainstorm ->
-  materialize -> decompose) when the issue is ready to move forward.
+- Points the author at `/steer:work issues` for the full lifecycle (brainstorm
+  -> materialize -> decompose) when the issue is ready to move forward.
 
 Keep it short and concrete. You are accelerating triage, not replacing the
 human-gated decisions in steer's workflow.

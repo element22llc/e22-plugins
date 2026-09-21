@@ -275,9 +275,9 @@ ranking treats Priority as unset (capability degradation in `ISSUE-WORKFLOW.md`)
 agent may escalate Priority to is derived from **mechanical, observable** signals
 only - a label, an open question with a gate, drift on a live feature, or a
 native blocked-by edge count - never a judgment of product value (that is the
-PO's, via the field directly). `/steer:issues triage` applies it escalate-only
-(`max(current, floor)` under the provenance guard above); the `publish-*` modes
-apply the same floor once at create time:
+PO's, via the field directly). `/steer:work issues triage` applies it
+escalate-only (`max(current, floor)` under the provenance guard above); the
+`publish-*` modes apply the same floor once at create time:
 
 | Mechanical signal on the issue | Priority floor |
 |---|---|
@@ -400,8 +400,8 @@ Rules:
   and updates `steer:schema`; unknown/human markers are carried forward. The prior
   `audit-finding` kind is accepted and migrated to `finding` + `source:audit`.
 - **Schema migration is explicit.** It happens only through `/steer:sync` or
-  `/steer:issues reconcile` and is reported - never silently during an unrelated
-  command.
+  `/steer:work issues reconcile` and is reported - never silently during an
+  unrelated command.
 
 ## Human-created issues - original content is immutable
 

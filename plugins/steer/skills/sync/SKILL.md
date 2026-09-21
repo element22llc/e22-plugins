@@ -270,7 +270,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    | Reconcile or capability-repair batch proposed, not approved | Human decision required | Dev reviews the proposed batch (no command) |
    | Invalid invocation flagged `noncallable-gateway`/`unknown` (needs a front-door/semantic decision) | Human decision required | Dev picks the correct invocation (no command) |
    | Capability needs an external secret/config (`claude.yml` API key; branch protection) | Human decision required | Dev adds `ANTHROPIC_API_KEY`, or applies the gate via `/steer:setup protect` |
-   | Capability follow-up after a created file (Issue Forms added) | Recommended | `/steer:issues bootstrap-labels` |
+   | Capability follow-up after a created file (Issue Forms added) | Recommended | `/steer:work issues bootstrap-labels` |
    | Sync PR open, awaiting review | Human decision required | A dev reviews/merges the PR (no command) - execution is done, integration is not |
    | Nothing pending; `/spec/.version` current (n/a on `openspec`); all capabilities present-and-wired | Complete | `No action is currently required.` |
 

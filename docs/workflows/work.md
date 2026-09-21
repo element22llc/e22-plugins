@@ -1,13 +1,13 @@
 # `/steer:work`
 
-Execute a GitHub issue end-to-end from local Claude Code - the execution
-counterpart to [`/steer:issues`](issues.md) (which owns backlog management and
-never edits code).
+Execute a GitHub issue end-to-end from local Claude Code. The same door carries
+the backlog: [`/steer:work issues`](issues.md) manages it and never edits code,
+while the subcommands below read an issue and deliver it.
 
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | promote | tidy | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "`--reviewed` - the review-gated path"
     Add `--reviewed` to wrap execution in the review loop formerly carried by the

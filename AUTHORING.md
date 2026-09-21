@@ -108,7 +108,7 @@ be unique. The full field set actually used in this repo:
 > which read a lot of spine to emit a little. It is wrong for a skill that reads
 > the conversation (`/steer:report` files a bug about what just happened), and
 > wrong for one that writes or orchestrates other skills (`/steer:roadmap` opens
-> issues and drives `/steer:issues`). Don't add it to either class.
+> issues and drives `/steer:work issues`). Don't add it to either class.
 
 > **No `model:` or `effort:` on a skill - the router makes them leak.** Claude
 > Code supports both as skill frontmatter, and the token math is tempting:
@@ -234,16 +234,14 @@ matrix):
   `bootstrap-fields`) and `spec-scaffold`
   (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`/`intake`).
   A front door that has **absorbed** a skill as one of its modes uses the same
-  flag for a different reason - `help`, `explain` and `tidy` are reached only as
-  `/steer:next capabilities`, `/steer:status feature <id>` and `/steer:work tidy`,
-  so listing them as commands would hand out invocations the harness rejects.
-  The specialized skills a front door merely *routes to*
-  (`init`/`adopt`/`sync`/`doctor` via `/steer:setup`; `roadmap` via
-  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; the `reference`
-  loader) stay
-  **directly invocable** - a front door just auto-routes to them, so a user is never
-  told to type something the harness then rejects. Visibility is orthogonal to
-  read-only/side-effecting tier - a hidden skill can still be Tier 1 or Tier 2.
+  flag for a different reason - `help`, `explain`, `tidy` and `issues` are
+  reached only as `/steer:next capabilities`, `/steer:status feature <id>`,
+  `/steer:work tidy` and `/steer:work issues`, so listing them as commands would
+  hand out invocations the harness rejects. That is now the normal case: of the
+  skills a front door routes to, only the `reference` loader stays **directly
+  invocable**, and a user is never told to type something the harness then
+  rejects. Visibility is orthogonal to read-only/side-effecting tier - a hidden
+  skill can still be Tier 1 or Tier 2.
 
 **Allowlists only match single commands - never chain inspection with `&&` or
 pipes.** Claude Code matches a permission rule against the *whole* command string.

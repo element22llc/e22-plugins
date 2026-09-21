@@ -22,4 +22,4 @@ Blocking now
 
 ## Must not recommend first
 
-`/steer:issues publish-adoption`, or opening the adoption PR. A committed secret is a shared-safety-precedence stop (level 1) and dominates the publish/PR steps.
+`/steer:work issues publish-adoption`, or opening the adoption PR. A committed secret is a shared-safety-precedence stop (level 1) and dominates the publish/PR steps.

@@ -15,10 +15,10 @@ matching enum below (CI enforces this too).
 `draft · approved · live`
 
 **Three values, because the spec stores only what the tracker cannot express.**
-A materialized intent starts at **`draft`** (`/steer:issues materialize` never
-approves). Only **`/steer:spec approve`** flips it to **`approved`**. **`live`**
-means released to users - a fact no issue state implies, since `done` is an
-accepted close, not a release.
+A materialized intent starts at **`draft`** (`/steer:work issues materialize`
+never approves). Only **`/steer:spec approve`** flips it to **`approved`**.
+**`live`** means released to users - a fact no issue state implies, since `done`
+is an accepted close, not a release.
 
 **Delivery progress is not in here, deliberately.** Whether a feature is being
 built, has an open PR, or was merged is the issue's `steer:state`
@@ -104,8 +104,8 @@ product state alone (see the crosswalk in `ISSUE-WORKFLOW.md`). (See
 
 `relates-to · depends-on · blocks · conflicts-with · supersedes · superseded-by`
 
-The relationship vocabulary `/steer:issues` uses when it surfaces a connection
-between issues during `brainstorm`/`capture` and records it (via
+The relationship vocabulary `/steer:work issues` uses when it surfaces a
+connection between issues during `brainstorm`/`capture` and records it (via
 `/steer:tracker-sync link-related`) under the `Related issues` heading. GitHub has
 **no native typed relationship** beyond parent/sub-issue, so the relationship word
 is metadata the workflow owns; the **link itself** is an ordinary `#N`

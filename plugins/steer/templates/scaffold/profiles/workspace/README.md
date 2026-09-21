@@ -69,8 +69,8 @@ Details: `/steer:reference polyrepo`.
   members they can reach - each report names which those are. A member with
   neither a local checkout nor gateway access is reported **uncovered**, never
   silently dropped.
-- `/steer:issues` decomposition works across repos: GitHub sub-issues may span
-  repositories within an org (100 sub-issues per parent, 8 levels of nesting).
+- `/steer:work issues` decomposition works across repos: GitHub sub-issues may
+  span repositories within an org (100 sub-issues per parent, 8 levels of nesting).
 - A PR in a member repo **cannot** auto-close an issue here - GitHub honours
   closing keywords only within one repo. Use `Refs owner/repo#N` and close the
   issue explicitly after merge.

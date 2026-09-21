@@ -385,7 +385,7 @@ Speed comes from autonomy on the safe steps - <span class="accent">not from skip
 <style>.accent { color: #38bdf8; }</style>
 
 <!--
-Plan: /steer:issues - capture -> triage -> decompose; issue-first is enforced by
+Plan: /steer:work issues - capture -> triage -> decompose; issue-first is enforced by
 a PreToolUse/Stop gate in Claude Code. Build: /steer:work - claim, branch,
 implement, test, PR; steer-reviewer subagent on --reviewed. The autonomy
 boundary is the key message for both audiences.

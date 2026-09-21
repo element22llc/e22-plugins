@@ -12,12 +12,13 @@ Two invariants underpin everything:
 - **`/spec` is durable product truth; GitHub Issues is the work/decision layer.**
   An issue is the *workflow* for reaching a decision; the spec (or an ADR) is the
   durable *record* of it. Neither silently overwrites the other.
-- **`/steer:issues` orchestrates backlog management; `/steer:work` owns execution.**
-  Neither owns domain reasoning - they delegate to `/steer:spec`, `/steer:audit`,
-  `/steer:audit spec`, `/steer:spec questions`. All **tracker-metadata** read/write flows
-  through `/steer:tracker-sync` (MCP-first -> `gh` -> manual floor); git and
-  pull-request **delivery** follows the repo's execution/autonomy rules - it is
-  not a gateway operation (otherwise `git push` would violate the invariant).
+- **`/steer:work issues` orchestrates backlog management; `/steer:work` owns
+  execution.** Neither owns domain reasoning - they delegate to `/steer:spec`,
+  `/steer:audit`, `/steer:audit spec`, `/steer:spec questions`. All
+  **tracker-metadata** read/write flows through `/steer:tracker-sync` (MCP-first
+  -> `gh` -> manual floor); git and pull-request **delivery** follows the repo's
+  execution/autonomy rules - it is not a gateway operation (otherwise `git
+  push` would violate the invariant).
 
 ## Operating model (local-first, issue-first)
 
@@ -113,27 +114,27 @@ normative copy.
 
 1. **Capture** - a PO opens an issue from a form (feature / bug / product
    question / improvement). Incomplete ideas are fine. No `intent.md`, no
-   feature-id, no architecture. Enters `inbox`. (`/steer:issues capture` can also
-   open one from a conversation, prototype, or screenshot.)
-2. **Brainstorm** - `/steer:issues brainstorm #N` reads the issue and related
-   specs, **searches the existing issue corpus (open + closed) for overlapping,
-   dependent, or conflicting issues** - e.g. a hosting decision that a pending
-   auth-migration issue would invalidate - records those connections under the
-   issues' `Related issues` headings (`/steer:tracker-sync link-related`), asks
-   focused questions, and maintains **one** editable "AI synthesis" comment
-   (proposed outcome + boundaries + the related-issue cluster). Conflicts and
-   supersessions are **surfaced for a human**, never auto-resolved. The issue body
-   stays human-owned.
+   feature-id, no architecture. Enters `inbox`. (`/steer:work issues capture`
+   can also open one from a conversation, prototype, or screenshot.)
+2. **Brainstorm** - `/steer:work issues brainstorm #N` reads the issue and
+   related specs, **searches the existing issue corpus (open + closed) for
+   overlapping, dependent, or conflicting issues** - e.g. a hosting decision
+   that a pending auth-migration issue would invalidate - records those
+   connections under the issues' `Related issues` headings (`/steer:tracker-sync
+   link-related`), asks focused questions, and maintains **one** editable "AI
+   synthesis" comment (proposed outcome + boundaries + the related-issue
+   cluster). Conflicts and supersessions are **surfaced for a human**, never
+   auto-resolved. The issue body stays human-owned.
 3. **Product validation** - the PO approves intent, answers questions, rejects
    assumptions, attaches design sources, in GitHub. Moves to `ready-for-spec`.
-4. **Materialize** - `/steer:issues materialize #N` writes/updates
+4. **Materialize** - `/steer:work issues materialize #N` writes/updates
    `spec/features/<id>/intent.md` with `Status: draft`, links the issue, and
    requests PO approval. **Materialize never approves** - only an explicit
    `/steer:spec approve` flips `Status: approved`.
 5. **Technical shaping** - `/steer:spec` authors the feature's
    `contract.md` where behavior demands it; large features become a
    parent feature issue with implementation sub-issues
-   (`/steer:issues decompose #N`).
+   (`/steer:work issues decompose #N`).
 6. **Implementation & product validation** - PRs use closing refs
    (`Closes #131`, `Refs #123`, `Spec: ...`). The parent closes only after
    **product** validation, not merely because the last code PR merged.
@@ -354,13 +355,13 @@ find-by-`question-id` dedup are unchanged - re-promotion never double-creates.
 
 ## Audit & drift (reconciling, not additive)
 
-**Audit** (`/steer:audit` -> `/steer:issues publish-audit`) uses a two-level
-model: one immutable **audit-run** record per run plus selected **finding**
-children. This section is the canonical full lifecycle (`/steer:audit` carries
-the one-paragraph summary and defers here). Re-running the audit must **update
-the existing issue set**, never pile up duplicates; each run is filed via
-`/steer:issues publish-audit`, which keys off the markers (formats in
-[`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md)). Two distinct identities:
+**Audit** (`/steer:audit` -> `/steer:work issues publish-audit`) uses a
+two-level model: one immutable **audit-run** record per run plus selected
+**finding** children. This section is the canonical full lifecycle
+(`/steer:audit` carries the one-paragraph summary and defers here). Re-running
+the audit must **update the existing issue set**, never pile up duplicates; each
+run is filed via `/steer:work issues publish-audit`, which keys off the markers
+(formats in [`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md)). Two distinct identities:
 
 - **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
   stable across runs and **never line-based** - so moving the offending code
@@ -387,7 +388,7 @@ parent stamped with its own `audit-id` (`<iso-timestamp>-<short-sha>`); never
 re-edit a prior run's parent to represent a later run. Finding children reconcile
 across runs; the run parents accumulate as a timeline.
 
-**Drift** (`/steer:audit spec` -> `/steer:issues publish-drift`) files decision-checklist
-issues: `Spec says` / `Implementation does` / `Evidence` / `Human decision
-required`. The agent may propose a direction but **never resolves behavioural
-drift autonomously** - a PO or dev decides by ownership.
+**Drift** (`/steer:audit spec` -> `/steer:work issues publish-drift`) files
+decision-checklist issues: `Spec says` / `Implementation does` / `Evidence` /
+`Human decision required`. The agent may propose a direction but **never
+resolves behavioural drift autonomously** - a PO or dev decides by ownership.
