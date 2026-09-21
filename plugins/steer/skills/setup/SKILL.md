@@ -1,21 +1,25 @@
 ---
 name: setup
-description: "One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of the spec spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing vibe-coded repo), or `sync` (apply migrations and reconcile drift after a plugin release), flagging missing prerequisites before routing."
+description: "One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of the spec spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing vibe-coded repo) or `sync` (apply migrations and reconcile drift after a plugin release); `doctor` fixes the local prerequisites first, `protect` raises the branch-protection wall last."
 when_to_use: >-
-  Use when asked to set up, onboard, bootstrap, or adopt a repo, or to sync to
-  the latest plugin - the single entry point whenever you would otherwise guess
-  which path fits. `init` covers a brand-new repo and a template fork with
-  bracketed fill-in placeholders left; `adopt` covers an existing repo whose code
-  has no spec spine; `sync` brings a managed or openspec repo up to date after a
-  plugin release, with `sync --check` the read-only drift report.
-argument-hint: "[init | adopt | sync] [--check]"
+  Use when asked to set up, onboard, bootstrap or adopt a repo, sync to the
+  latest plugin, get a machine ready, or protect main - the single entry point
+  whenever you would otherwise guess which path fits. `init` covers a brand-new
+  repo and a template fork with bracketed fill-in placeholders left; `adopt`
+  covers an existing repo whose code has no spec spine; `sync` brings a managed
+  or openspec repo up to date after a plugin release, with `sync --check` the
+  read-only drift report; `doctor` diagnoses missing prerequisites (git, mise,
+  Docker - "command not found", a shadowed runtime); `protect` verifies or
+  applies branch protection and merge rules, graduates solo trunk to PR flow, or
+  waives it.
+argument-hint: "[init | adopt | sync | doctor | protect] [--check]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
   - Bash(git rev-parse *)
   - Bash(gh auth status *)
 ---
-<!-- steer:modes init,adopt,sync -->
+<!-- steer:modes init,adopt,sync,doctor,protect -->
 
 # Set up a repo on the standards
 
@@ -35,10 +39,19 @@ entry and follow it; never restate its steps here.
 | `init` | Greenfield bootstrap: spine + scaffold + pinned toolchain, or a legacy template fork's placeholders | `/steer:init` |
 | `adopt` | Brownfield: reverse-engineer the spine from working code, triage productionization | `/steer:adopt` |
 | `sync` | Steady state: ledger migrations, spine/scaffold reconcile, capability + invocation repair, lands a PR. `sync --check` reports and writes nothing | `/steer:sync` |
+| `doctor` | Local prerequisites: git, mise and the runtimes it manages, Docker - flags a shadowed runtime, installs mise + runtimes on confirmation | `/steer:doctor` |
+| `protect` | Branch protection: diff `policy/branch-protection.yml` against live settings and apply the gaps, graduate solo trunk to PR flow, or `waive` | `/steer:protect` |
 
-The three are `user-invocable: false` - a user reaches them **only** through this
+All five are `user-invocable: false` - a user reaches them **only** through this
 door, so a recommendation you hand back names `/steer:setup <mode>`, never the
 owning skill.
+
+`doctor` and `protect` bracket the other three rather than competing with them:
+prerequisites have to hold before `init`/`adopt`/`sync` can run at all, and
+protection is the last step each of them ends on. Both are also reached on their
+own - a broken toolchain and a merge-rules question arrive without any bootstrap
+in sight - so route straight to the mode when the ask names it, without running
+spine detection first.
 
 ## Detect, then route
 
@@ -99,7 +112,13 @@ the topology.
 **Prerequisites first.** If the toolchain is missing (`git`, `mise`, Docker - "command
 not found", mise/docker errors), the bootstrap paths can't run. `/steer:init` and
 `/steer:build` already invoke `/steer:doctor` when prerequisites are absent; surface
-that here too rather than failing partway.
+that here too rather than failing partway. A bare "my machine isn't set up" is the
+`doctor` mode on its own - enter it and skip detection.
+
+**Protection last.** `init` and `adopt` both end by offering `/steer:setup protect`, and a
+`managed` repo that asks about merge rules or a protected `main` is the `protect` mode
+with no bootstrap to do. Enter it directly; it verifies by default and writes nothing
+until the dev confirms.
 
 ## Bootstrap precedence
 
@@ -125,10 +144,12 @@ prototype-ceremony handling. This section governs the developer path that lands 
 
 ## Explicit override
 
-Power users can skip detection by naming the mode: `setup init`, `setup adopt`, or
-`setup sync` (`setup sync --check` for the read-only report). Honor the explicit
+Power users can skip detection by naming the mode: `setup init`, `setup adopt`,
+`setup sync` (`setup sync --check` for the read-only report), `setup doctor`, or
+`setup protect` (with `verify` / `apply [--solo]` / `waive`). Honor the explicit
 mode, but if it clearly contradicts the detected state (e.g. `setup init` on a repo
 that's already `managed`), say what you detected and confirm before proceeding.
+`doctor` and `protect` contradict nothing - they run at any spine state.
 
 ## Why this exists
 
@@ -137,3 +158,9 @@ longer a choice the user has to get right. Picking the wrong one is expensive:
 `init` on a repo with code lays a spine over work it never read, and `adopt` on an
 empty repo has nothing to reverse-engineer. The state that decides it is
 detectable, so detection belongs here and the three stay behind this door.
+
+`doctor` and `protect` join them for a different reason. Neither is a choice to get
+wrong; both are steps of the same job, reached at its edges - a toolchain that has
+to work before anything else does, and the wall that makes the delivery mode real.
+Keeping them behind this door means a user who has to get a repo onto the standards
+learns one name, and the recommendations steer hands back name that one name too.

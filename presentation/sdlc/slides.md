@@ -463,7 +463,7 @@ Findings feed back into **Plan** - the loop closes instead of decaying.
 </div>
 
 <!--
-Deliver: /steer:protect, prod-branch gating (rule 52), solo-trunk graduation.
+Deliver: /steer:setup protect, prod-branch gating (rule 52), solo-trunk graduation.
 Maintain: /steer:audit code/spec (read-only, files findings), /steer:next,
 /steer:status (artifact report). Production incidents have a sanctioned
 fast-path (work --hotfix) that relaxes ordering but keeps every human gate and

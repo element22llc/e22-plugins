@@ -8,9 +8,9 @@
 #   project can quietly stay ungated long after it has a deploy target or a
 #   promotion branch. This hook watches for the local, offline signals that a
 #   repo has grown past pre-MVP and nudges the owner to graduate via
-#   /steer:protect - which raises the PR wall and flips the delivery-mode marker
+#   /steer:setup protect - which raises the PR wall and flips the delivery-mode marker
 #   to pr-flow. The networked signal (a second collaborator) is left to
-#   /steer:audit and /steer:protect, which already use gh; this hook stays
+#   /steer:audit and /steer:setup protect, which already use gh; this hook stays
 #   offline so it adds no latency and no auth dependency to session start.
 #
 # MECHANISM
@@ -18,7 +18,7 @@
 #   / check-template-drift.sh). Fires ONLY when the repo declares solo-trunk AND
 #   at least one local graduation signal is present; SILENT otherwise - a fresh
 #   pre-MVP repo and every pr-flow repo get zero noise, and the notice clears
-#   itself the moment /steer:protect graduates the repo.
+#   itself the moment /steer:setup protect graduates the repo.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. cwd comes from the SessionStart
@@ -44,7 +44,7 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # Signal detection is shared with the trunk-push PreToolUse gate (in
 # check-bash-actions.sh)
 # (lib/graduation.sh) so the nudge and the gate can never disagree. A recorded
-# graduation waiver (`/steer:protect waive`) makes the detector report nothing,
+# graduation waiver (`/steer:setup protect waive`) makes the detector report nothing,
 # so a deliberately single-dev trunk repo gets zero noise here too.
 SIGNALS="$(steer_graduation_signals "${ROOT}")"
 
@@ -59,13 +59,13 @@ printf '%s\n' "${SIGNALS}"
 printf '\nWhile these signals stand, autonomous trunk pushes are gated (the '
 printf 'trunk-push gate in check-bash-actions.sh surfaces the first `git push` '
 printf 'each session for confirmation). Two ways to clear this, both the dev'"'"'s call: '
-printf '(1) **graduate** - `/steer:protect` reviews branch protection and, on '
+printf '(1) **graduate** - `/steer:setup protect` reviews branch protection and, on '
 printf 'confirmation, raises the PR wall that enforces pr-flow, flipping the '
 printf 'delivery-mode marker and logging a /spec/history/ entry (a one-person repo '
-printf 'graduates with `/steer:protect apply --solo`: PR + CI required, no approval, '
+printf 'graduates with `/steer:setup protect apply --solo`: PR + CI required, no approval, '
 printf 'so the dev can still merge alone); or (2) **waive** - '
 printf 'if this repo will stay single-contributor on trunk and these signals are '
 printf 'expected (an infra/ tree or deploy target is part of the plan), '
-printf '`/steer:protect waive` records that decision (marker + /spec/history/ entry) '
+printf '`/steer:setup protect waive` records that decision (marker + /spec/history/ entry) '
 printf 'and silences this notice and the push gate for good. Recommend whichever '
 printf 'fits; do not re-raise this every session once the dev has answered.\n'

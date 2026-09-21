@@ -55,7 +55,7 @@ A developer reviews everything before it becomes the official version.
 
 ## Quickstart for devs
 
-> Prefer an assisted setup? In Claude Code, run **`/steer:doctor`** - it detects
+> Prefer an assisted setup? In Claude Code, run **`/steer:setup doctor`** - it detects
 > what's missing and installs the toolchain (mise, then pnpm/uv/node) with your
 > confirmation, and flags Docker Desktop / WSL2. The manual steps below are the
 > equivalent by hand.
@@ -171,7 +171,7 @@ rules are the single source of truth in [`policy/branch-protection.yml`](policy/
 a PR before merging, 1 approval, dismiss stale approvals on new commits, the `ci`
 status check, linear history, and no bypassing - even for admins. A **one-person
 repo** selects the policy's `solo` profile (`profile: solo`, or
-`/steer:protect apply --solo`): same wall, approvals 0, because an author cannot
+`/steer:setup protect apply --solo`): same wall, approvals 0, because an author cannot
 approve their own PR and would otherwise be locked out of merging. In **Settings ->
 Code security**, enable Secret scanning + push protection.
 
@@ -185,9 +185,9 @@ unprotected pre-MVP repo the same
 autonomy applies to trunk pushes (solo-trunk mode) until the repo shows it has
 outgrown that - then the steer trunk-push hook surfaces the session's first push
 for your confirmation (repeats carry a non-blocking reminder in Claude Code; on the
-Copilot CLI they pass silently) until you graduate via `/steer:protect`.
+Copilot CLI they pass silently) until you graduate via `/steer:setup protect`.
 
-Don't set this up by hand - run **`/steer:protect`**. It reads that policy, diffs
+Don't set this up by hand - run **`/steer:setup protect`**. It reads that policy, diffs
 it against the repo's live settings, and (on your confirmation) applies what's
 missing via the GitHub API. `init`/`adopt` recommend it as the final bootstrap
 step, and `/steer:audit` flags it when it drifts.
@@ -210,7 +210,7 @@ required `ci` check before it merges, so a bump that breaks tests, lint, or the
 version-pin scan never lands - **CI, not a human, is what guarantees the bump is
 safe.** Auto-merge is scoped to Dependabot by the workflow's `dependabot[bot]`
 guard - GitHub's repo-wide `allow_auto_merge` setting is deliberately left **off**,
-so no other PR gets an auto-merge button. `/steer:protect` enables Dependabot
+so no other PR gets an auto-merge button. `/steer:setup protect` enables Dependabot
 alerts + security updates (so security PRs get opened); the merge itself is enacted
 by the workflow, not by protect. Want zero automated merges? Delete that workflow -
 Dependabot PRs then go through the same human gate as everything else.

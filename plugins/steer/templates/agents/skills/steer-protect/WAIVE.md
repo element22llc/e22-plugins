@@ -1,4 +1,4 @@
-# `/steer-protect waive` - record that solo-trunk is deliberate
+# `/steer-setup protect waive` - record that solo-trunk is deliberate
 
 Read this file when the dev asks to waive graduation (or to stop the solo-trunk
 graduation nudge / push prompt), and not before. The guardrails and the

@@ -11,7 +11,7 @@ environments: [non-prod, prod]
 deploy_on_merge: non-prod
 
 # How production is approved. `prod-branch-pr` is a reviewed PR from the default
-# branch into a long-lived `prod` branch (the gate /steer:protect can apply on any
+# branch into a long-lived `prod` branch (the gate /steer:setup protect can apply on any
 # GitHub plan); `github-environment` is a deployment-environment required reviewer
 # (Enterprise for private repos); `manual` is a human running the deploy; `none`
 # says this repo has no production to gate.

@@ -16,7 +16,7 @@ be *careful* about that.
 Read-only or purely advisory; inferring them from a question is fine. Three carry a
 caveat worth knowing before you infer them: `/steer:report` **auto-files** an
 upstream issue with no confirmation step; `/steer:audit` will offer to write a
-report file into `/spec`; and `/steer:doctor` will offer to **install system
+report file into `/spec`; and `/steer:setup doctor` will offer to **install system
 software**. None of the three changes existing repo content, and the latter two
 act only on an explicit yes.
 
@@ -30,7 +30,7 @@ act only on an explicit yes.
 | `/steer:audit spec` | Read-only spec-vs-tracker comparison - reports, never edits. |
 | `/steer:status` | Read-only delivery snapshot - reports, never edits. |
 | `/steer:status feature <id>` | Renders **one feature's spec** as a stakeholder-readable Artifact - presentation only, never authoring. |
-| `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs **mise and the runtimes it manages**; git and Docker Desktop are handed over as commands to run yourself. |
+| `/steer:setup doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs **mise and the runtimes it manages**; git and Docker Desktop are handed over as commands to run yourself. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
 
 ## Tier 2 - requires explicit user intent (side-effecting)
@@ -51,7 +51,7 @@ an unrelated question.
 | `/steer:issues` | Captures/triages/materializes GitHub issues. |
 | `/steer:questions` | Resolves open questions, folding decisions into the spec. |
 | `/steer:roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
-| `/steer:protect` | Sets/verifies GitHub branch protection (the PR gate). |
+| `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
 | `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. |
 
 ## Tier 3 - internal orchestration only

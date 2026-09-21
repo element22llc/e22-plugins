@@ -34,7 +34,7 @@ These hold for the whole run, in every mode.
   never merge or deploy. Watching CI to conclusion and fixing a red build is
   **finishing the work**, not crossing that gate. In solo-trunk the trunk commit
   *is* delivery (Delivery mode below); deploy stays human-gated all the same,
-  and graduating the repo is `/steer-protect`'s job, never this skill's.
+  and graduating the repo is `/steer-setup protect`'s job, never this skill's.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.
 
@@ -51,7 +51,7 @@ These hold for the whole run, in every mode.
 0b. **`promote` is exempt from steps 1 and 3.** It is not issue-scoped - the
    thing being delivered is everything already merged to the default branch - so
    it reads no tracker and finds-or-creates no issue. Its only GitHub dependency
-   is the remote, the same reason `/steer-protect` does not gate on the tracker
+   is the remote, the same reason `/steer-setup protect` does not gate on the tracker
    either. Read `modes/promote.md` and start at its Step 1.
 0c. **`tidy` is exempt from steps 1 and 3 as well.** It changes where files live,
    never what the product does - a Trivial-class sweep, so there is no issue to
@@ -104,7 +104,7 @@ skill's steps:
 - **pr-flow** (default) - the full flow this skill describes throughout: claim ->
   `issue/<n>` branch + `spec/.work` marker -> implement -> push -> open PR -> CI
   green -> transition. Declared-but-unprotected `main`: same flow unchanged, note
-  the missing wall, recommend `/steer-protect` (rule 45).
+  the missing wall, recommend `/steer-setup protect` (rule 45).
 - **solo-trunk** - commit **straight to `main`**: no `issue/<n>` branch, no
   `spec/.work` marker, no PR. Still claim the issue and implement, but close it
   **from the trunk commit** (`Closes #N`, or `Refs owner/repo#N` + an explicit
@@ -113,7 +113,7 @@ skill's steps:
   (validation, managed-block progress, closure-reason semantics) is identical.
   While a local graduation signal stands and no waiver is recorded, the
   trunk-push hook surfaces the session's first push for a human yes (rule 45);
-  a waived repo pushes silently, and deciding either is `/steer-protect`'s job.
+  a waived repo pushes silently, and deciding either is `/steer-setup protect`'s job.
 
 ## Subcommands (distinct, idempotent)
 

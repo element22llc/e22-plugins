@@ -41,7 +41,7 @@ user-invocable: false
 # `createBranchProtectionRule`, which GraphQL can also express. This gateway
 # therefore issues ONLY the queries and mutations the OPERATIONS files enumerate; a
 # delivery-surface mutation is out of bounds here even though the grant would match
-# it, and belongs to /steer:work or /steer:protect under their own gating. Never
+# it, and belongs to /steer:work or /steer:setup protect under their own gating. Never
 # widen this to `Bash(gh api:*)`. check_standards.py bans that form in the SCAFFOLD's
 # .claude/settings.json only - nothing constrains WHAT a skill's own allowed-tools may
 # grant (the one per-skill assertion, check_skill_script_grants, only checks that helper

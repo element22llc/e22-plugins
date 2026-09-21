@@ -106,9 +106,9 @@ and **Repair**.
   unchanged - and **surface the solo-trunk option**, recommending it when the repo
   is a solo PO+dev with no MVP/deploy yet (rule `45-delivery`). Additive
   only: never edit or overwrite an existing `## Delivery mode` section. To adopt
-  solo-trunk on an existing repo the dev flips the marker; `/steer:protect`
+  solo-trunk on an existing repo the dev flips the marker; `/steer:setup protect`
   graduates it back to `pr-flow`, or records a graduation waiver
-  (`/steer:protect waive`, a second `<!-- steer:graduation=waived -->` line) when
+  (`/steer:setup protect waive`, a second `<!-- steer:graduation=waived -->` line) when
   the repo deliberately stays single-dev on trunk.
 - **Verbatim:** no
 - **Why it matters:** a repo bootstrapped before solo-trunk existed (≤ 2.11.0)
@@ -264,10 +264,10 @@ and **Repair**.
 - **Conditional:** always
 - **Wired-when:** present.
 - **Repair:** create from the plugin default; propose. Applying it server-side is
-  **`/steer:protect`** - name that as the follow-up; sync writes the policy file,
+  **`/steer:setup protect`** - name that as the follow-up; sync writes the policy file,
   it does not configure GitHub.
 - **Verbatim:** no
-- **Why it matters:** `/steer:protect` reconciles the live GitHub rule against
+- **Why it matters:** `/steer:setup protect` reconciles the live GitHub rule against
   this file; without it there is no declared gate to enforce.
 
 ### dependency-automation - Dependabot + the auto-merge exception
@@ -280,7 +280,7 @@ and **Repair**.
   `dependabot.yml`, uncomment the ecosystem block(s) matching the detected stack
   (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. The repo
   settings the exception relies on (Dependabot alerts + security updates) are
-  **`/steer:protect`**'s job - name it as the follow-up; sync writes the files, it
+  **`/steer:setup protect`**'s job - name it as the follow-up; sync writes the files, it
   does not configure GitHub. The workflow scopes auto-merge to Dependabot itself;
   no repo-wide `allow_auto_merge` setting is used.
 - **Verbatim:** no (ecosystems are adapted per stack)
@@ -410,7 +410,7 @@ and **Repair**.
   git treats every subsequent write in someone else's repo. (Read that narrowly:
   *every* repair is "proposed" in the sense that step 6 lands it on `feat/sync`
   under the read-then-propose discipline, and several entries below say "propose"
-  meaning that, or meaning a human follow-up such as `/steer:protect`. These two
+  meaning that, or meaning a human follow-up such as `/steer:setup protect`. These two
   are the ones that do not write the file at all until asked.)
   **Never run `git add --renormalize .`.** The file governs *future* writes only;
   converting content already committed as CRLF is a deliberate, history-churning

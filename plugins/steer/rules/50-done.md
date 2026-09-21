@@ -60,4 +60,4 @@ item can't be satisfied, say so rather than implying the work is complete.
 - [ ] GitHub-adopted repo: the active issue reflects progress, blockers and validation; unrelated findings filed as linked issues; the PR references it with the right closing relation?
 - [ ] Scaffold placeholders flagged or resolved?
 - [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk - with CI watched to green?
-- [ ] Solo trunk, no waiver, and the MVP works, you deployed, or a second contributor joined -> `/steer:protect`?
+- [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?

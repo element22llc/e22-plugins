@@ -68,7 +68,7 @@ steer_openspec_migration_pending() {
 # OpenSpec repo may have no `spec/` directory at all, which the ladder below
 # would read as `unmanaged` - the full greenfield bootstrap card, pushing an
 # init that would lay a second, competing spine. Making it a STATE rather than a
-# bypass in front of one caller is what keeps /steer:doctor, /steer:sync and
+# bypass in front of one caller is what keeps /steer:setup doctor, /steer:sync and
 # /steer:audit honest: they ask the same question and get the same answer.
 #
 # `damaged` no longer needs an OpenSpec carve-out. It had one while the interim

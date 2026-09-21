@@ -132,7 +132,7 @@ Name the file and say what to carry forward.
   and had no way to say so. The model is now **declared** in
   `policy/delivery.yml`: environments, what merging deploys, how production is
   approved, whether review apps exist, and what the repo reports to a human. The
-  rule follows the file, and `/steer:protect` reads `production_gate` to decide
+  rule follows the file, and `/steer:setup protect` reads `production_gate` to decide
   whether a `prod` branch is expected here at all. An existing repo needs the
   file written with **today's behaviour as its values**, so nothing changes for it
   on upgrade.

@@ -20,7 +20,7 @@ handoff (a v0 PR in PR flow, or graduation off the trunk in solo trunk).
 The PO personally installs only **Claude Code and Docker Desktop**, on a
 supported machine - **macOS, Linux, or Windows** (WSL2 for CLI/IDE work; on the
 Claude Desktop Code tab, Git for Windows is enough - see the `Stack` rule and
-`/steer-doctor`). You verify and drive everything
+`/steer-setup doctor`). You verify and drive everything
 else yourself: install the supported local toolchain (mise, then pnpm/uv, git)
 where the OS permits, and handle GitHub auth for the eventual PR - never hand the
 PO commands. Speak plainly throughout - no git/stack jargon (see the
@@ -35,7 +35,7 @@ everything before it's used for real."*
 meet the org standards from the start - tests, `contract.md` per feature,
 Definition of Done, high-risk handling. In **PR flow** it reaches `main` only
 after a dev approves the v0 PR; in **solo trunk** it lands on `main` directly but
-stays pre-MVP until a dev reviews it at graduation (`/steer-protect`). The floor
+stays pre-MVP until a dev reviews it at graduation (`/steer-setup protect`). The floor
 is identical either way.
 
 **Flow state lives in `/spec/BUILD-STATUS.md`, not in the conversation.** Copy
@@ -105,7 +105,7 @@ These hold for the whole build, at every step.
        exactly what **solo trunk (pre-MVP)** is for (Commit autonomy). Offer and
        recommend it; a one-line "yes" is enough. The build then commits straight
        to `main` - no `feat/*` branch, no v0 PR - until graduation via
-       `/steer-protect` when a developer joins or you head for real users. Set
+       `/steer-setup protect` when a developer joins or you head for real users. Set
        Devs = `"none yet (solo PO)"`, write the `## Delivery mode` section to
        `solo trunk (pre-MVP)` with that graduation trigger, and set the section's
        first-line marker to `<!-- steer:delivery-mode=solo-trunk -->` (the steer
@@ -203,7 +203,7 @@ language.
 | Build incomplete / failing locally | Blocking now | Continue the build |
 | Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
 | Demo-validated, PR flow, PR not opened | Blocking now (next transition) | Push the branch and open the v0 PR for dev review |
-| Demo-validated, solo trunk (v0 on `main`) | Human decision required | Ready for a developer - graduate via `/steer-protect` when one joins / before real users |
+| Demo-validated, solo trunk (v0 on `main`) | Human decision required | Ready for a developer - graduate via `/steer-setup protect` when one joins / before real users |
 | PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
 | Remaining `## Open questions` | Required before initial production | Work them down - `/steer-questions` |
 | Merged (PR flow) / graduated (solo trunk) | Complete | Optional: build the next feature |

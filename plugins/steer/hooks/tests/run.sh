@@ -175,7 +175,7 @@ claude_md_mode() { # <repo_root> <solo-trunk|pr-flow>
 	printf '## Delivery mode\n\n<!-- steer:delivery-mode=%s -->\n\nProse names solo trunk (pre-MVP) and PR flow both.\n' "$2" >"$1/CLAUDE.md"
 }
 
-# Same, plus the recorded graduation waiver marker (/steer:protect waive) on the
+# Same, plus the recorded graduation waiver marker (/steer:setup protect waive) on the
 # line after the mode marker - and prose that mentions the waiver, so the tests
 # prove the waiver matcher is anchored to its comment line too.
 claude_md_mode_waived() { # <repo_root> <solo-trunk|pr-flow>
@@ -1461,7 +1461,8 @@ mkdir -p "${IR0}/.github" "${IR0}/spec"
 	printf 'Correct: /steer:reference conventions.\n'               # valid -> no emit
 	printf 'Marketplace element22llc/e22-plugins stays.\n'          # not flagged
 	printf 'Shape it: /e22-standards:e22-spec once.\n'              # compound legacy (pair 1) -> /steer:spec
-	printf 'Then /e22-standards:doctor to verify.\n'                # compound legacy (pair 2) -> /steer:doctor
+	printf 'Then /e22-standards:build to verify.\n'                 # compound legacy (pair 2) -> /steer:build
+	printf 'Legacy prereqs: /e22-standards:doctor once.\n'          # legacy -> noncallable-gateway (setup mode), NO fix
 	printf 'Legacy scaffold: /e22-standards:e22-spec-scaffold x.\n' # legacy -> noncallable-gateway, NO fix
 	printf 'Legacy prose: /e22-conventions covers it.\n'            # legacy -> reference-mode
 } >"${IR0}/CLAUDE.md"
@@ -1484,8 +1485,13 @@ assert_eq "inv: /steer:bogus -> unknown" "$(invclass "${out}" /steer:bogus)" "un
 assert_eq "inv: /e22-standards:e22-spec -> legacy-e22" "$(invclass "${out}" /e22-standards:e22-spec)" "legacy-e22"
 assert_eq "inv: /e22-standards:e22-spec fix -> /steer:spec" "$(invfix "${out}" /e22-standards:e22-spec)" "/steer:spec"
 # MIGRATIONS.md v2.0.0 pair 2: the single-prefix form, `:<skill>` with no `e22-`.
-assert_eq "inv: /e22-standards:doctor -> legacy-e22" "$(invclass "${out}" /e22-standards:doctor)" "legacy-e22"
-assert_eq "inv: /e22-standards:doctor fix -> /steer:doctor" "$(invfix "${out}" /e22-standards:doctor)" "/steer:doctor"
+assert_eq "inv: /e22-standards:build -> legacy-e22" "$(invclass "${out}" /e22-standards:build)" "legacy-e22"
+assert_eq "inv: /e22-standards:build fix -> /steer:build" "$(invfix "${out}" /e22-standards:build)" "/steer:build"
+# Same single-prefix form, but the skill it names went internal behind a front
+# door: the verdict follows the live skill, so it degrades to a gateway with no
+# mechanical fix rather than rewriting to an invocation that no longer resolves.
+assert_eq "inv: single-prefix legacy -> noncallable-gateway" "$(invclass "${out}" /e22-standards:doctor)" "noncallable-gateway"
+assert_eq "inv: single-prefix legacy gateway -> no fix" "$(invfix "${out}" /e22-standards:doctor)" "-"
 # A legacy token must get the SAME verdict its /steer: spelling would: a
 # user-invocable:false gateway is a human routing decision (no mechanical fix, since
 # RECONCILE.md applies a legacy-e22 fix deterministically), and a `reference` mode
@@ -2469,10 +2475,10 @@ assert_empty "graduation: solo-trunk + signals + waiver silent" "${out}"
 # waiver (no marker) does NOT waive - the nudge still fires.
 GRAD_WAIVEPROSE="$(new_repo grad_waiveprose)"
 mkdir -p "${GRAD_WAIVEPROSE}/infra"
-printf '## Delivery mode\n\n<!-- steer:delivery-mode=solo-trunk -->\n\nRun /steer:protect waive to set steer:graduation=waived if trunk is deliberate.\n' >"${GRAD_WAIVEPROSE}/CLAUDE.md"
+printf '## Delivery mode\n\n<!-- steer:delivery-mode=solo-trunk -->\n\nRun /steer:setup protect waive to set steer:graduation=waived if trunk is deliberate.\n' >"${GRAD_WAIVEPROSE}/CLAUDE.md"
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_WAIVEPROSE}" sg4p)")"
 assert_has "graduation: waiver named in prose only still nudges" "${out}" "graduate"
-assert_has "graduation: nudge names the waiver path" "${out}" "/steer:protect waive"
+assert_has "graduation: nudge names the waiver path" "${out}" "/steer:setup protect waive"
 
 # lib/repo-root.sh: steer_graduation_waived - fail-closed (no CLAUDE.md / no
 # marker -> not waived), true only on the anchored marker line.
@@ -2498,13 +2504,13 @@ assert_empty "graduation: no repo silent" "${out}"
 # Signals shared with check-graduation.sh via lib/graduation.sh. "ask" - not
 # deny - only when ALL hold: Bash git push + solo-trunk + a graduation signal.
 
-# solo-trunk + infra/ signal + git push -> wrapped ask naming /steer:protect.
+# solo-trunk + infra/ signal + git push -> wrapped ask naming /steer:setup protect.
 TP_HOT="$(new_repo tp_hot)"
 mkdir -p "${TP_HOT}/infra"
 claude_md_mode "${TP_HOT}" solo-trunk
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp1 'git push origin main')")"
 assert_ask "trunk-push: solo-trunk + signal + push asks" "${out}"
-assert_has "trunk-push: ask names the graduation path" "${out}" "/steer:protect"
+assert_has "trunk-push: ask names the graduation path" "${out}" "/steer:setup protect"
 
 # compound command (`... && git push`) still matches.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp3 'mise run check && git push')")"
@@ -2522,7 +2528,7 @@ assert_ask "trunk-push: first push in fresh session asks" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4b 'git push origin main')")"
 assert_ctx "trunk-push: repeat push same session downgrades to context" "${out}"
 printf '%s' "${out}" | grep -q '"permissionDecision"' && bad "trunk-push: repeat push must not re-ask (got: ${out})" || ok
-assert_has "trunk-push: repeat reminder still names the graduation path" "${out}" "/steer:protect"
+assert_has "trunk-push: repeat reminder still names the graduation path" "${out}" "/steer:setup protect"
 
 # A NEW session re-asks (the marker is session-keyed, not repo-permanent).
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4c 'git push origin main')")"
@@ -2556,7 +2562,7 @@ assert_empty "trunk-push: solo-trunk + signal + waiver silent" "${out}"
 
 # Unwaived hot repo: the ask names the waiver as the alternative to graduating.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp8x 'git push origin main')")"
-assert_has "trunk-push: ask names the waiver path" "${out}" "/steer:protect waive"
+assert_has "trunk-push: ask names the waiver path" "${out}" "/steer:setup protect waive"
 
 # pr-flow + signal -> silent (branch pushes; the server wall owns the merge gate).
 TP_PR="$(new_repo tp_pr)"

@@ -1,12 +1,10 @@
 ---
 name: doctor
-description: Detect the local prerequisites a managed repo needs before init/build/dev - git, mise (and the pnpm/uv/node it manages), Docker - flagging shadowed runtimes; installs mise + runtimes on confirmation, GUI and `sudo`/host steps (git, Docker Desktop) handed over.
-when_to_use: >-
-  Use on a fresh machine, or whenever a tool is missing ("command not found",
-  "tool not found", mise/docker errors), before /steer:init, /steer:build, or
-  `mise run dev:setup`. Also when steer's own scripts fail to run at all
-  ("syntax error near unexpected token", every hook broken at once) - §0 checks
-  whether the plugin install itself is corrupt.
+description: "Internal prerequisite path - detect what a managed repo needs locally before bootstrap or dev (git, mise and the runtimes it manages, Docker), flagging a shadowed runtime; installs mise + runtimes on confirmation, GUI and `sudo` steps handed over."
+when_to_use: "Reached via /steer:setup doctor - not a direct entry point."
+# Internal prerequisite path behind `/steer:setup doctor`. Model-callable,
+# hidden from the slash menu - see the note on `init`.
+user-invocable: false
 allowed-tools:
   - Bash(grep -rl *)
   - Bash(git rev-parse *)
@@ -20,7 +18,7 @@ allowed-tools:
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-# Prerequisite doctor
+# Prerequisite doctor (`/steer:setup doctor`)
 
 Get a blank or half-set-up machine to the point where `/steer:init`,
 `/steer:build`, and `mise run dev:setup` actually work. This is the one place

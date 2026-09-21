@@ -154,7 +154,7 @@ non-blocking reminder (on the Copilot CLI the repeat is instead a **silent allow
 that envelope has no non-blocking channel) - and `check-bash-actions.sh` surfaces
 that first push as a PreToolUse **`ask`**, deliberately never a deny. A yes there
 **does** authorize that push; the gate clears for good by graduating
-(`/steer:protect`) - or by recording a **graduation waiver** (`/steer:protect
+(`/steer:setup protect`) - or by recording a **graduation waiver** (`/steer:setup protect
 waive`) when the repo deliberately stays single-dev on trunk and the local
 signals are expected; the waiver is a recorded decision the shared detector
 honours, not a way to skip the prompt for one push. Because the Copilot CLI has

@@ -1,4 +1,4 @@
-# `/steer:protect apply` - the write path
+# `/steer:setup protect apply` - the write path
 
 Read this file when the dev has confirmed an `apply`, and not before. The
 guardrails, the authorization boundary, the preconditions, `Resolve desired

@@ -211,12 +211,12 @@ steer_delivery_mode() {
 #   <!-- steer:graduation=waived -->
 #
 # A waiver is a DECISION, not a third delivery mode: the repo stays solo-trunk,
-# and the dev has recorded (via /steer:protect waive, with a /spec/history/
+# and the dev has recorded (via /steer:setup protect waive, with a /spec/history/
 # entry) that the local graduation signals - an infra/ tree, a deploy workflow,
 # a prod branch - are expected on a repo that keeps a single contributor on
 # trunk. lib/graduation.sh honours it by reporting no signals, which silences the
 # SessionStart graduation nudge and the trunk-push ask together. Inert in pr-flow
-# (nothing reads signals there); /steer:protect apply removes it at a real
+# (nothing reads signals there); /steer:setup protect apply removes it at a real
 # graduation. Fail-closed: no CLAUDE.md, no marker -> 1 (not waived), so the
 # pre-waiver behaviour is exactly preserved. Anchored to the comment line like
 # steer_delivery_mode, so prose that merely mentions a waiver never matches.

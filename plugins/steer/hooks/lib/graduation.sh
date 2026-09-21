@@ -8,16 +8,16 @@
 # "this repo has outgrown solo-trunk" means, so the signal set lives here and
 # nowhere else. All signals are LOCAL and offline - filesystem plus (when git is
 # available) ref inspection; the networked signal (a second collaborator) stays
-# with /steer:audit and /steer:protect, which already use gh.
+# with /steer:audit and /steer:setup protect, which already use gh.
 #
 # A recorded graduation WAIVER (`<!-- steer:graduation=waived -->` on the product
-# CLAUDE.md, written by /steer:protect waive - see steer_graduation_waived in
+# CLAUDE.md, written by /steer:setup protect waive - see steer_graduation_waived in
 # lib/repo-root.sh, which callers must have sourced) is honoured HERE, not in the
 # consumers: a single dev who keeps a repo on trunk deliberately - with the
 # infra/ tree or deploy workflow the signals would otherwise flag - records the
 # decision once, and both the nudge and the push ask fall silent together. The
 # waiver covers only these local signals; the networked one (a second
-# collaborator) still voids it in /steer:audit and /steer:protect verify.
+# collaborator) still voids it in /steer:audit and /steer:setup protect verify.
 #
 # steer_graduation_signals <repo_root> - prints one markdown bullet per detected
 # signal (empty output = no signal, including when waived) and returns 0.

@@ -1,6 +1,6 @@
 # Autonomous loop, instantiated on demand by /steer:loop (not part of the bootstrap scaffold).
 # Invariant (rule 53): deliver up to a DRAFT PR, never merge/deploy/push to main - do not add a
-# merge step or widen the prompt. Presupposes pr-flow (/steer:protect) and the ANTHROPIC_API_KEY secret.
+# merge step or widen the prompt. Presupposes pr-flow (/steer:setup protect) and the ANTHROPIC_API_KEY secret.
 name: steer loop
 
 on:

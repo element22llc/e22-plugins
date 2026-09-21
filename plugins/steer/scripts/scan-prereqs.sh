@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# scan-prereqs.sh - read-only local-prerequisite detector for /steer:doctor.
+# scan-prereqs.sh - read-only local-prerequisite detector for /steer:setup doctor.
 #
 # WHAT IT READS
 #   $1  repo-root  - a managed (or about-to-be-managed) repo to inspect
@@ -48,7 +48,7 @@
 # Usage:
 #   sh scan-prereqs.sh [repo-root]
 #
-# NOTE: this helper is plugin-internal (a /steer:doctor tool). It is deliberately
+# NOTE: this helper is plugin-internal (a /steer:setup doctor tool). It is deliberately
 # NOT shipped into consumer repos, so it carries no byte-identical-copy
 # obligation (same as scan-capabilities.sh / template-reconcile.sh).
 

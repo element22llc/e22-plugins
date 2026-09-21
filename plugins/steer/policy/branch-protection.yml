@@ -1,4 +1,4 @@
-# Branch-protection policy /steer:protect diffs against live GitHub settings and applies.
+# Branch-protection policy /steer:setup protect diffs against live GitHub settings and applies.
 # Fields map 1:1 to the classic protection API; rationale: /steer:reference conventions.
 # steer:allow-comments each note names why a protection setting is what it is -- deleting them loses the security rationale, not noise
 
@@ -44,7 +44,7 @@ protected_branches:
     enforce_admins: true
     required_linear_history: true
 
-# Repo-level settings, applied via separate settings APIs by /steer:protect.
+# Repo-level settings, applied via separate settings APIs by /steer:setup protect.
 secret_scanning: true
 secret_scanning_push_protection: true
 

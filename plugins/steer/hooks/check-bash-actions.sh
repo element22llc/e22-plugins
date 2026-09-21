@@ -31,7 +31,7 @@
 #   permissionDecision "ask" - deliberately NOT "deny": the human can approve
 #   the push and keep working (they may be mid-task, or a signal may be a
 #   false positive), but the push stops being silent until the repo graduates
-#   via /steer:protect - or records a graduation waiver (/steer:protect waive:
+#   via /steer:setup protect - or records a graduation waiver (/steer:setup protect waive:
 #   a deliberately single-dev trunk repo whose infra/ tree or deploy target is
 #   expected), which lib/graduation.sh honours by reporting no signals. Every
 #   other case is silent: pr-flow pushes are branch pushes governed by the
@@ -121,7 +121,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
 			MARK="${TMPDIR:-/tmp}/steer-trunkpush.${SID:-nosid}.${CWD_KEY:-0}"
 			if [ -f "${MARK}" ]; then
-				CTX="Trunk-push reminder: this solo-trunk repo still shows graduation signals and the push-approval ask already fired this session. If the human approved that push, carry on - but settle this soon so trunk pushes stop needing case-by-case yeses: graduate via /steer:protect (verify, then apply on the dev's confirmation), or, if the repo deliberately stays single-dev on trunk, record a graduation waiver via /steer:protect waive. If the human DECLINED it, do not retry the push; surface that decision instead."
+				CTX="Trunk-push reminder: this solo-trunk repo still shows graduation signals and the push-approval ask already fired this session. If the human approved that push, carry on - but settle this soon so trunk pushes stop needing case-by-case yeses: graduate via /steer:setup protect (verify, then apply on the dev's confirmation), or, if the repo deliberately stays single-dev on trunk, record a graduation waiver via /steer:setup protect waive. If the human DECLINED it, do not retry the push; surface that decision instead."
 				printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 				exit 0
 			fi
@@ -131,7 +131,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			# JSON reason (mirrors check-version-pins.sh). The bullets are
 			# hook-authored constants today, so this is hardening, not a live bug.
 			SAFE_SIGNALS="$(steer_json_safe "${SIGNALS}" | sed 's/  */ /g; s/^ //')"
-			REASON="Trunk-push graduation gate - this repo declares solo-trunk delivery but has outgrown pre-MVP:${SAFE_SIGNALS}. While these signals stand, direct-to-main pushes need a human yes. Graduate now instead: run /steer:protect (verify, then apply on the dev's confirmation) to raise the branch-protection wall - that flips the repo to pr-flow, where branch pushes and PRs are autonomous and the merge review is the only gate (a one-person repo graduates with /steer:protect apply --solo, which requires the PR and CI but no approval, so the dev can still merge alone). Or, if this repo deliberately stays single-dev on trunk and these signals are expected, run /steer:protect waive to record that decision - it silences this gate for good. Approving this prompt pushes anyway; the gate clears once the repo graduates or the waiver is recorded."
+			REASON="Trunk-push graduation gate - this repo declares solo-trunk delivery but has outgrown pre-MVP:${SAFE_SIGNALS}. While these signals stand, direct-to-main pushes need a human yes. Graduate now instead: run /steer:setup protect (verify, then apply on the dev's confirmation) to raise the branch-protection wall - that flips the repo to pr-flow, where branch pushes and PRs are autonomous and the merge review is the only gate (a one-person repo graduates with /steer:setup protect apply --solo, which requires the PR and CI but no approval, so the dev can still merge alone). Or, if this repo deliberately stays single-dev on trunk and these signals are expected, run /steer:setup protect waive to record that decision - it silences this gate for good. Approving this prompt pushes anyway; the gate clears once the repo graduates or the waiver is recorded."
 
 			# "ask", never a hard deny: this gate is a surfaced human decision.
 			printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"

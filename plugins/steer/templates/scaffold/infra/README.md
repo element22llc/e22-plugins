@@ -139,7 +139,7 @@ aren't available on this plan): the gate is the required PR review on `prod`.
    to ship` on the issue/PR).
 4. **Promotion PR `main` -> `prod`** is opened and **approved** by a reviewer. This
    approval is the production gate - no direct pushes to `prod` (enforced by
-   `/steer:protect`; see the `prod` entry in `policy/branch-protection.yml`).
+   `/steer:setup protect`; see the `prod` entry in `policy/branch-protection.yml`).
 5. **PR merged to `prod`** -> the change **auto-deploys to prod**. Apps may be
    promoted independently.
 6. **Deployment result is posted back** to the issue/PR.

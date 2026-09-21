@@ -180,7 +180,7 @@ is visible rather than silent.
      existing key/step - never clobber.
 
    Some repairs need a human/external step sync can't do: `branch-protection.yml`
-   is written here but applied server-side by `/steer:protect`. (`claude.yml`
+   is written here but applied server-side by `/steer:setup protect`. (`claude.yml`
    needs only the `ANTHROPIC_API_KEY` secret to run - the marketplace repo is
    public, so the plugin clone is anonymous and needs no credential.)
 
@@ -194,7 +194,7 @@ is visible rather than silent.
    | in-ci-plugin-loading | .github/workflows/claude.yml | absent | create from scaffold (proposed); needs ANTHROPIC_API_KEY secret |
    | version-pin-enforcement | policy/versions.yml, scripts/... | mis-wired | re-copy verbatim scripts (proposed, diff shown) |
    | drift-gate | .github/workflows/ci.yml, PR template | present-wired | none |
-   | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer:protect (solo-trunk: at graduation - not an action while the mode stands or a waiver is recorded) |
+   | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer:setup protect (solo-trunk: at graduation - not an action while the mode stands or a waiver is recorded) |
    | line-ending-normalization | .gitattributes | absent | create from scaffold (proposed, needs a yes); future writes only, no renormalize |
    | changelog-fragments | .changie.yaml, .changes/unreleased/ | absent | create from scaffold (proposed); an existing hand-written CHANGELOG.md is renamed to CHANGELOG-archive.md, never parsed |
    | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker ≠ github) |

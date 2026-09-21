@@ -33,7 +33,7 @@ repository deletion). **Issue only the queries and mutations this file or its
 two companions enumerate.** Anything touching PR merge, branch protection, or
 repo settings is
 out of bounds here regardless of what the grant matches - it belongs to
-`/steer:work` or `/steer:protect` under their own gating. Nothing checks this
+`/steer:work` or `/steer:setup protect` under their own gating. Nothing checks this
 mechanically; it is a prose boundary.
 
 Each operation is MCP-first -> `gh` -> manual, and reports which path it took.
