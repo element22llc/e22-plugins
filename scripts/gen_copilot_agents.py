@@ -182,8 +182,8 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     preamble = (
         "This is the GitHub Copilot (VS Code) port of steer's "
         f"`{name}` subagent. Select it from the Chat agent picker, or a "
-        "delegating prompt (`/steer-audit`, `/steer-work --reviewed`, "
-        "`/steer-loop`) will hand a slice to it. Apply the org engineering "
+        "delegating prompt (`/steer-audit`, `/steer-work --reviewed`) will "
+        "hand a slice to it. Apply the org engineering "
         f"standards already loaded from `.github/copilot-instructions.md`.{tools_note}"
     )
 

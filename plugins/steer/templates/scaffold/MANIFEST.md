@@ -136,8 +136,9 @@ installed** by `/steer:init` or `/steer:adopt` - opt in deliberately per the doc
 `../github/workflows/steer-loop.yml` is **not** bootstrapped - it is instantiated
 on demand by `/steer:loop`, together with a `policy/automation.yml` declaring
 `loops: true` - the marker that puts rule `53-autonomous-loops` into the repo's
-always-on context - so a repo runs a loop, and pays for the rule that governs it,
-only when someone asks for one. The Copilot coding-agent setup workflow
+always-on context, and the opt-in the dev approves in-session before either file
+is written - so a repo runs a loop, and pays for the rule that governs it, only
+when someone asks for one and says yes. The Copilot coding-agent setup workflow
 `../github/workflows/copilot-setup-steps.yml` is **not** auto-installed either -
 it is opt-in per repo (install it only when the team uses the GitHub-side Copilot
 coding agent), even though its install path is listed below for when you do.

@@ -1,0 +1,30 @@
+kind: Changed
+body: |
+  - **`/steer:loop` is model-only,** `user-invocable: false`. An autonomous loop
+    is machinery a repo opts into once, not a skill a user browses to: rule
+    `53-autonomous-loops` - the boundary prose a looping repo is held to - reaches
+    a repo only where `policy/automation.yml` declares `loops: true`, and the
+    frontmatter never had to be conditional to match that: going internal takes
+    away the typing, not the routing, so a plain-language ask for a scheduled
+    sweep still arrives here and the skill's own first step is what refuses a
+    repo that never opted in. The capability menu drops its
+    hand-written `loop` entry, and `scan-invocations.sh` exempts the skill by
+    name for the same reason as `reference` and `report`: rule 53 names it as a
+    delegation, and it has no front door a `noncallable-gateway` finding could
+    be rewritten to.
+  - **The automation opt-in is a decision the dev makes, not a file the skill
+    writes for them.** It is now `scaffold`'s **first** step, ahead of
+    instantiating the workflow: on a repo that has not declared `loops: true`,
+    the trade goes to the dev first - unattended API spend per scheduled run,
+    draft-PR noise, the PR flow a loop requires - and the marker is written only
+    on confirmation, with who decided and when recorded. Arming an unattended
+    agent is a repo-level event, so a decision taken in-session also writes its
+    `/spec/history/` entry. `verify` now reports a missing marker as a gap that
+    closes through that same decision rather than as a file to write; `remove`
+    is unchanged.
+  - The Copilot port of `steer-reviewer` no longer points at a `/steer-loop`
+    prompt: that prompt file stops being generated when the skill goes internal,
+    so the cross-link would have dangled.
+    Seventh step of the 7.0 public-surface flip (#584).
+custom:
+  Slug: loop-behind-optin
