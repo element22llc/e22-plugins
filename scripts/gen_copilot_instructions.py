@@ -94,6 +94,12 @@ SCOPE_PRECONDITIONS: dict[str, str] = {
         "directory, `*.tf`/`*.tofu`/`*.hcl`, `playbooks/`, `roles/`). Skip this "
         "section in a repo with none."
     ),
+    "org-e22": (
+        "**Applies only to a repo on the e22 org pack** - `policy/org.yml` with "
+        "`pack: e22`, which is also what an absent file means. A repo that declares "
+        "another pack skips this section and follows the vendor-neutral core rules, "
+        "which name no product."
+    ),
     "automation-optin": (
         "**Applies only to a repo that has declared the automation opt-in** - "
         "`policy/automation.yml` with `loops: true`. A repo without that file runs "

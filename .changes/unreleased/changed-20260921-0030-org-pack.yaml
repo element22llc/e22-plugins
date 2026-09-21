@@ -1,0 +1,25 @@
+kind: Changed
+body: |
+  - **The house stack is now an org pack a repo can decline.** Rules
+    `10-stack`, `12-stack-infra` and `15-commands` named one organisation's
+    tools - Next/TS/Tailwind, Drizzle, OpenTofu on AWS, pnpm/uv, SSM Parameter
+    Store - and shipped to every managed repo whether or not it was on that
+    stack. They are now the **e22 org pack**, selected by `policy/org.yml`'s
+    `pack:` key through a new `org-e22` scope predicate. An **absent** file
+    reads as `e22`, so an existing repo receives exactly what it did before;
+    declaring any other value drops the pack. A migration-ledger entry seeds
+    the file on `/steer:sync` so the choice becomes visible and editable.
+  - **The core rules name no vendor.** Secrets handling says deployed secrets
+    live in "the declared store" - the org pack's, or an ADR's - instead of
+    naming SSM Parameter Store; the baseline patterns rule states each pattern
+    as a principle and the pack carries its default-stack instances (TS
+    `strict`, Drizzle Kit, Server Components, Sentry, the lockfile set). Both
+    moved into `10-stack`, along with the deployed secret-store default.
+  - **`inject-when` markers compose with `&` for AND.** `12-stack-infra` needs
+    "does IaC **and** follows the pack", which the existing `|` (OR) could not
+    express. AND binds loosest, so `a&b|c` reads as `a AND (b OR c)`. Payload
+    for a repo that declares another pack: 58,820 -> 52,660 characters; an e22
+    repo is unchanged by design (58,412 -> 58,820, the cost of stating the pack
+    boundary in the rule).
+custom:
+  Slug: org-pack

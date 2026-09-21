@@ -94,6 +94,34 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `policy/org.yml` declares which org pack the repo follows
+
+- **What & why:** the stack, useful-commands and infra-stack rules named one
+  organisation's tools - Next/TS/Tailwind, Drizzle, OpenTofu on AWS, SSM
+  Parameter Store - and every managed repo received them whether or not it was
+  on that stack. Those three rules are now the **e22 org pack**, scoped
+  `inject-when=org-e22`, and the core rules they left behind name no product:
+  secrets say "the declared store", practices state each pattern as a principle.
+  `policy/org.yml`'s `pack:` key selects the pack. An **absent** file reads as
+  `e22`, so an existing repo receives exactly what it received before - this
+  entry only makes the choice visible and editable.
+- **Precondition:** the repo has a `policy/` directory (it was bootstrapped) and
+  no org-pack declaration yet:
+
+  ```sh
+  test -d policy && ! test -f policy/org.yml && echo pending
+  ```
+
+  A repo with no `policy/` directory is `n/a` - seeding the whole directory is
+  bootstrap's job, not this entry's.
+- **Action:** copy `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/policy/org.yml` to
+  `policy/org.yml` unedited, keeping `pack: e22`. Do **not** infer another value:
+  the default is the repo's current behaviour, and changing packs drops the house
+  stack rules, which is a decision for the dev and not a reconciliation. Say the
+  file is new, what `pack: e22` delivers, and that any other value leaves the
+  vendor-neutral core. Idempotent: once the file exists the precondition is
+  false. **No history entry is earned** - this records existing behaviour.
+
 ### v6.5.0 - `policy/delivery.yml` declares how the repo delivers
 
 (Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)

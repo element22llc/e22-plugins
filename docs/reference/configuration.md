@@ -19,9 +19,9 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `03-responses.md` | Responses lead with the result and stop when it is said - a progress update is one or two sentences, a final report is what changed / what was verified / what is next, with no closing offer (which binds a skill too: none of them ends by inviting feedback); hook notices and injected context are never echoed, the one exception being the skill's own name, which the handoff heading carries so you can see what ran; the next-actions block and the end-of-session checklist stay compact (open items only). |
 | `05-roles.md` | Who you are working with. |
 | `08-code-comments.md` | Code comments are why-only - the default is no comment; test each one by deleting it; never restate the code, banner, narrate the task, or keep dead code; config gets one header line pointing at the reference prose; a dense file is not a licence to add more. Advised at write time by `check-comment-density.sh`, and covered in `/steer:audit` by the comment-noise dimension. |
-| `10-stack.md` | Stack defaults (app / service profile). |
-| `12-stack-infra.md` | Stack - infrastructure / IaC (injected when the repo does IaC). |
-| `15-commands.md` | Useful commands. |
+| `10-stack.md` | Stack defaults (app / service profile) - **e22 org pack** (`inject-when=org-e22`), and the home of the baseline patterns' default-stack instances and the deployed secret-store default. |
+| `12-stack-infra.md` | Stack - infrastructure / IaC. **e22 org pack**, injected when the repo does IaC *and* follows the pack (`inject-when=has-iac&org-e22`). |
+| `15-commands.md` | Useful commands - **e22 org pack** (`inject-when=org-e22`). |
 | `24-worktrees.md` | Parallel worktrees - isolate runtime, clean up after. |
 | `30-spec-workflow.md` | Spec workflow. |
 | `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
@@ -40,10 +40,10 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `60-high-risk.md` | High-risk areas. |
 | `61-gate-prompts.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Full protocol in the `gates` reference. |
 | `62-hotfix.md` | Hotfix / incident fast-path - the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
-| `70-secrets.md` | Secrets handling. |
+| `70-secrets.md` | Secrets handling - never commit one; local config in a git-ignored `.env`; deployed secrets live in **the declared store** (the org pack's, or an ADR's) and are injected at deploy/runtime. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
 | `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first takes its threshold from it, and the Definition of Done holds in full for every class. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
-| `85-practices.md` | Baseline patterns - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
+| `85-practices.md` | Baseline patterns, stated as principles so they hold on any stack (the org pack names the instances) - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
 | `87-output-discipline.md` | Earn every line - tight responses, comments the exception (governed by `08-code-comments.md`), least code that does the job, lean durable prose. |
 | `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces - ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
 | `95-not-the-gate.md` | You are not the gate - the dev is. |
@@ -64,12 +64,15 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `33-spec-workflow-openspec`, `36-issue-first`, `52-deployment` and
     `53-autonomous-loops` are likewise
     scoped - respectively to
-    repos that do IaC (`has-iac`), drive the spine with OpenSpec (`has-openspec`),
+    repos that do IaC **and** follow the e22 org pack (`has-iac&org-e22`),
+    drive the spine with OpenSpec (`has-openspec`),
     use GitHub as the tracker (`tracker-github`),
     those that do IaC **or** ship an app (`has-iac|has-apps`, where `has-apps` is
     an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` - so
     `52-deployment` injects in any Node repo, not only one that deploys today),
     and those that have declared the automation opt-in (`automation-optin`).
+    `10-stack` and `15-commands` carry `org-e22` alone. Tokens compose with `|`
+    for OR and `&` for AND, AND binding loosest.
     That last one is the only predicate that fails **closed**: every other token
     injects on an unreadable signal, because a safety rule must never be dropped
     silently, whereas rule 53 governs machinery a repo only has once it has asked
@@ -148,6 +151,16 @@ the org stack defaults in rule `10-stack`:
 - **`policy/branch-protection.yml`** - the branch-protection ruleset
   `/steer:protect` verifies the live GitHub settings against, and applies on
   explicit confirmation.
+- **`policy/delivery.yml`** - how code reaches users here: environments,
+  `deploy_on_merge`, `production_gate`, review apps, observability. Rule
+  `52-deployment` follows it rather than imposing a model, and `/steer:protect`
+  and `/steer:work promote` read `production_gate`.
+- **`policy/org.yml`** - which org pack this repo follows. `pack: e22` (also the
+  meaning of an absent file) delivers the house stack, useful-commands and
+  secret-store rules; any other value leaves only the vendor-neutral core.
+- **`policy/automation.yml`** - `loops: true` declares the autonomous-loop
+  opt-in, which is what puts rule `53-autonomous-loops` in the always-on
+  payload. Written by `/steer:loop scaffold`.
 - **`STEER_NO_WORKTREE_TEARDOWN`** - set to any non-empty value to stop the
   `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack.
 - **`STEER_WORKTREE_OFFSET`** - pin one worktree's host-port offset when two
