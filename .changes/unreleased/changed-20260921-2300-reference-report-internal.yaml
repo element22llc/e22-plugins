@@ -1,0 +1,25 @@
+kind: Changed
+body: |
+  - **`/steer:reference` and `/steer:report` are model-only,** both now
+    `user-invocable: false`. Neither was ever a door a user should have to find:
+    the reference prose is loaded because a rule or a skill names the topic it
+    needs (`/steer:reference gates`), and a plugin defect is filed because Claude
+    hit one, not because the user knew the channel's name. Every invocation
+    string is unchanged and still resolves when Claude runs it, so no managed
+    repo's frozen prose breaks; what changes is who may type it.
+    The installed docs that told a human to type them now attribute the action to
+    Claude - the scaffold `README.md` and `CLAUDE.md`, the PR template,
+    `spec/tracker.md`, and the self-fault and incomplete-ruleset hook notices.
+    `scan-invocations.sh` exempts the two by name with its reason recorded: live
+    prose names them as a delegation, and unlike an absorbed mode neither has a
+    front door to be rewritten to, so a `noncallable-gateway` finding would be
+    unfixable by construction; the pre-rebrand spelling still gets its
+    deterministic rewrite.
+    Rule `00-router` completes the front-door map the last three folds left
+    stale (`setup` -> `doctor` / `protect`, `spec` -> `adr` / `intake` /
+    `roadmap`, `work` -> `tidy`) and pays for it in the same passage, leaving all
+    four scope targets 5 characters under the 6.6 payload. The skill listing
+    drops 385 characters to 11,894 of 12,400.
+    Sixth step of the 7.0 public-surface flip (#584).
+custom:
+  Slug: reference-report-internal

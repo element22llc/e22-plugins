@@ -1,7 +1,8 @@
 ---
 name: steer-report
-description: File a bug about the steer plugin itself upstream in element22llc/e22-plugins - gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer-work issues).
+description: Internal phone-home - file a bug about the steer plugin itself upstream in element22llc/e22-plugins, scrubbed and deduped, via GitHub MCP or gh. Steer's own defects, not product bugs (those go to /steer-work issues).
 argument-hint: '[describe the defect | run with no args to use recorded faults]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/report/SKILL.md - do not edit by hand.
@@ -10,7 +11,7 @@ argument-hint: '[describe the defect | run with no args to use recorded faults]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when steer misbehaves - a SessionStart self-fault notice, contradictory or impossible skill/rule instructions, a missing or crashing bundled helper - or on "report this steer bug".
+**When to use.** Reached when steer misbehaves - a SessionStart self-fault notice, contradictory or impossible skill/rule instructions, a missing or crashing bundled helper.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

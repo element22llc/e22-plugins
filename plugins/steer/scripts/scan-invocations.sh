@@ -116,6 +116,17 @@ if [ -d "$SKILLS_DIR" ]; then
 	done
 fi
 
+# Model-only skills: `user-invocable: false`, yet named in human-facing prose as a
+# DELEGATION ("the full prose is /steer:reference polyrepo") rather than as a
+# hand-back the user types. An absorbed mode has a front door to be rewritten to;
+# these have none - the model is the only caller - so `noncallable-gateway` would
+# report an unfixable finding against prose that is correct, on every managed repo
+# (the shipped CLAUDE.md and README name `/steer:reference` themselves). Exempted
+# by name, with the reason, because no token shape distinguishes a delegation from
+# an imperative - check_standards.py's check 11 is what polices "Run /steer:X" in
+# the installed docs.
+MODEL_ONLY=" reference report "
+
 # Reference modes from the `<!-- steer:modes a,b,c -->` marker (single source of
 # truth for which `/steer:reference <mode>` topics exist).
 MODES=" "
@@ -149,6 +160,11 @@ emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
 classify_legacy() {
 	if in_set "$4" "$MODES"; then
 		emit "$1" "$2" "$3" "reference-mode" "/steer:reference $4"
+	elif in_set "$4" "$MODEL_ONLY"; then
+		# Pre-rebrand spelling of a model-only skill: the token IS stale, so the
+		# deterministic rebrand fix still applies - only the modern spelling is
+		# exempt.
+		emit "$1" "$2" "$3" "legacy-e22" "/steer:$4"
 	elif in_set "$4" "$NONCALLABLE"; then
 		emit "$1" "$2" "$3" "noncallable-gateway" "-"
 	elif in_set "$4" "$SKILLS"; then
@@ -175,6 +191,8 @@ for REL in $SURFACES; do
 		tok="${_tok#/steer:}"
 		if in_set "$tok" "$MODES"; then
 			emit "$REL" "$_ln" "$_tok" "reference-mode" "/steer:reference $tok"
+		elif in_set "$tok" "$MODEL_ONLY"; then
+			: # delegation prose, not a user hand-back - nothing to rewrite
 		elif in_set "$tok" "$NONCALLABLE"; then
 			emit "$REL" "$_ln" "$_tok" "noncallable-gateway" "-"
 		elif in_set "$tok" "$SKILLS"; then

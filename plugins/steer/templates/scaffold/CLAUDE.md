@@ -20,9 +20,9 @@ or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
 > app - it runs the first-run setup for you.
 >
 > On-demand helpers from the plugin: `/steer:spec` (new feature
-> spec), `/steer:spec adr <slug>` (architecture decision), and
-> `/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`
-> (full reference prose). If the plugin isn't installed, your teammate will be prompted to install
+> spec) and `/steer:spec adr <slug>` (architecture decision); the full reference
+> prose is Claude's to load (`/steer:reference <topic>`), not yours to type.
+> If the plugin isn't installed, your teammate will be prompted to install
 > it when they trust this folder.
 
 ## Product

@@ -1,13 +1,13 @@
 ---
 name: reference
-description: "Load one of steer's full reference docs on demand: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, or polyrepo. Read-only loader."
-when_to_use: >-
-  Use for any tooling/convention question or stack-default rationale, living-
-  docs/tracker/drift questions, a feature built from a design export or
-  screenshots, keeping a long multi-phase run lean across compaction, the system
-  architecture diagram, rendering a shareable Artifact, ratifying an ADR or
-  approving an intent in-session, or a product whose spine spans several repos.
+description: "Internal loader - one of steer's full reference docs, read-only: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo."
+when_to_use: "Reached when a rule or a skill points at a reference topic - not a direct entry point."
 argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]"
+# Internal prose loader. The rules and the skills name the topic they need
+# (`/steer:reference conventions`), so the model reaches this skill from a
+# cross-reference rather than the user picking a doc name off a menu - and the
+# listing no longer pays for trigger vocabulary the cross-references already carry.
+user-invocable: false
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 

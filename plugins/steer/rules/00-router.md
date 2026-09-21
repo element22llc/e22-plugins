@@ -54,16 +54,16 @@ the changelog, opens the PR, and stops at the merge); a production incident is
 `/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`.
 
 **Front doors** detect context and hand off (`setup` -> `init` / `adopt` /
-`sync`; `audit` -> `work tidy`; `work` -> `issues`; `spec` ->
-`questions`), so you rarely route to a specialized skill directly;
-`/steer:tracker-sync` and `/steer:spec-scaffold` are internal gateways, not
-front doors. Reference prose loads on demand via `/steer:reference`; where
-nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
+`sync` / `doctor` / `protect`; `spec` -> `questions` / `adr` / `intake` /
+`roadmap`; `work` -> `issues` / `tidy`), so you rarely route to a specialized
+skill directly; `/steer:tracker-sync` and `/steer:spec-scaffold` are internal
+gateways, not front doors. Where nothing is auto-injected (Desktop chat,
+claude.ai web), run `/steer:standards`.
 
-**Deliberately not in this payload**, each loaded by the skill that needs it:
-housekeeping (`/steer:work tidy`), Artifact rendering and design sources
-(`/steer:reference`). Two context lines hold regardless: delegate a heavy sweep
-to a subagent and bring back the result, not the sweep; and route every durable
+**Deliberately not in this payload** - Artifact rendering, design sources, the
+full prose: `/steer:reference <topic>` is yours to load, never a user's to
+type. Two context lines hold regardless: delegate a heavy sweep to a
+subagent and bring back the result, not the sweep; and route every durable
 fact to its home on disk - a test, the spec, the app guide, an issue - never to
 private session memory, which the repo, the PR and every teammate cannot see.
 
@@ -78,7 +78,7 @@ making sweeping changes.
 
 A **steer defect** - a recorded hook fault, a rule or skill giving contradictory
 or impossible instructions, a bundled template or helper that is missing or
-crashes - is surfaced plainly and filed with **`/steer:report`**, which
-auto-files after scrubbing and deduping. Report it even when you worked around
-it. Product-code errors, failing tests and your own mistakes are not plugin
-faults.
+crashes - is surfaced plainly, then **you** file it with `/steer:report` (it
+scrubs and dedupes); the user never has to know the channel. Report it even when
+you worked around it. Product-code errors, failing tests and your own mistakes
+are not plugin faults.

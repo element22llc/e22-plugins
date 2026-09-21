@@ -1,7 +1,8 @@
 ---
 name: steer-reference
-description: 'Load one of steer''s full reference docs on demand: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, or polyrepo. Read-only loader.'
+description: 'Internal loader - one of steer''s full reference docs, read-only: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo.'
 argument-hint: '[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/reference/SKILL.md - do not edit by hand.
@@ -10,7 +11,7 @@ argument-hint: '[conventions | traceability | design-sources | context-hygiene |
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use for any tooling/convention question or stack-default rationale, living- docs/tracker/drift questions, a feature built from a design export or screenshots, keeping a long multi-phase run lean across compaction, the system architecture diagram, rendering a shareable Artifact, ratifying an ADR or approving an intent in-session, or a product whose spine spans several repos.
+**When to use.** Reached when a rule or a skill points at a reference topic - not a direct entry point.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
