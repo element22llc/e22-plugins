@@ -63,7 +63,7 @@ re-export per machine or per terminal. The token **never lives in the repo**.
     claude plugin install steer@e22-plugins --config github_pat=...
     ```
 
-    No file edit restores access; a repo's `/steer:sync` rewrites the stale README
+    No file edit restores access; a repo's `/steer:setup sync` rewrites the stale README
     instruction, but the token itself is yours to re-supply. Removing the old
     `export GITHUB_PAT` line is optional - nothing reads it any more, though a
     same-named GitHub Actions secret is unrelated and must be left alone.
@@ -111,7 +111,7 @@ from PyPI.
 !!! note "Stale entries are harmless"
     A repo bootstrapped before the removal may still list a `markitdown` server
     in `.mcp.json` or `.vscode/mcp.json`. Nothing breaks - it just starts a
-    server nothing calls. [`/steer:sync`](skills.md) clears it.
+    server nothing calls. [`/steer:setup sync`](skills.md) clears it.
 
 ## `context7`
 

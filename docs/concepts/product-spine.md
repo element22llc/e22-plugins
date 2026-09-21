@@ -48,7 +48,7 @@ work item in the declared tracker and write its ref into the question's
 rather than rotting in markdown - without every question becoming an issue.
 
 !!! warning "Reverse-engineering never invents decisions"
-    `/steer:adopt` builds a spine from existing code, but it must **never infer a
+    `/steer:setup adopt` builds a spine from existing code, but it must **never infer a
     ratified ADR from code**. ADRs record human decisions; an as-built spine
     captures what *is*, not a decision that was never made.
 
@@ -63,8 +63,8 @@ it, and a teammate cloning the repo inherits nothing.
 This has a sharp edge on a **brand-new repo with no spine yet**. The scoping
 dialogue that shapes a product is expected - but bootstrap is the *first move*,
 not a closing step: run [`/steer:setup`](../workflows/index.md) before persisting
-any decision - it detects the repo state and routes to `/steer:init` (greenfield)
-or [`/steer:adopt`](../workflows/adopt.md) (existing code) - so the scoping folds
+any decision - it detects the repo state and routes to `/steer:setup init` (greenfield)
+or [`/steer:setup adopt`](../workflows/adopt.md) (existing code) - so the scoping folds
 into the setup interview and each choice lands as an ADR or `vision.md` entry,
 reviewable in the bootstrap PR. Capturing decisions
 to memory or prose *instead of* a spine that doesn't exist yet is the
@@ -157,7 +157,7 @@ topology makes that visible; it cannot make it atomic.
 
 - [`/steer:audit spec`](../workflows/index.md) compares the as-built spine against the
   tracker's intent (read-only).
-- [`/steer:sync`](../workflows/index.md) reconciles the materialized spine and
+- [`/steer:setup sync`](../workflows/index.md) reconciles the materialized spine and
   scaffold against the current plugin templates after a release.
 
 Next: how work moves through the [lifecycle](lifecycle.md).

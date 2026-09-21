@@ -25,20 +25,20 @@ flowchart LR
 ## 1. Set up the repo
 
 Run [`/steer:setup`](../workflows/index.md) - it detects whether this is a
-brand-new repo or an existing app and routes accordingly (to `/steer:init` or
-[`/steer:adopt`](../workflows/adopt.md)). Either way you end up with a `/spec`
+brand-new repo or an existing app and routes accordingly (to `/steer:setup init` or
+[`/steer:setup adopt`](../workflows/adopt.md)). Either way you end up with a `/spec`
 spine and the bundled scaffold (CI, `mise.toml`, `compose.yaml`, PR template).
 
 The bootstrap PR is the **bootstrap gate** - it brings the repo under the
 standards and opens spec-first work on `main`. It is *not* productionization:
 a greenfield bootstrap ships scaffold and an empty spec spine, with no app to
 harden yet. Productionization is a later, per-app event - the
-[`/steer:build`](../workflows/build.md) v0 handoff or `/steer:adopt`, where real
+[`/steer:build`](../workflows/build.md) v0 handoff or `/steer:setup adopt`, where real
 code is triaged into `/spec/PRODUCTIONIZATION.md` before a
 [production deploy](../concepts/deployment.md).
 
 For a **solo greenfield** repo (one person is both PO and dev, no MVP yet),
-`/steer:init` can instead start in [**solo trunk mode**](../concepts/authorization-model.md):
+`/steer:setup init` can instead start in [**solo trunk mode**](../concepts/authorization-model.md):
 the bootstrap and early features land directly on `main` with no PR, until you
 graduate to the PR flow with `/steer:protect`.
 

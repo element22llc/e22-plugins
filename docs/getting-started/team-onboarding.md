@@ -22,7 +22,7 @@ Everything below happens **inside Claude Code**, so get that far first:
 2. **Open the Code surface** - the Claude Code CLI, a VS Code / JetBrains
    extension, or the Claude Desktop **Code** tab. (The Desktop *Chat* tab and
    claude.ai web chat don't run the plugin's hooks - see the caveat below.)
-3. **Open a folder** - for `/steer:build` or `/steer:init`, open or create an
+3. **Open a folder** - for `/steer:build` or `/steer:setup init`, open or create an
    **empty folder**; the bootstrap turns it into the repo. Adopting an existing
    app? Open that repo's folder instead.
 4. **Windows?** Do the [Windows setup](windows-setup.md) first.
@@ -90,8 +90,8 @@ everything. Walk the full path in
 Set the repo up first with [`/steer:setup`](../workflows/index.md) - it detects
 the repo state and routes:
 
-- **New repo:** -> `/steer:init`
-- **Existing app:** -> [`/steer:adopt`](../workflows/adopt.md)
+- **New repo:** -> `/steer:setup init`
+- **Existing app:** -> [`/steer:setup adopt`](../workflows/adopt.md)
 
 Then walk the [first workflow](first-workflow.md) end to end
 (capture -> spec -> decompose -> work -> PR). On a hookless surface, run

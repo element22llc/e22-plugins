@@ -32,7 +32,7 @@ session in a managed repo and ask something only the loaded standards can answer
 
 !!! note "Prerequisites for the full workflow"
     `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);
-    `/steer:init` and `/steer:build` are the skills that invoke **`/steer:doctor`**
+    `/steer:setup init` and `/steer:build` are the skills that invoke **`/steer:doctor`**
     to resolve it when it's absent - doctor installs **mise and the runtimes it
     manages** on your confirmation, and hands over `git` (a sudo command) and Docker
     Desktop (a GUI app) as steps for you to run. The issue and PR steps additionally need
@@ -78,9 +78,9 @@ session in a managed repo and ask something only the loaded standards can answer
 Run **[`/steer:setup`](../workflows/index.md)** - it detects the repo state and
 routes to the right path, so you don't have to choose:
 
-- **New repo:** installs the bundled scaffold and `/spec` spine (`/steer:init`).
+- **New repo:** installs the bundled scaffold and `/spec` spine (`/steer:setup init`).
 - **Existing app:** reverse-engineers a `/spec` spine from the code and adds the
-  scaffold ([`/steer:adopt`](../workflows/adopt.md)).
+  scaffold ([`/steer:setup adopt`](../workflows/adopt.md)).
 
 Both replace the old static `repository-template` as the bootstrap source.
 
@@ -98,7 +98,7 @@ Both replace the old static `repository-template` as the bootstrap source.
 
 After a new plugin release, run **[`/steer:setup`](../workflows/index.md)** in a
 managed repo - it detects the drift and applies pending migrations, reconciling
-the scaffold and spec spine against the current templates (via `/steer:sync`).
+the scaffold and spec spine against the current templates (via `/steer:setup sync`).
 
 ## Next step
 

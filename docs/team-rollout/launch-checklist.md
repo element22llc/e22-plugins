@@ -8,7 +8,7 @@ a real (or throwaway) repo, not against production work.
 
 - [ ] **Plugin install tested.** `/plugin marketplace add element22llc/e22-plugins`
       then `/plugin install steer@e22-plugins` succeeds in a clean Claude Code.
-- [ ] **`/steer:init` tested.** Runs in a fresh repo and installs the scaffold +
+- [ ] **`/steer:setup init` tested.** Runs in a fresh repo and installs the scaffold +
       `/spec` spine. (See [Adopt](../workflows/adopt.md) for the existing-repo path.)
 - [ ] **`/steer:standards` tested.** Loads the always-on rules on demand -
       confirm it works on a hookless surface (the Desktop *Chat* tab / claude.ai
@@ -42,9 +42,9 @@ a real (or throwaway) repo, not against production work.
       rules, while the static file is the whole standards surface for the Copilot
       cloud agent and code review). **Tell the team the refresh rule:** those files are generated and
       freeze at the plugin version that bootstrapped the repo, so someone runs
-      **`/steer:sync`** after a plugin update - it re-copies them via the
-      `agent-surface-current` capability, and `/steer:sync --check` reports the
-      surface as `mis-wired` when it has fallen behind. `/steer:init` installs but
+      **`/steer:setup sync`** after a plugin update - it re-copies them via the
+      `agent-surface-current` capability, and `/steer:setup sync --check` reports the
+      surface as `mis-wired` when it has fallen behind. `/steer:setup init` installs but
       stops on an already-initialized repo, so it is not the refresh path. See
       [Copilot support](../concepts/copilot-support.md).
 - [ ] **One PO dry run completed.** A non-developer walks

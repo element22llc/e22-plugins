@@ -47,7 +47,7 @@ decider are the same person, and the channel stamp is what keeps it auditable.
 See rule `61-gates` and `/steer:reference gates`.
 
 !!! warning "No ADR from inference"
-    Reverse-engineering skills (`/steer:adopt`) must **never infer a ratified ADR
+    Reverse-engineering skills (`/steer:setup adopt`) must **never infer a ratified ADR
     from code**. An ADR records a decision a human made; the as-built spine
     records what exists. See [Product spine](../concepts/product-spine.md).
 
