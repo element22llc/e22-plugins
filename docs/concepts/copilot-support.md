@@ -257,6 +257,31 @@ gate `check_copilot_agents.py`). The subagent's Claude `tools` (`Read`/`Grep`/
 `search`), so the ported reviewer stays write-free on VS Code the same way it is
 in Claude Code.
 
+## Scope preconditions in the flat file
+
+A scoped rule that is *not* area-specific stays in `copilot-instructions.md`,
+because there is no `applyTo` glob that means "this repo is on the e22 org pack"
+or "this repo's tracker is GitHub". The flat file cannot test a repo trait, so
+the generator states the trait as a **precondition** the reader can check
+instead: `SCOPE_PRECONDITIONS` in `gen_copilot_instructions.py` emits a
+blockquote under the rule's heading -
+
+> **Applies only to a repo on the e22 org pack** - `policy/org.yml` with
+> `pack: e22`, which is also what an absent file means. [...]
+
+Five sections carry one today (the org pack's stack and commands rules, the
+OpenSpec backend, issue-first, and the autonomous-loop rule). The map is keyed by
+**token**, not by rule, so a new trait-scoped rule inherits the qualification
+rather than depending on its author writing a conditional first sentence - and
+`check_copilot_instructions.py` fails when a token appears in neither
+`SCOPE_PRECONDITIONS` nor the deliberate `UNQUALIFIED_TOKENS` exemption list.
+That gate exists because of [#577](https://github.com/element22llc/e22-plugins/issues/577),
+where rule 33 told native `spec/` repos "This repo carries an `openspec/`
+spine".
+
+A **path-scoped** rule (next section) needs none of this: `applyTo` already gates
+the file, so the sentence would be redundant.
+
 ## Path-scoped instructions
 
 Most rules are repo-wide and live in the flat `copilot-instructions.md`. A rule
@@ -417,10 +442,11 @@ the standards in `.github/copilot-instructions.md`.
   offset: it comes from the scaffold's `mise` config
   (`scripts/worktree-env.sh`), not from a hook.
 - **SessionStart *notices* never arrive, so the rules no longer promise them.**
-  Beyond the worktree check above, three always-on rules used to tell the agent a
-  SessionStart hook would flag a condition: a missing `/spec` spine (rule
-  `00-router`), an in-progress `spec/BUILD-STATUS.md` (rule `05-roles`), and
-  recorded hook faults (rule `00-router` § When steer itself misbehaves). Copilot's `sessionStart` ignores
+  Beyond the worktree check above, three always-on *notices* used to tell the
+  agent a SessionStart hook would flag a condition: a missing `/spec` spine
+  (rule `00-router`), an in-progress `spec/BUILD-STATUS.md` (rule `05-roles`),
+  and recorded hook faults (`00-router` § When steer itself misbehaves - two of
+  the three now live in the router, which absorbed the self-report rule in 6.6). Copilot's `sessionStart` ignores
   stdout, so the notice never comes - and its *absence* reads as "condition not
   present," which is worse than no promise at all. Each rule now scopes the flag to
   Claude Code and, where there is something a reader could look for themselves

@@ -38,22 +38,23 @@ When a session opens a folder that is **confidently not a code project** - no gi
 work tree and no code/config markers nearby - steer injects a **lean,
 PO-relevant** ruleset instead of the full engineering manual. This is the typical
 **Claude Cowork** case: a product owner opens a connected folder of specs/docs.
-In that mode only the unmarked rules inject - the router, responses, roles, context-hygiene,
-spec-workflow, decision-capture, living-docs, high-risk, gate-prompts, secrets,
-output-discipline, artifacts, not-the-gate and self-report rules - while every
-rule marked `code-project` / `has-iac` / `has-apps` / `tracker-github` (stack,
-commands, testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
-end-of-session, ...) is **intentionally omitted** to reclaim context budget and cut
-noise (`mise run rules:preview -- --knowledge` shows the exact set and what it
-reclaims), and `orient-session` confirms in plain language that the standards are
-active.
+In that mode only the **unmarked** rules inject - since the 6.6 rule diet that is
+six of eighteen: `00-router`, `03-output`, `05-roles`, `30-spec`, `60-high-risk`
+and `61-gates`. Every rule carrying *any* `inject-when` marker is skipped, whichever
+token it is: the `code-project` set (`35-tracker`, `40-testing`, `45-delivery`,
+`50-done`, `80-change-class`, `85-practices`), the org pack (`10-stack`,
+`15-commands`, `12-stack-infra`), the OpenSpec backend, issue-first, and the
+opt-in loop rule. The skip is **intentional** - it reclaims context budget and
+cuts noise - and `orient-session` confirms in plain language that the standards
+are active.
 
-Two of the injected rules read as code-specific and are always-on anyway, by
-design: **high-risk areas** (rule 60) and **not the gate** (rule 95) name paths
-like `/infra` and `/apps`, but four rules that survive all cross-reference rule
-60 - the router, rule 05's role boundaries, living-docs and secrets - so dropping
-it would break them. Run `mise run rules:preview -- --knowledge` for the authoritative
-inject/skip table.
+One of the injected rules reads as code-specific and is always-on anyway, by
+design: **high-risk areas** (`60-high-risk`, which since 6.6 also carries the
+secrets standard as a section). Three of the five other surviving rules
+cross-reference it - `05-roles` for the PO guardrails, `30-spec` for what needs
+an ADR, and `61-gates` for what is never promptable - so dropping it would break
+them. Run `mise run rules:preview -- --knowledge` for the authoritative
+inject/skip table; the numbers here are from it, not from memory.
 
 The classification is **fail-safe**: a git repo, *any* code/config marker, or any
 uncertainty resolves to full `code` mode - steer never silently drops a rule from
@@ -284,7 +285,7 @@ raises a prompt. Be honest about the tiers:
 - **`PostToolUse` -> `format-on-write.sh`** formats a file after it is written.
   Cosmetic and non-blocking; it never rejects or reverts the write.
 - **`PostToolUse` -> `check-comment-density.sh`** notes a source or config file
-  whose comment lines exceed a third of its non-blank lines (rule
+  whose comment lines exceed a fifth of its non-blank lines (rule
   `03-output` § Code comments). A once-per-file-per-session notice, not a gate - the write
   already happened and is never reverted.
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that

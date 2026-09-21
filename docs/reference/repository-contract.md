@@ -29,7 +29,7 @@ flowchart TD
 | `CHANGELOG.md`, `.changie.yaml`, `.changes/` | scaffold (+ generated) | **The curated changelog.** Entries are written as one YAML **fragment** per change under `.changes/unreleased/` (`mise run changelog:new`); `changie merge` assembles them into `CHANGELOG.md`, which is **generated - never edited by hand**. Curated, not commit-derived: Conventional Commits buy readable history, not release notes (see `/steer:reference conventions` -> Changelog). One file per change is what makes concurrent PRs conflict-free, the same reason `/spec/history/` is a directory. The `ci:changelog` stage fails a PR that changes shipping code without adding a fragment. Release cut: `library`/`cli` run `changie batch auto` (semver from each fragment's kind); `app`/`service` deploy continuously and have no artifact version, so they cut a CalVer ship date at the `prod` promotion. `.changie.yaml` is seeded once and then **the product's** - tune `kinds`, or enable `replacements` to stamp a version into `package.json`. `.changie.yaml` and `.changes/` come from the scaffold; `CHANGELOG.md` itself appears at the first `changelog:merge`. `/steer:sync` *proposes* the repair when they are missing (`changelog-fragments` capability), waiting for a yes, and never parses a pre-existing hand-written `CHANGELOG.md` - it renames it to `CHANGELOG-archive.md` and starts fresh. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` - worktrees start from git refs only, so without it the app can't boot there. Its header also documents worktree **`mise trust`**: trust is path-keyed, so a new worktree starts untrusted and every `mise run ...` there fails on trust until someone trusts it. A Claude Code session inherits the primary checkout's trust automatically - at `SessionStart` for a session started in the worktree, and on `CwdChanged` for one it enters mid-session (the `check-worktree-trust` script, registered twice - see [Hooks](hooks.md)). A **plain terminal**, where no session is watching, is not reached by either registration: run `mise trust` there once. Nor is any Copilot surface, which has no trust hook at all. |
-| `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged) and keeps its bare directory name; a linked worktree's project name is `<repo>-<worktree>`, because a worktree basename alone is not unique across repos. **Re-taking this file renames an existing linked worktree's stack**, so tear a running one down first - under the new project name Compose no longer sees the old containers or volumes (recover with `docker compose -p <old-name> down -v`) - in a polyrepo the same feature branch runs in several members, and a shared project name meant one member's `docker:clean` tore down another's containers and volumes. `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree - spelled `mise run ws:docker:clean` in a **workspace** repo, whose profile replaces core `mise.toml` and prefixes every whole-product task. This `[env]._.source` line is also what makes a new worktree need `mise trust`: mise loads a data-only config untrusted but refuses one that executes code at load time (see the `.worktreeinclude` row above). See the always-on **Parallel worktrees** rule. |
+| `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged) and keeps its bare directory name; a linked worktree's project name is `<repo>-<worktree>`, because a worktree basename alone is not unique across repos. **Re-taking this file renames an existing linked worktree's stack**, so tear a running one down first - under the new project name Compose no longer sees the old containers or volumes (recover with `docker compose -p <old-name> down -v`) - in a polyrepo the same feature branch runs in several members, and a shared project name meant one member's `docker:clean` tore down another's containers and volumes. `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree - spelled `mise run ws:docker:clean` in a **workspace** repo, whose profile replaces core `mise.toml` and prefixes every whole-product task. This `[env]._.source` line is also what makes a new worktree need `mise trust`: mise loads a data-only config untrusted but refuses one that executes code at load time (see the `.worktreeinclude` row above). See the **Parallel worktrees** section of rule `45-delivery`. |
 | `CLAUDE.md` | product | **Only** product-specific context - standards prose is never duplicated here. Carries the `<!-- steer:profile=... -->` marker (see Repo profiles). |
 | `/apps`, `/packages` | product | **Empty at bootstrap - the scaffold ships no starter app.** The bundled scaffold deliberately carries no placeholder to delete: the *first real app* is created for the chosen stack, by `/steer:build` step 5 in a PO build or by the dev following the spec-first loop. `pnpm dev` / `db:migrate` / `db:seed` no-op harmlessly until it exists, and `apps/README.md` says the folder starts empty until the app that fills it lands. The one exception is a fork of the retired static `repository-template`, which does carry `apps/web` + `packages/core` - `/steer:init` **Path A** swaps or removes it. |
 | `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root - narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Its staleness is checked by `/steer:audit code` (the DX & docs dimension), not by `/steer:audit spec` - that mode is spec-vs-spec, diffing the as-built `/spec` spine against the tracker spec export and reading neither the code nor this file. Required at the root by rule `30-spec` § Living documentation (and the layout conventions in `/steer:reference conventions`), and allowlisted there by the housekeeping standard (`HOUSEKEEPING.md`) so `/steer:tidy` never proposes relocating it. |
@@ -99,22 +99,69 @@ repo may drop the paired `scripts/worktree-env.sh` (and its `mise.toml`
 only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker - they self-gate on filesystem
-**traits** via the `inject-when` mechanism, so the injected rule context always
-matches what is on disk. Only four expressions actually gate a
-shipped rule: `code-project` (the code-loop rules, enumerated in
-[Configuration & rules](configuration.md#the-ruleset)), `has-iac` (`12-stack-infra`),
-`tracker-github` (`36-issue-first`) and the composite `has-iac|has-apps`
-(`45-delivery` § Deployment & environments) - so `has-apps` appears only inside that composite.
-`lib/scope.sh` also defines `has-compose`, `has-infra`, `polyrepo`,
+**traits** and on what `policy/` declares, via the `inject-when` mechanism, so
+the injected rule context always matches what is on disk. Six expressions gate a
+shipped rule today:
+
+| Expression | Rules |
+|---|---|
+| `code-project` | the code-loop rules, enumerated in [Configuration & rules](configuration.md#the-ruleset) |
+| `org-e22` | `10-stack`, `15-commands` |
+| `has-iac&org-e22` | `12-stack-infra` |
+| `has-openspec` | `33-spec-workflow-openspec` |
+| `tracker-github` | `36-issue-first` |
+| `automation-optin` | `53-autonomous-loops` |
+
+`lib/scope.sh` also defines `has-apps`, `has-compose`, `has-infra`, `polyrepo`,
 `has-workspace-manifest` and `has-product-pointer`, all of which are
 **available but carry no rule today** - the polyrepo topology is deliberately
 delivered by a SessionStart note rather than an always-on rule, so the existence
-of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
-still gets the infra-stack rule automatically because `/infra` exists. The
-deployment rule reaches it either way: it gates on `has-iac` **or** `has-apps`,
-since any app/service repo deploys - with or without an `/infra` dir. The
+of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. Nor is
+any shipped rule currently composed with `|`; the one composite in use is the
+`&` above.
+
+A monorepo that *also* has a nested `/infra` dir stays profile `app` and gets
+the infra-stack rule when it is on the e22 org pack, since `has-iac` holds and
+`org-e22` is what an absent `policy/org.yml` means. Deployment guidance reaches
+it regardless: since the 6.6 rule diet that is a section of `45-delivery`, which
+is `code-project`, and a repo that deploys nowhere says so in
+`policy/delivery.yml` (`environments: []`) rather than being skipped. The
 profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
 (an informational `profile` fingerprint) for reporting and overlay decisions.
+
+## Org packs - which house defaults reach the repo
+
+A **profile** says what shape the repo is (app, infra, library, cli, workspace).
+An **org pack** says whose defaults it follows, and the two are independent: an
+infra repo on the e22 pack gets OpenTofu + Terragrunt, an infra repo on no pack
+gets the vendor-neutral core and picks its own.
+
+The repo declares its pack in `policy/org.yml`:
+
+```yaml
+schema: 1
+pack: e22   # any other value drops the pack
+```
+
+**An absent file reads as `e22`.** That is the upgrade contract, not a fallback:
+every repo bootstrapped before packs existed was built against these defaults,
+so absence has to mean the status quo and opting out has to be the deliberate
+edit. `/steer:sync` seeds the file from a migration-ledger entry, changing
+nothing, so the choice becomes visible and editable.
+
+| | `pack: e22` | any other value |
+|---|---|---|
+| Stack defaults (`10-stack`) | Next.js + TS + Tailwind, Node + PostgreSQL + Drizzle, pnpm/uv, Biome/Ruff, Vitest/pytest, Better Auth, Sentry | not delivered |
+| Useful commands (`15-commands`) | `mise run dev:setup`, `pnpm dev`, `uv run`, the profile task map | not delivered |
+| IaC stack (`12-stack-infra`) | OpenTofu + Terragrunt on AWS, delivered when the repo also does IaC | not delivered |
+| Secrets at rest | SSM Parameter Store `SecureString`, Secrets Manager for rotation | rule `60-high-risk` says "the declared store" and asks |
+| Baseline patterns (`85-practices`) | stated as principles, with the pack naming each instance | stated as principles, unchanged |
+
+Dropping the pack does **not** relax anything: the patterns rule, the Definition
+of Done, testing, spec coupling and the high-risk gates are all pack-independent,
+and choosing a different stack is still an ADR. The pack decides which defaults
+are *delivered*, never whether a choice needs recording. Full prose:
+`/steer:reference conventions` -> "Org packs".
 
 ## Root housekeeping
 

@@ -107,7 +107,7 @@ which is what makes a clean rollback possible.
 ## Secrets & config at rest
 
 Secrets and configuration are injected at deploy/runtime - **never baked into
-images or CI logs**. See the secrets-handling rule and
+images or CI logs**. See rule `60-high-risk` § Secrets handling and
 [Configuration](../reference/configuration.md) for where this is enforced.
 
 ## Related

@@ -1,0 +1,24 @@
+kind: Fixed
+body: |
+  - **Fixed: the docs pages that describe rule scoping caught up with the rule
+    diet.** `repository-contract.md` still claimed "only four expressions gate a
+    shipped rule" and named the composite `has-iac|has-apps` - there are six
+    expressions, no shipped rule uses `|` any more, and `has-apps` gates nothing
+    since deployment became a section of the `code-project` rule `45-delivery`.
+    `hooks.md` carried the same dead composite as its live example of OR
+    composition. `known-limitations.md`'s knowledge-work section listed an
+    inject set of fourteen rules, eleven of which no longer exist; the real set
+    is six, and the page now says so and points at `rules:preview --knowledge`
+    as the authority. It also said the comment-density hook fires above a third
+    of a file's lines - the block tier retired in 6.5 and the one remaining
+    threshold is a fifth, as `hooks.md` already said.
+  - **The org pack and the Copilot precondition mechanism are documented.** A
+    new "Org packs" section in `repository-contract.md` covers `policy/org.yml`,
+    what `pack: e22` delivers against what the vendor-neutral core keeps, and
+    why an absent file means `e22`. `copilot-support.md` gains the
+    `SCOPE_PRECONDITIONS` mechanism - the inline "Applies only to a repo on the
+    e22 org pack" blockquote - which is the flat artifact's answer to a trait no
+    `applyTo` glob can express, and the gate that keeps a new token from
+    shipping unqualified.
+custom:
+  Slug: docs-rule-diet
