@@ -7,7 +7,7 @@ delivered in several SessionStart parts, because Claude Code caps one hook
 command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 
 !!! note "Numbering has intentional gaps"
-    Prefixes are spaced (e.g. `20` -> `22` -> `30`) so new rules can slot between
+    Prefixes are spaced (e.g. `15` -> `30` -> `35`) so new rules can slot between
     existing ones. Gaps are headroom - files are never renumbered to make the
     sequence contiguous.
 
@@ -21,13 +21,13 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `10-stack.md` | Stack defaults (app / service profile) - **e22 org pack** (`inject-when=org-e22`), and the home of the baseline patterns' default-stack instances and the deployed secret-store default. |
 | `12-stack-infra.md` | Stack - infrastructure / IaC. **e22 org pack**, injected when the repo does IaC *and* follows the pack (`inject-when=has-iac&org-e22`). |
 | `15-commands.md` | Useful commands - **e22 org pack** (`inject-when=org-e22`). |
-| `30-spec.md` | **The product spine**, in four parts. *Spec workflow* - the triggers that create an artifact (feature intent + contract, ADR by reversal cost, contract on a behavior change, open questions, a tracker-born feature), plus the brownfield sequence, the bootstrap-first rule (`/steer:setup`) and UI work with or without a design export. *Durable decisions* - a decision belongs in the spine, never only in chat or assistant memory, and bootstrap comes before the capture. *Living documentation* - update the owning artifact in the same change as the code, with the notable-event rule for `/spec/history/`, "applying a settled decision is not a new decision", the internal-ids ban on end-user copy, and the polyrepo member's write-through. Full routing table in the `traceability` reference. |
+| `30-spec.md` | **The product spine**, in three parts. *Spec workflow* - the triggers that create an artifact (feature intent + contract, ADR by reversal cost, contract on a behavior change, open questions, a tracker-born feature), plus the brownfield sequence, the bootstrap-first rule (`/steer:setup`) and UI work with or without a design export. *Durable decisions* - a decision belongs in the spine, never only in chat or assistant memory, and bootstrap comes before the capture. *Living documentation* - update the owning artifact in the same change as the code, with the notable-event rule for `/spec/history/`, "applying a settled decision is not a new decision", the internal-ids ban on end-user copy, and the polyrepo member's write-through. Full routing table in the `traceability` reference. |
 | `33-spec-workflow-openspec.md` | Spec workflow - OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs, the tracker declaration and the app guide stay steer's, under `openspec/steer/`. |
 | `35-tracker.md` | Issue-tracker integration, client-agnostic - `/spec/tracker.md` declares the system and ref format; refs live in the intent, the PR and the history entry; a question stays a `Q-NNN` open question until it needs an owner, blocks several features, needs outside input, or would outlive the session, and is then promoted to an issue. On GitHub, `/steer:issues` is the lifecycle and `/steer:tracker-sync` the gateway. |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing - a feature change carries its tests in the same PR, a bug fix carries a regression test that fails before and passes after, and a failing test is never deleted or skipped to make CI pass. Coverage is a signal, not a target: cover what you touch, prioritise critical paths and error handling, surface a drop on changed code as drift, and gate only changed-line coverage - the reviewer judges adequacy. |
 | `45-delivery.md` | **How work reaches users**, in three parts. *Commit autonomy* - commit, push and open the PR without asking; the merge is the gate. Two declared modes, pr-flow (the default) and solo trunk, with `/steer:protect` moving a repo between them; Conventional Commit subjects and a changelog fragment for anything that ships; CI watched to conclusion after every push (see [Authorization model](../concepts/authorization-model.md)). *Deployment & environments* - the repo declares its model in `policy/delivery.yml` and the rule follows it, with the observability, rollback and secrets-at-rest baselines; merge and deploy stay human in every model. *Parallel worktrees* - trust the worktree, start services through `mise` so the per-worktree isolation applies, and clean up what you started. |
-| `50-done.md` | **What finishing a change means**, in four sections. *Definition of Done* - five items: intent understood, appropriately tested, CI green, the contracts and docs this change actually affected updated, merge and deploy through the required human gates; deliberately not a restatement of every other rule, and deferred (never waived) under a declared production hotfix. *Verify loop* - name the check that proves the task done, loop against the harness until green, cap the loop and report what blocked you, never loop on uncheckable work. *Drift gates* - surface drift before merge by flagging its class in the PR; a flagged class blocks merge and you may not waive your own flag. *Audit-aligned delivery* - aligned with SOC 2 / ISO 27001, never "compliant". *End-of-session checklist* - report open items only. |
+| `50-done.md` | **What finishing a change means**, in four sections plus the audit-alignment clause. *Definition of Done* - five items: intent understood, appropriately tested, CI green, the contracts and docs this change actually affected updated, merge and deploy through the required human gates; deliberately not a restatement of every other rule, and deferred (never waived) under a declared production hotfix. *Verify loop* - name the check that proves the task done, loop against the harness until green, cap the loop and report what blocked you, never loop on uncheckable work. *Drift gates* - surface drift before merge by flagging its class in the PR; a flagged class blocks merge and you may not waive your own flag. *Audit-aligned delivery* - aligned with SOC 2 / ISO 27001, never "compliant". *End-of-session checklist* - report open items only. |
 | `53-autonomous-loops.md` | Autonomous loops - automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). **Opt-in** (`inject-when=automation-optin`): injected only where the repo declares `policy/automation.yml` with `loops: true`, which `/steer:loop scaffold` writes alongside the workflow. |
 | `60-high-risk.md` | High-risk areas - auth, authorization, migrations, infrastructure, secrets, deletion, billing, deploy/release logic: scope with the dev before any code, contract or ADR first. Relaxed only while the **product** is pre-production, and never for real secrets, `/infra`, deploys or real third-party calls. Its *Secrets handling* section carries the never-commit rule, the local `.env` bootstrap, and "deployed secrets live in the declared store". |
 | `61-gates.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Its *Hotfix / incident fast-path* section holds the one sanctioned speed lever for a production incident (`/steer:work --hotfix`), which relaxes ceremony and ordering, keeps every authority gate, and owes a mandatory follow-up. Full protocol in the `gates` reference. |
@@ -41,7 +41,10 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `40-testing`, `45-delivery`, `50-done`,
     `80-change-class`, `85-practices` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
-    non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
+    non-code folder, e.g. a Claude Cowork product-owner workspace). So is every
+    *other* marked rule: knowledge mode skips a rule for carrying **any**
+    `inject-when` marker, before the predicate is even evaluated, so the org
+    pack goes too. `12-stack-infra`,
     `33-spec-workflow-openspec`, `36-issue-first` and
     `53-autonomous-loops` are likewise
     scoped - respectively to
@@ -76,6 +79,14 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     The router names them so a session routes there rather than improvising, and
     keeps the two context lines that bind no particular skill (delegate a heavy
     sweep; route a durable fact to disk, never to private session memory).
+
+    The 6.6 rule diet applied the same principle *inside* the surviving rules:
+    the greenfield and adopt walkthrough, the living-documentation routing
+    table, the worktree isolation mechanics, the mise task-ordering rules, the
+    solo-trunk waiver procedure and the deployment baselines' rationale all live
+    in `SPEC-FRAMEWORK.md`, `TRACEABILITY.md`, `CONVENTIONS.md` and `GATES.md`.
+    Each rule keeps the sentence a session must act on without loading anything,
+    and names the reference for the rest.
 
 ## Code intelligence (LSP)
 

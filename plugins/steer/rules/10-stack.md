@@ -11,29 +11,22 @@ full setup detail: `/steer:reference conventions`. When you pick or change a
 piece, verify the current stable version in-session via the bundled `context7`
 MCP server - never from training-data memory.
 
-These bullets are the **app / service** profile (the default). An **infra**
-repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
-*primary* stack - IaC toolchain at the root, no Node/web layer; a **library**
-or **cli** follows its own package language and skips the app/web/compose
-bullets; a **workspace** has no app stack. `/steer:init` records the profile; the universal core (mise pinning,
-`/spec` spine, CI hygiene) is the same for all.
+These bullets are the **app / service** profile, the default. An infra,
+library, cli or workspace repo keeps the universal core - mise pinning, the
+`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:init`
+records which.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
-  Next.js app (Route Handlers, Server Actions, server components). A
-  standalone `apps/api`, or Python + FastAPI + PostgreSQL, only when intent
-  clearly warrants it - either split is an ADR.
+  Next.js app. A standalone `apps/api`, or Python + FastAPI, only when intent
+  warrants it - either split is an ADR.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS (e.g. ECS) via Actions - confirm the target per app; each
-  deployable `apps/<app>` carries a `Dockerfile` (built by CI when present).
-  Promotion, environments, and the `prod`-branch gate: Deployment &
-  environments.
-- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE
-  work; on the Claude Desktop Code tab, Git for Windows is enough.
+  **Deploy:** AWS via Actions - confirm the target per app; each deployable
+  `apps/<app>` carries a `Dockerfile`, built by CI when present.
+- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI work.
 - **Editor:** VS Code; committed `.vscode/` config ships in the scaffold.
 - **Lint/format:** Biome (Node/TS), Ruff (Python) - each is the lint *and*
-  format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an
-  ADR.
+  format tool; nothing alongside them without an ADR.
 - **Testing:** Vitest (Node/TS), pytest (Python).
 - **Auth:** Better Auth - high-risk; scope with the dev and write an ADR
   first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
@@ -41,25 +34,22 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 - **Secret store (deployed):** SSM Parameter Store `SecureString` - what Secrets
   handling means by "the declared store". Secrets Manager only for rotation,
   cross-account sharing, or large/binary values.
-- **Local services:** Docker Compose via a committed `compose.yaml` - adapt the
-  bundled scaffold one, don't author from scratch. **Same engine locally as
-  deployed** (no SQLite stand-in for PostgreSQL); **every published host port
-  overridable** - `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` -
-  with the override var in `.env.example`. A plugin hook denies stale
-  image-major pins (only an *ask* on the Copilot CLI), so keep pins current
-  yourself (exceptions: ADR + `# steer:allow-pin`).
-- **Task running:** mise is the single task entry point; environment tasks live
-  in `mise.toml`, not `package.json`. Standard entry point `mise run dev:setup`
-  (idempotent: services up -> migrate -> seed) - keep it green. Declare ordering
-  with `depends` / `depends_post`, never `run = ["mise run ..."]` chains.
-  App-level Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
-  `package.json` and a mise task may delegate to them - delegation is
-  **one-way**. Compose a polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`),
-  never a root `concurrently` script; let `[deps.pnpm]` / `[deps.uv]`
-  (`auto = true`) install on lockfile change.
+- **Local services:** Docker Compose via a committed `compose.yaml`, adapted
+  from the bundled scaffold. **Same engine locally as deployed** (no SQLite
+  stand-in for PostgreSQL) and **every published host port overridable** -
+  `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` - with the override
+  var in `.env.example`. Keep image majors current; an older pin needs an ADR
+  plus `# steer:allow-pin`.
+- **Task running:** mise is the single task entry point, and `mise run
+  dev:setup` (idempotent: services up -> migrate -> seed) is the standard entry -
+  keep it green. Environment tasks live in `mise.toml`, not `package.json`; a
+  mise task may delegate to an app-level script, one way only.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` - bootstrap and storage
   rules in Secrets handling.
+
+Task-ordering mechanics, the auto-install blocks, the polyglot `dev` task and
+the per-profile layouts are in `/steer:reference conventions`.
 
 **Patterns, instantiated here:** typed by default -> TS `strict` / Python hints
 under a type checker; parameterized data access -> Drizzle Kit or SQLAlchemy +

@@ -11,15 +11,14 @@ mutation** in exactly two cases:
   decision or acceptance to record, or a follow-up discovered along the way.
 
 Everything else - a Trivial change, an ordinary Behavioral fix nobody is
-tracking, `/spec` edits, documentation, generated output, lockfiles, a
-plugin-maintenance sync - needs no issue: **the PR is the work record**. Reuse
-the issue the user names; otherwise find-or-create one through
-`/steer:tracker-sync`. An explicit "fix / implement / add / create" request does
-**not** need confirmation to create it.
+tracking, `/spec` edits, documentation, generated output, lockfiles - needs no
+issue: **the PR is the work record**. Reuse the issue the user names, else
+find-or-create one through `/steer:tracker-sync`; an explicit "fix / implement /
+add" request needs no confirmation to create it.
 
 - **Capture-only and ambiguous language do not auto-create.** "Note this" / "we
-  should eventually..." is captured deliberately, never inferred into a batch. A
-  large inferred batch takes one confirmation; security-sensitive public
+  should eventually..." is captured deliberately, never inferred into a batch; a
+  large inferred batch takes one confirmation, and security-sensitive public
   disclosure takes human review.
 - **Implementation runs through `/steer:work`** - claim, branch, implement,
   test, open the PR, transition the issue. **Solo trunk keeps the issue and

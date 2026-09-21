@@ -13,16 +13,12 @@
 - **Deploy:** promotion via merge (`main` -> non-prod, `prod` PR -> prod) - see
   Deployment & environments; there is no `pnpm deploy` task.
 
-The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
-uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
-`infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) - see Stack -
-infrastructure. A **workspace** (polyrepo spine) repo holds no code, so it has no
-`dev:setup` or linters at all: its tasks are `ws:`-prefixed (`ws:clone`,
-`ws:docker:up`, `ws:dev`) and each member repo runs its own. The `mise trust &&
-mise install` first step is universal; `mise tasks` lists what a repo really has.
+The `pnpm`/`uv` lines are the **app / service** profile. An infra repo uses
+`mise run infra:*` instead, and a workspace repo's tasks are all `ws:`-prefixed;
+`mise trust && mise install` is universal, and `mise tasks` lists what a repo
+really has.
 
 Commands assume mise is activated and **wins PATH** over any other version
-manager (nvm/asdf/volta/fnm) - otherwise bare `pnpm`/`node` silently run a
-global version. "tool not found" -> mise not activated; *wrong/old* version ->
-shadowed. Either way run `/steer:doctor`; activation-order rationale:
-`/steer:reference conventions`.
+manager - otherwise a bare `pnpm` or `node` silently runs a global version.
+"Tool not found" means mise is not activated; a *wrong* version means it is
+shadowed. Either way, run **`/steer:doctor`**.

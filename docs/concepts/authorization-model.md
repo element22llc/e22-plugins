@@ -2,8 +2,8 @@
 
 `steer` draws a deliberate line between actions that are **cheap and reversible**
 (done autonomously) and actions that are **outward-facing or hard to reverse**
-(gated on a human). This is codified in the always-on rule
-`45-delivery.md` and reinforced by `00-router.md` § You are not the gate.
+(gated on a human). This is codified in rule `45-delivery.md` (injected in any
+code repo) and reinforced by the always-on `00-router.md` § You are not the gate.
 
 ```mermaid
 flowchart TD
