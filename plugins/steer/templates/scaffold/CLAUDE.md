@@ -20,7 +20,7 @@ or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
 > app - it runs the first-run setup for you.
 >
 > On-demand helpers from the plugin: `/steer:spec` (new feature
-> spec), `/steer:adr <slug>` (architecture decision), and
+> spec), `/steer:spec adr <slug>` (architecture decision), and
 > `/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`
 > (full reference prose). If the plugin isn't installed, your teammate will be prompted to install
 > it when they trust this folder.
@@ -88,7 +88,7 @@ carries `spec/workspace.yml` and the `/spec` spine but no application code
 ## Stack overrides
 
 The default stack (injected by the plugin) applies unless overridden. Record
-any deviation as an ADR under `/spec/decisions/` (run `/steer:adr`) and note it here.
+any deviation as an ADR under `/spec/decisions/` (run `/steer:spec adr`) and note it here.
 The current as-built stack and how the pieces fit together live in
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) - this section holds only the *deviations*.
 

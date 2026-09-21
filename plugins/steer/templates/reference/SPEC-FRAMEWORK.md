@@ -48,14 +48,14 @@ validation, and operation. Treat it as infrastructure.
 ```
 
 The canonical templates are shipped by this plugin. Use `/steer:spec <id>`
-to create a feature's `intent.md` + `contract.md`, and `/steer:adr <slug>` for an
+to create a feature's `intent.md` + `contract.md`, and `/steer:spec adr <slug>` for an
 ADR - both instantiate from the bundled templates so structure never drifts per feature.
 
 **Open questions live next to their context, not in a separate file.** A question
 about one feature goes in that feature's `intent.md` -> `## Open questions`; a
 product-level question (flagged before any feature exists - greenfield vision
 interview, whole-repo adoption) goes in `vision.md` -> `## Open questions`. Run
-**`/steer:questions`** to sweep every open question across the spine and drive each
+**`/steer:spec questions`** to sweep every open question across the spine and drive each
 to an answer (or an explicit deferral) - otherwise they accumulate and rot.
 
 ### Open-question format (machine-readable)
@@ -351,7 +351,7 @@ additive reconciliation - read-then-propose, never clobber filled-in content,
 - **Reference prose** (`templates/reference/*`) is read in place from the plugin,
   never copied into the repo, so it is always current via `/plugin update` -
   there is nothing to reconcile.
-- **ADRs** (`/steer:adr`) are immutable, point-in-time records. Each run creates a
+- **ADRs** (`/steer:spec adr`) are immutable, point-in-time records. Each run creates a
   new numbered file; you never retrofit new template sections into an accepted
   ADR. Supersede with a new ADR instead (see *Architecture Decision Records*
   above) - never edit history to match a newer template.

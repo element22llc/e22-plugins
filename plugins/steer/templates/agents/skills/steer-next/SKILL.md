@@ -45,7 +45,7 @@ the only tool that sweeps unrelated workspace state and picks a single winner.
 It changes **nothing**. It reconstructs, classifies, arbitrates, and recommends -
 it never edits, commits, publishes, accepts an ADR, claims work, pushes a branch,
 merges, or creates a PR. It also never *resolves* a state itself: it names the
-owning skill (`/steer-work`, `/steer-spec`, `/steer-questions`, ...) as the place that
+owning skill (`/steer-work`, `/steer-spec`, `/steer-spec questions`, ...) as the place that
 does.
 
 ## Modes
@@ -83,7 +83,7 @@ them, and it does not duplicate each skill's domain table.
 ## Relationship to the workflow skills - it routes, they execute
 
 `/steer-next` recommends; the owning skill executes. It surfaces *that* a blocking
-question gates feature A and names `/steer-questions`; it does not answer the
+question gates feature A and names `/steer-spec questions`; it does not answer the
 question here. It flags a stale tracker state and names `/steer-work resume #N`; it
 does not reconcile it here.
 
@@ -246,7 +246,7 @@ keep the technical detail for devs. Emit, in order:
    when a real command performs it. A human gate still gets **no command for the
    decision itself** - but where the decision is answerable in-session (ADR
    ratification, PO intent approval; rule `61-gates`) the line names the
-   skill that *collects and records* the answer - `/steer-adr`, `/steer-spec` -
+   skill that *collects and records* the answer - `/steer-spec adr`, `/steer-spec` -
    which is a real command. PR review, secret rotation, merge, and deploy stay
    command-less: no prompt substitutes for them. Aggregate candidates across the
    whole workspace; each entry names its feature/issue so the source is clear.

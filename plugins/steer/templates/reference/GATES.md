@@ -42,7 +42,7 @@ decision** (§4).
 
 | Gate | Transition | Decides | Skill that writes it |
 |---|---|---|---|
-| **ADR ratification** | `Proposed -> Accepted` | the ADR's `Deciders` | `/steer:adr accept <n>` |
+| **ADR ratification** | `Proposed -> Accepted` | the ADR's `Deciders` | `/steer:spec adr accept <n>` |
 | **Intent approval** | `draft -> approved` | the PO | `/steer:spec approve <id>` |
 | **Plan sign-off** | vetted plan -> implementation | whoever asked for the work | `/steer:work --reviewed` |
 
@@ -51,12 +51,12 @@ channel** for the answer, not a new transition and not a second writer:
 
 - `/steer:spec approve` remains the **single writer** of `draft -> approved`. A
   prompt answered `Approve` delegates there; it never inlines the field edits.
-- `/steer:adr accept` is the only writer of `Proposed -> Accepted`, and refuses on
+- `/steer:spec adr accept` is the only writer of `Proposed -> Accepted`, and refuses on
   `Superseded` / `Deprecated`.
 - Every precondition still fires **before** the prompt is offered. Notably the
   intent **blocking-question gate** (`impact: blocking` +
   `required_before: intent-approval` + unresolved): if it fails, the prompt is
-  not shown at all - route to `/steer:questions` instead. Never present a gate a
+  not shown at all - route to `/steer:spec questions` instead. Never present a gate a
   human cannot legitimately pass.
 
 ---

@@ -1,7 +1,7 @@
 ---
 name: steer-spec
-description: Spec-only brainstorm for a feature - author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. Ends at an approved intent, not a build.
-argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all]]'
+description: Spec-only brainstorm for a feature - author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. `questions` sweeps the whole spine's open questions and `adr` records a hard-to-reverse decision. Ends at an approved intent, not a build.
+argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all] | questions | adr]'
 ---
 
 <!-- Generated from the steer plugin's skills/spec/SKILL.md - do not edit by hand.
@@ -10,10 +10,9 @@ argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | vali
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to think a feature through before committing to implementation, shape acceptance criteria, or validate a spec's question state. Works spec-only on an unmanaged repo (lite mode) - no bootstrap required.
+**When to use.** Use to think a feature through before committing to implementation, shape acceptance criteria, or validate a spec's question state. Works spec-only on an unmanaged repo (lite mode) - no bootstrap required. `questions` works down accumulated open questions and, as `questions bundle`, hands a Product Owner every feature's questions at once as a fillable questionnaire; `adr` records a hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, tenancy) as a numbered ADR, and `adr accept <n>` is the only path from Proposed to Accepted.
 
-<!-- steer:modes default,approve,clarify,validate -->
-
+<!-- steer:modes default,approve,clarify,validate,questions,adr -->
 # Brainstorm a feature spec - no build
 
 A **design-studio loop**: author and iterate a feature's spec and drive its open
@@ -25,6 +24,35 @@ It orchestrates the existing spec pieces behind one door: scaffold the spine
 (`/steer-questions` behavior), and optionally hand the result to
 `/steer-tracker-sync` to file a tracker item - but it never crosses into
 implementation.
+
+## Modes
+
+The default mode is the brainstorm loop below. `questions` and `adr` **delegate**
+to the internal skill that owns the work - load it on entry and follow it; never
+restate its steps here.
+
+| Mode | What it does | Owning skill |
+|---|---|---|
+| `default` | Author and iterate one feature's `intent.md` (+ `contract.md`), drive its questions to resolution | - |
+| `approve <id>` | Flip the intent's `Status: draft` to `approved` - the PO's gate | - |
+| `clarify <id>` | Sweep **this draft** for gaps: edge cases, error paths, scope | - |
+| `validate [<id> \| --all]` | Check the open-question contract and intent/contract/tracker consistency | - |
+| `questions` | Sweep the **whole spine's** open questions and drive each to an answer; `questions bundle [<id>]` renders the PO-answerable ones as one fillable questionnaire | `/steer-questions` |
+| `adr` | Record a hard-to-reverse choice as a numbered ADR; `adr accept <n>` writes the `Proposed -> Accepted` transition its Deciders ratify | `/steer-adr` |
+
+Both are `user-invocable: false` - a user reaches them **only** through this door,
+so a recommendation you hand back names `/steer-spec <mode>`, never the owning
+skill.
+
+**`clarify` and `questions` are not the same sweep.** `clarify` interrogates one
+draft you are writing now, for gaps the author can close alone. `questions` walks
+every `## Open questions` block already recorded across the spine, most of which
+need a human answer. "Is this spec complete?" is `clarify`; "let's answer the
+open questions" is `questions`.
+
+**`adr accept <n>` and `approve <id>` are human gates** (rule `61-gates`), so
+they are never taken on your own initiative, and the sub-arguments do not appear
+in `argument-hint` - the table above is where they are discoverable.
 
 ## The defining guardrail - never builds
 
@@ -58,6 +86,17 @@ rather than scaffolding the spine ad hoc, and the never-builds guardrail is
 unchanged. At close, surface **one** follow-up: `/steer-setup` graduates the
 repo (spine, scaffold, toolchain) when the team is ready to build - a next
 step, never a precondition for the spec work itself.
+
+**Lite mode does not extend to every mode.** The brainstorm loop, `clarify`,
+`approve` and `validate` all work on the one feature directory
+`/steer-spec-scaffold` creates, so they run. `questions` sweeps a spine that
+does not exist and `adr` writes `/spec/decisions/`, which decision capture
+presumes a bootstrap installed (rule `30-spec` § Durable decisions) - so both
+**stop and route to `/steer-setup`** on an unmanaged repo, which each owning
+skill gates on itself (`adr` step 1, `questions` step 0) - so the same thing
+happens when `/steer-issues` or `/steer-intake` reaches the sweep without coming
+through this door. Say which mode was asked for and why it needs the spine;
+don't silently downgrade it to the brainstorm loop.
 
 ## Steps
 
@@ -126,7 +165,7 @@ step, never a precondition for the spec work itself.
 
    | Observed state | Category | Action / suggested command |
    |---|---|---|
-   | Open `impact: blocking` question on this feature | Blocking now | Resolve it - `/steer-questions` |
+   | Open `impact: blocking` question on this feature | Blocking now | Resolve it - `/steer-spec questions` |
    | Intent drafted, PO in the session | Human decision required | Answer the approval prompt - on Approve, `/steer-spec approve` |
    | Intent drafted, PO is someone else | Human decision required | PO reviews & approves the intent (no command) |
    | Behavior demands a contract that isn't written | Required before initial production | Author `contract.md` |

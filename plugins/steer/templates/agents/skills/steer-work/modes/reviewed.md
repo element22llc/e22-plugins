@@ -34,8 +34,8 @@ stopping rules: [`REVIEW-LOOP.md`](https://github.com/element22llc/e22-plugins/b
   `finish` - merge still waits for the reviewer.
 - **A blocking `Proposed` ADR is answerable too.** If the issue is gated on an ADR
   awaiting its Deciders and a Decider is in the session, offer ratification via
-  `/steer-adr` rather than stalling the issue - on Approve it flips through
-  `/steer-adr accept <n>` and implementation continues in the same pass.
+  `/steer-spec adr` rather than stalling the issue - on Approve it flips through
+  `/steer-spec adr accept <n>` and implementation continues in the same pass.
 - **Implement** via the normal `start`->`finish` flow - do not stand up a second
   path.
 - **Code gate - independent.** After implementing, run `/code-review` on the diff

@@ -31,8 +31,8 @@ bootstrap routes would lay a second, competing spine.
 **Three artifacts are steer's, because OpenSpec has no equivalent - and on this
 repo they live under `openspec/steer/`, NOT in `spec/`:**
 
-- **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
-  change's `design.md` is per-change and is archived with it; a hard-to-reverse
+- **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:spec adr`**). A
+  change's `design.md` is per-change and archived with it; a hard-to-reverse
   choice has to outlive the change that made it.
 - **Tracker declaration** -> `openspec/steer/tracker.md`. It declares the issue
   tracker and is what issue-first enforcement reads. OpenSpec models no tracker.

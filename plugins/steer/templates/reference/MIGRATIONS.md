@@ -677,7 +677,7 @@ Name the file and say what to carry forward.
 ### v3.24.0 - `PRODUCTIONIZATION.md`'s open-question seed becomes a `### Q-NNN` block
 
 - **What & why:** the `## Open questions` seed in `spec/PRODUCTIONIZATION.md` was a single
-  bracketed **bullet**. Both the SessionStart open-questions hook and `/steer:questions`
+  bracketed **bullet**. Both the SessionStart open-questions hook and `/steer:spec questions`
   parse `### Q-NNN` blocks only, so a question written as a plain bullet - which is
   exactly what that seed modelled - is counted by **neither**: it never ages into the
   14-day blocking escalation and never appears in a sweep. The seed is now prose plus a
@@ -1337,7 +1337,7 @@ Name the file and say what to carry forward.
   [Template reconciliation](SPEC-FRAMEWORK.md) against `templates/spec/tracker.md`
   to splice in the frontmatter **without overwriting edited values** (system,
   repository, ref format). Converting existing free-form `## Open questions` to
-  the structured `Q-NNN` format is **opportunistic** - let `/steer:questions` do it
+  the structured `Q-NNN` format is **opportunistic** - let `/steer:spec questions` do it
   when it next touches a question, not as a bulk rewrite.
 
 ### v1.25.0 - standalone `SPEC-QUESTIONS.md` retired; open questions move into the spine
@@ -1349,11 +1349,11 @@ Name the file and say what to carry forward.
   `spec/PRODUCTIONIZATION.md`). A fork from an older template revision still
   carries the file; additive reconciliation cannot delete it, so only a
   migration may. The SessionStart hook (`check-open-questions.sh`) surfaces the
-  retired file every session, and **`/steer:questions` (default mode) applies
+  retired file every session, and **`/steer:spec questions` (default mode) applies
   this entry as a hard gate before its sweep** - so the heal usually happens on
-  first touch rather than waiting for a sync. `/steer:questions bundle` is
+  first touch rather than waiting for a sync. `/steer:spec questions bundle` is
   read-only and never applies it: it includes the file's `## Open` items in its
-  gather untouched, with a notice to run the default `/steer:questions` first.
+  gather untouched, with a notice to run the default `/steer:spec questions` first.
 - **Precondition:** the retired file exists - this check fires:
 
   ```sh

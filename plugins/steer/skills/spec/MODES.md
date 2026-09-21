@@ -11,7 +11,7 @@ intent is presented for approval (step 4 of the default flow) or on demand.
 It interrogates the draft against the classic gap classes and converts every
 **real** gap into a structured `Q-NNN` open question - never loose prose, and
 never an invented answer. Read-only against decisions: it raises questions;
-answering them stays with the PO/dev (`/steer:questions`).
+answering them stays with the PO/dev (`/steer:spec questions`).
 
 Sweep these gap classes against `intent.md` (and `contract.md` where present):
 
@@ -144,7 +144,7 @@ exactly as today; `Reject` records the reason in `intent.md`. Never pre-select
 `Approve`, and never read ambient agreement as approval.
 
 **Order matters: preconditions first, prompt second.** If the blocking-question
-gate above fails, do **not** show the prompt at all - route to `/steer:questions`.
+gate above fails, do **not** show the prompt at all - route to `/steer:spec questions`.
 Never present a gate the human cannot legitimately pass.
 
 If the PO is not the person in the session, surface that and leave the state alone -

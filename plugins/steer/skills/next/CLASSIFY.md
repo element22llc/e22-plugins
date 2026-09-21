@@ -15,15 +15,15 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 |---|---|---|
 | Committed secret / destructive-risk exposure observed | Blocking now (L1) | Rotate & invalidate; then `/security-review` (no command rotates it) |
 | Live, deployed feature actively exposing data / breaching users / losing integrity | Urgent live-system remediation (L1) | Remediate the live system now; then `/security-review` (no command remediates it) |
-| Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/steer:questions` |
-| Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject - answerable in-session via `/steer:adr` |
+| Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/steer:spec questions` |
+| Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject - answerable in-session via `/steer:spec adr` |
 | Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves - answerable in-session via `/steer:spec` |
 | PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command - **never** promptable) |
 | Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now - next transition (L4) | `/steer:work resume #N` |
 | PR merged but issue still `validate` (stale tracker) | Human decision required (L3) - `validate -> done` is propose-only, and a merged PR is necessary but not sufficient | `/steer:work resume #N` proposes `done` once acceptance is confirmed |
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now - next transition (L4) | owning skill |
-| Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/steer:questions` |
-| Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/steer:questions` |
+| Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/steer:spec questions` |
+| Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/steer:spec questions` |
 | `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/steer:work start #N`, `/steer:issues ...`, `/steer:setup sync` |
 | Every workflow settled across all dimensions | Complete - no action required (L7) | - |
 

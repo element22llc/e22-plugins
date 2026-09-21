@@ -25,7 +25,7 @@ Blocking now
 
 ## Expected suggested command
 
-`/steer:questions`
+`/steer:spec questions`
 
 ## Must not recommend first
 

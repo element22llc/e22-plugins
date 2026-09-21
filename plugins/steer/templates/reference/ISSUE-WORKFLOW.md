@@ -14,7 +14,7 @@ Two invariants underpin everything:
   durable *record* of it. Neither silently overwrites the other.
 - **`/steer:issues` orchestrates backlog management; `/steer:work` owns execution.**
   Neither owns domain reasoning - they delegate to `/steer:spec`, `/steer:audit`,
-  `/steer:audit spec`, `/steer:questions`. All **tracker-metadata** read/write flows
+  `/steer:audit spec`, `/steer:spec questions`. All **tracker-metadata** read/write flows
   through `/steer:tracker-sync` (MCP-first -> `gh` -> manual floor); git and
   pull-request **delivery** follows the repo's execution/autonomy rules - it is
   not a gateway operation (otherwise `git push` would violate the invariant).

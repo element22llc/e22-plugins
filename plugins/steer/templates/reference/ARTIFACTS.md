@@ -9,7 +9,7 @@ to a stakeholder who has no repo and no Claude Code.
 
 This reference is the **single source of truth** for *how* steer produces an
 Artifact and *what discipline governs it*. Skills that render one - `/steer:explain`,
-`/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`, `/steer:status`,
+`/steer:spec questions bundle`, `/steer:audit`, `/steer:roadmap`, `/steer:status`,
 `/steer:next capabilities` - describe
 *what* to put on the page and defer the mechanics and the guarantees here rather
 than restating them. When you add Artifact output to a skill, point at this file;
@@ -83,7 +83,7 @@ read-only over the canonical sources even in a skill that otherwise writes.
   `/spec/AUDIT-REPORT.md` / `DRIFT-REPORT.md`. The temp-only rule above governs
   the **Artifact's** write, not every write these skills may make. `/steer:report` sits in the same tier
   for the same reason, though it renders no Artifact: its temp write is the
-  scrubbed issue body. `/steer:questions bundle` lives in a
+  scrubbed issue body. `/steer:spec questions bundle` lives in a
   write-capable skill and upholds the same limit as a **prose invariant**: bundle
   writes nothing under the repo tree.
 - **Never disallow `Write` to make a render "safe".** `disallowed-tools` is scoped
@@ -159,7 +159,7 @@ page should read as one system:
 
 ### Fillable pages - the copy-out floor
 
-A fillable page - the `/steer:questions bundle` questionnaire, the audit
+A fillable page - the `/steer:spec questions bundle` questionnaire, the audit
 dashboard's triage form - adds input on top of a read-only page, and its export
 must survive a locked-down iframe:
 
@@ -197,14 +197,14 @@ only data channel back**, and it is a contract, not a convenience:
 - Every fillable page has exactly **one owning ingest path** that absorbs the
   export and folds it into canonical state under the usual gates. For the PO
   questionnaire that is **`/steer:intake clarify <filled-doc>`**, which maps each
-  answer to its key and routes it to `/steer:questions` to fold into the spec -
+  answer to its key and routes it to `/steer:spec questions` to fold into the spec -
   the full key + routing contract is
   [`CLARIFICATION-LOOP.md`](CLARIFICATION-LOOP.md);
   for the audit triage form it is **`/steer:issues publish-audit <triage-doc>`**,
   which files exactly the checked findings and flags stale or unknown keys.
 - **Do not bolt an ad-hoc input onto a read-only page.** A fillable Artifact
   exists only where an ingest path exists to receive it - today:
-  `/steer:questions bundle` -> `/steer:intake clarify` (PO answers) and the audit
+  `/steer:spec questions bundle` -> `/steer:intake clarify` (PO answers) and the audit
   dashboard's triage form -> `/steer:issues publish-audit` (finding selection). A
   new fillable page needs its own declared key scheme and ingest route before it
   ships.
@@ -248,7 +248,7 @@ render unless the user supplies a URL to update.
 | Skill | Artifact | Source state it renders |
 |---|---|---|
 | `/steer:status feature <id>` | Feature summary - status pipeline, acceptance meter, clickable journey, scope + open-question boards | one feature's `intent.md` (+ `contract.md`) |
-| `/steer:questions bundle` | Fillable PO questionnaire (see [Fillable pages](#fillable-pages-the-copy-out-floor)) | open questions across the spine |
+| `/steer:spec questions bundle` | Fillable PO questionnaire (see [Fillable pages](#fillable-pages-the-copy-out-floor)) | open questions across the spine |
 | `/steer:audit` | Findings dashboard - dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
 | `/steer:roadmap` | Release timeline - milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
 | `/steer:status` | Client-facing period report - shipped / in-progress / needs-input / next | the whole spine over the reporting window |

@@ -82,7 +82,7 @@ The export is a **spec to realize**, not code to ship. Decide by one question -
 - **Deviation - keep the prototype's runtime -> ADR with a kill date and a named
   trigger.** Legitimate only for genuine throwaways (a demo, a spike, a pitch with
   a known death, or an explicitly time-boxed pre-production stage). The ADR
-  (`/steer:adr`) must state the lifespan and the condition that forces the port. Even
+  (`/steer:spec adr`) must state the lifespan and the condition that forces the port. Even
   then, runtime Babel + UMD should move to a real build (e.g. Vite + React + TS)
   before it is anyone's daily front-end.
 - **Never** let "temporary" prototype hosting silently become the permanent

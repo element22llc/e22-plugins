@@ -31,9 +31,9 @@ Human decision required
 
 ## Expected suggested command
 
-`/steer:adr` - the decision stays the Deciders', but it is answerable in-session,
+`/steer:spec adr` - the decision stays the Deciders', but it is answerable in-session,
 so the line names the skill that **collects and records** their answer (its
-three-option prompt, then `/steer:adr accept 0007` on Approve). Contrast a PR
+three-option prompt, then `/steer:spec adr accept 0007` on Approve). Contrast a PR
 review, merge, or secret rotation, which remain command-less: no prompt
 substitutes for those.
 

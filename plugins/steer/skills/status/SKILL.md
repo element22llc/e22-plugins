@@ -180,7 +180,7 @@ Ask `/steer:tracker-sync` for the tracker reads; read `/spec` directly for the r
 - **Needs your input** - open questions with `impact: blocking` **and**
   `owner: product` across the spine (`spec/features/*/intent.md`, `vision.md`),
   counted and titled in plain language. The follow-up that lets the client
-  actually answer them is `/steer:questions bundle` - recommend it, don't inline
+  actually answer them is `/steer:spec questions bundle` - recommend it, don't inline
   the questionnaire here.
 - **What's next** - the next milestone's issues / the unshipped `approved` features,
   described as outcomes, not tasks.
@@ -239,7 +239,7 @@ delegating each to its owner:
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| Open `owner: product` blocking questions in the report | Blocking now | Hand the client the questionnaire - `/steer:questions bundle` |
+| Open `owner: product` blocking questions in the report | Blocking now | Hand the client the questionnaire - `/steer:spec questions bundle` |
 | A feature's issue is in `validate` (built, not yet accepted or released) | Human decision required | The PO confirms acceptance - no command confirms it, and `validate -> done` is propose-only. `/steer:work resume #N` owns the transition and proposes `done` once they have; it also holds the "PR merged" precondition, which this report deliberately does not read (see *what got done*, above) |
 | Milestone dates missing / roadmap stale vs shipped work | Recommended | Refresh the timeline - `/steer:roadmap sync` |
 | Report rendered, nothing outstanding for the client | Complete | `No action is currently required.` |

@@ -181,7 +181,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
 4. **Make no code or spec edits, and don't commit.** This mode stops at the
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
-   guess - run `/steer:questions` to drive them to answers.
+   guess - run `/steer:spec questions` to drive them to answers.
 5. **Recommend the next action.** Close with a `## Recommended next actions` block
    per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to this
    drift run's findings (locality rule).
@@ -190,7 +190,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    |---|---|---|
    | Behavioural drift needing a human call | Human decision required | PO/dev decides by ownership (no command) |
    | Drift findings not yet filed (GitHub) | Recommended | `/steer:issues publish-drift` |
-   | Ambiguities surfaced | Required before next production release | Resolve them - `/steer:questions` |
+   | Ambiguities surfaced | Required before next production release | Resolve them - `/steer:spec questions` |
    | No actual drift (only expected-Missing backlog) | Complete | `No action is currently required.` |
 
    Choose one `Current recommended action` by precedence. Read-only - proposes,

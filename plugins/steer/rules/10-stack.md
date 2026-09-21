@@ -6,8 +6,8 @@ is also what an absent file means. Another pack drops this section and leaves
 the core rules, which name no product.
 
 **Default biases**, not mandates - when intent clearly warrants a different
-stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
-full setup detail: `/steer:reference conventions`. When you pick or change a
+stack, propose the better fit and record an ADR (`/steer:spec adr`). Rationale
+and full detail: `/steer:reference conventions`. When you pick or change a
 piece, verify the current stable version in-session via the bundled `context7`
 MCP server - never from training-data memory.
 

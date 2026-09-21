@@ -70,10 +70,10 @@ fixtures:
     skill: intake
     signals: ["spreadsheet", "roadmap"]
   - ask: "walk me through the open questions and let's answer them"
-    skill: questions
+    skill: spec
     signals: ["open question"]
   - ask: "prepare a questionnaire the PO can fill in offline"
-    skill: questions
+    skill: spec
     signals: ["questionnaire", "fillable"]
 
   # --- backlog / delivery -------------------------------------------------------
@@ -108,10 +108,10 @@ fixtures:
     skill: loop
     signals: ["autonomous loop", "schedule"]
   - ask: "record the decision to move to Postgres"
-    skill: adr
+    skill: spec
     signals: ["hard-to-reverse", "decision"]
   - ask: "write an ADR for the new auth approach"
-    skill: adr
+    skill: spec
     signals: ["ADR", "cross-cutting"]
 
   # --- navigation / discovery ---------------------------------------------------

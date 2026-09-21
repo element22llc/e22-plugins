@@ -1,7 +1,8 @@
 ---
 name: steer-questions
-description: Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
+description: Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
 argument-hint: '[bundle [<feature-id>]]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/questions/SKILL.md - do not edit by hand.
@@ -10,11 +11,11 @@ argument-hint: '[bundle [<feature-id>]]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to work down accumulated open questions, before a release or PO-to-dev handoff, or to fold in answers ingested via /steer-intake clarify; use bundle mode to hand a Product Owner the open questions across every feature at once.
+**When to use.** Reached via /steer-spec questions - not a direct entry point.
 
 <!-- steer:modes default,bundle -->
 
-# Resolve open questions (`/steer-questions`)
+# Resolve open questions (`/steer-spec questions`)
 
 Open questions are the spine's quiet failure mode: written down once, gated at
 PO acceptance, then left to rot. This skill gathers every open question across
@@ -75,6 +76,16 @@ heading's `git blame` date). Wherever a step below says "hook-escalated", read i
 as "stale by that same test".
 
 ## Steps
+
+0. **Require a spine.** If `spec/.version` is absent, stop and route to
+   **`/steer-setup`**, which resolves greenfield-vs-adopt from
+   `scan-spine-state.sh`. Without this the sweep is worse than useless: step 2's
+   grep matches no files on an unmanaged repo, so "no open questions" reads as
+   good news when the truth is that nothing was searched. Test the **stamp**, not
+   `spec/` - a bare directory can be an empty folder or a foreign OpenAPI
+   `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`. Unlike
+   `adr` there is no bootstrap exception: no bootstrap invokes this skill
+   mid-install, so a spine-less call is always a direct one.
 
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first - before you answer
    anything.** If that file exists (a fork from a pre-1.25.0 template revision),
@@ -189,7 +200,7 @@ as "stale by that same test".
      their **source-ref** and **exact quoted span** - as code-fact answers
      carry `file:line` - so a mis-mapped clarification is auditable and
      reversible at PR review, and closed like any other answered question.
-   - A hard-to-reverse or cross-cutting answer -> **`/steer-adr`**; propagating
+   - A hard-to-reverse or cross-cutting answer -> **`/steer-spec adr`**; propagating
      a decision *already made* into a superseding ADR is itself auto-apply.
    - A question that needs a **named owner, blocks multiple features, needs
      stakeholder/research input, or could outlive the session** -> promote it to

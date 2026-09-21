@@ -19,7 +19,7 @@ Pick the topic for the question and **open the bundled reference file** for it,
 then answer from that file. These are the full-detail companions to the lean
 always-on rules - open the file rather than answering from memory, and if
 something is genuinely unclear or the project warrants deviating, record an ADR
-(`/steer:adr`) rather than guessing.
+(`/steer:spec adr`) rather than guessing.
 
 | Topic | Reference file | Use for |
 |---|---|---|

@@ -225,7 +225,7 @@ language.
 | Demo-validated, PR flow, PR not opened | Blocking now (next transition) | Push the branch and open the v0 PR for dev review |
 | Demo-validated, solo trunk (v0 on `main`) | Human decision required | Ready for a developer - graduate via `/steer:setup protect` when one joins / before real users |
 | PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
-| Remaining `## Open questions` | Required before initial production | Work them down - `/steer:questions` |
+| Remaining `## Open questions` | Required before initial production | Work them down - `/steer:spec questions` |
 | Merged (PR flow) / graduated (solo trunk) | Complete | Optional: build the next feature |
 
 Pick one `Current recommended action` by precedence; offer a `Suggested command`

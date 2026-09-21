@@ -52,7 +52,7 @@ design/sources homes: `/spec/design/README.md` (from `design-readme.md`),
 recurring PO documents, maintained by `/steer-intake`). Install the
 bundled `spec/features/.gitkeep` and `spec/decisions/.gitkeep` so those dirs
 survive the first commit (an empty dir does not - `/steer-spec-scaffold`
-and `/steer-adr` populate them later). **Adapt to the chosen stack
+and `/steer-spec adr` populate them later). **Adapt to the chosen stack
 and never clobber existing files** (the MANIFEST's per-file notes say what
 to adapt - e.g. for a Python-only product skip the Layer-1 Node baseline and
 use `pyproject.toml`/Ruff, swap task commands to `uv run ...`). Greenfield repos

@@ -25,7 +25,7 @@ a next-release obligation, not a pre-launch "before initial production" one)
 
 ## Expected suggested command
 
-`/steer:questions`
+`/steer:spec questions`
 
 ## Must not recommend first
 

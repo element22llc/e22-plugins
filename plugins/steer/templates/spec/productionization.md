@@ -45,12 +45,12 @@
 > - **Bad practices** list -> findings **only where not already a gap-analysis
 >   row** - never file the same fix twice (e.g. raw SQL already lands as the
 >   Data-layer gap).
-> - **Architectural choices requiring decision** -> `/steer:adr` (Proposed) or
->   `/steer:questions` - **never a finding** (never infer a decision from code).
+> - **Architectural choices requiring decision** -> `/steer:spec adr` (Proposed) or
+>   `/steer:spec questions` - **never a finding** (never infer a decision from code).
 >   *But* a concrete code defect inside that area (a swallowed error, an unscoped
 >   query, a silent fallback) **is** still a finding.
 > - **Stop-and-rotate** -> rotate the secret; not a finding.
-> - **Open questions** -> `/steer:questions`.
+> - **Open questions** -> `/steer:spec questions`.
 > - **Overall recommendation / Adoption progress / Lifecycle** ->
 >   narrative/metadata; never findings.
 
@@ -61,7 +61,7 @@
 > rather than hardening in place** - the spec exists now, so a from-scratch
 > rebuild is a safe, often cheaper route to production than fixing a pile of
 > issues. A project-level Rewrite or Reject is hard-to-reverse: record it as an
-> ADR (`/steer:adr`) for the dev to ratify - Claude proposes, the dev decides.
+> ADR (`/steer:spec adr`) for the dev to ratify - Claude proposes, the dev decides.
 
 - **Recommendation:** [harden in place / partial rewrite (areas ...) / full rewrite from spec / reject]
 - **Why:** [one or two lines]
@@ -166,10 +166,10 @@ Bad practices found in the as-built code (anti-patterns vs the `practices` rule)
 
 Dev-facing hardening ambiguities surfaced during adoption. Product/behavior
 ambiguities live in each feature's `intent.md` -> `## Open questions` (and
-`vision.md` for product-level). Run `/steer:questions` to work them all down.
+`vision.md` for product-level). Run `/steer:spec questions` to work them all down.
 
 Use the **same structured format** as the rest of the spine (stable `Q-NNN` ids and
-the field block below) - the SessionStart hook and `/steer:questions` both parse
+the field block below) - the SessionStart hook and `/steer:spec questions` both parse
 `### Q-NNN` blocks, so a question written as a plain bullet here is counted by
 neither. The seed below is marked `<!-- steer:placeholder -->` so the hook ignores
 it on a fresh scaffold - **delete the marker** (and the bracketed title) when you

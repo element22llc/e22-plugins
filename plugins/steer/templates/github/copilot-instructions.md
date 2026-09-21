@@ -186,8 +186,8 @@ is also what an absent file means. Another pack drops this section and leaves
 the core rules, which name no product.
 
 **Default biases**, not mandates - when intent clearly warrants a different
-stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
-full setup detail: `/steer:reference conventions`. When you pick or change a
+stack, propose the better fit and record an ADR (`/steer:spec adr`). Rationale
+and full detail: `/steer:reference conventions`. When you pick or change a
 piece, verify the current stable version in-session via the bundled `context7`
 MCP server - never from training-data memory.
 
@@ -273,16 +273,16 @@ Create the artifact when the trigger fires - don't defer it:
 
 - **Starting a user-facing feature** -> `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code - author via **`/steer:spec`**
-  (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
+  (**`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
-  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:adr`**).
+  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:spec adr`**).
   **The bar is reversal cost, not novelty** - a pattern used once is a
   `contract.md` line until a third use makes it house style.
 - **Behavior changes** -> the owning `contract.md` in the same PR, plus the app
   guide (`/spec/app/`) if it describes the old behavior.
 - **Open questions** -> the feature's `intent.md` -> `## Open questions`
-  (product-level ones in `vision.md`); answer them with **`/steer:questions`**
-  before they rot.
+  (product-level ones in `vision.md`); answer them with
+  **`/steer:spec questions`** before they rot.
 - **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
   shapes it in the issue, **`materialize`** writes the approved intent as
   `Status: draft`, and an explicit `/steer:spec approve` flips it to `approved`.
@@ -339,7 +339,7 @@ routing table and register: **`/steer:reference traceability`**.
 - **Internal ids stay out of end-user surfaces.** ADR ids, tracker refs,
   `Q-NNN`, feature slugs and `spec/**` paths never reach app UI copy or the app
   guide's user-facing copy and release notes: say what changed for the user, in
-  the product's own domain language. Refs belong in intent, contracts, ADRs,
+  the product's domain language. Refs belong in intent, contracts, ADRs,
   history, the runbook, PRs and commits.
 - **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, the
   product-level files, `/spec/app/` and `/spec/history/` are the **workspace's**
@@ -382,8 +382,8 @@ bootstrap routes would lay a second, competing spine.
 **Three artifacts are steer's, because OpenSpec has no equivalent - and on this
 repo they live under `openspec/steer/`, NOT in `spec/`:**
 
-- **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
-  change's `design.md` is per-change and is archived with it; a hard-to-reverse
+- **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:spec adr`**). A
+  change's `design.md` is per-change and archived with it; a hard-to-reverse
   choice has to outlive the change that made it.
 - **Tracker declaration** -> `openspec/steer/tracker.md`. It declares the issue
   tracker and is what issue-first enforcement reads. OpenSpec models no tracker.
@@ -696,11 +696,11 @@ so review hardens them at productionization. Pre-production is a property of the
 
 A gate needs the deciding **human's** answer - not a particular channel. When that
 human is in the session, don't send them out-of-band to edit a status field:
-**ask, then act in the same pass.** Never ratify on your own initiative.
+**ask, then act in one pass.** Never ratify on your own initiative.
 
 | Gate | Decides | On Approve |
 |---|---|---|
-| ADR `Proposed -> Accepted` | its `Deciders` | `/steer:adr accept <n>` |
+| ADR `Proposed -> Accepted` | its `Deciders` | `/steer:spec adr accept <n>` |
 | Intent `draft -> approved` | the PO | `/steer:spec approve <id>` |
 | `--reviewed` plan sign-off | who asked | implement |
 
@@ -714,7 +714,7 @@ Ask once, three options - **Approve · Reject · Decide later**:
 - **`Decide later` is always offered** and leaves every field untouched.
 - **Record who decided, when, and that it was in-session**, plus the
   `/spec/history/` entry. Self-ratification is legitimate; the *unrecorded* kind
-  is the audit hole this rule prevents.
+  is the audit hole this prevents.
 - **Preconditions fire first**, and a **wrong decider** means surfacing the
   mismatch and leaving the state alone - never show a gate the human cannot
   legitimately pass.

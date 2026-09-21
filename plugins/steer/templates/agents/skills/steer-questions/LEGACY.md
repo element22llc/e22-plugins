@@ -1,4 +1,4 @@
-# Legacy question formats (`/steer-questions`)
+# Legacy question formats (`/steer-spec questions`)
 
 Read this **only** when a sweep meets one of the two pre-structured-format
 artifacts below. Both are migration paths for repos forked from an older

@@ -88,8 +88,8 @@ below give the detail.
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
 | steer itself is misbehaving - file a plugin bug upstream | `/steer:report` |
-| Answer accumulated open questions | `/steer:questions` |
-| Record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
+| Answer accumulated open questions | `/steer:spec questions` |
+| Record a hard-to-reverse or cross-cutting decision | `/steer:spec adr` |
 | Sweep loose files at the repo root into `/spec` | `/steer:work tidy` |
 | Ship an emergency fix to a production incident | `/steer:work --hotfix` |
 | Load the rules manually (Desktop *Chat* tab / web chat, where the hook can't fire) | `/steer:standards` |
@@ -109,7 +109,7 @@ below give the detail.
 | Skill | Use when |
 | --- | --- |
 | [`/steer:issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work. |
-| [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. |
+| [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision. |
 | [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan -> plan-gate review -> implement -> `/code-review` -> bounded fix) - vetted, not first-draft. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 

@@ -4,16 +4,16 @@ Create the artifact when the trigger fires - don't defer it:
 
 - **Starting a user-facing feature** -> `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code - author via **`/steer:spec`**
-  (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
+  (**`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
-  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:adr`**).
+  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:spec adr`**).
   **The bar is reversal cost, not novelty** - a pattern used once is a
   `contract.md` line until a third use makes it house style.
 - **Behavior changes** -> the owning `contract.md` in the same PR, plus the app
   guide (`/spec/app/`) if it describes the old behavior.
 - **Open questions** -> the feature's `intent.md` -> `## Open questions`
-  (product-level ones in `vision.md`); answer them with **`/steer:questions`**
-  before they rot.
+  (product-level ones in `vision.md`); answer them with
+  **`/steer:spec questions`** before they rot.
 - **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
   shapes it in the issue, **`materialize`** writes the approved intent as
   `Status: draft`, and an explicit `/steer:spec approve` flips it to `approved`.
@@ -70,7 +70,7 @@ routing table and register: **`/steer:reference traceability`**.
 - **Internal ids stay out of end-user surfaces.** ADR ids, tracker refs,
   `Q-NNN`, feature slugs and `spec/**` paths never reach app UI copy or the app
   guide's user-facing copy and release notes: say what changed for the user, in
-  the product's own domain language. Refs belong in intent, contracts, ADRs,
+  the product's domain language. Refs belong in intent, contracts, ADRs,
   history, the runbook, PRs and commits.
 - **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, the
   product-level files, `/spec/app/` and `/spec/history/` are the **workspace's**

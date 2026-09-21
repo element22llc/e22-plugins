@@ -5,7 +5,7 @@
 #   Open questions in the spec spine (each feature's intent.md -> "## Open
 #   questions", and vision.md / PRODUCTIONIZATION.md) get written down once,
 #   gated at PO acceptance, then forgotten. Nothing resurfaces them, so they
-#   rot. The /steer:questions skill resolves them - but a skill is
+#   rot. The /steer:spec questions skill resolves them - but a skill is
 #   pull, not push: it only runs when someone remembers to invoke it. This hook
 #   makes the backlog visible every session so it can't quietly accumulate.
 #
@@ -38,7 +38,7 @@
 #   line's `git blame` author-time, so legacy questions still get an age; if git
 #   is unavailable the question simply isn't aged (fail-open, never crash).
 #   The hook only *detects* staleness - it never opens issues (writes stay on the
-#   human-gated /steer:questions -> /steer:issues path).
+#   human-gated /steer:spec questions -> /steer:issues path).
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. Age math is done in awk (the
@@ -61,7 +61,7 @@ ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
 # pointed at openspec/steer/tracker.md rather than a path it does not have.
 steer_tracker_rel "${ROOT}"
 
-# Promotion means something different per tracker: on GitHub Issues /steer:questions
+# Promotion means something different per tracker: on GitHub Issues /steer:spec questions
 # files a spec-question issue and assigns it from the `owners:` map, and on every
 # other tracker - Jira, Linear, none-yet, none declared - that is manual and there
 # is no owners map to assign from. Resolved once here rather than inside
@@ -240,7 +240,7 @@ format_stale() {
 		else
 			_how="promote (open it in the declared tracker, then set its \`tracker:\` ref)"
 		fi
-		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd - %s or defer: **/steer:questions**\n' \
+		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd - %s or defer: **/steer:spec questions**\n' \
 			"${_qid}" "${_lbl}" "${_own}" "${_age}" "${_how}"
 	done
 }
@@ -298,7 +298,7 @@ check_file "${ROOT}/spec/PRODUCTIONIZATION.md"
 
 # A pre-1.25.0 fork may still carry the retired standalone SPEC-QUESTIONS.md.
 # Its items live under "## Open" (not "## Open questions"), so count_open never
-# sees them - surface the file itself so /steer:questions can migrate it away.
+# sees them - surface the file itself so /steer:spec questions can migrate it away.
 LEGACY=""
 [ -f "${ROOT}/spec/SPEC-QUESTIONS.md" ] && LEGACY=1
 
@@ -311,7 +311,7 @@ if [ -n "${LEGACY}" ]; then
 	printf '⚠ **Retired `spec/SPEC-QUESTIONS.md` present.** Open questions no longer '
 	printf 'live in a standalone file - they belong next to their context '
 	printf '(`vision.md` / each feature'"'"'s `intent.md` -> `## Open questions`). '
-	printf 'Run **/steer:questions** to migrate its questions into the right files and '
+	printf 'Run **/steer:spec questions** to migrate its questions into the right files and '
 	printf 'remove it.\n\n'
 fi
 
@@ -340,6 +340,6 @@ if [ "${TOTAL}" -gt 0 ] 2>/dev/null; then
 			printf 'This product does not use GitHub Issues, so promotion is manual: open the work item in the tracker declared in `%s`, then write its ref into the question'"'"'s `tracker:` field.\n' "${STEER_TRACKER_REL}"
 		fi
 	fi
-	printf '\nRun **/steer:questions** to sweep them and drive each to an answer '
+	printf '\nRun **/steer:spec questions** to sweep them and drive each to an answer '
 	printf '(or an explicit deferral). This notice clears itself once they are resolved.\n'
 fi
