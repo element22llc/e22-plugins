@@ -1,0 +1,17 @@
+kind: Fixed
+body: |
+  - **Fixed: a read-only session no longer talks itself out of routing.** The
+    most common ask steer handles - "fix issue #N" - misrouted about one run in
+    three when the session had no `Write`/`Edit`/`Bash`, measured across six
+    runs of the `routes-fix-issue-to-work` eval. The failing runs answered as a
+    generic assistant, sometimes naming `/steer:work` as the owner first and
+    then doing its job by hand: a correct diagnosis, patch and regression test,
+    with `Skill` called zero times, so nothing was claimed, branched or
+    recorded. Rule `00-router` already forbade both halves in two separate
+    bullets, but neither stated the combination that is the actual failure - a
+    read-only session is what makes answering by hand feel helpful rather than
+    like a skipped step. The read-only bullet now names that rationalization
+    verbatim and says what it costs. Pre-existing, not a 6.6 regression: `main`
+    and the rule-diet chain scored identically before the fix.
+custom:
+  Slug: read-only-misroute
