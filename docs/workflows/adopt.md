@@ -36,7 +36,7 @@ flowchart TD
    a ranked remediation plan rather than a verdict-free inventory.
 6. Installs the repo scaffold (toolchain, CI, PR template).
 7. If the tracker is GitHub Issues, bootstraps the label taxonomy
-   (`/steer:issues bootstrap-labels`) and verifies the org-level
+   (`/steer:work issues bootstrap-labels`) and verifies the org-level
    Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) -
    the same tracker setup `/steer:setup init` performs.
 8. Stamps `/spec/.version` with the plugin version.

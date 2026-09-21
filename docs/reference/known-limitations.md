@@ -103,7 +103,7 @@ issue work in Cowork, enable the **built-in GitHub connector** (Cowork ->
 **Customize -> Connectors**), which Anthropic manages via OAuth and runs **outside**
 the bash sandbox. Once it's on, `/steer:tracker-sync`'s **MCP-first** probe finds
 the repo-scoped issue tools (list / get / create / comment / label / transition)
-and `/steer:issues triage` works - Cowork **can** triage GitHub issues. Caveats:
+and `/steer:work issues triage` works - Cowork **can** triage GitHub issues. Caveats:
 
 - It is **repo-scoped only.** Org/team-level reads come back empty by design, so
   anything needing org config - Issue **Types**, and the org-level native issue
@@ -181,7 +181,7 @@ at most one-directionally by a Project Status field.
     API.** The reverse holds for a genuine Project custom field (`Size`,
     `Iteration`): it is *not* a native issue field, so it is edited with
     `gh project item-edit` and `field-set` will not find it. To populate a chosen
-    Priority/Effort value (PO seeding, not the escalate-only floor), `/steer:issues`
+    Priority/Effort value (PO seeding, not the escalate-only floor), `/steer:work issues`
     triage and board route the request straight to `field-set`. `field-set` writes
     the native field through GraphQL `setIssueFieldValue` (or the equivalent REST
     `issue-field-values` endpoint) - *not* a GraphQL-only path, despite the Projects

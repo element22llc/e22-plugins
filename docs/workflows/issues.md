@@ -1,7 +1,8 @@
-# `/steer:issues`
+# `/steer:work issues`
 
-The high-level GitHub Issues lifecycle for the `/spec` spine. A thin
-orchestrator: it delegates product/spec reasoning to `/steer:spec`, audit
+The GitHub Issues lifecycle for the `/spec` spine - the backlog half of
+[`/steer:work`](work.md); the `issues` skill behind it is internal and is not
+typed on its own. A thin orchestrator: it delegates product/spec reasoning to `/steer:spec`, audit
 findings to `/steer:audit`, drift to `/steer:audit spec`, and question promotion to
 `/steer:spec questions` - and routes GitHub reads/writes through
 `/steer:tracker-sync`, with one sanctioned exception: the `bootstrap-labels`
@@ -11,7 +12,7 @@ mode's inline label creation.
     Use to manage the backlog: capture an idea, triage the inbox, brainstorm,
     materialize a spec, decompose into work, check status, or reconcile.
 
-**Argument hint:** `[capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new "<title>"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]`
+**Argument hint:** `/steer:work issues [capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new "<title>"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]`
 
 ## Phases
 
@@ -39,7 +40,8 @@ flowchart LR
 
 ## Boundaries
 
-- `/steer:issues` **never edits code** - that's `/steer:work`'s job.
+- The `issues` modes **never edit code** - that is what the delivery
+  subcommands of `/steer:work` do.
 - `/spec` stays product truth; the issue is the work/decision layer.
 - **In a polyrepo, the tracker and the specs live in the workspace.** A member
   repo (`spec/PRODUCT.md`) carries neither `spec/tracker.md` nor

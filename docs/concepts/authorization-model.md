@@ -102,8 +102,8 @@ moves a repo between the two and reconciles the marker.
     restricting - every other tool stays callable under your permission settings -
     and it does not carry into a skill that merely *delegates* to it in prose. The tracker write verbs live in
     `/steer:tracker-sync`'s `allowed-tools`, but the lifecycle reaches that gateway
-    **transitively**: a PO runs `/steer:issues capture` (or `/steer:work`,
-    `/steer:issues materialize`), which routes through tracker-sync *by description*,
+    **transitively**: a PO runs `/steer:work issues capture` (or `/steer:work`,
+    `/steer:work issues materialize`), which routes through tracker-sync *by description*,
     not by invoking it. So tracker-sync's grants never take effect on that path and
     the write falls through to `.claude/settings.json` - and **which tier it lands
     in depends on the transport**. The gateway is MCP-first, so its primary path
@@ -155,8 +155,8 @@ inspection was the bulk of the "asks for approval constantly" friction without
 protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
 `/steer:setup`, `/steer:status`) carry read-only `allowed-tools` grants in their
 frontmatter, so inspection stays silent even in a repo that predates the scaffold
-allowlist. `/steer:setup sync`, `/steer:work`, and `/steer:issues` grant an overlapping
-subset of those inspection commands, but are **not** read-only overall - `sync` and
+allowlist. `/steer:setup sync`, `/steer:work` and the `issues` skill behind its backlog
+modes grant an overlapping subset of those inspection commands, but are **not** read-only overall - `sync` and
 `work` also carry `git add`/`commit`/`push` + `gh pr create` (and `work`,
 `gh pr edit`), and `issues` carries `gh label create` plus its own
 `gh issue list`/`view` and `gh search issues` reads; their delivery grants are

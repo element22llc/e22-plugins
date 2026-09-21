@@ -46,7 +46,7 @@ flowchart LR
       setup --> init & adopt
     end
     subgraph Build loop
-      issues["/steer:issues"]
+      issues["/steer:work issues"]
       spec["/steer:spec"]
       work["/steer:work"]
     end
@@ -72,7 +72,7 @@ below give the detail.
 | Start a brand-new repo from scratch | `/steer:setup init` |
 | Bring an existing app under steer | [`/steer:setup adopt`](adopt.md) |
 | Absorb a product owner's spec / roadmap document | [`/steer:spec intake`](intake.md) |
-| Capture, triage, or decompose ideas into issues | [`/steer:issues`](issues.md) |
+| Capture, triage, or decompose ideas into issues | [`/steer:work issues`](issues.md) |
 | Shape or approve a feature spec | [`/steer:spec`](spec.md) |
 | Start, resume, or finish an issue | [`/steer:work`](work.md) |
 | Implement with a review-gated loop (vetted, not first-draft) | [`/steer:work --reviewed`](work.md) |
@@ -109,7 +109,7 @@ below give the detail.
 
 | Skill | Use when |
 | --- | --- |
-| [`/steer:issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work. |
+| [`/steer:work issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work, without editing code. |
 | [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document, `roadmap` lays unshipped intent on a timeline. |
 | [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan -> plan-gate review -> implement -> `/code-review` -> bounded fix) - vetted, not first-draft. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |

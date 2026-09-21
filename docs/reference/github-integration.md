@@ -163,7 +163,7 @@ taxonomy and Issue Types). It is **not** installed by `/steer:setup init` or
 (the manifest names the directory only to say it does not ship) - you opt in
 deliberately.
 
-That label taxonomy is bootstrapped by the local `/steer:issues` lifecycle, which
+That label taxonomy is bootstrapped by the local `/steer:work issues` lifecycle, which
 runs `gh label create --force` inline for repo-level label setup - the one
 sanctioned exception to routing all tracker I/O through the issue-scoped
 `/steer:tracker-sync` gateway, which has no op for repo-level label creation.
@@ -173,7 +173,7 @@ sanctioned exception to routing all tracker I/O through the issue-scoped
 - gh-aw is a self-described **research demonstrator** - *"not a product, not even
   a technical preview."* Committing it into every product repo would couple
   steer's deterministic, SHA-pinned, human-gated posture to a preview tool.
-- It overlaps with steer's own issue lifecycle. `/steer:issues triage` (via
+- It overlaps with steer's own issue lifecycle. `/steer:work issues triage` (via
   `/steer:tracker-sync`) already triages interactively. Run **one** of the two,
   not both, or you double-triage every issue.
 - It introduces a second agent engine and a manual compile step (`.lock.yml`)
