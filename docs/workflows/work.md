@@ -65,7 +65,7 @@ says *branch*, *marker*, or *PR*, skip it and substitute the trunk commit -
 validation, managed-block progress, CI-watch (via `gh run watch` on the trunk push),
 and the Definition of Done are unchanged. Committing to `main` is authorized in this
 mode; **deploy stays human-gated all the same**, and graduating the repo to the PR
-flow is [`/steer:protect`](../reference/skills.md)'s job, never this skill's.
+flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill's.
 
 ## Modes
 

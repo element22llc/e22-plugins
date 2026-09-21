@@ -40,7 +40,7 @@ code is triaged into `/spec/PRODUCTIONIZATION.md` before a
 For a **solo greenfield** repo (one person is both PO and dev, no MVP yet),
 `/steer:setup init` can instead start in [**solo trunk mode**](../concepts/authorization-model.md):
 the bootstrap and early features land directly on `main` with no PR, until you
-graduate to the PR flow with `/steer:protect`.
+graduate to the PR flow with `/steer:setup protect`.
 
 ## 2. Capture the idea
 

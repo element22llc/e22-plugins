@@ -204,7 +204,7 @@ surfaces differently:
   any further work.
 
 The build renders one `.agents/skills/steer-<skill>/` directory per skill -
-including the two `user-invocable: false` gateways, which the model can reach even
+including every `user-invocable: false` gateway, which the model can reach even
 though no one can type them - carrying the **real skill body** and its supporting
 mode files, not a summary. A body has to be rewritten to work off Claude
 Code (`gen_agent_skills.py`):

@@ -84,9 +84,9 @@ below give the detail.
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:setup sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |
 | Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | `/steer:loop` |
-| Lock branch protection or flip the delivery mode | `/steer:protect` |
-| A tool is missing, or set up the local toolchain | `/steer:doctor` |
-| **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:doctor` (§0 diagnoses it locally) |
+| Lock branch protection or flip the delivery mode | `/steer:setup protect` |
+| A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
+| **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
 | steer itself is misbehaving - file a plugin bug upstream | `/steer:report` |
 | Answer accumulated open questions | `/steer:questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
@@ -101,6 +101,8 @@ below give the detail.
 | `/steer:setup` | **The front door** - detects the repo state and routes to one of its modes below. Start here. |
 | `/steer:setup init` | A new repo with no `/spec` spine - installs the bundled scaffold + spine. Naming the mode skips detection. |
 | [`/steer:setup adopt`](adopt.md) | An existing app with working code but no spine. |
+| `/steer:setup doctor` | The local toolchain is missing or a runtime is shadowed - this runs before any of the others can. |
+| `/steer:setup protect` | Raise the branch-protection wall, or graduate off solo trunk - the step each bootstrap path ends on. |
 
 ## Build loop
 

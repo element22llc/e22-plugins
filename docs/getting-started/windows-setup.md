@@ -28,7 +28,7 @@ under Git Bash (mise ships a native Windows binary and manages node/pnpm/uv; add
 2. *(Only if you'll build apps with services)* install
    [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 3. Restart Claude Desktop so it picks up the new shell.
-4. Run `/steer:doctor` - it confirms the shell is live and the toolchain is ready.
+4. Run `/steer:setup doctor` - it confirms the shell is live and the toolchain is ready.
 
 !!! warning "Without a shell the hooks fail silently"
     Without Git for Windows the Desktop Code tab still opens, but the hooks can't
@@ -45,7 +45,7 @@ toolchain - POSIX path handling, line-ending parity, and a Linux that matches CI
 2. Open your repo *inside* WSL2 (not via `\\wsl$\` from the Windows side) and run
    everything there - Claude Code CLI, `/steer:setup`, `mise install`.
 
-Run [`/steer:doctor`](../reference/skills.md) for the guided per-machine path, and
+Run [`/steer:setup doctor`](../reference/skills.md) for the guided per-machine path, and
 follow the scaffold `README.md` quickstart once you're inside WSL2.
 
 !!! note "WSL2 is the recommended dev environment, not a requirement"
@@ -105,7 +105,7 @@ Both sides of this are handled, but they arrive by different routes:
     `syntax error near unexpected token` - most visibly `/steer:setup sync`, which
     breaks on its opening move.
 
-    `/steer:doctor` checks for this **first**, before anything else, and names
+    `/steer:setup doctor` checks for this **first**, before anything else, and names
     it as a plugin-install fault rather than a missing prerequisite. The fix is
     to reinstall the plugin so it re-clones with normalization applied. Where
     that isn't immediately possible, doctor **prints** an in-place `sed` unblock

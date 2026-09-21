@@ -99,7 +99,7 @@ branch-protection section.
     button to every PR. `gh pr checks --watch --required` watches only required
     checks, so the job never deadlocks on its own non-required run.
 
-`/steer:protect` enables the repo settings the exception relies on - Dependabot
+`/steer:setup protect` enables the repo settings the exception relies on - Dependabot
 **alerts** and **security updates** (so security PRs get opened) - alongside secret
 scanning. It configures settings only; the merge itself is enacted by the workflow.
 `/steer:setup sync` keeps both files wired (the `dependency-automation` capability).
@@ -107,7 +107,7 @@ scanning. It configures settings only; the merge itself is enacted by the workfl
 ## Production promotion gate
 
 Branch protection covers more than the default branch. `policy/branch-protection.yml`
-also describes a long-lived **`prod`** branch, and `/steer:protect` applies
+also describes a long-lived **`prod`** branch, and `/steer:setup protect` applies
 protection to every entry in its `protected_branches` list, not just `main`.
 
 This is how the [deployment standard](../concepts/deployment.md) enforces its
@@ -117,7 +117,7 @@ production approval - it stands in for the deployment-environment approvals that
 only GitHub Enterprise provides. Merging the `prod` PR auto-deploys production, and
 nothing is ever pushed to `prod` directly.
 
-`/steer:protect` reads `protected_branches` and configures each branch's rules
+`/steer:setup protect` reads `protected_branches` and configures each branch's rules
 (required PR, required `ci` check, no direct pushes); `/steer:setup sync` keeps the
 policy file and the protection in step as the plugin evolves.
 

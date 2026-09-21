@@ -31,11 +31,12 @@ session in a managed repo and ask something only the loaded standards can answer
 `CLAUDE.md` marker) - then check the reply matches.
 
 !!! note "Prerequisites for the full workflow"
-    `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);
-    `/steer:setup init` and `/steer:build` are the skills that invoke **`/steer:doctor`**
-    to resolve it when it's absent - doctor installs **mise and the runtimes it
+    **`/steer:setup doctor`** detects a missing local toolchain (git, mise,
+    Docker) and resolves it: it installs **mise and the runtimes it
     manages** on your confirmation, and hands over `git` (a sudo command) and Docker
-    Desktop (a GUI app) as steps for you to run. The issue and PR steps additionally need
+    Desktop (a GUI app) as steps for you to run; the `init` mode and
+    `/steer:build` route there themselves when something is absent. The issue
+    and PR steps additionally need
     an authenticated GitHub path: check `gh auth status` (run `gh auth login` if
     it fails), or supply the plugin's `github_pat` config value for the GitHub MCP
     server - Claude Code prompts for it at install and stores it outside the repo

@@ -127,7 +127,7 @@ it maps everyday intents to the skill that handles them.
 - **Asks before a trunk push once a repo shows graduation signals** - in a
   solo-trunk repo that has grown a deploy workflow, an `infra/` tree, or a
   `prod`/`production` branch, the session's **first** `git push` surfaces as a
-  `PreToolUse` **ask** (never a hard deny) pointing at `/steer:protect`; later
+  `PreToolUse` **ask** (never a hard deny) pointing at `/steer:setup protect`; later
   pushes in that session carry a non-blocking reminder instead - or, on the Copilot
   CLI, pass silently, since that envelope carries decisions only. pr-flow repos are
   untouched.
@@ -142,13 +142,13 @@ See the [Hooks reference](../reference/hooks.md) and
 ## When something breaks
 
 - **A tool is missing** (`command not found`, mise/Docker errors) - run
-  **`/steer:doctor`**; it detects what's absent and, with your yes, installs mise
+  **`/steer:setup doctor`**; it detects what's absent and, with your yes, installs mise
   and the runtimes it manages. `git` and Docker Desktop it hands back to you: a
   command to run yourself, or a GUI app to launch.
 - **Every steer command fails at once** (`syntax error near unexpected token`) -
   that is not a missing tool, it is a corrupt install: on Windows the plugin can
   check out with CRLF line endings, and a CRLF shell script fails to *parse*.
-  **`/steer:doctor`** detects it first thing (§0) and tells you how to repair it;
+  **`/steer:setup doctor`** detects it first thing (§0) and tells you how to repair it;
   see [Windows setup -> line endings](windows-setup.md#line-endings).
 - **steer itself misbehaves** (a skill does the wrong thing, a hook misfires) -
   run **`/steer:report`**, which files a bug about the plugin upstream so it gets
@@ -167,7 +167,7 @@ protection until a human merges.
 
 If you're a PO, your build ends at a **hand-off for dev review** by design -
 that's the point, not a failure. In PR flow that hand-off is the v0 PR; in solo
-trunk it's graduation off the trunk via `/steer:protect` when a developer joins.
+trunk it's graduation off the trunk via `/steer:setup protect` when a developer joins.
 If you're a dev, you *are* that reviewer.
 
 ## Where to go next
