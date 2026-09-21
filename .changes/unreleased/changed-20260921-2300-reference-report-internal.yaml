@@ -17,9 +17,9 @@ body: |
     deterministic rewrite.
     Rule `00-router` completes the front-door map the last three folds left
     stale (`setup` -> `doctor` / `protect`, `spec` -> `adr` / `intake` /
-    `roadmap`, `work` -> `tidy`) and pays for it in the same passage, leaving all
-    four scope targets 5 characters under the 6.6 payload. The skill listing
-    drops 385 characters to 11,894 of 12,400.
+    `roadmap`, `work` -> `tidy`) and pays for it in the same passage: all four
+    always-on scope targets come out smaller than before the change. The skill
+    listing drops 385 characters to 11,894 of its 12,400 ceiling.
     Sixth step of the 7.0 public-surface flip (#584).
 custom:
   Slug: reference-report-internal

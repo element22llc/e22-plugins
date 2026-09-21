@@ -237,10 +237,11 @@ matrix):
   flag for a different reason - `help`, `explain`, `tidy` and `issues` are
   reached only as `/steer:next capabilities`, `/steer:status feature <id>`,
   `/steer:work tidy` and `/steer:work issues`, so listing them as commands would
-  hand out invocations the harness rejects. That is now the normal case: of the
-  skills a front door routes to, only the `reference` loader stays **directly
-  invocable**, and a user is never told to type something the harness then
-  rejects. Visibility is orthogonal to read-only/side-effecting tier - a hidden
+  hand out invocations the harness rejects. That is now the normal case, and it
+  extends past the front doors: `reference` and `report` carry the flag with no
+  door above them at all, because a rule is what reaches them - the prose loader
+  when a rule names a topic, the phone-home when the model hits a plugin defect.
+  A user is never told to type something the harness then rejects. Visibility is orthogonal to read-only/side-effecting tier - a hidden
   skill can still be Tier 1 or Tier 2.
 
 **Allowlists only match single commands - never chain inspection with `&&` or
