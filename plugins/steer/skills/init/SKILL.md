@@ -1,11 +1,12 @@
 ---
 name: init
-description: "One-time setup for a new managed repo - bootstrap the /spec spine + scaffolding, pin the toolchain, leave it working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode."
-when_to_use: >-
-  Normally reached via /steer:setup, which detects the repo state. Invoke
-  directly only when you already know the repo is greenfield (no /spec spine,
-  no substantial code), or when template placeholders ([Replace ...],
-  [Product Name], @github-handle) remain.
+description: "Internal greenfield bootstrap - lay the /spec spine + scaffolding, pin the toolchain, leave the repo working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode."
+when_to_use: "Reached via /steer:setup init - not a direct entry point."
+# Internal bootstrap behind `/steer:setup init`. Model-callable, hidden from the
+# slash menu: getting a repo onto the standards is one user-facing door, and
+# which of init/adopt/sync fits is a detection the front door makes, never a
+# choice the user has to get right.
+user-invocable: false
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)
@@ -27,7 +28,7 @@ allowed-tools:
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
-# First-run setup for a new repo
+# First-run setup for a new repo (`/steer:setup init`)
 
 Run this once when a repo is first brought under the standards. Detect
 which of two entry conditions applies and follow that path - both end with the

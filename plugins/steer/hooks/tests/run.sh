@@ -1055,8 +1055,8 @@ assert_empty "orient: damaged spine silent" "${out}"
 UM1="$(new_repo unmanaged1)"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM1}" um1)")"
 oq_grep "unmanaged: nudge offers /steer:build for a non-technical owner" '/steer:build' "${out}"
-oq_grep "unmanaged: nudge still offers /steer:init for a developer" '/steer:init' "${out}"
-oq_grep "unmanaged: nudge still offers /steer:adopt for existing code" '/steer:adopt' "${out}"
+oq_grep "unmanaged: nudge still offers the greenfield path for a developer" 'the `init` path (developer' "${out}"
+oq_grep "unmanaged: nudge still offers the adopt path for existing code" '`adopt` (substantial existing code' "${out}"
 # Lite mode (PLAN.md Phase 2): spec-only work is sanctioned without bootstrap -
 # the notice must offer /steer:spec as working right now, and keep the code gate.
 oq_grep "unmanaged: nudge offers spec-only lite mode" 'lite mode' "${out}"
@@ -1074,7 +1074,7 @@ assert_empty "unmanaged: managed spine silent" "${out}"
 UM3="$(new_repo unmanaged3)"
 mkdir -p "${UM3}/apps/web"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM3}/apps/web" um3)")"
-oq_grep "unmanaged: payload subdir cwd still resolves the repo root" '/steer:init' "${out}"
+oq_grep "unmanaged: payload subdir cwd still resolves the repo root" '/steer:setup' "${out}"
 
 # OpenSpec spine, steer's side not laid down -> `openspec-setup`. The greenfield
 # card must NOT fire: it would demand a bootstrap laying a competing
@@ -1090,8 +1090,8 @@ oq_grep "unmanaged: openspec-setup names the namespaced tracker path" 'openspec/
 # It must NOT send the session to the bootstrap skills: init/adopt write a
 # spec/ spine from the templates, which is the competing spine rule 33 forbids.
 # They may only appear inside the explicit "do not run" sentence.
-printf '%s' "${out}" | grep -q 'Do \*\*not\*\* run `/steer:init`' ||
-	bad "unmanaged: openspec-setup must explicitly warn off /steer:init and /steer:adopt"
+printf '%s' "${out}" | grep -q 'Do \*\*not\*\* run `/steer:setup init`' ||
+	bad "unmanaged: openspec-setup must explicitly warn off the bootstrap modes"
 printf '%s' "${out}" | grep -q 'Run \*\*`/steer:setup`\*\* to add them' &&
 	bad "unmanaged: openspec-setup must not route artifact creation to /steer:setup" || ok
 oq_grep "unmanaged: openspec-setup points at the bundled tracker template" 'templates/spec/tracker.md' "${out}"
@@ -1110,7 +1110,7 @@ mkdir -p "${UM6}/openspec/changes" "${UM6}/openspec/steer" "${UM6}/spec/decision
 printf 'system: github\n' >"${UM6}/openspec/steer/tracker.md"
 printf 'system: github\n' >"${UM6}/spec/tracker.md"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM6}" um6)")"
-oq_grep "unmanaged: pre-fold residue points at /steer:sync" '/steer:sync' "${out}"
+oq_grep "unmanaged: pre-fold residue points at the sync mode" '/steer:setup sync' "${out}"
 oq_grep "unmanaged: pre-fold residue names the old location" 'old location' "${out}"
 
 # A repo bootstrapped under the INTERIM shape (openspec/ + spec/ artifacts, no
@@ -1452,25 +1452,26 @@ IR0="${WORK}/inv0"
 mkdir -p "${IR0}/.github" "${IR0}/spec"
 {
 	printf '# Manual\n'
-	printf 'Adopted via /e22-adopt in the past.\n'          # legacy-e22 -> /steer:adopt
-	printf 'Full prose: /steer:conventions here.\n'          # reference-mode
-	printf 'New spec: /steer:spec-scaffold <id>.\n'          # noncallable-gateway
-	printf 'Try /steer:bogus for nothing.\n'                 # unknown
-	printf 'Run /steer:sync to update.\n'                    # valid -> no emit
-	printf 'Correct: /steer:reference conventions.\n'        # valid -> no emit
-	printf 'Marketplace element22llc/e22-plugins stays.\n'   # not flagged
-	printf 'Bootstrap: /e22-standards:e22-init once.\n'      # compound legacy (pair 1) -> /steer:init
-	printf 'Then /e22-standards:doctor to verify.\n'          # compound legacy (pair 2) -> /steer:doctor
+	printf 'Health check via /e22-audit in the past.\n'             # legacy-e22 -> /steer:audit
+	printf 'Full prose: /steer:conventions here.\n'                 # reference-mode
+	printf 'New spec: /steer:spec-scaffold <id>.\n'                 # noncallable-gateway
+	printf 'Try /steer:bogus for nothing.\n'                        # unknown
+	printf 'Run /steer:work to update.\n'                           # valid -> no emit
+	printf 'Update with /steer:sync today.\n'                       # noncallable-gateway (setup mode)
+	printf 'Correct: /steer:reference conventions.\n'               # valid -> no emit
+	printf 'Marketplace element22llc/e22-plugins stays.\n'          # not flagged
+	printf 'Shape it: /e22-standards:e22-spec once.\n'              # compound legacy (pair 1) -> /steer:spec
+	printf 'Then /e22-standards:doctor to verify.\n'                # compound legacy (pair 2) -> /steer:doctor
 	printf 'Legacy scaffold: /e22-standards:e22-spec-scaffold x.\n' # legacy -> noncallable-gateway, NO fix
-	printf 'Legacy prose: /e22-conventions covers it.\n'     # legacy -> reference-mode
+	printf 'Legacy prose: /e22-conventions covers it.\n'            # legacy -> reference-mode
 } >"${IR0}/CLAUDE.md"
-printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md"       # reference-mode
+printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md" # reference-mode
 printf 'Contributor guide: /steer:conventions applies.\n' >"${IR0}/.github/pull_request_template.md"
-printf '2026-06-08: reverse-engineered by /e22-adopt.\n' >"${IR0}/spec/HISTORY.md"  # provenance, NOT scanned
+printf '2026-06-08: reverse-engineered by /e22-audit.\n' >"${IR0}/spec/HISTORY.md" # provenance, NOT scanned
 
 invscan "${IR0}"
-assert_eq "inv: /e22-adopt -> legacy-e22" "$(invclass "${out}" /e22-adopt)" "legacy-e22"
-assert_eq "inv: /e22-adopt fix -> /steer:adopt" "$(invfix "${out}" /e22-adopt)" "/steer:adopt"
+assert_eq "inv: /e22-audit -> legacy-e22" "$(invclass "${out}" /e22-audit)" "legacy-e22"
+assert_eq "inv: /e22-audit fix -> /steer:audit" "$(invfix "${out}" /e22-audit)" "/steer:audit"
 assert_eq "inv: /steer:conventions -> reference-mode" "$(invclass "${out}" /steer:conventions)" "reference-mode"
 assert_eq "inv: /steer:conventions fix -> reference form" "$(invfix "${out}" /steer:conventions)" "/steer:reference conventions"
 assert_eq "inv: /steer:design-sources -> reference-mode (README)" "$(invclass "${out}" /steer:design-sources)" "reference-mode"
@@ -1480,8 +1481,8 @@ assert_eq "inv: /steer:bogus -> unknown" "$(invclass "${out}" /steer:bogus)" "un
 # `standards` (which is itself a live skill, so the naive read suggests
 # /steer:standards and RECONCILE.md would deterministically rewrite the line to
 # `/steer:standards:e22-init`).
-assert_eq "inv: /e22-standards:e22-init -> legacy-e22" "$(invclass "${out}" /e22-standards:e22-init)" "legacy-e22"
-assert_eq "inv: /e22-standards:e22-init fix -> /steer:init" "$(invfix "${out}" /e22-standards:e22-init)" "/steer:init"
+assert_eq "inv: /e22-standards:e22-spec -> legacy-e22" "$(invclass "${out}" /e22-standards:e22-spec)" "legacy-e22"
+assert_eq "inv: /e22-standards:e22-spec fix -> /steer:spec" "$(invfix "${out}" /e22-standards:e22-spec)" "/steer:spec"
 # MIGRATIONS.md v2.0.0 pair 2: the single-prefix form, `:<skill>` with no `e22-`.
 assert_eq "inv: /e22-standards:doctor -> legacy-e22" "$(invclass "${out}" /e22-standards:doctor)" "legacy-e22"
 assert_eq "inv: /e22-standards:doctor fix -> /steer:doctor" "$(invfix "${out}" /e22-standards:doctor)" "/steer:doctor"
@@ -1497,7 +1498,12 @@ assert_eq "inv: legacy mode fix -> reference form" "$(invfix "${out}" /e22-conve
 printf '%s' "${out}" | awk -F '\t' '$3=="/e22-standards"' | grep -q . &&
 	bad "inv: compound head must not double-report as /e22-standards" || ok
 # Valid invocations and the marketplace id emit nothing.
-printf '%s' "${out}" | grep -q '/steer:sync' && bad "inv: valid /steer:sync must not be flagged" || ok
+# A skill folded behind a front door is a gateway like any other: a frozen
+# /steer:sync in live prose no longer resolves for a user, so it is proposed,
+# never auto-rewritten - the mode it belongs to is the human's call.
+assert_eq "inv: /steer:sync -> noncallable-gateway" "$(invclass "${out}" /steer:sync)" "noncallable-gateway"
+assert_eq "inv: /steer:sync -> no mechanical fix" "$(invfix "${out}" /steer:sync)" "-"
+printf '%s' "${out}" | grep -q '/steer:work' && bad "inv: valid /steer:work must not be flagged" || ok
 printf '%s' "${out}" | grep -q 'e22-plugins' && bad "inv: marketplace id must not be flagged" || ok
 # The /steer:reference <mode> correct form resolves via the `reference` skill, so
 # no line carries the token `/steer:reference`.
@@ -1927,10 +1933,10 @@ printf '%s' "${out}" | grep -q 'no /spec spine' &&
 	bad "nudge: complete openspec spine must not get the no-spine bootstrap nudge" || ok
 # The scaffold dimension still fires (no root mise.toml) and SHOULD - the
 # toolchain applies here too. What must not appear is the imperative "Run
-# /steer:init"; naming it inside the explicit warn-off sentence is the point.
-printf '%s' "${out}" | grep -q 'Run /steer:init' &&
-	bad "nudge: openspec repo must never be told to Run /steer:init" || ok
-oq_grep "nudge: openspec scaffold text warns off the bootstrap skills" 'do NOT run /steer:init or /steer:adopt' "${out}"
+# /steer:setup"; naming it inside the explicit warn-off sentence is the point.
+printf '%s' "${out}" | grep -q 'Run /steer:setup:' &&
+	bad "nudge: openspec repo must never be told to Run /steer:setup" || ok
+oq_grep "nudge: openspec scaffold text warns off the bootstrap modes" 'do NOT run /steer:setup init or /steer:setup adopt' "${out}"
 
 # The native repo keeps the native text.
 WN_NAT="$(new_repo wn_nat)"

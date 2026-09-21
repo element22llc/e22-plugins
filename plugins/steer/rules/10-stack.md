@@ -13,7 +13,7 @@ MCP server - never from training-data memory.
 
 These bullets are the **app / service** profile, the default. An infra,
 library, cli or workspace repo keeps the universal core - mise pinning, the
-`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:init`
+`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:setup`
 records which.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.

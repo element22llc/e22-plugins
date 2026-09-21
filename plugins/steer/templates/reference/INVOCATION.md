@@ -41,10 +41,7 @@ an unrelated question.
 
 | Skill | Side effect |
 |---|---|
-| `/steer:setup` | Auto-routing bootstrap front door - detects repo state and runs `init`/`adopt`/`sync`. |
-| `/steer:init` | Bootstraps the repo (scaffold + spine). |
-| `/steer:adopt` | Reverse-engineers spec + scaffolds an existing repo. |
-| `/steer:sync` | Updates the plugin + reconciles spine/scaffold, lands a PR. |
+| `/steer:setup` | Auto-routing bootstrap front door - detects repo state and runs the `init` / `adopt` / `sync` mode. Naming the mode skips detection; `setup sync --check` is read-only. |
 | `/steer:work tidy` | Moves/renames/deletes loose files. |
 | `/steer:build` | PO build: spec -> working app -> PR. |
 | `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
@@ -68,6 +65,10 @@ Not a user's first move.
 | `/steer:spec-scaffold` | The spec-file creator. Called by `spec`, `build`, `init`, `adopt` and `intake`. |
 | `/steer:help` | The capability-menu renderer. Reached only through `/steer:next capabilities`. |
 | `/steer:explain` | The single-feature page renderer. Reached only through `/steer:status feature <id>`. |
+| `/steer:tidy` | The repo-root sweep. Reached only through `/steer:work tidy`. |
+| `/steer:init` | Greenfield bootstrap (scaffold + spine). Reached only through `/steer:setup init`. |
+| `/steer:adopt` | Brownfield adoption - reverse-engineers the spec, scaffolds an existing repo. Reached only through `/steer:setup adopt`. |
+| `/steer:sync` | Steady-state update - ledger migrations, spine/scaffold reconcile, lands a PR. Reached only through `/steer:setup sync`. |
 
 ## Drift detection & auto-repair (managed repos)
 
@@ -94,7 +95,7 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 |---|---|---|
 | `legacy-e22` | a pre-rebrand prefix whose `<skill>` still resolves - bare `e22-<skill>`, or the plugin's own former name qualifying it, `e22-standards:e22-<skill>` and `e22-standards:<skill>` (the token is the one **after** the colon, never `standards`). Old-token forms are written here **without** the leading `/`, as in `MIGRATIONS.md`, so this file passes the stale-`/e22-*` lint guard; in a managed repo they carry it | **deterministic** - rewrite to `/steer:<skill>` |
 | `reference-mode` | `<mode>` is a `reference` topic, not a skill - whether written `/steer:<mode>` or with a legacy prefix | **deterministic** - rewrite to `/steer:reference <mode>` |
-| `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`); the swap changes meaning, so propose, don't auto-rewrite |
+| `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`, `init`/`adopt`/`sync`->`/steer:setup <mode>`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
 
 `/steer:sync` auto-applies the two deterministic classes read-then-propose on its PR
@@ -116,7 +117,7 @@ this plugin: every user-invocable skill is a model-invocation target (rule
 `00-router` routes from the skill listing), including the ones that look manual (`setup`, `protect`, `doctor`).
 
 The **Tier-3 internal helpers are the worst candidates, not the safest ones.**
-`tracker-sync`, `spec-scaffold`, `help` and `explain` are already `user-invocable: false`, so they are
+The Tier-3 helpers are already `user-invocable: false`, so they are
 hidden from the slash menu and reached only when another skill routes to them.
 Adding `disable-model-invocation` would close the one remaining door and strand
 them: invisible to the user *and* unreachable by the model.

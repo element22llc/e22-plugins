@@ -23,28 +23,28 @@ fixtures:
     skill: setup
     signals: ["sync to the latest plugin"]
   - ask: "bootstrap a brand-new empty repo spec-first"
-    skill: init
+    skill: setup
     signals: ["bootstrap", "spec spine"]
-  - ask: "there are [Replace ...] placeholders left over from the template"
-    skill: init
+  - ask: "there are bracketed fill-in placeholders left over from the template"
+    skill: setup
     signals: ["placeholders", "template"]
   - ask: "this app was vibe-coded - no spec, no toolchain; adopt it"
-    skill: adopt
+    skill: setup
     signals: ["vibe-coded", "adopt"]
   - ask: "reverse-engineer a spec from this existing codebase"
-    skill: adopt
+    skill: setup
     signals: ["reverse-engineer", "existing repo"]
   - ask: "mise: command not found - get my machine ready"
     skill: doctor
     signals: ["command not found", "prerequisites"]
   - ask: "apply the pending structural migrations from the last plugin release"
-    skill: sync
+    skill: setup
     signals: ["migrations", "plugin release"]
   - ask: "give me a read-only report of scaffold drift vs the current templates"
-    skill: sync
+    skill: setup
     signals: ["--check", "drift"]
   - ask: "this repo uses openspec and its steer scaffold is behind - bring it up to date"
-    skill: sync
+    skill: setup
     signals: ["openspec", "up to date"]
 
   # --- spec authoring / product owner flows ------------------------------------

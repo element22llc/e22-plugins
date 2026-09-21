@@ -144,16 +144,16 @@ if [ "${STATE}" != "managed" ]; then
 		# foreign spec/ vs a damaged spine call for different first moves.
 		case "${STATE}" in
 		foreign)
-			SPINE_NOTE="a spec/ directory exists but has no spec-spine marker (spec/.version) - if this repo should be standards-managed, run /steer:adopt to reverse-engineer the spine from the code; otherwise this is not an spec spine"
+			SPINE_NOTE="a spec/ directory exists but has no spec-spine marker (spec/.version) - if this repo should be standards-managed, run /steer:setup adopt to reverse-engineer the spine from the code; otherwise this is not an spec spine"
 			;;
 		damaged)
-			SPINE_NOTE="this repo has an incomplete spec spine (spec/.version is present but spine files are missing) - run /steer:sync to repair it"
+			SPINE_NOTE="this repo has an incomplete spec spine (spec/.version is present but spine files are missing) - run /steer:setup sync to repair it"
 			;;
 		openspec-setup)
-			SPINE_NOTE="this repo's spec spine is OpenSpec (openspec/) - do NOT run /steer:init or /steer:adopt, which would lay a competing spec/features/** spine; what is missing is steer's tracker declaration, so create openspec/steer/tracker.md from the bundled templates/spec/tracker.md and resolve its placeholders"
+			SPINE_NOTE="this repo's spec spine is OpenSpec (openspec/) - do NOT run /steer:setup init or /steer:setup adopt, which would lay a competing spec/features/** spine; what is missing is steer's tracker declaration, so create openspec/steer/tracker.md from the bundled templates/spec/tracker.md and resolve its placeholders"
 			;;
 		*)
-			SPINE_NOTE="this repo has no /spec spine - if you are starting this product from scratch, bootstrap first with /steer:init (greenfield path); if you are reverse-engineering pre-existing code, run /steer:adopt"
+			SPINE_NOTE="this repo has no /spec spine - if you are starting this product from scratch, bootstrap first with /steer:setup (it detects the greenfield path); if you are reverse-engineering pre-existing code, /steer:setup takes the adopt path"
 			;;
 		esac
 
@@ -164,10 +164,10 @@ if [ "${STATE}" != "managed" ]; then
 		# which lays a competing spec/features/** spine alongside openspec/.
 		case "${STATE}" in
 		openspec | openspec-setup)
-			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml - proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core - mise toolchain pinning and stack-agnostic CI hygiene - applies to EVERY managed repo regardless of stack. This repo's spec spine is OpenSpec, so do NOT run /steer:init or /steer:adopt: they would lay a competing spec/features/** spine beside openspec/. Lay the bundled scaffold down directly instead - at minimum a root mise.toml + CI, matching the repo profile (app / infra / service / library / cli). This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml - proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core - mise toolchain pinning and stack-agnostic CI hygiene - applies to EVERY managed repo regardless of stack. This repo's spec spine is OpenSpec, so do NOT run /steer:setup init or /steer:setup adopt: they would lay a competing spec/features/** spine beside openspec/. Lay the bundled scaffold down directly instead - at minimum a root mise.toml + CI, matching the repo profile (app / infra / service / library / cli). This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
 			;;
 		*)
-			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml - proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core - mise toolchain pinning, the /spec spine, and stack-agnostic CI hygiene - applies to EVERY managed repo regardless of stack, INCLUDING infrastructure/IaC (Ansible, Terraform, OpenTofu, Pulumi), libraries, and CLIs - not just app monorepos. Run /steer:init: it detects the repo profile (app / infra / service / library / cli / workspace) and lays the core plus the matching extras (an infra repo gets a tofu/terragrunt/ansible-flavored root mise.toml + infra CI; compose.yaml is core for EVERY profile, and package.json comes with any Node-stack profile - app, service, library or cli - not app alone). Do NOT skip the bootstrap because the default app scaffold looks like a poor fit - pick the profile instead; at minimum lay down a root mise.toml + CI. This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml - proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core - mise toolchain pinning, the /spec spine, and stack-agnostic CI hygiene - applies to EVERY managed repo regardless of stack, INCLUDING infrastructure/IaC (Ansible, Terraform, OpenTofu, Pulumi), libraries, and CLIs - not just app monorepos. Run /steer:setup: it detects the repo profile (app / infra / service / library / cli / workspace) and lays the core plus the matching extras (an infra repo gets a tofu/terragrunt/ansible-flavored root mise.toml + infra CI; compose.yaml is core for EVERY profile, and package.json comes with any Node-stack profile - app, service, library or cli - not app alone). Do NOT skip the bootstrap because the default app scaffold looks like a poor fit - pick the profile instead; at minimum lay down a root mise.toml + CI. This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
 			;;
 		esac
 

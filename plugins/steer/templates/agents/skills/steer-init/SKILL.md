@@ -1,6 +1,7 @@
 ---
 name: steer-init
-description: One-time setup for a new managed repo - bootstrap the /spec spine + scaffolding, pin the toolchain, leave it working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode.
+description: Internal greenfield bootstrap - lay the /spec spine + scaffolding, pin the toolchain, leave the repo working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode.
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/init/SKILL.md - do not edit by hand.
@@ -9,9 +10,9 @@ description: One-time setup for a new managed repo - bootstrap the /spec spine +
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Normally reached via /steer-setup, which detects the repo state. Invoke directly only when you already know the repo is greenfield (no /spec spine, no substantial code), or when template placeholders ([Replace ...], [Product Name], @github-handle) remain.
+**When to use.** Reached via /steer-setup init - not a direct entry point.
 
-# First-run setup for a new repo
+# First-run setup for a new repo (`/steer-setup init`)
 
 Run this once when a repo is first brought under the standards. Detect
 which of two entry conditions applies and follow that path - both end with the

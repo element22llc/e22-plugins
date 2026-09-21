@@ -1,7 +1,8 @@
 ---
 name: steer-sync
-description: Bring a bootstrapped repo up to date with the current plugin - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
+description: Internal steady-state update - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
 argument-hint: '[--check]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/sync/SKILL.md - do not edit by hand.
@@ -10,9 +11,9 @@ argument-hint: '[--check]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use on a steady-state or OpenSpec repo after a plugin release, when an upstream rename or missing capability wiring needs repair, or with --check for a read-only capability + drift report with no branch or PR.
+**When to use.** Reached via /steer-setup sync - not a direct entry point.
 
-# Sync a repo to the current plugin
+# Sync a repo to the current plugin (`/steer-setup sync`)
 
 A repo materializes part of the plugin into itself at bootstrap time - the
 `/spec` spine, the bundled scaffold (CI, `mise.toml`, PR template, ...). Those

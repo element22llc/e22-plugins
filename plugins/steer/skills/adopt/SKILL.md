@@ -1,7 +1,10 @@
 ---
 name: adopt
-description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards - reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
-when_to_use: Normally reached via /steer:setup, which detects the repo state. Invoke directly only when you already know the repo has substantial working code but no /spec spine and no mise.toml (a "vibe-coded" app to bring onto the standards).
+description: Internal brownfield adoption - bring an existing repo that never went through bootstrap (a "vibe-coded" app) onto the standards - reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
+when_to_use: "Reached via /steer:setup adopt - not a direct entry point."
+# Internal adoption path behind `/steer:setup adopt`. Model-callable, hidden from
+# the slash menu - see the note on `init`.
+user-invocable: false
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)
@@ -28,7 +31,7 @@ allowed-tools:
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
-# Adopt an existing repo into the standards
+# Adopt an existing repo into the standards (`/steer:setup adopt`)
 
 Bring a repo that never went through bootstrap - a "vibe-coded" app with
 working code but no `/spec`, no `mise.toml`, no CI, no plugin install - into the

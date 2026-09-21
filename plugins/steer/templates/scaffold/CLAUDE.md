@@ -14,7 +14,7 @@ lines (most products need far less). When a section outgrows a few bullets,
 move the substance to `/spec/**` (vision, feature intents, ADRs, `spec/history/`)
 or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
 
-> **New repo?** Run **`/steer:init`** once to fill the placeholders, pin the
+> **New repo?** Run **`/steer:setup`** once to fill the placeholders, pin the
 > toolchain, and finish the bootstrap. Remove this line when setup is done.
 > Non-technical PO? Type **`/steer:build`** to go from idea to a working local
 > app - it runs the first-run setup for you.
@@ -36,7 +36,7 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
 <!-- ^ machine-readable marker (steer hooks read this line; values: pr-flow | solo-trunk).
      This marker DECLARES the repo's delivery mode; branch protection enforces
      pr-flow rather than defining it, so an unprotected main on a declared
-     pr-flow repo is a gap to close, not solo-trunk. /steer:init sets it;
+     pr-flow repo is a gap to close, not solo-trunk. /steer:setup sets it;
      /steer:protect flips it to pr-flow at graduation and reports a marker that
      contradicts observed protection. Keep it in sync with the prose below.
      A solo-trunk repo that stays single-dev on trunk deliberately may carry a
@@ -51,7 +51,7 @@ branch and opens the PR autonomously, and it merges only after a dev reviews it
 branch protection; run `/steer:protect` to verify/apply it). This is the default.
 
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
-`/steer:init` when one person is both PO and dev with no MVP yet): commit directly
+`/steer:setup` when one person is both PO and dev with no MVP yet): commit directly
 to `main` and push, no per-feature branch or PR, until graduation. Issue-first still holds
 (a change that needs an issue keeps it, closed from the trunk commit - work
 that needs none, per Change classification, has the PR or commit as its
@@ -74,10 +74,10 @@ and only a second contributor reopens the question.
 
 **`app`** - this repo is an internal app monorepo. The profile decides which
 stack-specific scaffold the bootstrap lays down on top of the universal core
-(mise pinning, the `/spec` spine, CI hygiene); `/steer:init` sets the marker
+(mise pinning, the `/spec` spine, CI hygiene); `/steer:setup` sets the marker
 above to the detected profile (`app` / `infra` / `service` / `library` / `cli` /
 `workspace`).
-Keep the marker and this line in sync - `/steer:sync` reads the marker. An
+Keep the marker and this line in sync - `/steer:setup sync` reads the marker. An
 **infra** repo (Terraform/OpenTofu/Ansible/Pulumi) gets a tofu/terragrunt/ansible
 root `mise.toml` and infra CI instead of the Node project files
 (`package.json` / `biome.json`); `node` + `compose.yaml` stay from the core scaffold.

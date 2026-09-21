@@ -1,6 +1,7 @@
 ---
 name: steer-adopt
-description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards - reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
+description: Internal brownfield adoption - bring an existing repo that never went through bootstrap (a "vibe-coded" app) onto the standards - reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/adopt/SKILL.md - do not edit by hand.
@@ -9,9 +10,9 @@ description: Adopt an existing repo that never went through bootstrap (a "vibe-c
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Normally reached via /steer-setup, which detects the repo state. Invoke directly only when you already know the repo has substantial working code but no /spec spine and no mise.toml (a "vibe-coded" app to bring onto the standards).
+**When to use.** Reached via /steer-setup adopt - not a direct entry point.
 
-# Adopt an existing repo into the standards
+# Adopt an existing repo into the standards (`/steer-setup adopt`)
 
 Bring a repo that never went through bootstrap - a "vibe-coded" app with
 working code but no `/spec`, no `mise.toml`, no CI, no plugin install - into the
