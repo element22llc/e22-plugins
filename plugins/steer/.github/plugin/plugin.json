@@ -1,6 +1,6 @@
 {
   "name": "steer",
   "description": "Engineering standards for GitHub Copilot (CLI and VS Code). This manifest loads steer's skills; .github/copilot-instructions.md (installed by /steer:init) carries the always-on rules, alongside the cross-tool .agents/skills/ tree in the open Agent Skills format. Hook enforcement is guaranteed on Claude Code only - Copilot Chat in VS Code runs the plugin's Claude hooks.json directly and picks it up incidentally, with no parity promise.",
-  "version": "6.5.0",
+  "version": "6.6.0",
   "skills": "skills/"
 }

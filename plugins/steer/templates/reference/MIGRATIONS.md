@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `policy/org.yml` declares which org pack the repo follows
+### v6.6.0 - `policy/org.yml` declares which org pack the repo follows
 
 - **What & why:** the stack, useful-commands and infra-stack rules named one
   organisation's tools - Next/TS/Tailwind, Drizzle, OpenTofu on AWS, SSM
