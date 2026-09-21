@@ -100,9 +100,13 @@ specialized skills below as needed, so you rarely reach past this set.
 
 ## Internal gateways (never user-invoked)
 
-`user-invocable: false` - never a user's first move. Most are called by another
-skill; the three with no front door (`reference`, `report`, `loop`) are reached
-from a rule instead, or from Claude's own read of what the ask needs.
+`user-invocable: false` - never a user's first move. Every one has exactly one
+declared way in, and `check_standards.py` fails the build on a skill that has
+none: **absorbed** as a mode of one front door (`/steer:setup init`,
+`/steer:status feature <id>`), a **gateway** an owning skill calls mid-procedure
+(`tracker-sync`, `spec-scaffold`), or **rule-reached** - the three with no front
+door (`reference`, `report`, `loop`), named by an always-on rule, or reached from
+Claude's own read of what the ask needs.
 
 | Skill | Purpose |
 | --- | --- |

@@ -48,7 +48,7 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 context: fork
 background: false
 ---
-<!-- steer:modes this-week,since,milestone,feature -->
+<!-- steer:modes this-week,since,milestone,feature=explain -->
 
 # Status report - a shareable, plain-language progress update
 

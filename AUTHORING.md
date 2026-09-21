@@ -305,6 +305,24 @@ why it is **not**:
 Default to a mode or a front-door-routed specialized skill. Add a front door only
 when the intent is genuinely top-level and maps to no existing owner.
 
+**A `user-invocable: false` skill must declare a way in**, and check 14 of
+`check_standards.py` enforces exactly one of three:
+
+- **absorbed as a mode** - a front door's `<!-- steer:modes ... -->` marker names
+  it. A mode named after the skill it enters owns itself (`setup` -> `init`); one
+  named after what it *does* annotates its owner, `<mode>=<skill>` - `next` carries
+  `capabilities=help` and `status` carries `feature=explain`. Without the
+  annotation the mode reads well and the skill looks stranded;
+- **a gateway** an owning skill calls mid-procedure (`spec-scaffold`,
+  `tracker-sync`) - no marker can name it, so it is enumerated in the check with
+  its caller;
+- **rule-reached** - an always-on rule names it and the model gets there from the
+  rule (`reference`, `report`, `loop`). Also enumerated, and the reason is
+  asserted: the name must actually appear in `rules/`. Keep this set equal to
+  `MODEL_ONLY` in `plugins/steer/scripts/scan-invocations.sh`, which needs the
+  same fact to avoid reporting an unfixable finding against correct prose.
+
+
 ## Rule numbering
 
 Rules live at `plugins/steer/rules/NN-<slug>.md` and are concatenated in **lexical

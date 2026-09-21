@@ -392,3 +392,123 @@ def test_gh_pr_checks_scopes_ignores_workflows_that_do_not_run_it(monkeypatch, t
     errors: list[str] = []
     check_standards.check_gh_pr_checks_scopes(errors)
     assert errors == []
+
+
+def test_parse_modes_defaults_owner_to_the_mode_name():
+    f = check_standards._parse_modes
+    assert f("init,adopt,sync") == {"init": "init", "adopt": "adopt", "sync": "sync"}
+    assert f("default,capabilities=help") == {"default": "default", "capabilities": "help"}
+    assert f("this-week, feature=explain") == {"this-week": "this-week", "feature": "explain"}
+
+
+def _reachability_fixture(tmp_path: Path) -> tuple[Path, Path]:
+    """A miniature v7 surface: two front doors, one absorbed skill, one gateway,
+    one rule-reached skill - enough for every verdict check 14 can reach."""
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    _write_skill(skills, "setup", "", "<!-- steer:modes init,protect -->")
+    _write_skill(skills, "status", "", "<!-- steer:modes this-week,feature=explain -->")
+    for name in ("init", "protect", "explain", "gateway", "ruled"):
+        _write_skill(skills, name, "user-invocable: false\n", "internal")
+    rules = tmp_path / "rules"
+    rules.mkdir()
+    (rules / "53-automation.md").write_text(
+        "Scaffold loops with `/steer:ruled`.\n", encoding="utf-8"
+    )
+    return skills, rules
+
+
+def _run_reachability(monkeypatch, skills: Path, rules: Path, **overrides) -> list[str]:
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    monkeypatch.setattr(check_standards, "RULES_DIR", rules)
+    monkeypatch.setattr(
+        check_standards, "GATEWAY_SKILLS", overrides.get("gateways", {"gateway": "called by setup"})
+    )
+    monkeypatch.setattr(
+        check_standards, "RULE_REACHED_SKILLS", overrides.get("ruled", {"ruled": "rule 53"})
+    )
+    # The MODEL_ONLY cross-check reads the real plugin script; point it at the
+    # fixture's own copy so the two sets agree under the patched RULE_REACHED set.
+    plugin = skills.parent
+    (plugin / "scripts").mkdir(exist_ok=True)
+    names = " ".join(sorted(overrides.get("ruled", {"ruled": ""})))
+    (plugin / "scripts/scan-invocations.sh").write_text(
+        f'MODEL_ONLY=" {overrides.get("model_only", names)} "\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", plugin)
+    errors: list[str] = []
+    check_standards.check_internal_skill_reachability(errors, {d.name for d in skills.iterdir()})
+    return errors
+
+
+def test_reachability_clean_surface(monkeypatch, tmp_path: Path):
+    skills, rules = _reachability_fixture(tmp_path)
+    assert _run_reachability(monkeypatch, skills, rules) == []
+
+
+def test_reachability_catches_a_stranded_skill(monkeypatch, tmp_path: Path):
+    """An internal skill no marker names and no exemption covers is unreachable."""
+    skills, rules = _reachability_fixture(tmp_path)
+    _write_skill(skills, "orphan", "user-invocable: false\n", "nobody routes here")
+    errors = _run_reachability(monkeypatch, skills, rules)
+    assert len(errors) == 1
+    assert "skills/orphan/SKILL.md" in errors[0] and "unreachable" in errors[0]
+
+
+def test_reachability_catches_two_front_doors(monkeypatch, tmp_path: Path):
+    skills, rules = _reachability_fixture(tmp_path)
+    (skills / "setup/SKILL.md").write_text(
+        "---\nname: setup\n---\n<!-- steer:modes init,protect,feature=explain -->\n",
+        encoding="utf-8",
+    )
+    errors = _run_reachability(monkeypatch, skills, rules)
+    assert len(errors) == 1
+    assert "skills/explain/SKILL.md" in errors[0] and "['setup', 'status']" in errors[0]
+
+
+def test_reachability_catches_a_stale_annotation(monkeypatch, tmp_path: Path):
+    """`mode=owner` naming a public skill or no skill is a claim on nothing."""
+    skills, rules = _reachability_fixture(tmp_path)
+    (skills / "status/SKILL.md").write_text(
+        "---\nname: status\n---\n<!-- steer:modes this-week,feature=setup -->\n", encoding="utf-8"
+    )
+    errors = _run_reachability(monkeypatch, skills, rules)
+    joined = "\n".join(errors)
+    assert "'feature=setup'" in joined  # the annotation itself
+    assert "skills/explain/SKILL.md" in joined  # and explain is now stranded
+
+
+def test_reachability_catches_double_classification(monkeypatch, tmp_path: Path):
+    """A skill with a front door needs no exemption - carrying both hides a move."""
+    skills, rules = _reachability_fixture(tmp_path)
+    errors = _run_reachability(
+        monkeypatch, skills, rules, gateways={"gateway": "called by setup", "init": "stale"}
+    )
+    assert len(errors) == 1
+    assert "skills/init/SKILL.md" in errors[0] and "needs no exemption" in errors[0]
+
+
+def test_reachability_requires_the_rule_to_name_its_skill(monkeypatch, tmp_path: Path):
+    """The rule-reached exemption asserts its reason instead of recording it."""
+    skills, rules = _reachability_fixture(tmp_path)
+    (rules / "53-automation.md").write_text("The automation opt-in lives here.\n", encoding="utf-8")
+    errors = _run_reachability(monkeypatch, skills, rules)
+    assert len(errors) == 1
+    assert "no rule names '/steer:ruled'" in errors[0]
+
+
+def test_reachability_catches_model_only_drift(monkeypatch, tmp_path: Path):
+    skills, rules = _reachability_fixture(tmp_path)
+    errors = _run_reachability(monkeypatch, skills, rules, model_only="")
+    assert len(errors) == 1
+    assert "MODEL_ONLY" in errors[0]
+
+
+def test_reachability_catches_an_exemption_on_a_public_skill(monkeypatch, tmp_path: Path):
+    """An exemption naming a skill users can type is stale, not an exemption."""
+    skills, rules = _reachability_fixture(tmp_path)
+    errors = _run_reachability(
+        monkeypatch, skills, rules, gateways={"gateway": "called by setup", "setup": "stale"}
+    )
+    assert len(errors) == 1
+    assert "'setup' is exempted" in errors[0]
