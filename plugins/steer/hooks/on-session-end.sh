@@ -2,7 +2,7 @@
 # steer SessionEnd hook - stop a linked worktree's backing services on exit.
 #
 # WHY THIS EXISTS
-#   Rule `99-end-of-session` asked the agent to tear down the services a worktree
+#   Rule `50-done` § End-of-session checklist asked the agent to tear down the services a worktree
 #   started. A rule can only ask, it costs always-on bytes every session, and the
 #   moment it matters is the moment the session is over. SessionEnd is that
 #   moment, and it is a real event - so the port-freeing half of that checklist

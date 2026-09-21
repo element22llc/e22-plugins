@@ -857,7 +857,7 @@ Name the file and say what to carry forward.
   The workspace profile therefore renamed its whole-product tasks: `dev` -> `ws:dev`
   and `docker:up` / `docker:down` / `docker:clean` -> `ws:docker:*` (`convert:doc` is
   the one deliberate exception). The always-on rules moved with it - `15-commands`,
-  `24-worktrees` and `99-end-of-session` now name the `ws:` forms - so an
+  `24-worktrees` and `50-done` § End-of-session checklist now name the `ws:` forms - so an
   **already-scaffolded** workspace repo receives injected rules naming tasks its
   `mise.toml` does not define until this migration is applied. Additive
   reconciliation cannot carry it: it splices in what is missing and never renames or

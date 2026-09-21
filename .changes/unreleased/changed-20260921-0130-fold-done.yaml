@@ -1,0 +1,14 @@
+kind: Changed
+body: |
+  - **Five rules about finishing a change become one.** `50-definition-of-done`,
+    `51-verify-loop`, `55-drift-gates`, `75-compliance` and `99-end-of-session`
+    are now `50-done`, with the Definition of Done up front and Verify loop,
+    Drift gates, Audit-aligned delivery and the End-of-session checklist as
+    sections under it. Nothing is dropped - the five DoD items, the drift-class
+    list the scaffold's PR template mirrors, and every checklist item are
+    carried verbatim or tightened, and the section headings keep the names other
+    rules and skills already cite. A cross-reference now reads
+    `` `50-done` § Drift gates ``. An e22 app repo's payload: 58,820 -> 56,234
+    characters.
+custom:
+  Slug: fold-done
