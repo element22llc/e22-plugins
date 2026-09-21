@@ -23,7 +23,7 @@ allowed-tools:
 # frontmatter does not withhold. Write STAYS GRANTED for the two post-confirmation outputs
 # this skill's modes instruct - the temp-dir Artifact dashboard and the optional
 # AUDIT-REPORT.md / DRIFT-REPORT.md - bound in prose by the read-only contract
-# below, exactly as /steer:status, /steer:explain, /steer:help and
+# below, exactly as /steer:status, /steer:explain, /steer:next and
 # /steer:questions bundle mode do. Do NOT disallow Write here: disallowed-tools is
 # scoped to the invoking turn and clears at the user's next message, so it buys no
 # safety. The read-only contract below is the binding limit.

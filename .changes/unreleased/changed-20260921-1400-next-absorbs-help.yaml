@@ -1,0 +1,17 @@
+kind: Changed
+body: |
+  - **`/steer:help` is now a mode of `/steer:next`, not a skill you type.**
+    `/steer:next capabilities` renders the capability menu; `/steer:next` with
+    no mode still answers "what should I do now, here?". The menu itself is
+    unchanged - `help` survives as an internal renderer (`user-invocable:
+    false`) that `capabilities` loads on entry, so it is still built from the
+    live skill frontmatter and still never hardcodes a list. Discovery and
+    navigation answer near-identical questions, and two front doors for them was
+    the split this closes. `next` keeps `Write` for the menu's optional Artifact
+    temp path, with every other write still a prose invariant. Typing
+    `/steer:help` no longer resolves: the harness rejects a `user-invocable:
+    false` skill, and `/steer:sync`'s invocation scan flags a frozen mention in
+    a managed repo's prose as a `noncallable-gateway` for the dev to reroute.
+    First step of the 7.0 public-surface flip (#584).
+custom:
+  Slug: next-absorbs-help

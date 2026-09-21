@@ -1,11 +1,12 @@
 ---
 name: next
-description: "Read-only workspace navigator - reconstructs workspace state cold (branch/PR, feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action. Never edits, commits, merges, or advances state."
+description: "Read-only workspace navigator and capability index - the default mode reconstructs workspace state cold (branch/PR, features, open questions, Proposed ADRs, tracker issues, claims, version drift) and arbitrates the single best next action; `capabilities` renders the plain-language capability menu. Never edits, commits, merges, or advances state."
 when_to_use: >-
   Use when picking a repo up cold or mid-stream and asking "what should I do
   next?", "where do I start?", or "I'm lost" - when work spans workflows and you
-  need the one action that matters most.
-argument-hint: "[optional constraints, e.g. 'only feature-x', 'no tracker writes']"
+  need the one action that matters most. Use `capabilities` to browse what steer
+  can do at all: "what can steer do?", "show me the commands".
+argument-hint: "[capabilities] [optional constraints, e.g. 'only feature-x', 'no tracker writes']"
 allowed-tools:
   - Bash(sh *scripts/workspace-snapshot.sh*)
   - Bash(git status *)
@@ -22,15 +23,19 @@ allowed-tools:
   - Bash(gh issue list *)
   - Bash(gh issue view *)
   - Bash(gh search issues *)
-disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
+disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 
 # Navigate the workspace to the single best next action (read-only)
 
-> Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
+<!-- steer:modes default,capabilities -->
+
+> Native in-place edit tools (`Edit`/`NotebookEdit`) and worktree creation are
 > removed from the tool pool for the turn that invokes this skill, so navigation
 > cannot mutate the repo; across a multi-turn run that limit is one this skill
-> keeps in prose. This does
+> keeps in prose. `Write` is granted for one purpose only - the temp-dir path an
+> Artifact render needs in `capabilities` mode - and writing anywhere else is a
+> prose invariant this skill does not break. This does
 > not make the repo immutable - shell mutations stay governed by your permission
 > settings and hooks. This skill only *recommends*; the owning skill carries out
 > the action.
@@ -47,6 +52,28 @@ it never edits, commits, publishes, accepts an ADR, claims work, pushes a branch
 merges, or creates a PR. It also never *resolves* a state itself: it names the
 owning skill (`/steer:work`, `/steer:spec`, `/steer:questions`, ...) as the place that
 does.
+
+## Modes
+
+| Mode | What it answers | Needs a repo |
+|---|---|---|
+| `default` | "What should I do **now**, here?" - reconstruct state, arbitrate one action | yes |
+| `capabilities` | "What can steer do **at all**?" - the plain-language menu of every skill | no |
+
+The two are deliberately different questions, and picking the wrong one is the
+common misroute: a user staring at an unfamiliar repo wants `default`; a user
+who has never seen steer wants `capabilities`. When the ask names no repo state
+("what can this thing do?", "show me the commands", "list the skills"), take
+`capabilities`.
+
+**`capabilities` delegates, it does not restate.** Invoke `/steer:help` - an
+internal skill, `user-invocable: false`, whose whole body is the menu contract:
+render from the live `skills/*/SKILL.md` frontmatter, essentials first, the rest
+by journey, never a hardcoded list. Loading it on mode entry is what keeps this
+file from carrying a second copy of a list that drifts the moment a skill lands.
+Do not summarize it from memory and do not inline it here.
+
+Everything from **Phase 0** down is the `default` mode.
 
 ## The contract it reuses - do not restate it
 

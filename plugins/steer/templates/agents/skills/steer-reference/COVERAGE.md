@@ -221,7 +221,7 @@ It covers, in detail:
 
 This file carries the Artifact standard in full; the rendering skills
 (`/steer-explain`, `/steer-status`, `/steer-questions bundle`, `/steer-audit`,
-`/steer-roadmap`, `/steer-help`) each load it before rendering.
+`/steer-roadmap`, `/steer-next capabilities`) each load it before rendering.
 
 ## gates
 

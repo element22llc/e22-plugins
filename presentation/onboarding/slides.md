@@ -740,9 +740,8 @@ That pause isn't a bug - it's the **design**. The PR is the hand-off, not a fail
 <div v-click><b class="accent">audit</b> - standards check</div>
 <div v-click><b class="accent">sync</b> - reconcile state</div>
 <div v-click><b class="accent">protect</b> - branch protection</div>
-<div v-click><b class="accent">next</b> - what to do now</div>
+<div v-click><b class="accent">next</b> - what to do now, or <code>capabilities</code> to browse</div>
 <div v-click><b class="accent">explain</b> - shareable feature page</div>
-<div v-click><b class="accent">help</b> - browse what steer can do</div>
 <div v-click><b class="accent">reference</b> - load the deep-dive prose</div>
 <div v-click><b class="accent">standards</b> - load rules by hand</div>
 <div v-click><b class="accent">doctor</b> - diagnose setup</div>
@@ -754,7 +753,7 @@ That pause isn't a bug - it's the **design**. The PR is the hand-off, not a fail
 
 <div v-click class="mt-8 text-center opacity-70">
 
-Don't memorize them. Run <code>/steer:next</code> for the next move, or <code>/steer:help</code> to browse.
+Don't memorize them. Run <code>/steer:next</code> for the next move, or <code>/steer:next capabilities</code> to browse.
 
 </div>
 

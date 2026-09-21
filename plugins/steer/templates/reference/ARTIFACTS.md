@@ -10,7 +10,7 @@ to a stakeholder who has no repo and no Claude Code.
 This reference is the **single source of truth** for *how* steer produces an
 Artifact and *what discipline governs it*. Skills that render one - `/steer:explain`,
 `/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`, `/steer:status`,
-`/steer:help` - describe
+`/steer:next capabilities` - describe
 *what* to put on the page and defer the mechanics and the guarantees here rather
 than restating them. When you add Artifact output to a skill, point at this file;
 do not re-derive the rules.
@@ -73,7 +73,7 @@ read-only over the canonical sources even in a skill that otherwise writes.
   `steer-explain-<feature-id>.html`, `steer-audit-code-<short-sha>.html`). The stable name is
   what lets a **same-session re-run redeploy to the same Artifact URL** instead of
   minting a new page; never use a randomized temp name.
-- **Read-only skills keep `Write`.** `/steer:explain`, `/steer:help`,
+- **Read-only skills keep `Write`.** `/steer:explain`, `/steer:next`,
   `/steer:status` and `/steer:audit` keep the mutating tools disallowed in
   frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`; `explain` also disallows
   `Bash`) - but `Write` is deliberately **not** disallowed, because writing the
@@ -140,8 +140,8 @@ page should read as one system:
   never a remote font.
 - **House default otherwise.** With no `DESIGN.md` (or none that declares tokens),
   the default *is* the `artifact-design` + `dataviz` guidance - a deliberate,
-  brand-neutral system, not an absence of style. `/steer:help` always uses the
-  default: it renders steer's own capability set, not a product's state.
+  brand-neutral system, not an absence of style. `/steer:next capabilities` always uses
+  the default: it renders steer's own capability set, not a product's state.
 - **Non-negotiables either way:** light *and* dark must both work (adapt a
   single-theme product palette rather than shipping a page that breaks in dark
   mode), contrast stays accessible, and chart/status colors still follow the
@@ -252,7 +252,7 @@ render unless the user supplies a URL to update.
 | `/steer:audit` | Findings dashboard - dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
 | `/steer:roadmap` | Release timeline - milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
 | `/steer:status` | Client-facing period report - shipped / in-progress / needs-input / next | the whole spine over the reporting window |
-| `/steer:help` | Capability menu - skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |
+| `/steer:next capabilities` | Capability menu - skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |
 
 This file is the standard itself, not a condensed rule's companion - nothing
 about Artifacts rides in the always-on payload, so a rendering skill loads it

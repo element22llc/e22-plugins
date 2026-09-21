@@ -1,18 +1,19 @@
 ---
 name: help
-description: "Human-facing capabilities menu - renders the shipped skill set in plain language, the six essentials first and the rest grouped by journey. Read-only; every line comes from the live skill frontmatter, and a completeness check proves no user-invocable skill was dropped. Optionally renders an Artifact menu."
-when_to_use: >-
-  Use to browse steer's capabilities - "what can steer do?",
-  "show me the commands", "list the skills". Discovery only: "what should I do
-  next" is /steer:next.
+description: "Internal renderer for the capability menu - the shipped skill set in plain language, essentials first, the rest by journey, every line built from live frontmatter. Read-only; optional Artifact menu."
+when_to_use: "Reached via /steer:next capabilities - not a direct entry point."
 argument-hint: "[optional: a skill or area to zoom into]"
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
+# Internal menu renderer: the capability index behind `/steer:next capabilities`.
+# Model-callable, hidden from the slash menu, so discovery and navigation are one
+# user-facing door rather than two that answer near-identical questions.
+user-invocable: false
 ---
 
 # Browse what steer can do (read-only menu)
 
-`/steer:help` is the one surface a curious user can point at to see the **whole**
-capability set at a glance. Everything steer does is normally reached by
+`/steer:next capabilities` is the one surface a curious user can point at to see
+the **whole** capability set at a glance, and this skill is what it renders. Everything steer does is normally reached by
 describing a goal in plain language and letting the router pick the skill (see
 `00-router.md`) - you never *have* to know a skill name. This skill is for the
 person who wants to look at the map anyway: it prints the menu.
@@ -31,9 +32,10 @@ moment a skill is added or renamed. Every entry you show must come from a
 `SKILL.md` as it stands this session, so a new skill appears in the menu
 automatically.
 
-Skip any skill whose frontmatter says `user-invocable: false` (the internal
-gateways - `tracker-sync`, `spec-scaffold`); they are never a user's entry
-point. You may mention that a front door auto-routes to specialized skills
+Skip any skill whose frontmatter says `user-invocable: false` - the internal
+gateways and the skills a front door has absorbed as a mode, this one included.
+A user cannot type them, so listing them as commands would hand out invocations
+the harness rejects. You may mention that a front door auto-routes to specialized skills
 (`setup` -> `init` / `adopt` / `sync`; `audit` -> `tidy`; `issues` / `spec` ->
 `questions`; `issues` -> `roadmap`), but don't enumerate those unless the user
 asks to zoom in.
@@ -83,8 +85,9 @@ to its group; omit an empty group:
 **Completeness check before you render.** The groups above are placement
 guidance, not the source of truth: the skill listing is. After grouping, confirm
 every user-invocable skill you read in Phase 1 appears exactly once in the
-output (`/steer:help` itself is the one fair omission - the user is already in
-it). If a skill matches no group, put it under **Govern & plumbing** rather than
+output. The `user-invocable: false` skip in Phase 1 is the only omission, and it
+is the harness's own boundary rather than a judgement call. If a skill matches no
+group, put it under **Govern & plumbing** rather than
 dropping it; a skill silently missing from this menu is the failure mode this
 check exists to prevent.
 
@@ -95,8 +98,9 @@ goal, not the skill name; the whole point is that the user recognizes their
 intent, not that they memorize a command.
 
 Close with one line reminding them they can just **say what they want in plain
-language** - the router will pick the skill - and that `/steer:next` answers "what
-should I do *now*" in a specific repo, which this menu deliberately does not.
+language** - the router will pick the skill - and that `/steer:next` with no mode
+answers "what should I do *now*" in a specific repo, which this menu deliberately
+does not.
 
 ## Phase 3 - offer a shareable visual menu (Artifact)
 
@@ -109,7 +113,7 @@ auto-published; a curious user often just wants the inline list. The cards are
 still **derived from the live skill frontmatter** (Phase 1), never a hardcoded
 or invented capability. Render by the shared discipline -
 mechanics in `/steer:reference artifacts` - with the temp path
-`<tempdir>/steer-help-menu.html`.
+`<tempdir>/steer-capabilities-menu.html`.
 
 End the menu with the last journey group and nothing after it - no line inviting
 correction, no offer to file a report (rule `03-output` § Responses: no closing offer). A
@@ -127,7 +131,8 @@ describe it; don't run it.
 ## What this skill is not
 
 - Not a **navigator**: it never reconstructs repo state or recommends an action.
-  That's `/steer:next`. If the user asks "what should I do next", route there.
+  That is `/steer:next`'s default mode - the same front door, the other question.
+  An ask about what to do *now* belongs there, not in the menu.
 - Not a **dispatcher**: it never bootstraps or picks init/adopt/sync. That's
   `/steer:setup`.
 - Not a place to **restate the rules**: the always-on manual loads via the
