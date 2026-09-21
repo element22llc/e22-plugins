@@ -124,7 +124,7 @@ description = "Full gate: everything the required `ci` status check runs. Run be
 depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage", "ci:changelog"]
 
 [tasks."convert:doc"]
-description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:intake. Usage: mise run convert:doc <file>"
+description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake. Usage: mise run convert:doc <file>"
 # `[all]` pulls the per-format extras; without it every format raises MissingDependency.
 run = "uvx --from 'markitdown[all]' markitdown"
 

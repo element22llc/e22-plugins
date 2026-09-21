@@ -164,7 +164,7 @@ roadmap deck, a requirements spreadsheet. What differs is the *cadence*: these
 arrive in **successive versions**, each re-sent with edits and no pointer to what
 changed. So they get a **versioned** home rather than a flat one.
 
-`/steer:intake` owns this flow. For each version it commits **both** the original
+`/steer:spec intake` owns this flow. For each version it commits **both** the original
 binary (provenance, never edited) **and** a normalized Markdown extraction (the
 thing Claude reads and diffs) under:
 

@@ -40,7 +40,7 @@ than fabricating config or falling back to a label.
   before `set-milestone` attaches issues to it. This is the **only** op that creates
   a milestone, and it preserves the "never silently fabricate" guarantee by being
   **strictly confirmation-gated**: invoke it only after the caller (e.g.
-  `/steer-roadmap`) has shown the proposed milestone set + due dates and a human
+  `/steer-spec roadmap`) has shown the proposed milestone set + due dates and a human
   confirmed them. It **never invents a due date** - `--due` carries the
   human-confirmed date, and is omitted when the human set none. Create via the MCP
   create-milestone tool, else `gh api --method POST repos/{owner}/{repo}/milestones`

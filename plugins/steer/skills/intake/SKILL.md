@@ -1,11 +1,11 @@
 ---
 name: intake
-description: "Absorb a PO office document (docx/pptx/xlsx/pdf) into the /spec spine - commit the binary plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human-authored prose. clarify maps a client clarification document to open questions and new scope; status reports a source's absorb state."
-when_to_use: >-
-  Use when a Product Owner hands over a new or re-sent spec, roadmap,
-  requirements deck, or spreadsheet and the team needs what changed propagated
-  into /spec and the tracker.
+description: "Internal document absorb - commit a PO office document plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human prose. `clarify` folds a client answers document; `status` reports a source's absorb state."
+when_to_use: "Reached via /steer:spec intake - not a direct entry point."
 argument-hint: "[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]"
+# Internal ingestion path behind `/steer:spec intake`. Model-callable, hidden
+# from the slash menu - see the note on `init`.
+user-invocable: false
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)
@@ -28,7 +28,7 @@ allowed-tools:
 
 <!-- steer:modes default,status,clarify -->
 
-# Absorb a PO source document into the spine
+# Absorb a PO source document into the spine (`/steer:spec intake`)
 
 A PO repeatedly hands over office documents (docx / pptx / xlsx, sometimes PDF)
 carrying specs and roadmaps, and each new version arrives with **no pointer to
@@ -51,7 +51,7 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
   as a `/steer:audit`-style finding for a human, per rule `50-done` § Drift gates.
 - It does **not** invent content (anything absent from the extraction becomes
   an Open question, never a guessed requirement) and does **not** fabricate
-  dates - roadmap dates come from the human via `/steer:roadmap`.
+  dates - roadmap dates come from the human via `/steer:spec roadmap`.
 
 ## First, every run
 
@@ -141,11 +141,11 @@ one best step (see `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`):
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| Converter unavailable; binary committed | Blocking now | Enable conversion (install `uv`; `mise run convert:doc`), then re-run `/steer:intake <doc>` |
+| Converter unavailable; binary committed | Blocking now | Enable conversion (install `uv`; `mise run convert:doc`), then re-run `/steer:spec intake <doc>` |
 | Conflicting claims surfaced as Open questions | Human decision required | PO resolves the `Q-NNN`s (no command) |
 | New feature described in the document | Recommended | Spec it - `/steer:spec` |
 | Change contradicts the build (drift) | Required before next production release | File it - `/steer:issues publish-drift` |
-| Roadmap/milestone change absorbed | Recommended | Reconcile the timeline - `/steer:roadmap` |
+| Roadmap/milestone change absorbed | Recommended | Reconcile the timeline - `/steer:spec roadmap` |
 | Clarification units matched open questions (bucket 1) | Recommended | Fold the answers - `/steer:spec questions` |
 | Clarification units unmatched (bucket 3) | Human decision required | The human places them (may become new `Q-NNN`s) - no command |
 | Delta absorbed, nothing open | Complete | `No action is currently required.` |

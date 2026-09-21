@@ -9,7 +9,7 @@ to a stakeholder who has no repo and no Claude Code.
 
 This reference is the **single source of truth** for *how* steer produces an
 Artifact and *what discipline governs it*. Skills that render one - `/steer:explain`,
-`/steer:spec questions bundle`, `/steer:audit`, `/steer:roadmap`, `/steer:status`,
+`/steer:spec questions bundle`, `/steer:audit`, `/steer:spec roadmap`, `/steer:status`,
 `/steer:next capabilities` - describe
 *what* to put on the page and defer the mechanics and the guarantees here rather
 than restating them. When you add Artifact output to a skill, point at this file;
@@ -196,7 +196,7 @@ only data channel back**, and it is a contract, not a convenience:
   email, and back).
 - Every fillable page has exactly **one owning ingest path** that absorbs the
   export and folds it into canonical state under the usual gates. For the PO
-  questionnaire that is **`/steer:intake clarify <filled-doc>`**, which maps each
+  questionnaire that is **`/steer:spec intake clarify <filled-doc>`**, which maps each
   answer to its key and routes it to `/steer:spec questions` to fold into the spec -
   the full key + routing contract is
   [`CLARIFICATION-LOOP.md`](CLARIFICATION-LOOP.md);
@@ -204,7 +204,7 @@ only data channel back**, and it is a contract, not a convenience:
   which files exactly the checked findings and flags stale or unknown keys.
 - **Do not bolt an ad-hoc input onto a read-only page.** A fillable Artifact
   exists only where an ingest path exists to receive it - today:
-  `/steer:spec questions bundle` -> `/steer:intake clarify` (PO answers) and the audit
+  `/steer:spec questions bundle` -> `/steer:spec intake clarify` (PO answers) and the audit
   dashboard's triage form -> `/steer:issues publish-audit` (finding selection). A
   new fillable page needs its own declared key scheme and ingest route before it
   ships.
@@ -250,7 +250,7 @@ render unless the user supplies a URL to update.
 | `/steer:status feature <id>` | Feature summary - status pipeline, acceptance meter, clickable journey, scope + open-question boards | one feature's `intent.md` (+ `contract.md`) |
 | `/steer:spec questions bundle` | Fillable PO questionnaire (see [Fillable pages](#fillable-pages-the-copy-out-floor)) | open questions across the spine |
 | `/steer:audit` | Findings dashboard - dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
-| `/steer:roadmap` | Release timeline - milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
+| `/steer:spec roadmap` | Release timeline - milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
 | `/steer:status` | Client-facing period report - shipped / in-progress / needs-input / next | the whole spine over the reporting window |
 | `/steer:next capabilities` | Capability menu - skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |
 

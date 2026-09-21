@@ -271,7 +271,7 @@ design-export home; on a brownfield repo `source.md` usually stays a stub -
 design provenance lives per feature), `/spec/design/architecture-diagram.md` (the living
 global architecture diagram - seed it from the as-built choices Phase 6
 inventoried and link it from `ARCHITECTURE.md`), and `/spec/sources/README.md`
-(the versioned home for recurring PO documents, maintained by `/steer-intake`). **Adapt to the existing
+(the versioned home for recurring PO documents, maintained by `/steer-spec intake`). **Adapt to the existing
 stack** (Python -> `uv` task commands; add/remove `compose.yaml` services to match
 what the app needs). **Apply the layered profile overlays** (MANIFEST "Profile
 overlays") for the profile confirmed in Phase 1 - Core (Layer 0) for every

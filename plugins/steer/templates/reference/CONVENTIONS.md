@@ -839,7 +839,7 @@ product spine, a member only its own (`/steer:reference polyrepo`).
   configuration, limitations, troubleshooting, release notes.
 - **`/spec/decisions`** - ADRs.
 - **`/spec/sources`** - **recurring**, versioned PO source documents,
-  maintained by `/steer:intake`.
+  maintained by `/steer:spec intake`.
 - **`/spec/reference`** - **one-off** source/research materials feeding the
   spec. The `/steer:reference` prose ships with the plugin, not here.
 - **`/infra`** - infrastructure-as-code and deploy scripts.

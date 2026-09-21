@@ -54,7 +54,7 @@ status, and its open questions - in plain language.
 
 ## Render, don't own - this is a derived view
 
-Mirror `/steer:roadmap`'s discipline: the **`/spec` intent + the tracker item are
+Mirror `/steer:spec roadmap`'s discipline: the **`/spec` intent + the tracker item are
 canonical**. The artifact is a **snapshot**, never a source of truth. It can go
 stale the moment the spec changes - regenerate to refresh.
 
@@ -231,7 +231,7 @@ After rendering, surface the single most useful follow-up, and stop:
 ## Reference
 
 - Audience & plain-language posture: rule `05`.
-- Derived-view discipline this mirrors: `/steer:roadmap`.
+- Derived-view discipline this mirrors: `/steer:spec roadmap`.
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
 - Status enum for the lifecycle pipeline: `ENUMS.md`.
 - Artifact rendering, the derived-view discipline, and the Markdown fallback:

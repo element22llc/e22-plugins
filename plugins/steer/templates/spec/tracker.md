@@ -77,10 +77,10 @@ owners:
   ref is the pointer back.
 - **Milestones (release grouping):** when a release/version is tracked as a
   GitHub Milestone, issues are attached to it through the tracker gateway (ask
-  Claude, or run `/steer:roadmap`) so a GitHub Projects v2 release or roadmap view
+  Claude, or run `/steer:spec roadmap`) so a GitHub Projects v2 release or roadmap view
   can group by it. To generate the
   timeline - turn target features or a spec-gap from `/steer:audit spec` into milestone-grouped
-  issues - run `/steer:roadmap` (it proposes a dependency-ordered milestone plan and
+  issues - run `/steer:spec roadmap` (it proposes a dependency-ordered milestone plan and
   attaches issues on confirmation). Milestones are assigned **on demand**, not
   auto-managed; the issue and `/spec` stay the source of truth. Priority, effort,
   and start/target dates are **native issue fields** on the issue; only Project

@@ -225,7 +225,7 @@ via GraphQL (`/steer:tracker-sync field-set`). **`steer` uses them:**
   auto-set (raise to a mechanical floor, never lower a human value).
 - **Effort** - read for ranking/tie-break; **human-set only** (never auto-derived -
   deriving effort would be deciding product).
-- **Start / Target date** - written by `/steer:roadmap` under human confirmation,
+- **Start / Target date** - written by `/steer:spec roadmap` under human confirmation,
   never fabricated; read for milestone-proximity ranking.
 
 Their option sets are **org-defined**: read them from the field definition rather

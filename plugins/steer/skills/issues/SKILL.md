@@ -143,7 +143,7 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 | `ready-for-dev`, decomposed and actionable | Recommended | Start it - `/steer:work start #N` |
 | `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
 | Unresolved `blocking` question on the item | Blocking now | `/steer:spec questions` |
-| Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline - `/steer:roadmap` |
+| Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline - `/steer:spec roadmap` |
 | `epic` in `exploring`, child features identified | Recommended | Link them - `/steer:issues epic #E --add ...` |
 | `epic` whose child features are all terminal (≥1 `done`) | Human decision required | PO confirms the epic outcome (no command) |
 | Nothing queued | Complete | `No action is currently required.` |

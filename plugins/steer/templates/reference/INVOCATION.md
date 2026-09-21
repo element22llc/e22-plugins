@@ -46,11 +46,11 @@ an unrelated question.
 | `/steer:build` | PO build: spec -> working app -> PR. |
 | `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
 | `/steer:spec` | Authors/iterates a feature spec. |
-| `/steer:intake` | Absorbs a PO-supplied spec/roadmap document into `/spec` + the tracker. |
+| `/steer:spec intake` | Absorbs a PO-supplied spec/roadmap document into `/spec` + the tracker. |
 | `/steer:spec adr` | Creates a numbered ADR. |
 | `/steer:issues` | Captures/triages/materializes GitHub issues. |
 | `/steer:spec questions` | Resolves open questions, folding decisions into the spec. |
-| `/steer:roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
+| `/steer:spec roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
 | `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
 | `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. |
 

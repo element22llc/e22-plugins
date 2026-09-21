@@ -64,10 +64,10 @@ fixtures:
     skill: spec
     signals: ["clarify", "edge cases"]
   - ask: "the client re-sent the requirements deck - what changed?"
-    skill: intake
+    skill: spec
     signals: ["what changed", "docx"]
   - ask: "absorb this roadmap spreadsheet the PO handed over"
-    skill: intake
+    skill: spec
     signals: ["spreadsheet", "roadmap"]
   - ask: "walk me through the open questions and let's answer them"
     skill: spec
@@ -148,7 +148,7 @@ fixtures:
     skill: status
     signals: ["progress report"]
   - ask: "lay out a release timeline for where the product is going"
-    skill: roadmap
+    skill: spec
     signals: ["release timeline", "milestones"]
 
   # --- governance / hygiene --------------------------------------------------------
