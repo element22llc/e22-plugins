@@ -233,9 +233,14 @@ matrix):
   `questions`, `next`, `audit`/`status` reads, and `init`/`adopt` for
   `bootstrap-fields`) and `spec-scaffold`
   (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`/`intake`).
-  The specialized skills reached through a front door (`init`/`adopt`/`sync`/`doctor`
-  via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via `/steer:issues`;
-  `questions` via `/steer:spec`/`/steer:issues`; the `reference` loader) stay
+  A front door that has **absorbed** a skill as one of its modes uses the same
+  flag for a different reason - `help`, `explain` and `tidy` are reached only as
+  `/steer:next capabilities`, `/steer:status feature <id>` and `/steer:work tidy`,
+  so listing them as commands would hand out invocations the harness rejects.
+  The specialized skills a front door merely *routes to*
+  (`init`/`adopt`/`sync`/`doctor` via `/steer:setup`; `roadmap` via
+  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; the `reference`
+  loader) stay
   **directly invocable** - a front door just auto-routes to them, so a user is never
   told to type something the harness then rejects. Visibility is orthogonal to
   read-only/side-effecting tier - a hidden skill can still be Tier 1 or Tier 2.

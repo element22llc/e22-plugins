@@ -49,18 +49,18 @@ the owning skill, using the skill listing, and **invoke it yourself**.
 number, route to `/steer:work` - it find-or-creates the issue where Issue-first
 requires one. Promotion to production is `/steer:work promote` (it cuts the
 changelog, opens the PR, and stops at the merge); a production incident is
-`/steer:work --hotfix`. Pure backlog management with no implementation this turn
+`/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`. Pure backlog management with no implementation this turn
 is `/steer:issues`.
 
 **Front doors** detect context and hand off (`setup` -> `init` / `adopt` /
-`sync`; `audit` -> `tidy`; `issues` / `spec` -> `questions`; `issues` ->
+`sync`; `audit` -> `work tidy`; `issues` / `spec` -> `questions`; `issues` ->
 `roadmap`), so you rarely route to a specialized skill directly;
 `/steer:tracker-sync` and `/steer:spec-scaffold` are internal gateways, not
 front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
 
 **Deliberately not in this payload**, each loaded by the skill that needs it:
-housekeeping (`/steer:tidy`), Artifact rendering and design sources
+housekeeping (`/steer:work tidy`), Artifact rendering and design sources
 (`/steer:reference`). Two context lines hold regardless: delegate a heavy sweep
 to a subagent and bring back the result, not the sweep; and route every durable
 fact to its home on disk - a test, the spec, the app guide, an issue - never to

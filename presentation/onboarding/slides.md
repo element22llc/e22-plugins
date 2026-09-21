@@ -747,7 +747,7 @@ That pause isn't a bug - it's the **design**. The PR is the hand-off, not a fail
 <div v-click><b class="accent">doctor</b> - diagnose setup</div>
 <div v-click><b class="accent">roadmap</b> - release timeline</div>
 <div v-click><b class="accent">report</b> - file a steer bug upstream</div>
-<div v-click><b class="accent">tidy</b> - clean up</div>
+<div v-click><b class="accent">work tidy</b> - clean up the repo root</div>
 
 </div>
 

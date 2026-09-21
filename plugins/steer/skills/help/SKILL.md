@@ -36,7 +36,7 @@ Skip any skill whose frontmatter says `user-invocable: false` - the internal
 gateways and the skills a front door has absorbed as a mode, this one included.
 A user cannot type them, so listing them as commands would hand out invocations
 the harness rejects. You may mention that a front door auto-routes to specialized skills
-(`setup` -> `init` / `adopt` / `sync`; `audit` -> `tidy`; `issues` / `spec` ->
+(`setup` -> `init` / `adopt` / `sync`; `audit` -> `work tidy`; `issues` / `spec` ->
 `questions`; `issues` -> `roadmap`), but don't enumerate those unless the user
 asks to zoom in.
 
@@ -77,8 +77,8 @@ to its group; omit an empty group:
   `questions`, `adr`).
 - **Ship & respond** - the emergency door: `/steer:work --hotfix` for a
   production incident on a deployed system (from `work`'s `argument-hint`).
-- **Track & automate** - repo health and drift, tidy-up, the scheduled loop
-  (`audit`, `tidy`, `loop`).
+- **Track & automate** - repo health and drift, the scheduled loop (`audit`,
+  `loop`); the tidy-up itself is `/steer:work tidy`.
 - **Govern & plumbing** - report a steer defect (`report`); load the manual or
   reference prose on chat-only surfaces (`standards`, `reference`).
 

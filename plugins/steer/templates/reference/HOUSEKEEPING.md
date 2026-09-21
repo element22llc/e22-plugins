@@ -2,7 +2,7 @@
 
 How to keep a product repo's root clean by sorting loose files into their
 correct home under `/spec`. The always-on rule keeps only a short summary; this
-is the full sweep procedure, loaded on demand via `/steer:tidy`.
+is the full sweep procedure, loaded on demand via `/steer:work tidy`.
 
 Products are internal monorepos (see the layout rule). The **root** is for
 scaffolding and config - not a dumping ground for the spreadsheets, decks,

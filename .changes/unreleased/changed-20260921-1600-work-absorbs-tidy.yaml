@@ -1,0 +1,19 @@
+kind: Changed
+body: |
+  - **`/steer:tidy` is now `/steer:work tidy`.** Changing the repo is one front
+    door, whether the change is code or where a file lives: `work` gains a
+    `tidy` subcommand alongside `promote`, exempt from the tracker read and the
+    issue find-or-create for the same reason (a sweep moves files, it does not
+    change behavior, so there is nothing to claim). The sweep itself is
+    unchanged - `tidy` survives as the internal skill
+    (`user-invocable: false`) the mode invokes, still loading `HOUSEKEEPING.md`
+    as its authoritative procedure, still moving only the confidently-classified
+    strays and waiting for a yes on every rename and delete. `/steer:audit` still
+    reports a cluttered root rather than sorting it, and now hands off to
+    `/steer:work tidy`; its read-only contract stays intact, which a mutating
+    mode inside it would have broken. Typing `/steer:tidy` no longer resolves; a
+    frozen mention in a managed repo's prose is surfaced by `/steer:sync`'s
+    invocation scan as a `noncallable-gateway` to reroute. Third step of the 7.0
+    public-surface flip (#584).
+custom:
+  Slug: work-absorbs-tidy

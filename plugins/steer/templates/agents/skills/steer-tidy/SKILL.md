@@ -1,6 +1,7 @@
 ---
 name: steer-tidy
-description: Sweep loose files out of the repo root into their correct home - source/research materials (incl. spec/requirements PDFs and docs) to /spec/reference, diagrams to /spec/design. Moves confidently-classified strays immediately; proposes renames and deletes and ambiguous cases for a yes.
+description: 'Internal sweep - file the loose documents at the repo root into their home: source/research material to /spec/reference, diagrams to /spec/design. Confident strays move now; renames and deletes wait for a yes.'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/tidy/SKILL.md - do not edit by hand.
@@ -9,9 +10,9 @@ description: Sweep loose files out of the repo root into their correct home - so
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize, clean up, or tidy the repo.
+**When to use.** Reached via /steer-work tidy - not a direct entry point.
 
-# Repo housekeeping (`/steer-tidy`)
+# Repo housekeeping (`/steer-work tidy`)
 
 Read the full sweep procedure bundled with this plugin:
 
