@@ -23,7 +23,10 @@ the owning skill, using the skill listing, and **invoke it yourself**.
 - **The route does not depend on what the session can do.** Plan mode, a
   read-only session, a client with fewer tools - none of these change the owning
   skill. Every skill has a read-only front: enter it, and let the skill report
-  what it could not carry out.
+  what it could not carry out. **"I have no Write/Edit/Bash here, so I'll just
+  give the answer" is the misroute, not the workaround** - it is the one shape
+  that feels helpful while leaving nothing claimed, branched or recorded. Enter
+  the skill, then say what the session blocked.
 - **Questions belong to the skill.** Ask **one** compact question *before*
   routing only when two skills are candidates. A question inside one skill's
   scope ("which feature?", "which issue?") is the skill's to ask, after entry.
