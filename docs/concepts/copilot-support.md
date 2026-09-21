@@ -420,11 +420,11 @@ the standards in `.github/copilot-instructions.md`.
   Beyond the worktree check above, three always-on rules used to tell the agent a
   SessionStart hook would flag a condition: a missing `/spec` spine (rule
   `00-router`), an in-progress `spec/BUILD-STATUS.md` (rule `05-roles`), and
-  recorded hook faults (rule `97-self-report`). Copilot's `sessionStart` ignores
+  recorded hook faults (rule `00-router` § When steer itself misbehaves). Copilot's `sessionStart` ignores
   stdout, so the notice never comes - and its *absence* reads as "condition not
   present," which is worse than no promise at all. Each rule now scopes the flag to
   Claude Code and, where there is something a reader could look for themselves
-  (rules `00-router` and `05-roles`), says to do that instead; rule `97-self-report`
+  (rules `00-router` and `05-roles`), says to do that instead; rule `00-router` § When steer itself misbehaves
   only scopes, because recorded hook faults exist on no other surface.
   Likewise rule `10-stack` no longer claims a hook **denies** stale image-major
   pins without qualification: the ported gate only *asks* on the Copilot CLI (VS

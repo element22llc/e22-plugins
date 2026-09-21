@@ -3,7 +3,7 @@
 `steer` draws a deliberate line between actions that are **cheap and reversible**
 (done autonomously) and actions that are **outward-facing or hard to reverse**
 (gated on a human). This is codified in the always-on rule
-`45-delivery.md` and reinforced by `95-not-the-gate.md`.
+`45-delivery.md` and reinforced by `00-router.md` § You are not the gate.
 
 ```mermaid
 flowchart TD
@@ -317,7 +317,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
     anything that deploys stay gated exactly as before.
 
 !!! note "The local boundary is advisory - the server enforces it"
-    Rule `95-not-the-gate.md` is explicit that this in-session discipline cannot
+    Rule `00-router.md` § You are not the gate is explicit that this in-session discipline cannot
     *stop* a direct push to `main`; it only governs how the agent behaves. The
     real wall is **GitHub branch protection**, which `/steer:protect` verifies
     against `policy/branch-protection.yml` and (on the dev's explicit

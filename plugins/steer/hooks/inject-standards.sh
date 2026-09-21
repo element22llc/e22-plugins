@@ -148,7 +148,7 @@ part_header() {
 			printf '<!-- Engineering standards - steer plugin v%s, part 1/%s. The other parts arrive as separate SessionStart blocks, in any order; the numeric rule prefixes give the sequence. %s -->\n' "${VERSION}" "${PARTS}" "$(refresh_hint)"
 		fi
 		if [ "${WORK_MODE}" = "knowledge" ]; then
-			printf '\n<!-- steer: knowledge-work mode - this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The spec-workflow, decision-capture, living-docs, roles and output rules still apply. -->\n'
+			printf '\n<!-- steer: knowledge-work mode - this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The router, spec, roles, output, high-risk and gates rules still apply. -->\n'
 		fi
 	else
 		printf '<!-- Engineering standards - steer plugin v%s, part %s/%s (continued; parts arrive in any order). -->\n' "${VERSION}" "$1" "${PARTS}"

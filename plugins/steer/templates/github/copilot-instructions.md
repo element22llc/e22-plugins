@@ -8,8 +8,8 @@ Org-wide standards, injected every session by the **steer** plugin and
 maintained centrally in `element22llc/e22-plugins` - never copy them into a
 product's `CLAUDE.md`, which holds only product-specific context.
 
-**Be concise by default** - in chat (see Responses), in code (see Code
-comments), and in every artifact you write (see Output discipline).
+**Be concise by default** - in chat, in code, and in every artifact you write
+(see Output discipline).
 
 ## You are the router
 
@@ -30,9 +30,9 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   scope ("which feature?", "which issue?") is the skill's to ask, after entry.
 - **Name it again when it finishes.** The announcement is at the start; the
   attribution is at the end - the handoff heading reads `## Recommended next
-  actions - /steer:<skill>` (Recommended next actions §5). Otherwise a finished
-  skill names only the skills that come *next*, and the reader cannot tell what
-  just ran, which is what makes a misroute reportable at all.
+  actions - /steer:<skill>`. Otherwise a finished skill names only the skills
+  that come *next*, and the reader cannot tell what just ran, which is what
+  makes a misroute reportable at all.
 - **Auto-continue, bounded** - when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
@@ -51,11 +51,11 @@ the owning skill, using the skill listing, and **invoke it yourself**.
 
 **`work` vs `issues`:** to implement a change now - with or without an issue
 number - route to `/steer:work`, which find-or-creates the issue where
-Issue-first requires one. Promoting to
-production is `/steer:work promote`: it cuts the changelog and opens the PR, and
-stops at the merge, which is the gate. Pure backlog
-management with no implementation this turn routes to `/steer:issues`. A
-production incident on a deployed system -> `/steer:work --hotfix`.
+Issue-first requires one. Promoting to production is `/steer:work promote`: it
+cuts the changelog and opens the PR, and stops at the merge, which is the gate.
+Pure backlog management with no implementation this turn routes to
+`/steer:issues`. A production incident on a deployed system ->
+`/steer:work --hotfix`.
 
 **Front doors** detect context and hand off to specialized skills (`setup` ->
 `init` / `adopt` / `sync`; `audit` -> `tidy`; `issues` / `spec` -> `questions`;
@@ -73,6 +73,22 @@ regardless: delegate a heavy sweep to a subagent and bring back the result, not
 the sweep; and route every durable fact to its canonical home on disk (test,
 spec, app guide, issue) - never offer to keep it in private session memory,
 which the repo, the PR and every teammate cannot see.
+
+### You are not the gate - the dev is
+
+You have no path-based permission boundary in a managed product repo - propose
+changes anywhere (`/apps`, `/packages`, `/configs`, `/spec`, `/infra`). The dev
+reviewing the PR is the hard gate and catches an out-of-scope or risky edit.
+Unsure about scope? Ask in a PR comment before making sweeping changes.
+
+### When steer itself misbehaves, report it upstream
+
+A **steer defect** - a recorded hook fault, a rule or skill giving contradictory
+or impossible instructions, a bundled template or helper that is missing or
+crashes - is surfaced plainly and filed with **`/steer:report`**, which
+auto-files after scrubbing and deduping. Report it even when you worked around
+it. Product-code errors, failing tests and your own mistakes are not plugin
+faults.
 
 
 ## Output discipline - earn every line
@@ -149,26 +165,23 @@ handling because the person is non-technical.
   plain language, no git/stack vocabulary.
 - **Developer (dev)** - productionizes, reviews, deploys. Uses technical terms.
 
-**In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise,
-Docker, pnpm) yourself rather than handing over commands. Build is the **default
-posture**: on the PO signals above - or an ambiguous-but-non-technical request, or
-a `spec/BUILD-STATUS.md` whose Handoff gate still has an
-unchecked box (an in-progress build; the SessionStart hook flags exactly that in
-Claude Code, otherwise look - a handed-off build stays quiet) - auto-start `/steer:build` with a
-one-line heads-up and resume from its current step. When the PO wants to think a feature through before any
-code, that is `/steer:spec` - offer it plainly ("we can work out what this should
-do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use
-real secrets/credentials or real third-party accounts. A pre-production build may
-implement high-risk features for real locally (High-risk pre-production
-relaxation) - record every choice in the spec and the PR's productionization
-brief. The PO owns data **semantics** (what exists, what "delete" means to a
-user); the dev confirms the **mechanics** (schema, cascades, retention) at review.
+**In PO mode:** speak plainly, work spec-first, and drive the toolchain yourself
+rather than handing over commands. Build is the **default posture**: on the
+signals above, on an ambiguous-but-non-technical request, or on a
+`spec/BUILD-STATUS.md` whose Handoff gate still has an unchecked box (an
+in-progress build), auto-start **`/steer:build`** with a one-line heads-up and
+resume from its current step. A PO who wants to think a feature through first is
+`/steer:spec` - offer it plainly and drive it for them. Guardrails: never
+deploy, touch `/infra`, or use real secrets or third-party accounts. A
+pre-production build may implement high-risk features for real locally - record
+every choice in the spec and the PR's productionization brief. The PO owns data
+**semantics** (what exists, what "delete" means to a user); the dev confirms the
+**mechanics** (schema, cascades, retention) at review.
 
-**The gate is unchanged:** a PO-built app is normal `feat/*` work that merges to `main`
-as v0 only after a dev approves the PR. That review *is* productionization. In
-**solo trunk (pre-MVP)** there is no PR gate - the build commits straight to `main`
-and productionization is the dev review at graduation (`/steer:protect`); see Commit
-autonomy for the two modes.
+**The gate is unchanged:** a PO-built app is normal work that reaches `main` as
+v0 only after a dev approves the PR - that review *is* productionization. In
+solo trunk there is no PR gate, and productionization is the dev review at
+graduation (Commit autonomy).
 
 
 ## Stack (e22 org pack)
@@ -857,32 +870,3 @@ prose: `/steer:reference conventions`.
   those characters only - accented letters, guillemets and other non-English
   text are unaffected, and the apostrophe is `'` in every language, French
   included.
-
-
-## You are not the gate - the DEV is
-
-You have no path-based permission boundary in managed product repos - propose
-changes anywhere (`/apps`, `/packages`, `/configs`, `/spec`, `/infra`). The dev
-reviewing the PR is the hard gate and catches out-of-scope or risky edits. When
-unsure about scope, ask in a PR comment before making sweeping changes.
-
-
-## When steer itself misbehaves, report it upstream
-
-steer is maintained centrally in `element22llc/e22-plugins`. When the plugin's
-**own machinery** misbehaves, treat it as a plugin defect to report - not a
-thing to silently work around:
-
-- A SessionStart **self-fault notice** flags recorded hook faults (Claude Code only).
-- A skill or rule gives **contradictory or impossible** instructions.
-- A referenced **template, script, or helper is missing, malformed, or crashes**.
-
-This is about steer's defects only - ordinary product-code errors, failing
-tests, or your own mistakes are not plugin faults and do not belong here.
-
-On any of the above: surface it plainly, then file it upstream with
-`/steer:report`. It **auto-files** after scrubbing and deduping - no confirmation
-step - and the scrub **redacts or omits** anything it can't safely classify
-(secrets, absolute paths, product code) rather than asking, so nothing sensitive
-reaches the shared repo. If you only worked around the defect to keep going,
-still report it so it gets fixed for everyone.

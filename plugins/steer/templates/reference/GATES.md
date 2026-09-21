@@ -137,7 +137,7 @@ No prompt in any mode authorizes these. They require a human acting in the real
 system, and **asking is not authorization**:
 
 - **PR merge** - the reviewed merge is the delivery gate (rule
-  `45-delivery`, `95-not-the-gate`). Never `gh pr merge`. The reviewer
+  `45-delivery`, `00-router` § You are not the gate). Never `gh pr merge`. The reviewer
   reads the diff on the PR; an in-session "yes" is not that review, because the
   diff is not what was shown.
 - **Deploy** - including a hotfix whose deploy is policy-permitted (rule
