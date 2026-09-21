@@ -90,7 +90,7 @@ below give the detail.
 | steer itself is misbehaving - file a plugin bug upstream | `/steer:report` |
 | Answer accumulated open questions | `/steer:questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
-| Sweep loose files at the repo root into `/spec` | `/steer:tidy` |
+| Sweep loose files at the repo root into `/spec` | `/steer:work tidy` |
 | Ship an emergency fix to a production incident | `/steer:work --hotfix` |
 | Load the rules manually (Desktop *Chat* tab / web chat, where the hook can't fire) | `/steer:standards` |
 

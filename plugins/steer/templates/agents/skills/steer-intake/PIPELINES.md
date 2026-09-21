@@ -27,13 +27,13 @@ from the PO's filename (the PO renames files; identity must not follow the name)
    of **every** committed version under `spec/sources/<id>/versions/` (not only
    the latest - a re-dropped *older* version is just as already-absorbed and
    must not become a spurious new version; the same any-version match
-   `/steer-tidy` uses). On a match the PO re-sent an identical file (often
+   `/steer-work tidy` uses). On a match the PO re-sent an identical file (often
    under a new name) - report `already absorbed as <vNNNN>`, record the new
    filename in `source.md` if it differs, and **stop**: no new version, no
    diff, no edits, no history entry. If that re-sent file sits at an **in-repo
    drop location** (anywhere but its committed `original.<ext>`), it is a
    redundant duplicate of an already-absorbed source: surface it and route it
-   to `/steer-tidy` (which removes it on a yes) - never delete it silently,
+   to `/steer-work tidy` (which removes it on a yes) - never delete it silently,
    never move it to `spec/reference/` (a duplicate, not a cleanup).
 3. Lay down the version directory and convert:
    ```
@@ -49,7 +49,7 @@ from the PO's filename (the PO renames files; identity must not follow the name)
    the dropped file, not copying it** - no stray copy stays stalled where the
    PO uploaded it; the canonical `original.<ext>` is the source's single home.
    For a drop file **inside the repo**, `git mv` it into place (`git add` it
-   first if untracked) - the same history-preserving move `/steer-tidy`
+   first if untracked) - the same history-preserving move `/steer-work tidy`
    performs. **Only copy** when the drop path lies **outside** the repo (e.g.
    `~/Downloads/...`) - the PO's own file, not repo clutter: copy it in, leave
    the original be, and note that it was left in place. Never remove a drop

@@ -75,7 +75,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     org standards with no rule file: each lives in full in
     `templates/reference/` (`HOUSEKEEPING.md`, `CONTEXT-HYGIENE.md`,
     `ARTIFACTS.md`, `DESIGN-SOURCES.md`) and is loaded by the skill that needs
-    it - `/steer:tidy`, the Artifact-rendering skills, and `/steer:reference`.
+    it - `/steer:work tidy`, the Artifact-rendering skills, and `/steer:reference`.
     The router names them so a session routes there rather than improvising, and
     keeps the two context lines that bind no particular skill (delegate a heavy
     sweep; route a durable fact to disk, never to private session memory).

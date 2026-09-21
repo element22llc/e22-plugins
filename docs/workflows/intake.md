@@ -29,7 +29,7 @@ normalized Markdown extraction - so a plain `git diff` of successive extractions
    `spec/sources/<source-id>/versions/<vNNNN-DATE>/` holding `original.<ext>`
    (provenance) and `extracted.md` (the diff surface), and commits both together.
    The dropped file is **relocated** into that canonical home (a history-preserving
-   `git mv` for an in-repo drop - the same move `/steer:tidy` performs), not copied,
+   `git mv` for an in-repo drop - the same move `/steer:work tidy` performs), not copied,
    so it does not stay stalled where the PO uploaded it; a file outside the repo is
    copied in and left in place. Conversion walks a ladder: the repo's
    **`mise run convert:doc <file>`** task (the deterministic, committable path),
@@ -69,7 +69,7 @@ Re-running on an unchanged document is a no-op - a binary-hash guard detects an
 identical file (even re-sent under a new name). A genuinely new version diffs only
 against the current latest, so the report is always the incremental delta. If the
 byte-identical re-send is sitting at an in-repo drop location, intake surfaces it as
-a redundant duplicate of the already-absorbed source and routes it to `/steer:tidy`
+a redundant duplicate of the already-absorbed source and routes it to `/steer:work tidy`
 (which removes an absorbed duplicate on a yes) rather than leaving it stalled.
 
 ## Where it fits

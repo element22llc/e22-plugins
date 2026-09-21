@@ -159,10 +159,10 @@ fixtures:
     skill: protect
     signals: ["merge rules"]
   - ask: "the repo root is full of loose spreadsheets and PDFs - clean it up"
-    skill: tidy
+    skill: work
     signals: ["repo root", "clean up"]
   - ask: "organize these stray design exports into their right home"
-    skill: tidy
+    skill: work
     signals: ["organize", "diagrams"]
   - ask: "steer itself just crashed - file that bug upstream"
     skill: report

@@ -66,7 +66,7 @@ reports the contradiction.
 The split is not "product files vs. the rest" but **product truth vs. this
 repo's internals**: anything a sibling repo would need to read lives once in the
 workspace; anything that only describes *this* codebase stays here. A spine
-directory absent from both lists above follows that same test - and `/steer:tidy`
+directory absent from both lists above follows that same test - and `/steer:work tidy`
 must not create a product-level one locally in a member.
 
 Feature specs live in the workspace because that is the whole point. The

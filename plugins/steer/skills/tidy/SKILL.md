@@ -1,10 +1,14 @@
 ---
 name: tidy
-description: Sweep loose files out of the repo root into their correct home - source/research materials (incl. spec/requirements PDFs and docs) to /spec/reference, diagrams to /spec/design. Moves confidently-classified strays immediately; proposes renames and deletes and ambiguous cases for a yes.
-when_to_use: Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize, clean up, or tidy the repo.
+description: "Internal sweep - file the loose documents at the repo root into their home: source/research material to /spec/reference, diagrams to /spec/design. Confident strays move now; renames and deletes wait for a yes."
+when_to_use: "Reached via /steer:work tidy - not a direct entry point."
+# Internal sweep behind `/steer:work tidy`. Model-callable, hidden from the slash
+# menu, so changing the repo is one user-facing door whether the change is code
+# or where a file lives.
+user-invocable: false
 ---
 
-# Repo housekeeping (`/steer:tidy`)
+# Repo housekeeping (`/steer:work tidy`)
 
 Read the full sweep procedure bundled with this plugin:
 

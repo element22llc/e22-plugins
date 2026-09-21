@@ -45,7 +45,7 @@ an unrelated question.
 | `/steer:init` | Bootstraps the repo (scaffold + spine). |
 | `/steer:adopt` | Reverse-engineers spec + scaffolds an existing repo. |
 | `/steer:sync` | Updates the plugin + reconciles spine/scaffold, lands a PR. |
-| `/steer:tidy` | Moves/renames/deletes loose files. |
+| `/steer:work tidy` | Moves/renames/deletes loose files. |
 | `/steer:build` | PO build: spec -> working app -> PR. |
 | `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
 | `/steer:spec` | Authors/iterates a feature spec. |

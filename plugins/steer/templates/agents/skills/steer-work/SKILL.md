@@ -1,7 +1,7 @@
 ---
 name: steer-work
-description: Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition; the counterpart to /steer-issues. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR and takes no issue.
-argument-hint: '[start | resume | status | finish | promote] [--reviewed | --hotfix] [#issue ...]'
+description: Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition; the counterpart to /steer-issues. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR and takes no issue; tidy sweeps the repo root into /spec and takes none.
+argument-hint: '[start | resume | status | finish | promote | tidy] [--reviewed | --hotfix] [#issue ...]'
 ---
 
 <!-- Generated from the steer plugin's skills/work/SKILL.md - do not edit by hand.
@@ -10,9 +10,9 @@ argument-hint: '[start | resume | status | finish | promote] [--reviewed | --hot
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("do this with review"). Add --hotfix only for a real production incident ("prod is down") - never for ordinary urgent work. Use promote to ship what is already on the default branch to production ("promote to prod").
+**When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("do this with review"). Add --hotfix only for a real production incident ("prod is down") - never for ordinary urgent work. Use promote to ship what is already on the default branch to production ("promote to prod"). Use tidy when the repo root is cluttered with loose documents, diagrams or exports ("clean up the repo", "organize the strays").
 
-<!-- steer:modes start,resume,status,finish,promote -->
+<!-- steer:modes start,resume,status,finish,promote,tidy -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **execution** layer of the issue-first workflow: `/steer-issues` manages the
@@ -53,6 +53,9 @@ These hold for the whole run, in every mode.
    it reads no tracker and finds-or-creates no issue. Its only GitHub dependency
    is the remote, the same reason `/steer-protect` does not gate on the tracker
    either. Read `modes/promote.md` and start at its Step 1.
+0c. **`tidy` is exempt from steps 1 and 3 as well.** It changes where files live,
+   never what the product does - a Trivial-class sweep, so there is no issue to
+   find and no tracker to read. Go straight to the `tidy` row below.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
    tracker is something else, say so and stop (manual flow only). In a member,
    this is the **workspace's** `spec/tracker.md` resolved in step 0 - a member
@@ -121,6 +124,14 @@ skill's steps:
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](modes/promote.md) |
+| **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
+
+**`tidy` delegates, it does not restate.** Invoke `/steer-tidy` - an internal
+skill, `user-invocable: false`, whose body loads `HOUSEKEEPING.md` as the
+authoritative sweep procedure (root allowlist, classification, the never-touch
+list, the delete gate). Do not re-derive any of that here. It is a mode of this
+skill because a sweep *changes the repo*, which is what this front door owns;
+seeing that the root is cluttered is `/steer-audit`'s job and it hands off here.
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a

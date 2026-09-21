@@ -9,7 +9,7 @@ repeated here.
 unless the caller passed `--since <ref>` (SKILL.md, "Optional diff scope") -
 it never re-runs the focused skills: correctness bugs defer to `/code-review`,
 security to `/security-review`, mechanical cleanup to `/simplify` (name the
-skill; don't run it here). A cluttered repo root is handed to `/steer-tidy`, not
+skill; don't run it here). A cluttered repo root is handed to `/steer-work tidy`, not
 reported stray-by-stray. **If there is no `/spec` spine yet,** the spec-coverage
 dimension can't run - note that, redirect to `/steer-adopt` for the spec, and
 run the code-health dimensions (2-10) without it.
