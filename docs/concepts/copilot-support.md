@@ -55,8 +55,8 @@ three shapes, and the script tells them apart (`steer_hook_host` in
 `hooks/lib/json.sh`):
 
 - **Claude Code** takes raw text and caps one hook command's stdout at 10,000
-  characters, so the ruleset arrives in parts (nine registrations of the script
-  in `hooks/hooks.json`).
+  characters, so the ruleset arrives in parts (one registration of the script
+  per part in `hooks/hooks.json`).
 - **Copilot CLI** runs no steer hooks: the Copilot manifest declares `skills`
   only, and the always-on standards reach it through the committed
   `.github/copilot-instructions.md`. Its hook surface *can* take injected context

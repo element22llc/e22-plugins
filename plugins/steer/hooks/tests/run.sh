@@ -3489,11 +3489,17 @@ assert_envelope() { # <label> <out>
 			ok || bad "$1 (envelope is not valid JSON with equal halves)"
 	fi
 }
+# How many parts hooks.json really registers, read from the manifest rather than
+# written here a second time: a literal would keep passing after the
+# registration changed, leaving the silence assertions aimed at parts no session
+# runs.
+CP_PARTS="$(tr -d '\\' <"${HOOKS}/hooks.json" | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"')"
+[ "${CP_PARTS:-0}" -ge 2 ] || bad "inject copilot: hooks.json registers ${CP_PARTS} part(s) - the silence assertions below need at least two"
 # (a) Copilot Chat in VS Code: one envelope carrying the whole ruleset, detected
 # from the payload shape alone. The Copilot CLI hook variant retired with hook
 # parity, so there is no target variable to set any more - enforcement is
 # guaranteed on Claude Code; VS Code picks this up incidentally.
-out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
 assert_envelope "inject copilot: VS Code payload emits the JSON envelope" "${out}"
 assert_has "inject copilot: envelope carries the first rule" "${out}" 'You are the router'
 assert_has "inject copilot: envelope carries the last rule" "${out}" 'End-of-session checklist'
@@ -3503,19 +3509,19 @@ printf '%s' "${out}" | grep -q 'copilot plugin update steer' && bad "inject copi
 printf '%s' "${out}" | grep -q 'part 1/' && bad "inject copilot: envelope must not be labelled as a part" || ok
 printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' && bad "inject copilot: no rule may be dropped (cap lifted)" || ok
 # (b) Every part but 1 is silent on a Copilot surface, even though VS Code runs
-# all nine `k N` registrations from hooks.json - the LAST hook returning context
+# every `k N` registration in hooks.json - the LAST hook returning context
 # wins there, so a mirrored delivery would overwrite the ruleset with a tail part.
-out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 2 9 2>/dev/null)"
-assert_empty "inject copilot: part 2 of 9 is silent on a Copilot surface" "${out2}"
-out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 9 9 2>/dev/null)"
-assert_empty "inject copilot: part 9 of 9 is silent on a Copilot surface" "${out2}"
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 2 "${CP_PARTS}" 2>/dev/null)"
+assert_empty "inject copilot: part 2 of ${CP_PARTS} is silent on a Copilot surface" "${out2}"
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" "${CP_PARTS}" "${CP_PARTS}" 2>/dev/null)"
+assert_empty "inject copilot: the last part is silent on a Copilot surface" "${out2}"
 # (c) Fail-safe: a Claude payload (permission_mode) stays raw and parted; so does a
 # payload of unknown shape - the Copilot CLI's camelCase form, which no longer has
 # a target variable to declare itself with, must degrade to the Claude path rather
 # than to silence.
-out="$(printf '%s' "$(cp_claude_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+out="$(printf '%s' "$(cp_claude_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
 case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: Claude payload must stay raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
-assert_has "inject copilot: Claude payload keeps the parted header" "${out}" 'part 1/9'
+assert_has "inject copilot: Claude payload keeps the parted header" "${out}" "part 1/${CP_PARTS}"
 assert_has "inject copilot: Claude payload keeps the Claude refresh hint" "${out}" '/plugin update steer@e22-plugins'
 out="$(run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
 case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: unknown payload shape must default to Claude raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
@@ -3523,13 +3529,13 @@ case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: un
 CP_KNOW="${WORK}/inject-copilot-know"
 mkdir -p "${CP_KNOW}"
 printf 'notes\n' >"${CP_KNOW}/README.md"
-out="$(printf '%s' "$(cp_vscode_json "${CP_KNOW}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+out="$(printf '%s' "$(cp_vscode_json "${CP_KNOW}")" | sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
 assert_envelope "inject copilot: knowledge-work folder gets the envelope" "${out}"
 assert_has "inject copilot: knowledge-work envelope says so" "${out}" 'knowledge-work mode'
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' && bad "inject copilot: knowledge-work envelope must omit scoped rules" || ok
 # (e) Missing rules dir on a Copilot surface: the fallback banner is still delivered
 # - inside the envelope, so it is not discarded as non-JSON.
-out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | CLAUDE_PLUGIN_ROOT="${IF_NORULES}" sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | CLAUDE_PLUGIN_ROOT="${IF_NORULES}" sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
 assert_envelope "inject copilot: missing rules dir - banner arrives in the envelope" "${out}"
 assert_has "inject copilot: missing rules dir - banner text present" "${out}" 'rules directory was not found'
 
