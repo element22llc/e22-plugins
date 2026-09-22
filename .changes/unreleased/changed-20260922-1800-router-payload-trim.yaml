@@ -1,0 +1,11 @@
+kind: Changed
+body: |-
+  - **Changed: the always-on payload is back under its 6.6 size.** Rule
+    `00-router` drops two restatements - the reason the handoff heading names
+    the skill, which Output discipline already gives, and a second "say what
+    the session blocked" - with no instruction removed. Every injection profile
+    now measures at or under v6.6.0 (code 39,514 against 39,539), which 7.0
+    committed to.
+time: 2026-09-22T18:00:00.000000000-04:00
+custom:
+  Slug: router-payload-trim

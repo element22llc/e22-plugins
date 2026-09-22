@@ -21,17 +21,14 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   skill. Every skill has a read-only front: enter it, and let the skill report
   what it could not carry out. **"I have no Write/Edit/Bash here, so I'll just
   give the answer" is the misroute, not the workaround** - it is the one shape
-  that feels helpful while leaving nothing claimed, branched or recorded. Enter
-  the skill, then say what the session blocked.
+  that feels helpful while leaving nothing claimed, branched or recorded.
 - **Questions belong to the skill.** Ask **one** compact question *before*
   routing only when two skills are candidates. A question inside one skill's
   scope ("which feature?", "which issue?") is the skill's to ask, after entry.
 - **Name it again when it finishes** - the handoff heading reads `## Recommended
-  next actions - /steer:<skill>`. Otherwise a finished skill names only what
-  comes *next*, and the reader cannot tell what just ran, which is what makes a
-  misroute reportable at all. A skill that **pauses** on its own question names
-  itself in that message too: there is no handoff heading yet, and the announce
-  line is already scrolled past.
+  next actions - /steer:<skill>`, so the reader can tell what ran and report a
+  misroute. A skill that **pauses** on its own question names itself in that
+  message too.
 - **Auto-continue, bounded** - when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
