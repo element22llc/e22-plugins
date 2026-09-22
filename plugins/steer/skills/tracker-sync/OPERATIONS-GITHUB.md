@@ -17,11 +17,12 @@ a GitHub feature. Every op here is **capability-degrading by design** - it
 detects support first and reports a gap rather than fabricating config - and the
 `steer:*` marker the core writes stays canonical when it degrades.
 
-Only these callers read this file: `/steer:spec roadmap` (milestones, dates),
-`/steer:issues decompose`/`epic` (types, parent and related links),
-`/steer:issues reconcile` (the labels and types it normalizes), `/steer:issues
-triage` (the Priority floor), and `/steer:setup init`/`adopt`
-(`bootstrap-fields`).
+Who reads this file: `/steer:spec roadmap` (milestones, dates), `/steer:issues
+decompose`/`epic` (types, parent and related links), `reconcile` (the labels and
+types it normalizes), `triage` and `board` (the Priority floor and the ranking
+read), `/steer:next` and `/steer:status` (Priority and milestone reads), and
+`/steer:setup init`/`adopt` (`bootstrap-fields`). `/steer:work` and the capture,
+status and materialize modes do not - the delivery path is core-only.
 
 ## Labels and types
 

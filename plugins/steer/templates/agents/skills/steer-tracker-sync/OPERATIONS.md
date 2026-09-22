@@ -23,12 +23,14 @@ and degrades to a marker or a warning where the capability is absent. A few core
 ops carry one **GitHub arm** paragraph, flagged as such: the operation is core,
 the paragraph is how this arm performs it.
 
-`/steer-work` and the `/steer-issues` lifecycle modes (capture, triage, status,
-board, materialize) use **core ops only**. The planning-flavoured modes read the
-companion for the op they are about to perform: `/steer-spec roadmap`
-(milestones, dates), `/steer-issues decompose`/`epic` (types, parent links),
-`reconcile` (labels and types it normalizes), `/steer-issues triage`'s priority
-floor and `/steer-setup init`/`adopt` (`bootstrap-fields`).
+`/steer-work` and the `/steer-issues` capture, status and materialize modes use
+**core ops only** - between them that is the whole delivery path, from an ask to
+a closed issue. Every other caller reads the companion for the one op it is
+about to perform: `triage`'s Priority floor and `board`'s ranking read
+(`field-set` / `field-get`), `decompose`/`epic` (types, parent links),
+`reconcile` (the labels and types it normalizes), `/steer-spec roadmap`
+(milestones, dates), `/steer-next` and `/steer-status` (Priority and milestone
+reads), and `/steer-setup init`/`adopt` (`bootstrap-fields`).
 
 ## The API boundary
 
@@ -97,10 +99,12 @@ is no less bounded by it.
   cited, and fall back to the bare code-fenced path only when the blob base can't
   be resolved (`ISSUE-SCHEMA.md` -> Clickable references).
 
-  **GitHub arm:** also set the Issue **Type** and the derived `source:*` label
-  (`set-type`, `label` - companion file). Both are capability-degrading; the
-  markers written here stay canonical either way, so a create that cannot set
-  them is complete, not partial.
+  **GitHub arm:** rendering an issue also stamps the Issue **Type** and the
+  derived `source:*` label, as part of this op - a caller does not open the
+  companion to create one. Both are capability-degrading, and the markers written
+  here stay canonical either way, so a create that cannot stamp them is complete,
+  not partial. The companion's `set-type` and `label` are for **changing** either
+  afterwards.
 
 - **`update-state #N`** - the guarded write of everything steer owns in the issue
   body: the **`steer:managed` block**, and the **`steer:state` marker** when the
