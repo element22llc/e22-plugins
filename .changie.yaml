@@ -72,3 +72,33 @@ replacements:
   - path: .github/plugin/marketplace.json
     find: '^      "version": ".*",$'
     replace: '      "version": "{{.VersionNoPrefix}}",'
+  # The managed eval fixtures stamp spec/.version, and a stamp that is not the
+  # plugin's own version reads as drift to /steer:next, which injects a sync
+  # nudge into every run of those cases. They were re-stamped by hand, which
+  # meant the release remembered or test_eval_suite.py failed after the bump.
+  # The eight files are byte-identical by contract, and each carries exactly one
+  # bare version line.
+  - path: plugins/steer/evals/routes-client-status-to-status/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-explain-code-to-none/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-fix-issue-to-work/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-general-knowledge-to-none/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-lost-user-to-next/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-repo-health-to-audit/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-think-feature-through-to-spec/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-triage-backlog-to-issues/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'

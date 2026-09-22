@@ -94,8 +94,8 @@ mkdir -p spec/features/checkout spec/decisions spec/history tests
 
 # The ownership marker hooks/lib/spine.sh keys on. The stamp must match the
 # plugin's own version: /steer:next reports a mismatch as version drift, which is
-# one more nudge competing with the ask. tests/test_eval_suite.py pins the two
-# together, so a release bump fails the suite until this is re-stamped.
+# one more nudge competing with the ask. `.changie.yaml` re-stamps this line at
+# release; tests/test_eval_suite.py pins the two together.
 cat >spec/.version <<'EOF'
 # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
 # /steer:sync. Do not edit by hand.

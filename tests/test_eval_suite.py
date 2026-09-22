@@ -106,8 +106,10 @@ def test_scaffolds_are_byte_identical_within_each_variant():
 def test_managed_scaffold_stamps_the_current_plugin_version():
     # A spine stamped at a version other than the plugin's own reads as version
     # drift to /steer:next, which injects a sync nudge into every run of the
-    # managed cases - one more notice competing with the ask. The release bump
-    # therefore has to re-stamp this fixture, and this test is the reminder.
+    # managed cases - one more notice competing with the ask. `.changie.yaml`
+    # re-stamps all eight managed scaffolds on `changie merge`, in the same pass
+    # as the three manifests, so this test guards that wiring rather than asking
+    # a human to remember.
     version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
     scaffold = (EVALS / "routes-fix-issue-to-work" / "scaffold.sh").read_text(encoding="utf-8")
     stamped = re.findall(r"^(\d+\.\d+\.\d+)$", scaffold, flags=re.MULTILINE)
