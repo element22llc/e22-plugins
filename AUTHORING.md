@@ -282,28 +282,26 @@ exemplars it cites (`/steer:audit` -> the `steer-reviewer` agent;
 
 ### Skill vs. mode - hold the line on surface area
 
-The user-facing menu is the handful of **front doors** - `setup`, `build`, `spec`,
-`intake`, `work`, `issues`, `audit`, `adr`, `next`, `status`, `protect`,
-`report` - that `rules/00-router.md` names and that hand off to the specialized
-skills (the router routes from the skill listing itself; there is no separate
-intent table to keep in sync). Every new skill widens the set of things a user must choose
-between, so the bar for a *new, visible* skill is high. Before adding one, justify
-why it is **not**:
+The user-facing menu is the seven **front doors** - `setup`, `spec`, `work`,
+`audit`, `status`, `next`, `build` - plus `standards`, the hook-less-surface
+fallback a user types by hand. Everything else is `user-invocable: false` and
+reached through one of them (the router routes from the skill listing itself;
+there is no separate intent table to keep in sync). Every new skill widens the set
+of things a user must choose between, so the bar for a *new, visible* skill is
+high. Before adding one, justify why it is **not**:
 
 1. **a mode of an existing skill** - a new verb on a skill that already owns the
    area (e.g. `audit [code|spec]`, `work [--reviewed]`), declared via
    `argument-hint` + a `<!-- steer:modes ... -->` marker; or
-2. **a specialized skill reached through a front door** - directly invocable but
-   not a front door itself, but reached through one that auto-routes to it
-   (add the hand-off prose to the parent and a routing line to `00-router.md`).
-   Mark it `user-invocable: false` only if it is a true *internal gateway* a parent
-   always drives with context the user can't supply (`tracker-sync`,
-   `spec-scaffold`); or
+2. **a skill reached through a front door** - `user-invocable: false`, entered as
+   one of a door's modes, with the hand-off prose on the parent. This is where
+   almost everything lands now: 7.0 left the seven doors and `standards` typable
+   and nothing else; or
 3. **detected and routed** - folded behind a dispatcher like `/steer:setup` that
    picks the path from repo state rather than asking the user to pick a skill.
 
-Default to a mode or a front-door-routed specialized skill. Add a front door only
-when the intent is genuinely top-level and maps to no existing owner.
+Default to a mode. Add a front door only when the intent is genuinely top-level and
+maps to no existing owner - which, after 7.0, it almost never is.
 
 **A `user-invocable: false` skill must declare a way in**, and check 14 of
 `check_standards.py` enforces exactly one of three:

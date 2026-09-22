@@ -94,7 +94,8 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 |---|---|---|
 | `legacy-e22` | a pre-rebrand prefix whose `<skill>` still resolves - bare `e22-<skill>`, or the plugin's own former name qualifying it, `e22-standards:e22-<skill>` and `e22-standards:<skill>` (the token is the one **after** the colon, never `standards`). Old-token forms are written here **without** the leading `/`, as in `MIGRATIONS.md`, so this file passes the stale-`/e22-*` lint guard; in a managed repo they carry it | **deterministic** - rewrite to `/steer:<skill>` |
 | `reference-mode` | `<mode>` is a `reference` topic, not a skill - whether written `/steer:<mode>` or with a legacy prefix | **deterministic** - rewrite to `/steer:reference <mode>` |
-| `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`, `init`/`adopt`/`sync`->`/steer:setup <mode>`); the swap changes meaning, so propose, don't auto-rewrite |
+| `absorbed-mode` | `<skill>` is `user-invocable: false` **and** a front door's `<!-- steer:modes -->` marker names it - the v7 fold made `/steer:init` untypable and `/steer:setup init` the way in | **deterministic** - rewrite to `/steer:<door> <mode>`. A pure rename: the door dispatches to the same skill and trailing arguments carry through (`adr accept 3` -> `/steer:spec adr accept 3`) |
+| `noncallable-gateway` | `<skill>` is `user-invocable: false` and **no** door absorbed it - `spec-scaffold` and `tracker-sync`, which an owning skill drives mid-procedure | **human decision** - route to a front door (`spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
 
 Three `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
@@ -107,11 +108,13 @@ exemption is the modern spelling only; a pre-rebrand `e22-report` still gets its
 deterministic rewrite. The imperative framing in installed docs ("Run
 `/steer:reference ...`") is policed instead by `check_standards.py` check 11.
 
-`/steer:sync` auto-applies the two deterministic classes read-then-propose on its PR
+`/steer:setup sync` auto-applies the three deterministic classes read-then-propose on its PR
 branch and surfaces the other two for the dev. The version-keyed one-shot for the
 `reference`-mode renames is the v3.8.0 entry in [MIGRATIONS.md](MIGRATIONS.md); this
-detector is the standing every-sync backstop. Keep this class vocabulary in lockstep
-with `scripts/scan-invocations.sh`.
+detector is the standing every-sync backstop. The v7 absorption renames have the same
+pairing: the `[Unreleased]` entry is the one-shot, `absorbed-mode` is the backstop, and
+both derive the same front door from the same mode markers. Keep this class vocabulary
+in lockstep with `scripts/scan-invocations.sh`.
 
 ## Why `disable-model-invocation` is never set
 

@@ -1,6 +1,6 @@
 ---
 # Repository-local tracker contract. Read by /steer:tracker-sync and /steer:work issues.
-# /steer:init resolves the placeholders - never ship fabricated values.
+# /steer:setup init resolves the placeholders - never ship fabricated values.
 system:                     # github | jira | linear | azure-devops | other | none-yet
 repository:                 # "[owner/repository]" for GitHub; project key or URL otherwise
 reference_format:           # "#123" | "PROJ-123" | "ENG-123" | "AB#123"

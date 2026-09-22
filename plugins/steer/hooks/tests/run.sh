@@ -1468,6 +1468,10 @@ mkdir -p "${IR0}/.github" "${IR0}/spec"
 	printf 'Claude loads /steer:reference gates for us.\n'          # model-only -> no emit
 	printf 'Claude files it with /steer:report upstream.\n'         # model-only -> no emit
 	printf 'Old channel: /e22-report filed it once.\n'              # legacy spelling -> /steer:report
+	printf 'Menu: /steer:help lists them.\n'                        # absorbed-mode, ANNOTATED (capabilities=help)
+	printf 'One feature: /steer:explain user-login.\n'              # absorbed-mode, ANNOTATED (feature=explain)
+	printf 'Timeline: /steer:roadmap sync now.\n'                   # absorbed-mode (spec roadmap), arg carries through
+	printf 'Report: /steer:status this-week, /steer:work status.\n' # public skill + public-named mode -> no emit
 } >"${IR0}/CLAUDE.md"
 printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md" # reference-mode
 printf 'Contributor guide: /steer:conventions applies.\n' >"${IR0}/.github/pull_request_template.md"
@@ -1490,11 +1494,11 @@ assert_eq "inv: /e22-standards:e22-spec fix -> /steer:spec" "$(invfix "${out}" /
 # MIGRATIONS.md v2.0.0 pair 2: the single-prefix form, `:<skill>` with no `e22-`.
 assert_eq "inv: /e22-standards:build -> legacy-e22" "$(invclass "${out}" /e22-standards:build)" "legacy-e22"
 assert_eq "inv: /e22-standards:build fix -> /steer:build" "$(invfix "${out}" /e22-standards:build)" "/steer:build"
-# Same single-prefix form, but the skill it names went internal behind a front
-# door: the verdict follows the live skill, so it degrades to a gateway with no
-# mechanical fix rather than rewriting to an invocation that no longer resolves.
-assert_eq "inv: single-prefix legacy -> noncallable-gateway" "$(invclass "${out}" /e22-standards:doctor)" "noncallable-gateway"
-assert_eq "inv: single-prefix legacy gateway -> no fix" "$(invfix "${out}" /e22-standards:doctor)" "-"
+# Same single-prefix form, but the skill it names went internal behind a front door.
+# The verdict follows the live skill, so a pre-rebrand token resolves the whole way to
+# the front-door invocation in one step rather than stopping at a dead /steer:doctor.
+assert_eq "inv: single-prefix legacy -> absorbed-mode" "$(invclass "${out}" /e22-standards:doctor)" "absorbed-mode"
+assert_eq "inv: single-prefix legacy fix -> /steer:setup doctor" "$(invfix "${out}" /e22-standards:doctor)" "/steer:setup doctor"
 # A legacy token must get the SAME verdict its /steer: spelling would: a
 # user-invocable:false gateway is a human routing decision (no mechanical fix, since
 # RECONCILE.md applies a legacy-e22 fix deterministically), and a `reference` mode
@@ -1507,11 +1511,25 @@ assert_eq "inv: legacy mode fix -> reference form" "$(invfix "${out}" /e22-conve
 printf '%s' "${out}" | awk -F '\t' '$3=="/e22-standards"' | grep -q . &&
 	bad "inv: compound head must not double-report as /e22-standards" || ok
 # Valid invocations and the marketplace id emit nothing.
-# A skill folded behind a front door is a gateway like any other: a frozen
-# /steer:sync in live prose no longer resolves for a user, so it is proposed,
-# never auto-rewritten - the mode it belongs to is the human's call.
-assert_eq "inv: /steer:sync -> noncallable-gateway" "$(invclass "${out}" /steer:sync)" "noncallable-gateway"
-assert_eq "inv: /steer:sync -> no mechanical fix" "$(invfix "${out}" /steer:sync)" "-"
+# A skill a front door ABSORBED as a mode is a rename, not a routing decision: the
+# door dispatches to the same skill, so the fix is deterministic and sync applies it
+# unattended - the same pairs MIGRATIONS.md's 7.0 entry carries as a one-shot.
+assert_eq "inv: /steer:sync -> absorbed-mode" "$(invclass "${out}" /steer:sync)" "absorbed-mode"
+assert_eq "inv: /steer:sync fix -> /steer:setup sync" "$(invfix "${out}" /steer:sync)" "/steer:setup sync"
+# A mode named after what it DOES annotates the skill it enters (`capabilities=help`,
+# `feature=explain`); the suggestion must be the mode's name, not the skill's.
+assert_eq "inv: /steer:help -> absorbed-mode" "$(invclass "${out}" /steer:help)" "absorbed-mode"
+assert_eq "inv: /steer:help fix -> /steer:next capabilities" "$(invfix "${out}" /steer:help)" "/steer:next capabilities"
+assert_eq "inv: /steer:explain fix -> /steer:status feature" "$(invfix "${out}" /steer:explain)" "/steer:status feature"
+# `roadmap` carries its own `sync` mode. Scanning only a PUBLIC skill's marker is what
+# stops that mode claiming the `sync` skill and handing it two owners.
+assert_eq "inv: /steer:roadmap fix -> /steer:spec roadmap" "$(invfix "${out}" /steer:roadmap)" "/steer:spec roadmap"
+# `work status` and `audit spec` are modes named after PUBLIC skills - an unannotated
+# mode claims a skill only when an INTERNAL one shares its name, so neither is flagged.
+assert_eq "inv: public /steer:status not flagged" "$(invclass "${out}" /steer:status)" ""
+# The two true gateways keep the human-decision verdict: no door absorbed them, and a
+# front-door swap there changes meaning.
+assert_eq "inv: /steer:spec-scaffold stays a gateway" "$(invclass "${out}" /steer:spec-scaffold)" "noncallable-gateway"
 printf '%s' "${out}" | grep -q '/steer:work' && bad "inv: valid /steer:work must not be flagged" || ok
 printf '%s' "${out}" | grep -q 'e22-plugins' && bad "inv: marketplace id must not be flagged" || ok
 # `reference` and `report` are user-invocable:false, but a human-facing doc names

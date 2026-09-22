@@ -227,13 +227,15 @@ is visible rather than silent.
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/INVOCATION.md` -> "Drift detection &
    auto-repair" for the class semantics. Then, read-then-propose on `feat/sync`:
 
-   - **`legacy-e22`** and **`reference-mode`** -> **deterministic**: apply the exact
-     `suggested-fix` token rewrite (a bare `reference`-mode invocation becomes
-     `/steer:reference <mode>`), showing the diff. Replace only the flagged tokens -
+   - **`legacy-e22`**, **`reference-mode`** and **`absorbed-mode`** -> **deterministic**:
+     apply the exact `suggested-fix` token rewrite (a bare `reference`-mode invocation
+     becomes `/steer:reference <mode>`; an absorbed skill becomes `/steer:<door> <mode>`,
+     trailing arguments untouched), showing the diff. Replace only the flagged tokens -
      never a broader match, never the marketplace id.
    - **`noncallable-gateway`** -> the fix is a **front-door swap that changes meaning**
-     (e.g. `/steer:spec-scaffold <id>` -> `/steer:spec`; `/steer:tracker-sync` ->
-     `/steer:issues`), so **propose it and let the dev confirm** - do not auto-rewrite.
+     (`/steer:spec-scaffold <id>` -> `/steer:spec`; `/steer:tracker-sync` ->
+     `/steer:work issues`), so **propose it and let the dev confirm** - do not
+     auto-rewrite.
    - **`unknown`** -> a token that resolves to no skill/mode (e.g. a removed skill) ->
      **surface only**, no rewrite; the dev decides.
 

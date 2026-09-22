@@ -94,6 +94,103 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - seven public skills: absorbed-skill invocations become front-door modes
+
+- **What & why:** 7.0 cut the user-facing surface to seven skills - `setup`, `spec`,
+  `work`, `audit`, `status`, `next`, `build` - and made the rest `user-invocable:
+  false`, each reached as a **mode** of the door that absorbed it. The skills are
+  unchanged and still do the same work; only the way in moved. A repo bootstrapped or
+  synced before 7.0 carries the old invocations in its live prose - `/steer:init` in
+  `CLAUDE.md`, `/steer:questions` in a feature's `intent.md`, `/steer:protect` in
+  `policy/branch-protection.yml`'s header, `/steer:intake` in `mise.toml`'s
+  `convert:doc` description - and **none of them resolves any more**: Claude Code
+  matches a slash invocation against callable skills, and these are no longer in that
+  set. These are neither new files (capability repair) nor new sections (additive
+  reconciliation) - they are **rewrites of strings that already exist**, which only a
+  migration may do. This is the one-shot, version-keyed carry-forward;
+  `/steer:setup sync`'s invocation-hygiene step (`scripts/scan-invocations.sh`, the
+  `absorbed-mode` class) is the standing backstop that derives the same front door
+  from the same mode markers and catches later drift. `reference`, `report` and `loop`
+  also went internal in 7.0 and are **deliberately absent** below: no door absorbed
+  them, so no invocation string changed - the model still reaches them at the spelling
+  already in the file. (The pre-rebrand `/e22-*` tokens are covered by the v2.0.0
+  entry; the ledger walks oldest->newest, so that entry has already normalized them to
+  `/steer:*` by the time this one runs, and both are idempotent.)
+- **Precondition:** an absorbed skill's old invocation is still present outside
+  append-only prose and the verbatim/generated set - this grep fires (run from repo
+  root):
+
+  ```sh
+  grep -rIE '/steer:(init|adopt|sync|doctor|protect|questions|adr|intake|roadmap|issues|tidy|help|explain)([^a-z-]|$)' \
+    --exclude-dir=.git --exclude-dir=node_modules . 2>/dev/null \
+    | grep -vE '^(\./)?((spec|openspec/steer)/(history/|HISTORY\.md|AUDIT-REPORT\.md|DRIFT-REPORT\.md|decisions/|sources/[^/]+/|reference/)|\.agents/skills/|\.github/(copilot-instructions\.md|agents/|instructions/)|scripts/(scan-version-pins|version-policy|ci-lib)\.sh)'
+  ```
+
+  Empty output => already migrated (or a fresh post-7.0 repo) => no-op. The trailing
+  filter carries both exclusions the action needs, so precondition and action see the
+  same files and re-running is a true no-op. It anchors each excluded path at the
+  **start of the line**, with `./` optional - `grep -r .` prefixes it on GNU and BSD
+  grep but not on every implementation, and an unanchored path pattern would also
+  match a file whose *content* happens to name `spec/history/`.
+- **Action:** read-then-propose an **in-file token substitution** over every remaining
+  file. Show the diff, then replace **only** these exact pairs. Old-token cells are
+  shown **without** the leading `/` so this ledger file itself passes the
+  phantom-skill lint guard; in a managed repo they carry the leading `/`, and the pair
+  applies to that slash-prefixed form.
+
+  | # | Old token | New | Lands in |
+  |---|---|---|---|
+  | 1 | `steer:init` (slash-prefixed) | `/steer:setup init` | CLAUDE.md, README.md, `mise.toml`, `spec/.version`, scaffold scripts |
+  | 2 | `steer:adopt` (slash-prefixed) | `/steer:setup adopt` | same, plus `spec/PRODUCTIONIZATION.md` |
+  | 3 | `steer:sync` (slash-prefixed) | `/steer:setup sync` | same, plus `scripts/ci-changelog.sh` |
+  | 4 | `steer:doctor` (slash-prefixed) | `/steer:setup doctor` | CLAUDE.md, README.md |
+  | 5 | `steer:protect` (slash-prefixed) | `/steer:setup protect` | README.md, `policy/branch-protection.yml` |
+  | 6 | `steer:questions` (slash-prefixed) | `/steer:spec questions` | `spec/features/*/intent.md`, `spec/vision.md`, `spec/PRODUCTIONIZATION.md` |
+  | 7 | `steer:adr` (slash-prefixed) | `/steer:spec adr` | CLAUDE.md, README.md, `.github/workflows/dependabot-auto-merge.yml` |
+  | 8 | `steer:intake` (slash-prefixed) | `/steer:spec intake` | README.md, `mise.toml`, `spec/sources/README.md` |
+  | 9 | `steer:roadmap` (slash-prefixed) | `/steer:spec roadmap` | `spec/tracker.md` |
+  | 10 | `steer:issues` (slash-prefixed) | `/steer:work issues` | `spec/tracker.md`, `spec/PRODUCTIONIZATION.md`, PR template |
+  | 11 | `steer:tidy` (slash-prefixed) | `/steer:work tidy` | CLAUDE.md, `spec/sources/README.md` |
+  | 12 | `steer:help` (slash-prefixed) | `/steer:next capabilities` | CLAUDE.md, README.md |
+  | 13 | `steer:explain` (slash-prefixed) | `/steer:status feature` | CLAUDE.md, README.md |
+
+  Order does not matter - the thirteen tokens are distinct, and each is read straight
+  after the colon. **Trailing arguments carry through the prefix**, because the door
+  dispatches on the mode and passes the rest on: `/steer:adr accept 3` ->
+  `/steer:spec adr accept 3`, `/steer:protect waive` -> `/steer:setup protect waive`,
+  `/steer:issues publish-adoption` -> `/steer:work issues publish-adoption`,
+  `/steer:sync --check` -> `/steer:setup sync --check`, `/steer:explain user-login` ->
+  `/steer:status feature user-login`.
+
+  **Scope - what is left alone, and why.** Two sets, both excluded from the
+  precondition as well so the entry stays idempotent:
+
+  - **Append-only prose**, where a past `/steer:adopt` records what was actually run:
+    `spec/history/`, the frozen `spec/HISTORY.md`, `spec/AUDIT-REPORT.md`,
+    `spec/DRIFT-REPORT.md`, `spec/decisions/` ADRs, the per-source directories under
+    `spec/sources/*/`, and `spec/reference/`. `spec/sources/README.md` is **not** in
+    that set - it is the live routing table for the directory, not a record.
+  - **Verbatim and generated files**, which their own repair path replaces wholesale
+    in the same sync rather than token-rewrites: the `.agents/skills/` tree and the
+    three `.github/` Copilot artifacts (the `agent-surface-current` capability re-copies
+    them), and `scripts/scan-version-pins.sh`, `scripts/version-policy.sh`,
+    `scripts/ci-lib.sh`. Never hand-edit these here; a token rewrite would only make
+    them differ from the plugin source and force a re-copy anyway.
+
+  Everything else is rewritten in full, **including a dated mention inside an in-scope
+  file** - `spec/PRODUCTIONIZATION.md`'s "Re-reconciled (2026-06-16, `/steer:adopt`
+  resume)", a feature `intent.md`'s seeded "`/steer:questions` will convert them". The
+  record stays true: it names the skill, and the skill did not change. A line-level
+  carve-out was considered and rejected - it would leave matches the precondition
+  still fires on, so the entry would re-propose itself on every sync.
+
+  **False-positive guard:** the old token must come **directly after the colon** -
+  never rewrite an already-migrated `/steer:setup init` (there `init` follows
+  `setup `, not the colon) - and must be followed by a non-`[a-z-]` character, so
+  `/steer:spec-scaffold` is never read as `steer:spec`. Idempotent: once applied the
+  precondition is empty, so re-running is a no-op. Follow with additive
+  [Template reconciliation](SPEC-FRAMEWORK.md) for any template-tracked file.
+
 ### v6.6.0 - `policy/org.yml` declares which org pack the repo follows
 
 - **What & why:** the stack, useful-commands and infra-stack rules named one

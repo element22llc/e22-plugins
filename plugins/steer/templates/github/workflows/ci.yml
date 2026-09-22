@@ -50,7 +50,7 @@ jobs:
           # any artifact or nested action that reads the checkout.
           persist-credentials: false
 
-      # mise-action adds `--locked` whenever mise.lock exists; before /steer:init|adopt commits
+      # mise-action adds `--locked` whenever mise.lock exists; before /steer:setup init|adopt commits
       # one, this is a plain unlocked install rather than a failure.
       - name: Setup mise
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0

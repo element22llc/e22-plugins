@@ -24,6 +24,9 @@
 #                             user cannot type - reached only via a front door)
 #   * reference modes       = the `<!-- steer:modes a,b,c -->` marker in
 #                             skills/reference/SKILL.md
+#   * absorbed modes        = the same marker on every PUBLIC skill: a front door's
+#                             mode names the internal skill it enters, so
+#                             `/steer:init` resolves to `/steer:setup init`
 #   So a future skill rename/add changes the verdicts here with no edit to this file.
 #
 # WHAT IT SCANS (live instruction surfaces ONLY - the false-positive guard)
@@ -36,7 +39,7 @@
 #
 # OUTPUT (stdout) - one TAB-separated line PER problem occurrence (clean repo = silent):
 #   <file>\t<lineno>\t<found>\t<class>\t<suggested-fix>
-#   class ∈ legacy-e22 | reference-mode | noncallable-gateway | unknown
+#   class ∈ legacy-e22 | reference-mode | absorbed-mode | noncallable-gateway | unknown
 #     legacy-e22           /e22-<skill> pre-rebrand prefix; <skill> resolves
 #                          -> fix /steer:<skill>. Also the compound forms
 #                          /e22-standards:e22-<skill> and /e22-standards:<skill>
@@ -45,8 +48,13 @@
 #                          never from `standards`.
 #     reference-mode       /steer:<mode> where <mode> is a `reference` topic, not a
 #                          skill -> fix /steer:reference <mode>
-#     noncallable-gateway  /steer:<skill> where <skill> is user-invocable:false; a
-#                          user cannot type it -> route to a front door (human decides)
+#     absorbed-mode        /steer:<skill> where <skill> is user-invocable:false AND a
+#                          front door's mode marker names it -> fix
+#                          /steer:<door> <mode>. A pure rename: the door dispatches
+#                          to the same skill and trailing arguments carry through.
+#     noncallable-gateway  /steer:<skill> where <skill> is user-invocable:false and NO
+#                          door absorbed it (spec-scaffold, tracker-sync); a user
+#                          cannot type it -> route to a front door (human decides)
 #     unknown              /steer:<tok> resolves to no skill and is not a mode ->
 #                          flag only, no mechanical fix
 #   A valid invocation (a real callable skill, or /steer:reference <mode>) emits
@@ -149,6 +157,43 @@ fi
 
 in_set() { case "$2" in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
+# Absorbed modes: an internal skill a FRONT DOOR entered as one of its modes. The
+# v7 fold made `/steer:init` untypable and `/steer:setup init` the way in - a pure
+# rename, so unlike a true gateway this one HAS a deterministic fix, and the ledger
+# entry that carries a materialized repo across the rename says the same thing.
+# Derived from the same `<!-- steer:modes -->` markers check 14 of check_standards.py
+# reads, under the same two restrictions, both load-bearing: only a PUBLIC skill's
+# marker is scanned (otherwise `roadmap`'s own `sync` mode would claim `sync`), and an
+# unannotated mode claims a skill only when an INTERNAL one shares its name (otherwise
+# `work status` and `audit spec` would claim the public `status` and `spec`).
+# One record per line, `<skill> <door> <mode>`.
+ABSORBED=""
+if [ -d "$SKILLS_DIR" ]; then
+	for _d in "$SKILLS_DIR"/*/; do
+		_door="$(basename "$_d")"
+		# Only a front door absorbs - an internal skill's own modes are its business.
+		in_set "$_door" "$NONCALLABLE" && continue
+		_line="$(grep -oE '<!--[[:space:]]*steer:modes[[:space:]]+[a-z0-9,_=-]+' "${_d}SKILL.md" 2>/dev/null | head -n1)"
+		[ -n "$_line" ] || continue
+		for _m in $(printf '%s' "${_line##*steer:modes}" | tr ',' ' '); do
+			# `<mode>=<owner>` names the internal skill a function-named mode enters
+			# (`capabilities=help`); a bare mode owns itself.
+			_mode="${_m%%=*}"
+			_owner="${_m#*=}"
+			in_set "$_owner" "$NONCALLABLE" || continue
+			ABSORBED="${ABSORBED}${_owner} ${_door} ${_mode}
+"
+		done
+	done
+fi
+
+# absorbed_fix <skill> - the front-door invocation, or empty when no door absorbed it.
+absorbed_fix() {
+	printf '%s' "$ABSORBED" | while read -r _s _door _mode; do
+		[ "$_s" = "$1" ] && printf '/steer:%s %s' "$_door" "$_mode" && break
+	done
+}
+
 emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
 
 # classify_legacy <rel> <lineno> <found> <tok> - the shared verdict for BOTH legacy
@@ -172,7 +217,12 @@ classify_legacy() {
 		# exempt.
 		emit "$1" "$2" "$3" "legacy-e22" "/steer:$4"
 	elif in_set "$4" "$NONCALLABLE"; then
-		emit "$1" "$2" "$3" "noncallable-gateway" "-"
+		_fix="$(absorbed_fix "$4")"
+		if [ -n "$_fix" ]; then
+			emit "$1" "$2" "$3" "absorbed-mode" "$_fix"
+		else
+			emit "$1" "$2" "$3" "noncallable-gateway" "-"
+		fi
 	elif in_set "$4" "$SKILLS"; then
 		emit "$1" "$2" "$3" "legacy-e22" "/steer:$4"
 	else
@@ -200,7 +250,12 @@ for REL in $SURFACES; do
 		elif in_set "$tok" "$MODEL_ONLY"; then
 			: # delegation prose, not a user hand-back - nothing to rewrite
 		elif in_set "$tok" "$NONCALLABLE"; then
-			emit "$REL" "$_ln" "$_tok" "noncallable-gateway" "-"
+			_fix="$(absorbed_fix "$tok")"
+			if [ -n "$_fix" ]; then
+				emit "$REL" "$_ln" "$_tok" "absorbed-mode" "$_fix"
+			else
+				emit "$REL" "$_ln" "$_tok" "noncallable-gateway" "-"
+			fi
 		elif in_set "$tok" "$SKILLS"; then
 			: # valid callable skill - emit nothing
 		else

@@ -1,5 +1,5 @@
 # Workspace spine: no services here - each member carries its own compose.yaml.
-# `/steer:init` resolves one `include:` entry per member from spec/workspace.yml
+# `/steer:setup init` resolves one `include:` entry per member from spec/workspace.yml
 # (long syntax, so the member's relative paths resolve as they do standalone):
 # include:
 #   - path: frontend/compose.yaml

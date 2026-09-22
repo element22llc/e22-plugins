@@ -154,6 +154,7 @@ nav:
       - GitHub Actions integration: reference/github-integration.md
       - MCP servers: reference/mcp-servers.md
       - Repository contract: reference/repository-contract.md
+      - What moved where (7.0): reference/invocation-changes.md
   - Team rollout:
       - Known limitations: reference/known-limitations.md
       - Launch checklist: team-rollout/launch-checklist.md

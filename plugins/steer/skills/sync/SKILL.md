@@ -72,8 +72,8 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
   that exists; reconcile scaffold into it rather than replacing it; preserve
   every filled-in value. Never touch working app code.
 - **Invocation hygiene is a token rewrite on live prose only.** Apply only the
-  detector's deterministic classes (`legacy-e22`, `reference-mode`) as exact-token
-  rewrites; propose (never auto-apply) `noncallable-gateway` front-door swaps and
+  detector's deterministic classes (`legacy-e22`, `reference-mode`, `absorbed-mode`)
+  as exact-token rewrites; propose (never auto-apply) `noncallable-gateway` swaps and
   surface `unknown` tokens for the dev. Scan only the live instruction surfaces the
   detector targets - never rewrite append-only/provenance prose (`spec/history/*`, `spec/HISTORY.md`,
   reports, ADRs), and never the marketplace id `e22-plugins`.
@@ -232,8 +232,8 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    would lay the competing spine marker step 1 forbids:
 
    ```
-   # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
-   # /steer:sync. Do not edit by hand.
+   # Spec-spine version - managed by /steer:setup init, /steer:setup adopt,
+   # /steer:build, /steer:setup sync. Do not edit by hand.
    <TARGET>
    ```
 

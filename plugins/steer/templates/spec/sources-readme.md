@@ -38,7 +38,7 @@ spec/sources/
 | Home | Holds | Maintained by |
 |---|---|---|
 | `spec/sources/` | **Recurring, versioned** PO documents (this dir) | `/steer:spec intake` |
-| `spec/design/` | UI/design exports (Claude Design ZIP, Figma, screenshots) | `/steer:spec`, `/steer:adopt` |
+| `spec/design/` | UI/design exports (Claude Design ZIP, Figma, screenshots) | `/steer:spec`, `/steer:setup adopt` |
 | `spec/reference/` | One-off source/research materials feeding the spec | `/steer:work tidy` (filing), humans |
 
 A document the PO sends **once** and never revises can stay loose under

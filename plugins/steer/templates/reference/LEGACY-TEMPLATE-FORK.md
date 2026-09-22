@@ -105,8 +105,8 @@ the old template lacked.
    same two-line form the plugin-driven path writes:
 
    ```
-   # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
-   # /steer:sync. Do not edit by hand.
+   # Spec-spine version - managed by /steer:setup init, /steer:setup adopt,
+   # /steer:build, /steer:setup sync. Do not edit by hand.
    <plugin version>
    ```
 

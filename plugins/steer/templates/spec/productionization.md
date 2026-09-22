@@ -6,7 +6,7 @@
 > session reads this first and continues from the unchecked items; never restart
 > from scratch.
 >
-> Produced by **`/steer:adopt`** (an existing non-template repo brought into the
+> Produced by **`/steer:setup adopt`** (an existing non-template repo brought into the
 > standards - the main case, with real legacy code to triage) and carried into
 > **`/steer:build`** (a PO-built v0 handed to a dev - mostly stubs to finish, see
 > the disposition note below).

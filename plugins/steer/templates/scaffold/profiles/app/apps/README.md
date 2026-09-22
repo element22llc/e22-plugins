@@ -24,7 +24,7 @@ Workspace tooling (npm/pnpm/bun workspaces, turbo, nx, ...) is the product team'
 choice - record it in an ADR under [`/spec/decisions`](../spec/decisions) (run `/steer:spec adr`). The
 toolchain itself is pinned with mise; see [`mise.toml`](../mise.toml).
 
-This folder starts empty - the bootstrap (`/steer:init`) scaffolds the real
+This folder starts empty - the bootstrap (`/steer:setup init`) scaffolds the real
 first app here (default frontend: Next.js) instead of shipping a placeholder
 to delete.
 

@@ -157,8 +157,8 @@ These hold for the whole build, at every step.
    same two-line form `/steer:init` and `/steer:adopt` write:
 
    ```
-   # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
-   # /steer:sync. Do not edit by hand.
+   # Spec-spine version - managed by /steer:setup init, /steer:setup adopt,
+   # /steer:build, /steer:setup sync. Do not edit by hand.
    <plugin version>
    ```
 

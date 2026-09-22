@@ -2,7 +2,7 @@
 # Polyrepo member pointer. Read by every skill that needs product-level spec.
 # Its PRESENCE is what marks this repo a member (lib/scope.sh -> has-product-pointer),
 # so do not add this file to a single-repo product.
-# /steer:init and /steer:adopt resolve the placeholders - never ship fabricated values.
+# /steer:setup init and /steer:setup adopt resolve the placeholders - never ship fabricated values.
 workspace:
   repository:               # "[owner/repository]" - the repo hosting the product /spec spine
   branch: main              # the branch to read the spine from
