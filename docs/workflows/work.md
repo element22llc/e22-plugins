@@ -144,4 +144,9 @@ stay in the git-ignored marker and never reach the tracker.
   required check both fail without one (`ci:changelog`), and editing someone
   else's pending fragment does not count - the gate wants a file *added*.
   `CHANGELOG.md` itself is generated at release and never hand-edited.
-- All tracker-metadata I/O routes through `/steer:tracker-sync`.
+- All tracker-metadata I/O routes through `/steer:tracker-sync`, and execution
+  needs only its **core** operations - `find`, `get`, `create`,
+  `update-state`, `claim`, `comment`, `link-delivery`, `close`. They key off
+  the `steer:*` markers in the issue body rather than GitHub-native metadata,
+  so `link-delivery` records the PR in pr-flow and the closing trunk commit in
+  solo-trunk.
