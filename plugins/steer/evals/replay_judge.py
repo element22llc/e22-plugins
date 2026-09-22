@@ -67,10 +67,9 @@ RESULTS = EVALS / "results"
 JUDGE_SYSTEM = "You are a strict, terse evaluation judge for coding-agent traces."
 # Last measured agreement between this replay and the harness's own verdicts, and
 # the run it was measured against. Two consecutive passes scored 34/36 and 33/36
-# against a 35/36 replay-vs-replay ceiling, and both reproduced 7 of the 9
-# recorded FAILs; the residual is one case (client-status), where 26 of 27 votes
-# on the same three texts say PASS. Re-measure with `--mode votes` after any
-# change here, and move these lines.
+# against a 35/36 replay-vs-replay ceiling, reproducing 7 and 6 of the 9 recorded
+# FAILs where the old prompt reproduced none. Re-measure with `--mode votes`
+# after any change here, and move these lines.
 FIDELITY = "34/36 on the with arm (ceiling 35/36), 2026-09-22T13-34-28-092Z"
 ONE_WORD = "Respond with exactly one word: PASS or FAIL."
 WITH_REASON = (

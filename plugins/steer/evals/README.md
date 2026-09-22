@@ -109,17 +109,23 @@ do not cover that - the handoff is not decoration there, it is the product. The
 case carries a paragraph saying so, and went 0.60 -> 0.87.
 
 **Conformant prose is still a coin flip on this judge, and the suite prices
-that.** Both cases above left one run failing 3-0 out of three, and those
-responses are not distinguishable from the ones that passed 3-0 in the same
-sweep: same headings, same grooming or arbitration, same skill named in the
-handoff, no code and no diff in any of them. That now rests on an instrument
-that *can* fail a response: with the judge call corrected (below),
-`replay_judge.py` reproduces 7 of the 9 recorded FAILs, and the two it will not
-are both `routes-client-status-to-status`, where 26 of 27 votes over the three
-texts say PASS and the rationales for the two failed ones read the same as the
-passed one. Do not write a third clause against a failure nobody can observe -
-`--threshold 0.6` is exactly the `routed` weight for this reason, and a case at
-0.73 or 0.87 with `routed` 3/3 has routed correctly.
+that.** Both cases above still failed runs after their fix - two of three on
+triage, one of three on `next` - on responses that read like the ones that
+passed. Replayed at 9 votes against a judge call that now matches the harness
+byte for byte (below), those failures split three ways:
+
+| Failure | Replay | Reading |
+|---|---|---|
+| `spec` run 0, 15-49 | 1/9 PASS | correct: it never names `/steer:spec`. Not variance. |
+| `triage` run 1, 15-26 | 2/9 PASS | reproducible, and `--mode rationale` names the clause: its closing `Current recommended action: /steer:work start #123` reads as *starting* delivery. That is a criteria collision, tracked as its own change. |
+| `triage` run 2, 15-26 · `next` run 1, 15-40 · `client-status` runs 0-1, 13-34 | 7/9, 9/9, 9/9, 8/9 PASS | not reproducible. Each names its owning skill and spends its body on that skill's work; the rationales for the failed ones read like the rationales for the passed ones. |
+
+The last row is the coin flip, and 2/9, 5/9, 6/9 and 7/9 over texts that read
+alike is what a fuzzy boundary looks like. Do not write a clause against a
+failure that stays in that row - `--threshold 0.6` is exactly the `routed`
+weight for this reason, and a case at 0.73 or 0.87 with `routed` 3/3 has routed
+correctly. A failure that leaves it, as triage's did, is a criteria bug and gets
+fixed.
 
 **Diagnosing a judge failure: `replay_judge.py`.** Neither the JSON nor
 `report.html` carries the judge's rationale, only its votes, and the per-run
@@ -138,8 +144,8 @@ and against the 2026-09-22T13-34 sweep two consecutive passes agreed on **34 of
 36** and **33 of 36** with-arm items. Read that against the **ceiling: 35/36**,
 what the replay scores against *itself* on the same items - a 3-vote majority of
 a stochastic judge is not a fixed verdict, so 36/36 is not the target and never
-was. It reproduces 7 of the 9 recorded FAILs; the residual is the one case named
-under "coin flip" above.
+was. It reproduced 7 of the 9 recorded FAILs on the first pass and 6 on the second;
+the residual is the last row of the table under "coin flip" above.
 
 **Verify the judge call by capturing it, not by reading the binary.** The
 earlier 27/36 came from a prompt reconstructed out of `strings` on the CLI, and
