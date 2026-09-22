@@ -66,6 +66,8 @@ These hold for the whole run, in every mode.
    never carries its own.
 2. **Route all tracker reads/writes through `/steer-tracker-sync`**, whose own
    operations table is the interface. Never hit `gh`/MCP for issues directly.
+   Execution needs its **core** ops only, so `OPERATIONS.md` is the only
+   catalogue file this skill reads.
    **Git and PR delivery are not gateway operations** - they are this
    skill's execution concern, under the repo's commit/PR-autonomy rules.
 3. **No issue named but a mutation was requested?** Find-or-create one first

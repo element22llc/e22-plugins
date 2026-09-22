@@ -1,0 +1,35 @@
+kind: Changed
+body: |
+  - **The tracker gateway now has a core.** `/steer:tracker-sync`'s catalogue was
+    split by GitHub domain - core lifecycle, planning, links - which put the
+    portable and the GitHub-only in the same file and made "what would a
+    non-GitHub tracker have to implement?" unanswerable. It is now split by that
+    question instead. `OPERATIONS.md` holds **eight** tracker-neutral ops -
+    `find`, `get`, `create`, `update-state`, `claim`, `comment`,
+    `link-delivery`, `close`/`reopen` - each keyed off the `steer:*` markers in
+    the issue body, which any tracker with a text body can carry. The new
+    `OPERATIONS-GITHUB.md` holds everything with no equivalent outside GitHub -
+    labels, Issue Types, milestones, native issue fields, parent/related/blocked-by
+    edges - and replaces `OPERATIONS-PLANNING.md` + `OPERATIONS-LINKS.md`.
+    `/steer:work` and the `/steer:work issues` lifecycle modes now read the core
+    file only; the modes that reach past it (`decompose`/`epic`, `triage`'s
+    Priority floor, `reconcile`'s label and type normalization,
+    `/steer:spec roadmap`, `bootstrap-fields` at setup) name the one op they need.
+  - **Three renames and one merge inside that core.** `search` -> **`find`**
+    (find-or-create is `find` then `create`, and the dedup order lives on `find`);
+    `link-pr` -> **`link-delivery`**, which takes the PR *or* the closing trunk
+    commit, so a solo-trunk repo records what delivered an issue instead of
+    nothing; `update` + `transition` -> **`update-state`**, one guarded
+    read-modify-write over the body steer owns, because the managed block and the
+    `steer:state` marker were always the same write against the same body (the
+    authority table still gates the calls that move state). Marker *names* are
+    untouched - `steer:pull-request` and `steer:claimed-by` are on issues in the
+    wild, and renaming one would be a migration.
+  - **`claim` is its own op, not a flavour of `update-state`.** The check it
+    carries is a precondition of ownership, not of a state move: folding it in
+    would make every unrelated transition assert assignment. The conflict check
+    survives unchanged - an already-assigned or already-claimed issue is reported,
+    never auto-overridden - and the op also covers assigning a named owner
+    (question promotion), which sets accountability without an execution claim.
+custom:
+  Slug: tracker-core

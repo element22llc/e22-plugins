@@ -174,7 +174,7 @@ lives only in an invisible marker:
   inside the managed block that mirrors them as a human-visible, clickable line -
   `PR: #NN` (GitHub auto-links `#NN`) and `Branch: \`<branch>\``. It is **omitted
   until a branch/PR exists** and is maintained from the markers by
-  `/steer:tracker-sync link-pr` and `/steer:work`. The markers stay **canonical**;
+  `/steer:tracker-sync link-delivery` and `/steer:work`. The markers stay **canonical**;
   the line is a derived, one-directional view (like `steer:state` <-> a Project
   Status mirror) - never re-read as the source of truth.
 
