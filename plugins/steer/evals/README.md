@@ -31,6 +31,17 @@ graders:
 `last_message`.** Those are two different claims and they need two different
 surfaces.
 
+`last_message` leaves two shapes ungradeable, and they were resolved
+differently. A skill that **pauses** on its own question ends with no handoff
+heading, so nothing in the final message names it - that is now rule
+`00-router`'s problem and the rule says to name the skill in that message. A
+skill that **auto-continues** into the next one ends with the *second* skill's
+output, which is the rule working as written ("auto-continue, bounded"), and
+forcing the second skill to re-name the first is ceremony the 7.0 rule diet
+exists to remove. That shape is left failing the `answer` grader on purpose:
+`routed` still passes on the `Skill` call, and `--threshold 0.6` is exactly that
+grader's weight - "entered the right skill even if the prose judge docked it".
+
 `routed` used to be a regex on `last_message`, and that was the wrong surface for
 it. `rules/00-router.md` says "announce, then act", so the announcement lands in
 the run's **first** message, and a finished skill's report names the skills that

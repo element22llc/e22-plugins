@@ -29,7 +29,9 @@ the owning skill, using the skill listing, and **invoke it yourself**.
 - **Name it again when it finishes** - the handoff heading reads `## Recommended
   next actions - /steer:<skill>`. Otherwise a finished skill names only what
   comes *next*, and the reader cannot tell what just ran, which is what makes a
-  misroute reportable at all.
+  misroute reportable at all. A skill that **pauses** on its own question names
+  itself in that message too: there is no handoff heading yet, and the announce
+  line is already scrolled past.
 - **Auto-continue, bounded** - when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
