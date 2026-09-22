@@ -227,11 +227,22 @@ def test_answer_graders_judge_the_action_and_require_the_owner_be_named():
     # exactly that row. (2) Two greenfield and one build baseline run passed with a
     # homegrown spec-first plan that never mentioned steer, so "generic assistant"
     # was not being enforced and the init delta collapsed to +0.13.
+    #
+    # The wording that fixed (1) reintroduced it (#630): "a finished readout that
+    # names another skill as the *next* action ... has not started that workflow"
+    # was read as a fail trigger, and six conformant readouts failed 3-0 citing
+    # exactly that clause (replay_judge.py --mode rationale). The exemption has to
+    # say "do not fail" outright, which is how the two negatives always phrased it.
     for d in _cases():
         text = (d / "graders" / "answer.md").read_text(encoding="utf-8")
-        assert "Judge what the response **did**, not what it recommends" in text, (
+        flat = " ".join(text.lower().split())
+        assert "is the standards' own contract, never a failure" in flat, (
             f"{d.name}/answer.md: must tell the judge a next-action handoff is not "
             "starting that workflow"
+        )
+        assert "do not fail the response for" in flat, (
+            f"{d.name}/answer.md: the handoff exemption must forbid the failure "
+            "outright - describing the handoff is what #630 showed is not enough"
         )
         if _owner(d) == "none":
             # Inverted for a negative: naming no skill is the correct answer here,
@@ -241,9 +252,29 @@ def test_answer_graders_judge_the_action_and_require_the_owner_be_named():
                 "starts a workflow instead of answering the ask"
             )
             continue
+        # The baseline arm names no steer skill in any case of the suite, so this
+        # clause is what the ablation delta rests on: without it the rewritten
+        # criteria passed 9 of 10 no-plugin answers (replay_judge.py --live).
+        assert "no-plugin answer this case exists to tell apart" in text, (
+            f"{d.name}/answer.md: the generic-assistant failure must be concrete - "
+            "a response that never identifies the owning workflow fails"
+        )
+        if _owner(d) == "build":
+            # The one positive that must not require the skill name: rule 00-router
+            # keeps a non-technical owner clear of them, so the build flow's own
+            # gates stand in for it.
+            assert "developer review" in text and "approves before any code" in text, (
+                f"{d.name}/answer.md: the PO build is told apart from a competent "
+                "plan by its approval and developer-review gates, not by a name"
+            )
+            continue
         assert "names no `/steer:*` skill at all" in text, (
             f"{d.name}/answer.md: the generic-assistant failure must be concrete - "
             "a response that names no steer skill fails"
+        )
+        assert "**Name the owning skill.**" in text, (
+            f"{d.name}/answer.md: passing must require the owning skill be named, "
+            "wherever in the response it appears"
         )
 
 

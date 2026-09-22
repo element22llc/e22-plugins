@@ -14,9 +14,10 @@ computes, and (fairly) that it ignores `quantity`, which is the defect planted
 in this fixture. Noting that the defect could be filed or fixed is fine; doing
 that instead of answering is not.
 
-Judge what the response **did**, not what it recommends. A closing line that
-points at `/steer:work` for the fix is a suggestion, not a workflow the response
-started - do not fail it for that.
+A closing handoff naming a steer skill is the standards' own contract, never a
+failure - do not fail the response for it, and do not read it as evidence that
+the response did nothing. A closing line pointing at `/steer:work` for the fix
+is a suggestion about what comes next; judge the body above it.
 
 Fail the response if it:
 
