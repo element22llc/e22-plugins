@@ -251,6 +251,11 @@ The script performs the whole cut and refuses to start if a precondition fails:
   marketplace's own) alone. `.changie.yaml`'s `replacements` do this on `merge`,
   anchored on each line's indentation, which is what keeps the marketplace's two
   `"version"` keys apart; `validate_cut` re-asserts it afterwards.
+- The same `replacements` pass re-stamps `spec/.version` in the eight **managed
+  eval scaffolds**. A fixture spine stamped at the old version reads as drift to
+  `/steer:next` and injects a sync nudge into every run of those cases;
+  `test_managed_scaffold_stamps_the_current_plugin_version` fails until they
+  agree, so this is wiring, not a step anyone performs.
 - Afterwards it asserts the release invariant (all manifests equal `X.Y.Z`,
   `metadata.version` did not move, `.changes/vX.Y.Z.md` exists, no fragment
   survived the cut, `CHANGELOG.md` carries the new heading, no `[Unreleased]`
