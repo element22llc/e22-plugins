@@ -301,9 +301,12 @@ depends = [
 # skill even if the prose judge docked it". Read `aggregates.meanDelta` in the
 # results JSON for the actual health signal; this is a floor, not the number.
 #
-# --max-cost-usd 45 is a runaway guard, not a budget: the suite measures at $25-30
-# at --runs 3, so the ceiling has to sit clear of a healthy sweep or it aborts one
-# (exit 2, partial results). Re-measure it when case count or max_turns changes.
+# --max-cost-usd 60 is a runaway guard, not a budget: the ceiling has to sit clear
+# of a healthy sweep or it aborts one (exit 2, partial results). 45 was sized
+# against 9 cases at $25-30; the suite is 12 now (a `status` case and two
+# negatives), which projects to ~$33-40 at --runs 3 on the same per-case measure.
+# Re-measure it when case count or max_turns changes - this figure is projected
+# from the 9-case run, not measured at 12.
 #
 # --no-publish keeps the HTML report local. Publishing it to claude.ai is the CLI
 # default wherever the account supports it, and a task run on every routing change
@@ -326,7 +329,7 @@ depends = [
 # unchanged on any machine. It only lifts the preview gate - it is not a credential
 # and grants nothing; drop it once the feature ships generally.
 [tasks."evals"]
-description = "Run the model-graded routing evals against the plugin (slow, ~$25-30; needs plugin-eval early access)"
+description = "Run the model-graded routing evals against the plugin (slow, ~$33-40; needs plugin-eval early access)"
 env = { CLAUDE_CODE_WALNUT_SPIRE = "1" }
 run = """
 claude plugin eval plugins/steer \
@@ -336,7 +339,7 @@ claude plugin eval plugins/steer \
   --runs 3 \
   --judge-model sonnet \
   --threshold 0.6 \
-  --max-cost-usd 45 \
+  --max-cost-usd 60 \
   --no-publish
 """
 

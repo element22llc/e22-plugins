@@ -48,8 +48,9 @@ took**, and the no-plugin arm has no steer skills to invoke - which is why
 `tool_used: Skill` is auto-demoted to a with-only *indicator* and drops out of the
 score, so the `arm: both` is load-bearing.
 
-Two cases accept their **front door** as well as the specialized skill
-(`steer:(init|setup)`, `steer:(adopt|setup)`), because rule `00-router` makes the
+Four cases accept their **front door** as well as the specialized skill
+(`steer:(init|setup)`, `steer:(adopt|setup)`, `steer:(sync|setup)`,
+`steer:(issues|work)`), because rule `00-router` makes the
 front door the correct route: "front doors detect context and hand off ... so you
 rarely route to a specialized skill directly." Discriminating init from adopt is
 the `answer` grader's job, and its criteria name the wrong workflow explicitly.
@@ -85,6 +86,43 @@ and then done by hand in a read-only session is the routing defect the
 2026-09-04 run surfaced (13 of 24 with-plugin runs, 12 of them naming the right
 skill first), and the fix for it belongs in rule `00-router`, not here.
 
+## Coverage: every public skill, and the asks that own none
+
+Each of the seven public skills has at least one positive case - `setup` has
+three, because the front door has to absorb a greenfield, a brownfield and a
+behind-the-times repo. The four cases still named after an internal skill
+(`init`, `adopt`, `sync`, `issues`) are the front-door cases above: each accepts
+either that skill or the public door it now lives behind.
+
+| Skill | Case |
+|---|---|
+| `setup` | `routes-greenfield-bootstrap-to-init` · `routes-vibe-coded-app-to-adopt` · `routes-openspec-behind-to-sync` |
+| `spec` | `routes-think-feature-through-to-spec` |
+| `work` | `routes-fix-issue-to-work` · `routes-triage-backlog-to-issues` |
+| `audit` | `routes-repo-health-to-audit` |
+| `status` | `routes-client-status-to-status` |
+| `next` | `routes-lost-user-to-next` |
+| `build` | `routes-po-idea-to-build` |
+| (none) | `routes-explain-code-to-none` · `routes-general-knowledge-to-none` |
+
+The last row is the point of the negatives. Rule `00-router` tells the model to
+map a plain-language goal to the owning skill and **invoke it without being
+asked** - the instruction that makes routing feel effortless is also the one
+that overfires, and every positive case rewards entering a skill. A negative
+case asserts the inverse on the same surface: `tool_used` with `min: 0`,
+`max: 0` and `arm: both`, so a run that pulls "what does this function do?" into
+an audit fails. `min` defaults to 1, so both bounds are pinned; `tests/test_eval_suite.py`
+enforces that.
+
+Read a negative's Δ as **bounded above by zero**: the baseline has no steer
+skills to invoke, so it passes `routed` by construction and a healthy negative
+scores level. A *negative* delta there is the plugin claiming an ask it does not
+own.
+
+The asks are in `tests/fixtures/routing/asks.yml` like every other case's, as
+`skill: none` with a `why` and no signals - a lexical gate cannot prove an
+absence, which is exactly why the claim lives here.
+
 ## Ablation is the point
 
 The suite runs `--ablation with-without` by default: each case also runs a **no-plugin
@@ -94,14 +132,15 @@ is Δ.
 
 ## The scaffolds
 
-Each case builds its own repo from its own `scaffold.sh`. There are **three
+Each case builds its own repo from its own `scaffold.sh`. There are **four
 variants**, because one fixture cannot serve every ask:
 
 | Variant | Cases | Repo state | Why |
 |---|---|---|---|
-| `managed` | work, next, audit, spec, issues | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it. |
+| `managed` | work, next, audit, spec, issues, status, both negatives | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it - and a negative case needs that silence most: a bootstrap nudge would hand it a workflow to enter. |
 | `greenfield` | init, build | `git init` + a README, nothing else | Their asks say "brand-new empty repo" / "build an app from my idea". |
 | `legacy` | adopt | a Flask app, no spec, no toolchain, no tests | Its ask says "no spec, no toolchain". Unspecified code volume is what separates adopt from init. |
+| `openspec` | sync | an OpenSpec spine, no `spec/.version` | OpenSpec owns the spine, so a stamped spine would contradict the state under test and an unspecified tree would route to adopt. |
 
 **Silence is the contract for `managed`.** A `foreign` spine (a `spec/` with no
 `spec/.version`) makes `check-unmanaged-repo.sh` inject an adopt offer into every
@@ -191,6 +230,18 @@ mise run evals -- --case 'routes-fix-issue-to-work'      # one case, still 3 run
 mise run evals -- --runs 1 --judge-model haiku           # cheap authoring loop
 ```
 
+Two things that cost real runs while these cases were authored:
+
+- **`--case` takes one glob, not a list.** A second `--case` silently *replaces*
+  the first (the CLI keeps the last occurrence of an option), so three of them
+  ran one case and reported "1 case(s)". Widen the glob -
+  `--case 'routes-*-to-none'` - or run the tool once per case. `--tag` is the
+  repeatable one.
+- **Don't switch branches while a run is in flight.** The scaffold is read from
+  the working tree per arm, so a checkout mid-run fails the second arm with
+  `path "scaffold.sh" does not exist` and scores it 0 - which reads exactly like
+  a baseline that could not answer.
+
 **Run it through `mise`, not bare.** `claude plugin eval` on its own does not
 exercise this suite: the task carries the flags that make a run mean something,
 each commented in `mise.toml`.
@@ -201,7 +252,7 @@ each commented in `mise.toml`.
 | `--ablation with-without` | adds the no-plugin baseline arm - the Δ is the whole point |
 | `--allow-tools` (3 read tools) | the tracker stand-ins above; without the grant every managed run narrates a credential fault instead of routing |
 | `--runs 3` | the per-case default is `runs: 1` so an ad-hoc run stays cheap, and at one run the result is noise: the same case has scored 0.6 / 0 / 0.6 / 0 / 0.6 across five identical runs, and the judge's majority-of-three vote flips on borderline prose |
-| `--judge-model sonnet` | the `answer` grader reads exactly that borderline prose; the default `haiku` judge is too coarse for it |
+| `--judge-model sonnet` | the `answer` grader reads exactly that borderline prose; the default `haiku` judge is too coarse for it - authoring the negatives measured that directly: `routes-explain-code-to-none` scored 0.60 under haiku (`answer`: FAIL FAIL FAIL) and 1.00 under sonnet, on a run whose `routed` grader passed both times |
 | `--threshold 0.6` | gives the exit code meaning: exit 1 if any case scores below it. Default is `1.0`, which fails any imperfect case; `0.6` is exactly the `routed` grader's weight - "entered the right skill even if the prose judge docked it" |
 | `--max-cost-usd 45` | runaway guard, sitting clear of the $25-30 a healthy sweep costs, so it aborts a runaway (exit 2, partial results) rather than a good run |
 | `--no-publish` | keeps the HTML report local instead of publishing it to claude.ai (the CLI default where the account supports it). Forward `-- --publish-report` for the link |
@@ -217,10 +268,34 @@ is the same payload `--json <path>` writes, so there is no need to pass `--json`
 Deliberately **not** in `mise run ci` - the suite spends real tokens, the same
 reason the `e2e` suite sits off the PR path. Budget roughly **$1.00-1.30 per case
 per run** across both arms (measured at `max_turns: 12`; the with-plugin arm costs
-~3× the baseline, which has no rules to read), so ~$8-10 for the suite at
-`runs: 1` and ~$25-30 at the task's `runs: 3`. The task's `--max-cost-usd 45` is
+~3× the baseline, which has no rules to read), so ~$12-15 for the suite at
+`runs: 1` and ~$33-40 at the task's `runs: 3`. The task's `--max-cost-usd 60` is
 sized against that: a ceiling near the expected spend aborts a healthy sweep, so
-re-measure it whenever case count or a `max_turns` changes.
+re-measure it whenever case count or a `max_turns` changes. Those two figures are
+projected from the 9-case run: the three cases added since were piloted at
+`--runs 1` and came in **under** the per-case estimate - `$0.94` for the status
+case across both arms, `$0.37` and `$0.49` for the negatives, which answer in
+1 and 6 turns.
+
+## When it runs
+
+Not on the PR path, so the cadence is declared rather than triggered:
+
+- **Every minor or major release cut** - `/release` Phase A names it, and the
+  release PR records the score. A patch release does not need it: the routing
+  surface it reads (`rules/00-router.md` plus each skill's `description` +
+  `when_to_use`) is what a minor bump moves.
+- **Before merging a PR that edits that surface** - the router rule, a public
+  skill's `description`/`when_to_use`, or a skill's public/internal tier.
+  `check_routing_fixtures.py` runs on every such PR and is the cheap half; this
+  is the half that can tell you the ask no longer lands.
+
+`--case` narrows a run to what a change actually touched, which is the honest
+way to make either of those affordable:
+
+```shell
+mise run evals -- --case 'routes-*-to-none' --runs 1
+```
 
 **`max_turns` is sized from real runs, per case, and the comment says why.** A
 run killed with `Reached maximum number of turns` is scored on a truncated

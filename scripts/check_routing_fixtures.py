@@ -16,13 +16,21 @@ Fixture schema (``asks.yml``)::
       - ask: "set up this new repo on our standards"
         skill: setup
         signals: ["set up", "onboard"]
+      - ask: "what is the difference between git rebase and git merge?"
+        skill: none
+        why: "general knowledge about a tool, tied to no artifact in this repo"
 
 Checks enforced:
 
-- every fixture names an existing skill directory;
+- every fixture names an existing skill directory, or ``none``;
 - every fixture carries at least one signal, and each signal appears
   (case-insensitively) in that fixture's routing surface - the union of
   ``rules/00-router.md`` and the skill's ``description`` + ``when_to_use``;
+- a ``skill: none`` fixture is a **negative**: an ask that must not enter any
+  workflow. It has no owning surface, so it carries a ``why`` instead of
+  signals and this gate only registers the claim. Proving a negative is the
+  model-graded suite's job (``plugins/steer/evals/routes-*-to-none``), which
+  lifts these asks verbatim like every other case;
 - asks are unique, and the fixture count never drops below the floor
   (deleting fixtures to make a trim pass is the failure mode this guards).
 
@@ -126,6 +134,19 @@ def run_checks(root: Path, fixtures_path: Path) -> list[str]:
         seen_asks.add(ask.strip().lower())
         if not (isinstance(skill, str) and skill.strip()):
             errors.append(f"{where}: missing or empty 'skill'")
+            continue
+        if skill.strip() == "none":
+            # A negative fixture: no owning skill, so no routing surface to check
+            # a signal against. It carries the reason instead, and the eval suite
+            # is what actually asserts the ask enters nothing.
+            why = fx.get("why")
+            if not (isinstance(why, str) and why.strip()):
+                errors.append(f"{where}: a 'skill: none' fixture needs a 'why'")
+            if fx.get("signals"):
+                errors.append(
+                    f"{where}: a 'skill: none' fixture must not carry signals - "
+                    f"there is no routing surface for them to appear in"
+                )
             continue
         listing = _skill_listing_text(root, skill)
         if listing is None:

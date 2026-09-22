@@ -113,6 +113,18 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   docs changes deploy only after this PR merges; Phase A proves the docs source
   is current and that *prior* docs changes are live. The post-merge deploy is a
   Phase-B follow-up the user owns (Step B8).
+- **Routing evals, on a minor or major cut.** The model-graded suite
+  (`mise run evals`, ~$33-40) is steer's only check that a plain-language ask
+  still lands on its skill, and a minor bump is what moves the surface it reads:
+  `rules/00-router.md` and every skill's `description` / `when_to_use`. It is not
+  in `mise run ci` because it spends real tokens, so **this is its declared
+  cadence** (`plugins/steer/evals/README.md` -> "When it runs"). Run it here in
+  Phase A, before cutting, report `aggregates.meanDelta` in the release PR (B6),
+  and treat a case scoring
+  below `--threshold` as a Phase-A finding rather than a footnote. A **patch**
+  release skips it - say so rather than leaving the reader guessing. The suite
+  needs `plugin eval` early access; where the machine does not have it, say the
+  cadence could not be honoured instead of recording a pass.
 
 The one-line index, for orientation only:
 
@@ -307,9 +319,10 @@ re-gate result.
   merge (`docs-deploy.yml`) - watch that run go green so the live site at
   `https://ai.element-22.com` actually reflects the release; a red deploy leaves
   the published docs stale (and the next preflight will flag it).
-- The **e2e suite** and the **routing evals** are local-only tiers (`mise run
-  e2e`, `mise run evals`) - run them before a substantive cut if you want the
-  skill-level signal.
+- The **e2e suite** is a local-only tier (`mise run e2e`) - run it before a
+  substantive cut if you want the skill-level signal. The **routing evals** are
+  local-only too, but they are no longer optional on a minor or major cut: they
+  belong to Phase A above, before the PR, not to this list.
 - The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
   `release-publish.yml`, which fires on the merge commit that changed
   `plugin.json` and asserts afterwards that the tag resolves to that commit.

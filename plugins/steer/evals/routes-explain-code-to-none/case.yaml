@@ -1,0 +1,39 @@
+# Routing case - NEGATIVE: this ask belongs to no skill. See ../README.md.
+schema_version: "1.1"
+name: routes-explain-code-to-none
+tags: [routing]
+
+context:
+  # A steer-managed repo, so the ask is answerable. Runs only under --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |
+    what does the total() function in this file do?
+  # Measured, not guessed: the read-heavy negative ("what does total() do?") used
+  # 6 turns in both arms and the general-knowledge one used 1. 10 keeps headroom
+  # over the 6 - a negative that answers from the repo can always read one more
+  # file, and a truncated run scores 0 on the judge exactly like a misroute.
+  max_turns: 10
+  # `Skill` is granted deliberately: a negative case asserts the run did NOT
+  # enter a skill, and withholding the tool would make that assertion vacuous.
+  # The tracker tools are not - nothing in this ask reaches the tracker.
+  allowed_tools: [Read, Glob, Grep, Skill]
+  # Both arms run read-only. Without this the answer is dominated by permission
+  # narration - every run of the v6.1.0 suite opened by explaining what it could
+  # not write - and the judge ends up grading how well a run describes being
+  # blocked. Identical in both arms, so the ablation stays fair. The tracker
+  # tools are carved out by name: "the network is unavailable" alone made the
+  # 2026-09-04 runs treat the granted mcp__github__* tools as dead (0 tracker
+  # calls in 9 of 12 managed with-plugin runs; /steer:next reported the tracker
+  # "unreadable here (no network)").
+  append_system_prompt: |
+    This session is a sandboxed evaluation and is granted read-only tools by
+    design: Write, Edit, Bash and general network access are unavailable and
+    will remain so. Any mcp__github__* tool this session lists is live - the
+    tracker is reachable through it. Treat the rest as the shape of this
+    environment, not as a fault to diagnose or a permission to argue for. Note
+    in a single line what you cannot carry out here, then answer the ask with
+    what reading the repo (and the tracker, where listed) supports.
+
+runs: 1
