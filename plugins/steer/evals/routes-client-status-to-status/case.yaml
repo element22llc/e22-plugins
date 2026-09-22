@@ -10,12 +10,11 @@ context:
 execution:
   prompt: |
     what did we ship this week? I need a client status update
-  # Higher than the 12 the other managed cases carry, and not yet measured
-  # against a real run: this ask reads the whole /spec spine AND the closed
-  # issues behind it, which is the shape that pushed the triage case to 16. A
-  # run killed with "Reached maximum number of turns" is scored on a truncated
-  # message, which says nothing about routing - so start generous and cut it
-  # once runs are on the board.
+  # Higher than the 12 the other managed cases carry, and the BASELINE arm is
+  # what needs it: measured at 2 turns with the plugin (announce, enter the
+  # skill, report) against 14 without it, which is the arm that reconstructs a
+  # status report by hand from the spine and the tracker. Cutting this to 12
+  # would truncate the baseline and flatter the delta.
   max_turns: 16
   # The tracker is GitHub (spec/tracker.md), so the read path to it belongs in the
   # case: without it the run spends its turns narrating an unreachable tracker

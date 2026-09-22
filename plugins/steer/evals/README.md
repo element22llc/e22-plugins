@@ -260,7 +260,10 @@ per run** across both arms (measured at `max_turns: 12`; the with-plugin arm cos
 `runs: 1` and ~$33-40 at the task's `runs: 3`. The task's `--max-cost-usd 60` is
 sized against that: a ceiling near the expected spend aborts a healthy sweep, so
 re-measure it whenever case count or a `max_turns` changes. Those two figures are
-projected from the 9-case run, not measured at 12.
+projected from the 9-case run: the three cases added since were piloted at
+`--runs 1` and came in **under** the per-case estimate - `$0.94` for the status
+case across both arms, `$0.37` and `$0.49` for the negatives, which answer in
+1 and 6 turns.
 
 ## When it runs
 

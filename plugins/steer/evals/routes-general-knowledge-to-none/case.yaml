@@ -10,10 +10,11 @@ context:
 execution:
   prompt: |
     what is the difference between git rebase and git merge?
-  # A negative case answers from the repo and stops, so it needs far fewer turns
-  # than a case that enters a skill - but a truncated run scores 0 on the judge
-  # the same way, so this is not trimmed to the bone.
-  max_turns: 8
+  # Measured, not guessed: the read-heavy negative ("what does total() do?") used
+  # 6 turns in both arms and the general-knowledge one used 1. 10 keeps headroom
+  # over the 6 - a negative that answers from the repo can always read one more
+  # file, and a truncated run scores 0 on the judge exactly like a misroute.
+  max_turns: 10
   # `Skill` is granted deliberately: a negative case asserts the run did NOT
   # enter a skill, and withholding the tool would make that assertion vacuous.
   # The tracker tools are not - nothing in this ask reaches the tracker.
