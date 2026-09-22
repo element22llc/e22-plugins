@@ -121,7 +121,7 @@ SCOPE_PRECONDITIONS: dict[str, str] = {
 # installed file, so the header must name a path that works from a managed repo.
 HEADER = (
     "<!-- Engineering standards (steer plugin). Generated from the plugin's "
-    "rules/ - do not edit by hand. Refresh after a plugin update with /steer:sync "
+    "rules/ - do not edit by hand. Refresh after a plugin update with /steer:setup sync "
     "from Claude Code in a managed repo, or mise run gen:copilot in the plugin "
     "repo. -->"
 )
@@ -230,7 +230,7 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
             # the colon form unambiguous without this file needing the flat
             # instructions file's `/steer:` -> `/steer-` mapping preamble.
             f"<!-- Generated from the steer plugin's rules/{rule_name} - do not edit "
-            f"by hand. Refresh with /steer:sync from Claude Code in a managed repo, "
+            f"by hand. Refresh with /steer:setup sync from Claude Code in a managed repo, "
             f"or mise run gen:copilot in the plugin repo. -->"
         )
         out[f"{spec['name']}.instructions.md"] = f"{header}\n---\n{front}\n---\n\n{body}\n"

@@ -6,7 +6,7 @@ user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/report/SKILL.md - do not edit by hand.
-     Refresh with /steer:sync from Claude Code in a managed repo, or
+     Refresh with /steer:setup sync from Claude Code in a managed repo, or
      `mise run gen:copilot` in the plugin repo. Authored for Claude Code and
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->

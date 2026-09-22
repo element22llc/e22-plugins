@@ -229,7 +229,8 @@ is visible rather than silent.
 
    - **`legacy-e22`**, **`reference-mode`** and **`absorbed-mode`** -> **deterministic**:
      apply the exact `suggested-fix` token rewrite (a bare `reference`-mode invocation
-     becomes `/steer-reference <mode>`; an absorbed skill becomes `/steer:<door> <mode>`,
+     becomes `/steer-reference <mode>`; an absorbed skill becomes its front door's
+     mode, `/steer-init` -> `/steer-setup init`,
      trailing arguments untouched), showing the diff. Replace only the flagged tokens -
      never a broader match, never the marketplace id.
    - **`noncallable-gateway`** -> the fix is a **front-door swap that changes meaning**
