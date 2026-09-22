@@ -110,7 +110,10 @@ Name the file and say what to carry forward.
   migration may do. This is the one-shot, version-keyed carry-forward;
   `/steer:setup sync`'s invocation-hygiene step (`scripts/scan-invocations.sh`, the
   `absorbed-mode` class) is the standing backstop that derives the same front door
-  from the same mode markers and catches later drift. `reference`, `report` and `loop`
+  from the same mode markers and catches later drift - but only across the three live
+  instruction surfaces it scans (`CLAUDE.md`, `README.md`, the PR template). This
+  entry is the **only** pass that reaches the rest: feature `intent.md` files,
+  `mise.toml`, `policy/`, `spec/tracker.md`. `reference`, `report` and `loop`
   also went internal in 7.0 and are **deliberately absent** below: no door absorbed
   them, so no invocation string changed - the model still reaches them at the spelling
   already in the file. (The pre-rebrand `/e22-*` tokens are covered by the v2.0.0
