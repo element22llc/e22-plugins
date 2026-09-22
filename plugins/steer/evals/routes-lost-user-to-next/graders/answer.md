@@ -23,6 +23,13 @@ command: /steer:...` line or a "first move when writable: ..." note says what
 comes next. Do not fail the response for carrying one, and do not read one as
 evidence that the response did nothing - judge the body above it.
 
+**This skill's deliverable *is* the name of another skill.** `/steer:next`
+arbitrates: it reconstructs workspace state and ends on the one action worth
+taking, which is always some other workflow - most often `/steer:work
+<number>`. A response closing on `Current recommended action: /steer:work 123`
+has therefore produced this skill's output, not work's. Do not fail it for
+naming `/steer:work`, and do not require it to implement anything.
+
 Fail the response if it:
 
 - names no `/steer:*` skill at all - a competent plan, readout, interview or

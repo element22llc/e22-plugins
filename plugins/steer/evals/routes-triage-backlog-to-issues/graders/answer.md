@@ -28,6 +28,10 @@ Fail the response if it:
 - names no `/steer:*` skill at all - a competent plan, readout, interview or
   scaffold that never names one fails, however good it reads. That is the
   no-plugin answer this case exists to tell apart;
-- does the **wrong** workflow's work instead - in particular `work`, which
-  delivers one issue rather than grooming the backlog;
+- does the **wrong** workflow's work instead - delivering one issue, which is
+  `/steer:work <number>`: claiming it, branching, writing the fix. The
+  front-door form `/steer:work issues` **is** this skill, so the string
+  `/steer:work` is not by itself evidence of the wrong workflow, and naming
+  `/steer:work <number>` as the next action once the grooming is done is a
+  handoff, not a substitute for it;
 - restates the ask back without identifying an owner or a next step.

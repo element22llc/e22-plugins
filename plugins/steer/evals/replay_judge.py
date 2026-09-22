@@ -52,6 +52,11 @@ EVALS = Path(__file__).resolve().parent
 RESULTS = EVALS / "results"
 
 JUDGE_SYSTEM = "You are a strict, terse evaluation judge for coding-agent traces."
+# Last measured agreement between this replay and the harness's own verdicts, and
+# the run it was measured against. It is not 36/36 and may never be: the harness
+# judges through a direct API call, this replays through `claude -p`. Re-measure
+# with `--mode votes` after any change here, and move these two lines.
+FIDELITY = "28/36 on the with arm, 2026-09-22T13-34-28-092Z"
 ONE_WORD = "Respond with exactly one word: PASS or FAIL."
 WITH_REASON = (
     "Respond with PASS or FAIL on the first line. On the second line, in one "
@@ -116,6 +121,13 @@ def judge(prompt: str, model: str, cwd: str) -> str:
             "",
             "--strict-mcp-config",
             "--disable-slash-commands",
+            # The harness judges through a plain API call with no tools. A `claude
+            # -p` session attaches the whole tool surface, and that conditioning is
+            # the likeliest cause of the one-directional leniency measured on
+            # 2026-09-22: all nine with-arm disagreements flipped toward PASS,
+            # which sampling noise does not do.
+            "--tools",
+            "",
             "--max-turns",
             "1",
             prompt,
@@ -137,9 +149,12 @@ def verdict(reply: str) -> bool:
 
 def grade(item: Item, mode: str, votes: int, model: str, cwd: str) -> dict:
     tail = ONE_WORD if mode == "votes" else WITH_REASON
+    # Byte-identical to the template the CLI builds for a text focus (read out of
+    # the 2.1.278 binary). It carries no `Criterion:` label - an earlier replay
+    # added one, and a judge prompt that differs at all is judging something else.
     prompt = (
         "You are grading the output of a coding agent against a criterion.\n"
-        f"Criterion:\n{item.criteria}\n"
+        f"{item.criteria}\n"
         f"Agent output (last_message):\n{item.evidence}\n"
         f"{tail}"
     )
@@ -192,7 +207,13 @@ def main(argv: list[str] | None = None) -> int:
             for reply in r["replies"]:
                 print("  " + reply.replace("\n", "\n  "))
 
-    if not args.live:
+    if args.live:
+        # `--live` grades stored evidence against criteria the run never saw, so
+        # there is nothing to agree with. Say what the instrument is worth: at the
+        # fidelity below it can show a criteria change flipping a verdict, and it
+        # cannot show a routing change at all.
+        print(f"\nadvisory - last measured fidelity {FIDELITY}; a live run is the proof")
+    else:
         print(f"\nagreement with the recorded verdicts: {agreed}/{len(results)}")
     passed = sum(r["passed"] for r in results)
     print(f"replayed verdicts: {passed}/{len(results)} PASS")
