@@ -127,15 +127,12 @@ def judge_env() -> dict[str, str]:
 
     A replay launched from inside a Claude Code session inherits that session's
     `CLAUDE_*` - `CLAUDE_EFFORT` among them - so the same command graded
-    differently depending on where it was run. `CLAUDE_CONFIG_DIR` stays: it is
-    where the credential lives. `MAX_THINKING_TOKENS=0` is what makes the child
-    send `thinking: disabled`, which is how the harness calls the judge.
+    differently depending on where it was run. The two kept are where the
+    credential lives. `MAX_THINKING_TOKENS=0` is what makes the child send
+    `thinking: disabled`, which is how the harness calls the judge.
     """
-    env = {
-        k: v
-        for k, v in os.environ.items()
-        if not k.startswith("CLAUDE_") or k == "CLAUDE_CONFIG_DIR"
-    }
+    keep = {"CLAUDE_CONFIG_DIR", "CLAUDE_CODE_OAUTH_TOKEN"}
+    env = {k: v for k, v in os.environ.items() if not k.startswith("CLAUDE_") or k in keep}
     env.pop("CLAUDECODE", None)
     env.pop("AI_AGENT", None)
     env["MAX_THINKING_TOKENS"] = "0"

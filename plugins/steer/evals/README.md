@@ -112,30 +112,30 @@ case carries a paragraph saying so, and went 0.60 -> 0.87.
 that.** Both cases above still failed runs after their fix - two of three on
 triage, one of three on `next` - on responses that read like the ones that
 passed. Replayed at 9 votes against a judge call that now matches the harness
-byte for byte (below), those failures split three ways:
+byte for byte (below), those failures split four ways:
 
-| Failure | Replay | Reading |
-|---|---|---|
-| `spec` run 0, 15-49 | 1/9 PASS | correct: it never names `/steer:spec`. Not variance. |
-| `triage` run 1, 15-26 | 2/9 PASS | reproducible, and `--mode rationale` names the clause: its closing `Current recommended action: /steer:work start #123` reads as *starting* delivery. That is a criteria collision, tracked as its own change. |
-| `triage` run 2, 15-26 · `next` run 1, 15-40 · `client-status` runs 0-1, 13-34 | 7/9, 9/9, 9/9, 8/9 PASS | not reproducible. Each names its owning skill and spends its body on that skill's work; the rationales for the failed ones read like the rationales for the passed ones. |
+| Failure | Recorded | Replay | Reading |
+|---|---|---|---|
+| `spec` run 0, 15-49 | 3-0 FAIL | 1/9 PASS | correct, and reproducible: it never names `/steer:spec`. Not variance. |
+| `triage` run 1, 15-26 | 3-0 FAIL | 2/9 PASS | reproducible. `--mode rationale` blames its closing `Current recommended action: /steer:work start #123`, read as *starting* delivery. Looked like a criteria collision; two rewrites say otherwise, below. |
+| `triage` run 2, 15-26 · `client-status` run 0, 13-34 | 3-0, 2-1 FAIL | 7/9, 9/9 PASS | the boundary itself: conformant text the judge splits on. |
+| `client-status` run 1, 13-34 · `next` run 1, 15-40 | 3-0 FAIL each | 8/9, 9/9 PASS | **not variance, and still open.** A 3-0 FAIL on a text this replay passes 8 or 9 times of 9 is not a draw from the same distribution, twice over. Something still differs, and the one known difference is the environment `system-reminder` `claude -p` appends as a second message - a candidate, not a finding. Settling it needs the judge called without that message. |
 
-The last row is the coin flip, and 2/9, 5/9, 6/9 and 7/9 over texts that read
-alike is what a fuzzy boundary looks like. `--threshold 0.6` is exactly the
-`routed` weight for this reason, and a case at 0.73 or 0.87 with `routed` 3/3
-has routed correctly.
+`--threshold 0.6` is exactly the `routed` weight for the third row: a case at
+0.73 or 0.87 with `routed` 3/3 has routed correctly.
 
 **The triage row looked actionable and was not - two rewrites were tried and
 measured** (`--live --arm both --votes 9`, the three stored with-arm texts and
 the three baselines, 27 votes each way). Writing the collision out as its own
 paragraph - "delivery is claiming, branching, writing the fix; naming the issue
-is not" - took the with arm from 14 PASS votes of 27 to **3**: it names the
-delivery vocabulary the *correct* answers use to say what they could not do
-here, which is the trap two paragraphs up, in a new place. Folding it into the
-handoff paragraph as a sentence about placement scored **14 of 27** - the same
-total, redistributed. The baselines stayed 0/27 throughout, so neither rewrite
-opened a hole; neither moved the case either. A third clause is not what these
-texts need, and that is now measured rather than assumed.
+is not" - took the with arm from 14 PASS votes of 27 to **5**. Folding the same
+point into the handoff paragraph as a sentence about placement scored **14 of
+27**: the same total, redistributed across the three texts. The baselines stayed
+0/27 throughout, so neither rewrite opened a hole; neither moved the case
+either, and under the first one `--mode rationale` still blamed the response's
+own "Current recommended action" line rather than anything the rewrite added. A
+third clause is not what these texts need, and that is now measured rather than
+assumed.
 
 **Diagnosing a judge failure: `replay_judge.py`.** Neither the JSON nor
 `report.html` carries the judge's rationale, only its votes, and the per-run
