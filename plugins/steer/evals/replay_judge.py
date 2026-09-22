@@ -7,23 +7,34 @@ blocked issue #630. Everything the judge saw is in `aggregate-result.json`
 (`config.criteria` plus each run's `graders[].evidence`), so the verdict can be
 reproduced offline for cents instead of re-running a $12 sweep.
 
-Two modes, and the first is the one that makes the second trustworthy:
+**Know what this is worth before you read a verdict from it.** The prompt is
+byte-identical to the one the CLI builds, but the harness sends it as a plain
+API call and this sends it through ``claude -p`` - an agent session whose
+conditioning cannot be stripped from outside the binary. Measured agreement is
+``FIDELITY`` below, and every disagreement so far has leaned the same way,
+toward PASS. So: a baseline that still fails under rewritten criteria is a
+result you can act on, a with-arm pass is not, and only a live run proves a
+criteria fix worked.
+
+Two modes:
 
 ``--mode votes`` (default)
-    Replays the CLI's judge prompt byte for byte - same system prompt, same
-    ``Respond with exactly one word`` instruction, same 3-vote majority - and
-    diffs the replayed verdict against the recorded one. Agreement is the
-    fidelity check: a replay that disagrees is judging something else, and its
-    rationales explain nothing.
+    Replays the judge prompt - same system prompt, same ``Respond with exactly
+    one word`` instruction, same 3-vote majority - and diffs the replayed
+    verdict against the recorded one. That diff is the fidelity measure itself;
+    re-measure it after any change to the prompt or the invocation here.
 
 ``--mode rationale``
     Same prompt with the one-word instruction replaced by "verdict first, then
     the clause that decided it". Verdict-first keeps the distribution close to
-    the one-word judge; the sentence after it is the diagnosis.
+    the one-word judge; the sentence after it is the diagnosis. It commits the
+    verdict before the reasoning, so a reply can open ``PASS`` and then argue
+    the opposite - read the sentence, not the first word.
 
 ``--live`` re-grades the *stored* evidence against the criteria currently on
-disk, which is how a criteria rewrite is validated without spending a run: the
-with-plugin arm must pass, and the no-plugin arm must still fail.
+disk. Use it for the discriminant: the no-plugin arm must still fail. It cannot
+see a routing change, and at the fidelity above it cannot vouch for the with
+arm either.
 
 Run from the repo root::
 
@@ -52,6 +63,11 @@ EVALS = Path(__file__).resolve().parent
 RESULTS = EVALS / "results"
 
 JUDGE_SYSTEM = "You are a strict, terse evaluation judge for coding-agent traces."
+# Last measured agreement between this replay and the harness's own verdicts, and
+# the run it was measured against. It is not 36/36 and may never be: the harness
+# judges through a direct API call, this replays through `claude -p`. Re-measure
+# with `--mode votes` after any change here, and move these two lines.
+FIDELITY = "28/36 on the with arm, 2026-09-22T13-34-28-092Z"
 ONE_WORD = "Respond with exactly one word: PASS or FAIL."
 WITH_REASON = (
     "Respond with PASS or FAIL on the first line. On the second line, in one "
@@ -116,6 +132,13 @@ def judge(prompt: str, model: str, cwd: str) -> str:
             "",
             "--strict-mcp-config",
             "--disable-slash-commands",
+            # The harness judges through a plain API call with no tools. A `claude
+            # -p` session attaches the whole tool surface, and that conditioning is
+            # the likeliest cause of the one-directional leniency measured on
+            # 2026-09-22: all nine with-arm disagreements flipped toward PASS,
+            # which sampling noise does not do.
+            "--tools",
+            "",
             "--max-turns",
             "1",
             prompt,
@@ -137,9 +160,12 @@ def verdict(reply: str) -> bool:
 
 def grade(item: Item, mode: str, votes: int, model: str, cwd: str) -> dict:
     tail = ONE_WORD if mode == "votes" else WITH_REASON
+    # Byte-identical to the template the CLI builds for a text focus (read out of
+    # the 2.1.278 binary). It carries no `Criterion:` label - an earlier replay
+    # added one, and a judge prompt that differs at all is judging something else.
     prompt = (
         "You are grading the output of a coding agent against a criterion.\n"
-        f"Criterion:\n{item.criteria}\n"
+        f"{item.criteria}\n"
         f"Agent output (last_message):\n{item.evidence}\n"
         f"{tail}"
     )
@@ -192,7 +218,13 @@ def main(argv: list[str] | None = None) -> int:
             for reply in r["replies"]:
                 print("  " + reply.replace("\n", "\n  "))
 
-    if not args.live:
+    if args.live:
+        # `--live` grades stored evidence against criteria the run never saw, so
+        # there is nothing to agree with. Say what the instrument is worth: at the
+        # fidelity below it can show a criteria change flipping a verdict, and it
+        # cannot show a routing change at all.
+        print(f"\nadvisory - last measured fidelity {FIDELITY}; a live run is the proof")
+    else:
         print(f"\nagreement with the recorded verdicts: {agreed}/{len(results)}")
     passed = sum(r["passed"] for r in results)
     print(f"replayed verdicts: {passed}/{len(results)} PASS")

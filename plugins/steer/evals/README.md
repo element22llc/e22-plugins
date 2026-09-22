@@ -82,6 +82,31 @@ the build flow's two gates instead: the owner approves a written plan before any
 code, and a developer reviews before real use. A competent baseline interview
 has neither.
 
+**A fail clause must not name a string the right answer also carries.** 7.0
+folded `issues` behind `/steer:work`, and `routes-triage-backlog-to-issues`
+failed every run of two consecutive sweeps while its criteria accepted
+`/steer:work issues` in clause 1 and named "`work`" as the wrong workflow three
+paragraphs later. The responses were exemplary grooming. The bullet now names
+what delivery actually looks like - `/steer:work <number>`, claiming, branching,
+writing the fix - and says outright that `/steer:work` alone is not evidence of
+the wrong workflow. The case went 0.60 -> 0.73 on the fix.
+
+**Where a skill's own deliverable is another skill's name, say so.**
+`/steer:next` arbitrates: its output *ends* on the one action worth taking,
+which is always some other workflow. Criteria that only exempt a closing handoff
+do not cover that - the handoff is not decoration there, it is the product. The
+case carries a paragraph saying so, and went 0.60 -> 0.87.
+
+**Conformant prose is still a coin flip on this judge, and the suite prices
+that.** Both cases above left one run failing 3-0 out of three, and those
+responses are not distinguishable from the ones that passed 3-0 in the same
+sweep: same headings, same grooming or arbitration, same skill named in the
+handoff, no code and no diff in any of them. `replay_judge.py` returns a
+unanimous PASS on all of them and cannot reproduce a single harness FAIL. Do not
+write a third clause against a failure nobody can observe - `--threshold 0.6` is
+exactly the `routed` weight for this reason, and a case at 0.73 or 0.87 with
+`routed` 3/3 has routed correctly.
+
 **Diagnosing a judge failure: `replay_judge.py`.** Neither the JSON nor
 `report.html` carries the judge's rationale, only its votes, and the per-run
 `tracePath` points into a sandbox temp dir that is gone by the end of the run.
@@ -94,14 +119,37 @@ uv run python plugins/steer/evals/replay_judge.py --mode rationale      # why
 uv run python plugins/steer/evals/replay_judge.py --live --arm both     # validate a rewrite
 ```
 
-It rebuilds the CLI's judge prompt byte for byte (same system prompt, same
-"respond with exactly one word", same 3-vote majority), so the default mode's
-agreement with the recorded verdicts is the fidelity check that makes
-`--mode rationale` worth reading. `--live` grades the **stored** evidence
-against the criteria on disk, which is how a criteria change is validated
-without spending a sweep: the with-plugin arm must pass, the no-plugin arm must
-still fail. It is an authoring aid, not a gate - it cannot see a routing change,
-only a grading one.
+It rebuilds the CLI's judge prompt byte for byte - the template was read out of
+the 2.1.278 binary - with the same system prompt, the same "respond with exactly
+one word" and the same 3-vote majority. **It still does not reproduce the
+harness.** Measured against the 2026-09-22T13-34 sweep it agreed on **28 of 36**
+with-arm items, and every disagreement leaned the same way, toward PASS: it
+returned a unanimous PASS on all nine recorded failures, and 45 further votes
+across those items produced no FAIL at all. Sampling noise does not do that.
+
+Two causes were removed and the number barely moved (27 -> 28): the replay was
+adding a `Criterion:` label the CLI does not build, and it ran the judge as a
+tool-bearing agent session (now `--tools ""`). The one hypothesis left standing
+is structural - the harness judges through a direct API call, this replays
+through `claude -p`, and that conditioning cannot be stripped from outside the
+binary.
+
+So read it for what it can carry:
+
+- **A discriminant check is worth acting on.** Rewrite a case's criteria, run
+  `--live --arm without`, and a baseline that still fails 0/3 is evidence the
+  rewrite did not open a hole. That is the one claim the leniency bias cannot
+  manufacture.
+- **A with-arm pass is not.** The replay passes nearly everything, including
+  responses that violate the naming clause - it passed a `spec` baseline whose
+  own rationale says it fails clause 1. **A live `--case` run at `--runs 3` is
+  the only proof a criteria fix worked.**
+- **`--mode rationale` is a lead, not a verdict.** Verdict-first keeps the
+  distribution near the one-word judge, but it also lets a reply open `PASS` and
+  then argue the opposite. Read the sentence.
+
+`--live` prints the last measured fidelity for exactly this reason. It is an
+authoring aid, not a gate - it cannot see a routing change, only a grading one.
 
 **Every run is read-only, and each case says so** via an identical
 `append_system_prompt`. Without it the answer is dominated by permission
