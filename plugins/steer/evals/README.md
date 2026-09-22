@@ -230,6 +230,18 @@ mise run evals -- --case 'routes-fix-issue-to-work'      # one case, still 3 run
 mise run evals -- --runs 1 --judge-model haiku           # cheap authoring loop
 ```
 
+Two things that cost real runs while these cases were authored:
+
+- **`--case` takes one glob, not a list.** A second `--case` silently *replaces*
+  the first (the CLI keeps the last occurrence of an option), so three of them
+  ran one case and reported "1 case(s)". Widen the glob -
+  `--case 'routes-*-to-none'` - or run the tool once per case. `--tag` is the
+  repeatable one.
+- **Don't switch branches while a run is in flight.** The scaffold is read from
+  the working tree per arm, so a checkout mid-run fails the second arm with
+  `path "scaffold.sh" does not exist` and scores it 0 - which reads exactly like
+  a baseline that could not answer.
+
 **Run it through `mise`, not bare.** `claude plugin eval` on its own does not
 exercise this suite: the task carries the flags that make a run mean something,
 each commented in `mise.toml`.
