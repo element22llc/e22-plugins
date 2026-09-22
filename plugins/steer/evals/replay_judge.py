@@ -7,23 +7,34 @@ blocked issue #630. Everything the judge saw is in `aggregate-result.json`
 (`config.criteria` plus each run's `graders[].evidence`), so the verdict can be
 reproduced offline for cents instead of re-running a $12 sweep.
 
-Two modes, and the first is the one that makes the second trustworthy:
+**Know what this is worth before you read a verdict from it.** The prompt is
+byte-identical to the one the CLI builds, but the harness sends it as a plain
+API call and this sends it through ``claude -p`` - an agent session whose
+conditioning cannot be stripped from outside the binary. Measured agreement is
+``FIDELITY`` below, and every disagreement so far has leaned the same way,
+toward PASS. So: a baseline that still fails under rewritten criteria is a
+result you can act on, a with-arm pass is not, and only a live run proves a
+criteria fix worked.
+
+Two modes:
 
 ``--mode votes`` (default)
-    Replays the CLI's judge prompt byte for byte - same system prompt, same
-    ``Respond with exactly one word`` instruction, same 3-vote majority - and
-    diffs the replayed verdict against the recorded one. Agreement is the
-    fidelity check: a replay that disagrees is judging something else, and its
-    rationales explain nothing.
+    Replays the judge prompt - same system prompt, same ``Respond with exactly
+    one word`` instruction, same 3-vote majority - and diffs the replayed
+    verdict against the recorded one. That diff is the fidelity measure itself;
+    re-measure it after any change to the prompt or the invocation here.
 
 ``--mode rationale``
     Same prompt with the one-word instruction replaced by "verdict first, then
     the clause that decided it". Verdict-first keeps the distribution close to
-    the one-word judge; the sentence after it is the diagnosis.
+    the one-word judge; the sentence after it is the diagnosis. It commits the
+    verdict before the reasoning, so a reply can open ``PASS`` and then argue
+    the opposite - read the sentence, not the first word.
 
 ``--live`` re-grades the *stored* evidence against the criteria currently on
-disk, which is how a criteria rewrite is validated without spending a run: the
-with-plugin arm must pass, and the no-plugin arm must still fail.
+disk. Use it for the discriminant: the no-plugin arm must still fail. It cannot
+see a routing change, and at the fidelity above it cannot vouch for the with
+arm either.
 
 Run from the repo root::
 
