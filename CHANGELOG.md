@@ -3,6 +3,346 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.0.0
+
+- **`/steer:issues` is now `/steer:work issues`,** folding the backlog layer
+  into the delivery door. `issues` becomes `user-invocable: false`; all
+  fourteen modes - `capture`, `triage`, `brainstorm`, `materialize`,
+  `decompose`, `epic`, `status`, `board`, `reconcile`, the `publish-*` family
+  and `bootstrap-labels` - keep their procedures byte-for-byte and are reached
+  as `/steer:work issues <mode>`. The two were always one thing seen at two
+  moments: the issue captured today is the one `start` claims tomorrow, and
+  splitting them across two public doors made the user pick a door before
+  knowing which moment they were in. Nothing waits for the tracker-core split:
+  the fold changes the door, the core-ops rewrite changes the I/O layer behind
+  it.
+  One name collides under the new door, and `work`'s mode table says which is
+  which: `status #N` is the execution view of one claimed issue - claimant,
+  branch, PR, CI, outstanding validation - while `issues status
+  [#N | <feature-id>]` joins the issue to the spine (intent status, contract
+  readiness, sub-issue progress, or an epic's child rollup). The backlog modes
+  are also exempt from the find-or-create precondition: a capture or triage
+  ask must never open an issue for itself.
+  Rules `00-router`, `30-spec` and `35-tracker` name the new invocation, paid
+  for by trims that leave all four scope targets at or under the 6.6 payload.
+  Fifth step of the 7.0 public-surface flip (#584).
+
+- **`/steer:reference` and `/steer:report` are model-only,** both now
+  `user-invocable: false`. Neither was ever a door a user should have to find:
+  the reference prose is loaded because a rule or a skill names the topic it
+  needs (`/steer:reference gates`), and a plugin defect is filed because Claude
+  hit one, not because the user knew the channel's name. Every invocation
+  string is unchanged and still resolves when Claude runs it, so no managed
+  repo's frozen prose breaks; what changes is who may type it.
+  The installed docs that told a human to type them now attribute the action to
+  Claude - the scaffold `README.md` and `CLAUDE.md`, the PR template,
+  `spec/tracker.md`, and the self-fault and incomplete-ruleset hook notices.
+  `scan-invocations.sh` exempts the two by name with its reason recorded: live
+  prose names them as a delegation, and unlike an absorbed mode neither has a
+  front door to be rewritten to, so a `noncallable-gateway` finding would be
+  unfixable by construction; the pre-rebrand spelling still gets its
+  deterministic rewrite.
+  Rule `00-router` completes the front-door map the last three folds left
+  stale (`setup` -> `doctor` / `protect`, `spec` -> `adr` / `intake` /
+  `roadmap`, `work` -> `tidy`) and pays for it in the same passage: all four
+  always-on scope targets come out smaller than before the change. The skill
+  listing drops 385 characters to 11,894 of its 12,400 ceiling.
+  Sixth step of the 7.0 public-surface flip (#584).
+
+- **`/steer:explain` is now `/steer:status feature <id>`.** One front door
+  answers "where are we?" at either scope: the window modes report the whole
+  spine over a period, `feature <id>` reports one feature in depth. The page
+  is unchanged - `explain` survives as the internal renderer
+  (`user-invocable: false`) that the mode invokes with the resolved id, so
+  the status pipeline, acceptance meter, user journey and open-question
+  boards are the same artifact, reached by a name a PO can guess. Asking a
+  non-technical reader to pick between two skills for one question was the
+  split this closes. Typing `/steer:explain` no longer resolves; a frozen
+  mention in a managed repo's prose is surfaced by `/steer:sync`'s invocation
+  scan as an `absorbed-mode` finding to reroute. Second step of the 7.0
+  public-surface flip (#584).
+
+- **`/steer:tidy` is now `/steer:work tidy`.** Changing the repo is one front
+  door, whether the change is code or where a file lives: `work` gains a
+  `tidy` subcommand alongside `promote`, exempt from the tracker read and the
+  issue find-or-create for the same reason (a sweep moves files, it does not
+  change behavior, so there is nothing to claim). The sweep itself is
+  unchanged - `tidy` survives as the internal skill
+  (`user-invocable: false`) the mode invokes, still loading `HOUSEKEEPING.md`
+  as its authoritative procedure, still moving only the confidently-classified
+  strays and waiting for a yes on every rename and delete. `/steer:audit` still
+  reports a cluttered root rather than sorting it, and now hands off to
+  `/steer:work tidy`; its read-only contract stays intact, which a mutating
+  mode inside it would have broken. Typing `/steer:tidy` no longer resolves; a
+  frozen mention in a managed repo's prose is surfaced by `/steer:sync`'s
+  invocation scan as an `absorbed-mode` finding to reroute. Third step of the
+  7.0 public-surface flip (#584).
+
+- **`/steer:init`, `/steer:adopt` and `/steer:sync` are now `/steer:setup
+  init`, `/steer:setup adopt` and `/steer:setup sync`.** Getting a repo onto
+  the standards was already one door - `/steer:setup` detected the spine state
+  and routed - but the three it routes to were still typeable, so a user could
+  still pick the wrong one, and picking wrong is expensive: `init` on a repo
+  with code lays a spine over work it never read, and `adopt` on an empty repo
+  has nothing to reverse-engineer. The state that decides it is detectable, so
+  the three are now internal (`user-invocable: false`) and `setup` carries the
+  mode table, the routing vocabulary and the `--check` flag
+  (`/steer:setup sync --check` is still the read-only drift report). Each mode
+  **delegates** to the owning skill on entry; no procedure moved, so init's
+  interview, adopt's productionization triage and sync's migration ledger are
+  byte-for-byte what they were. Hook notices, the bundled scaffold prose and
+  the README now name the front door, and `scan-invocations.sh` reports a
+  frozen `/steer:init` / `/steer:adopt` / `/steer:sync` in a managed repo's
+  live prose as an `absorbed-mode` finding for the dev to reroute. Third step of
+  the 7.0 public-surface flip (#584).
+
+- **`/steer:doctor` and `/steer:protect` are now `/steer:setup doctor` and
+  `/steer:setup protect`.** The bootstrap trio moved behind `/steer:setup`
+  earlier in this release because picking among them is a detection, not a
+  user choice.
+  These two are behind it for a different reason: they are the same job's
+  edges. Prerequisites have to hold before `init`, `adopt` or `sync` can run
+  at all, and raising the branch-protection wall is the step each of them ends
+  on - so a user getting a repo onto the standards now learns **one** name,
+  and every recommendation steer hands back names that one. Both flip to
+  `user-invocable: false` and `setup` grows the mode table, the routing
+  vocabulary its fixtures assert on, and the `verify` / `apply [--solo]` /
+  `waive` and shadowed-runtime surface; neither procedure moved, so doctor's
+  §0 integrity check, its install handover and protect's policy diff, solo
+  profile and waiver are byte-for-byte what they were. Both also stay
+  reachable **without** spine detection - a broken toolchain and a merge-rules
+  question arrive with no bootstrap in sight, so naming the mode routes
+  straight there. The graduation nudge, the trunk-push gate, rules 15/45/50/53
+  and the bundled scaffold prose name the front door, and a frozen
+  `/steer:doctor` or `/steer:protect` in a managed repo's live prose now
+  reports as an `absorbed-mode` finding for the dev to reroute. Rule 45's and
+  50's wording was tightened to pay for the longer invocation, keeping the
+  always-on payload at or under its previous size on every scope target.
+  Completes the third step of the 7.0 public-surface flip (#584).
+
+- **`/steer:questions` and `/steer:adr` are now `/steer:spec questions` and
+  `/steer:spec adr`.** Both were already spec-authoring companions a front
+  door routed to, and both answer a question `spec` is the natural door for:
+  the open questions a spec accumulates, and the decision a spec surfaces that
+  is too costly to reverse. They become `user-invocable: false` and `spec`
+  grows a mode table carrying them, plus the routing vocabulary its fixtures
+  assert on. No procedure moved - the question sweep's tier gate, the
+  questionnaire bundle, the ADR template and its ratification prompt are
+  byte-for-byte what they were, and `questions bundle [<id>]` and
+  `adr accept <n>` still take their own arguments.
+  Two seams the fold had to name. **`clarify` and `questions` are different
+  sweeps** and now sit in one mode table: `clarify` interrogates the one draft
+  you are writing, `questions` walks every `## Open questions` block already
+  recorded across the spine - so the table says which is which. And **lite
+  mode does not extend to every mode**: `spec` works on an unmanaged repo, but
+  `questions` sweeps a spine that does not exist and `adr` writes
+  `/spec/decisions/`, so both stop and route to `/steer:setup` rather than
+  silently downgrading to the brainstorm loop. Rule `61-gates`' ADR
+  ratification row now reads `/steer:spec adr accept <n>`; rules 10, 30 and 33
+  and the bundled templates, hooks and reference prose follow. The durable
+  `pending /steer:questions fold` annotation that `intake clarify` writes and
+  the sweep reads is **unchanged** - it is a marker in a consumer's
+  `intent.md`, not an invocation, and renaming it would orphan every one
+  already written. Rules 10, 30, 33 and 61 were tightened to pay for the
+  longer invocations, keeping the always-on payload at or under its previous
+  size on all four scope targets. Fourth step of the 7.0 public-surface flip
+  (#584).
+
+- **`/steer:intake` and `/steer:roadmap` are now `/steer:spec intake` and
+  `/steer:spec roadmap`,** completing the four-mode fold into the spec door.
+  Both operate on the same truth `spec` owns: `intake` absorbs what a Product
+  Owner sends *in* and routes the real changes into the spine, `roadmap`
+  projects the spine's unshipped intent *out* onto a release timeline. They
+  become `user-invocable: false`; no procedure moved, so the source ledger,
+  the version diff, the clarification loop, the milestone proposal and its
+  date confirmation are byte-for-byte what they were.
+  `roadmap`'s door changes hands: it was reached via `/steer:issues`, which
+  step 5 folds into `work` - `/steer:work issues roadmap` is a nesting nobody
+  would type, and a roadmap is a projection of *intent*, not of backlog state.
+  Three names now collide under one door and nesting is what separates them,
+  so `spec`'s mode table says which is which: `clarify <id>` interrogates the
+  draft you are writing, while `intake clarify <path>` absorbs the answers
+  document a client sent back; `intake status` reports one source's ledger
+  state, not the client-facing progress report `/steer:status` renders; and
+  `roadmap sync` reconciles milestones, touching no scaffold, unlike
+  `/steer:setup sync`. `roadmap` also carries a precondition the other modes
+  don't - it is GitHub-only and says so and stops when `/spec/tracker.md`
+  declares another tracker. Fourth step of the 7.0 public-surface flip (#584)
+  completed.
+
+- **`/steer:help` is now a mode of `/steer:next`, not a skill you type.**
+  `/steer:next capabilities` renders the capability menu; `/steer:next` with
+  no mode still answers "what should I do now, here?". The menu itself is
+  unchanged - `help` survives as an internal renderer (`user-invocable:
+  false`) that `capabilities` loads on entry, so it is still built from the
+  live skill frontmatter and still never hardcodes a list. Discovery and
+  navigation answer near-identical questions, and two front doors for them was
+  the split this closes. `next` keeps `Write` for the menu's optional Artifact
+  temp path, with every other write still a prose invariant. Typing
+  `/steer:help` no longer resolves: the harness rejects a `user-invocable:
+  false` skill, and `/steer:sync`'s invocation scan flags a frozen mention in
+  a managed repo's prose as an `absorbed-mode` finding for the dev to reroute.
+  First step of the 7.0 public-surface flip (#584).
+
+- **`/steer:loop` is model-only,** `user-invocable: false`. An autonomous loop
+  is machinery a repo opts into once, not a skill a user browses to: rule
+  `53-autonomous-loops` - the boundary prose a looping repo is held to - reaches
+  a repo only where `policy/automation.yml` declares `loops: true`, and the
+  frontmatter never had to be conditional to match that: going internal takes
+  away the typing, not the routing, so a plain-language ask for a scheduled
+  sweep still arrives here and the skill's own first step is what refuses a
+  repo that never opted in. The capability menu drops its
+  hand-written `loop` entry, and `scan-invocations.sh` exempts the skill by
+  name for the same reason as `reference` and `report`: rule 53 names it as a
+  delegation, and it has no front door a `noncallable-gateway` finding could
+  be rewritten to.
+- **The automation opt-in is a decision the dev makes, not a file the skill
+  writes for them.** It is now `scaffold`'s **first** step, ahead of
+  instantiating the workflow: on a repo that has not declared `loops: true`,
+  the trade goes to the dev first - unattended API spend per scheduled run,
+  draft-PR noise, the PR flow a loop requires - and the marker is written only
+  on confirmation, with who decided and when recorded. Arming an unattended
+  agent is a repo-level event, so a decision taken in-session also writes its
+  `/spec/history/` entry. `verify` now reports a missing marker as a gap that
+  closes through that same decision rather than as a file to write; `remove`
+  is unchanged.
+- The Copilot port of `steer-reviewer` no longer points at a `/steer-loop`
+  prompt: that prompt file stops being generated when the skill goes internal,
+  so the cross-link would have dangled.
+  Seventh step of the 7.0 public-surface flip (#584).
+
+- **A gate that an internal skill can still be reached.** Hiding a skill behind
+  `user-invocable: false` is one frontmatter line; giving it a way in is prose
+  somewhere else, so the v7 fold could strand one with nothing failing. Check 14
+  of `check_standards.py` now partitions every internal skill into exactly one
+  of three declared classes: **absorbed** as a mode of one front door (derived
+  from that door's `<!-- steer:modes ... -->` marker, never a list), a
+  **gateway** an owning skill calls mid-procedure (`spec-scaffold`,
+  `tracker-sync`), or **rule-reached** - named by an always-on rule, which is
+  the only route to `reference`, `report` and `loop`. It fails on a skill in no
+  class, one claimed by two doors, and one carrying both a front door and an
+  exemption. The rule-reached exemption asserts its own reason rather than
+  recording it: the name must appear in `rules/`, so retiring the rule line that
+  reaches a skill fails here instead of stranding it. The set is also
+  cross-checked against `MODEL_ONLY` in `scan-invocations.sh`, the same fact in
+  a second file that two earlier folds each had to edit by hand.
+- **Mode markers can name the skill a mode enters.** A mode named after its
+  skill still owns itself (`setup` -> `init`), but one named after what it
+  *does* now annotates its owner - `next` carries `capabilities=help` and
+  `status` carries `feature=explain`. Those two absorptions renamed the mode to
+  read well, which is exactly why a name-match checker would have failed on
+  them alone; the alternative, reading the delegation sentence below the table,
+  would have made a machine-readable marker depend on prose.
+
+- **The 7.0 invocation renames reach existing repos,** via a migration ledger
+  entry that rewrites the thirteen absorbed-skill invocations in place -
+  `/steer:init` -> `/steer:setup init`, `/steer:adr` -> `/steer:spec adr`,
+  `/steer:explain <id>` -> `/steer:status feature <id>`, and the rest.
+  `/steer:setup sync` applies it read-then-propose. Trailing arguments carry
+  through the prefix, since the door dispatches on the mode and passes the rest
+  on. The entry leaves two sets alone, both excluded from its precondition so it
+  stays a true no-op once applied: append-only prose, where a past
+  `/steer:adopt` records what was actually run, and the verbatim/generated files
+  their own repair path re-copies wholesale in the same sync. Validated against
+  a real consumer repo - 52 stale invocations across 32 files, none left after.
+  `reference`, `report` and `loop` are deliberately absent: no door absorbed
+  them, so no invocation string changed.
+- **`scan-invocations.sh` gained an `absorbed-mode` class,** the standing
+  backstop for the same renames. It derives the front door from the same
+  `<!-- steer:modes -->` markers check 14 reads, under the same two
+  restrictions - only a public skill's marker, and an unannotated mode claims a
+  skill only when an internal one shares its name - so `roadmap sync` and `work
+  status` cannot pollute it. The fix is deterministic rather than a human
+  decision, because an absorbed rename changes nothing but the way in; that is
+  also why the ledger may rewrite it unattended. `noncallable-gateway` narrows
+  to the two true gateways, `spec-scaffold` and `tracker-sync`, whose front-door
+  swap does change meaning. A pre-rebrand `/e22-init` now resolves the whole way
+  to `/steer:setup init`.
+- **The shipped templates stopped emitting invocations a user can no longer
+  type** - `mise.toml`, `spec/tracker.md`, `policy/` headers, the CI stage
+  scripts, `ws.sh`, the issue-template config, the `spec/.version` header the
+  bootstrap skills write. Without this a fresh 7.0 bootstrap would have written
+  stale tokens and the next sync would have proposed rewriting files the plugin
+  had just created. Two of them were human-facing imperatives that
+  `check_standards.py` check 11 does not see, because it scans Markdown and not
+  `.sh`/`.toml`/`.yml`.
+- Docs: a "what moved where" page listing every rename, what did not change, and
+  how to migrate.
+  Ninth step of the 7.0 public-surface flip (#584).
+
+- **The tracker gateway now has a core.** `/steer:tracker-sync`'s catalogue was
+  split by GitHub domain - core lifecycle, planning, links - which put the
+  portable and the GitHub-only in the same file and made "what would a
+  non-GitHub tracker have to implement?" unanswerable. It is now split by that
+  question instead. `OPERATIONS.md` holds **eight** tracker-neutral ops -
+  `find`, `get`, `create`, `update-state`, `claim`, `comment`,
+  `link-delivery`, `close`/`reopen` - each keyed off the `steer:*` markers in
+  the issue body, which any tracker with a text body can carry. The new
+  `OPERATIONS-GITHUB.md` holds everything with no equivalent outside GitHub -
+  labels, Issue Types, milestones, native issue fields, parent/related/blocked-by
+  edges - and replaces `OPERATIONS-PLANNING.md` + `OPERATIONS-LINKS.md`.
+  `/steer:work` and the `/steer:work issues` lifecycle modes now read the core
+  file only; the modes that reach past it (`decompose`/`epic`, `triage`'s
+  Priority floor, `reconcile`'s label and type normalization,
+  `/steer:spec roadmap`, `bootstrap-fields` at setup) name the one op they need.
+- **Three renames and one merge inside that core.** `search` -> **`find`**
+  (find-or-create is `find` then `create`, and the dedup order lives on `find`);
+  `link-pr` -> **`link-delivery`**, which takes the PR *or* the closing trunk
+  commit, so a solo-trunk repo records what delivered an issue instead of
+  nothing; `update` + `transition` -> **`update-state`**, one guarded
+  read-modify-write over the body steer owns, because the managed block and the
+  `steer:state` marker were always the same write against the same body (the
+  authority table still gates the calls that move state). Marker *names* are
+  untouched - `steer:pull-request` and `steer:claimed-by` are on issues in the
+  wild, and renaming one would be a migration.
+- **`claim` is its own op, not a flavour of `update-state`.** The check it
+  carries is a precondition of ownership, not of a state move: folding it in
+  would make every unrelated transition assert assignment. The conflict check
+  survives unchanged - an already-assigned or already-claimed issue is reported,
+  never auto-overridden - and the op also covers assigning a named owner
+  (question promotion), which sets accountability without an execution claim.
+
+- **SessionStart registers six hook commands, not nine.** The rule diet left
+  the injected payload needing five parts on a typical product repo and six
+  where every scope predicate holds, so three of the nine registered commands
+  spawned a shell, computed the same partition and exited silent on every
+  session start - and again on every `compact`. The registration is now sized
+  to the payload: six parts, 10,176 characters spare at the worst case, still
+  measured for every profile by `check_context_budget.py`, which fails on a
+  dropped rule or a part over the runtime cap. The delivered ruleset is
+  unchanged; the part headers now read `part 1/6`. The Copilot-surface tests
+  read the count from `hooks.json` instead of repeating it, so the next resize
+  cannot leave them asserting silence for parts no session runs.
+
+- **The open-question sweep reported a clean bill of health on a repo with no
+  spine.** `/steer:spec questions` gathers questions by grepping
+  `spec/vision.md`, `spec/features/*/intent.md` and `spec/PRODUCTIONIZATION.md`;
+  on an unmanaged repo those match nothing, and the skill's own "if there are
+  none, say so and stop" turned *nothing was searched* into *nothing to
+  answer* - the worst shape a check can fail in, because it looks like good
+  news. It now requires a stamped spine as step 0 and routes to
+  `/steer:setup`, the gate `adr` has always carried. The check lives in the
+  skill rather than in the `/steer:spec` front door on purpose: `/steer:issues`
+  and `/steer:intake` reach the sweep directly, so a door-level gate would
+  leave exactly the callers that pass a spine-less repo to it unguarded. It
+  tests `spec/.version` rather than `spec/`, since a bare `spec/` directory can
+  be an empty folder or a foreign OpenAPI tree, and it takes no bootstrap
+  exception - unlike `adr`, no bootstrap invokes this skill mid-install, so a
+  spine-less call is always a direct one.
+
+- **A skill that stops to ask a question now names itself.** Rule
+  `00-router` told a skill to name itself on entry and again in its closing
+  handoff heading, which left the one shape in between unnamed: a skill that
+  pauses mid-flow to ask the question it needs answered writes neither. The
+  reader sees a question from nowhere, and cannot tell which workflow is
+  waiting on them - or report it as a misroute if it is the wrong one.
+- **The always-on payload is back under its 6.6 size.** Rule
+  `00-router` drops two restatements - the reason the handoff heading names
+  the skill, which Output discipline already gives, and a second "say what
+  the session blocked" - with no instruction removed. Every injection profile
+  now measures at or under v6.6.0 (code 39,514 against 39,539), which 7.0
+  committed to.
+
 ## 6.6.0
 
 - **Change size is now change classification: Trivial, Behavioral,
