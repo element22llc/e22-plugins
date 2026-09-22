@@ -1,0 +1,11 @@
+kind: Fixed
+body: |-
+  - **Fixed: a skill that stops to ask a question now names itself.** Rule
+    `00-router` told a skill to name itself on entry and again in its closing
+    handoff heading, which left the one shape in between unnamed: a skill that
+    pauses mid-flow to ask the question it needs answered writes neither. The
+    reader sees a question from nowhere, and cannot tell which workflow is
+    waiting on them - or report it as a misroute if it is the wrong one.
+time: 2026-09-22T16:00:00.000000000-04:00
+custom:
+  Slug: name-the-skill-on-a-pause
