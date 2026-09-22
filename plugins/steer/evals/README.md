@@ -31,6 +31,43 @@ graders:
 `last_message`.** Those are two different claims and they need two different
 surfaces.
 
+## Coverage: every public skill, and the asks that own none
+
+Each of the seven public skills has at least one positive case - `setup` has
+three, because the front door has to absorb a greenfield, a brownfield and a
+behind-the-times repo, and the two internal skills with their own case
+(`routes-triage-backlog-to-issues`, `routes-openspec-behind-to-sync`) accept
+their front door as the correct route.
+
+| Skill | Case |
+|---|---|
+| `setup` | `routes-greenfield-bootstrap-to-init` · `routes-vibe-coded-app-to-adopt` · `routes-openspec-behind-to-sync` |
+| `spec` | `routes-think-feature-through-to-spec` |
+| `work` | `routes-fix-issue-to-work` · `routes-triage-backlog-to-issues` |
+| `audit` | `routes-repo-health-to-audit` |
+| `status` | `routes-client-status-to-status` |
+| `next` | `routes-lost-user-to-next` |
+| `build` | `routes-po-idea-to-build` |
+| (none) | `routes-explain-code-to-none` · `routes-general-knowledge-to-none` |
+
+The last row is the point of the negatives. Rule `00-router` tells the model to
+map a plain-language goal to the owning skill and **invoke it without being
+asked** - the instruction that makes routing feel effortless is also the one
+that overfires, and every positive case rewards entering a skill. A negative
+case asserts the inverse on the same surface: `tool_used` with `min: 0`,
+`max: 0` and `arm: both`, so a run that pulls "what does this function do?" into
+an audit fails. `min` defaults to 1, so both bounds are pinned; `tests/test_eval_suite.py`
+enforces that.
+
+Read a negative's Δ as **bounded above by zero**: the baseline has no steer
+skills to invoke, so it passes `routed` by construction and a healthy negative
+scores level. A *negative* delta there is the plugin claiming an ask it does not
+own.
+
+The asks are in `tests/fixtures/routing/asks.yml` like every other case's, as
+`skill: none` with a `why` and no signals - a lexical gate cannot prove an
+absence, which is exactly why the claim lives here.
+
 `routed` used to be a regex on `last_message`, and that was the wrong surface for
 it. `rules/00-router.md` says "announce, then act", so the announcement lands in
 the run's **first** message, and a finished skill's report names the skills that
@@ -99,7 +136,7 @@ variants**, because one fixture cannot serve every ask:
 
 | Variant | Cases | Repo state | Why |
 |---|---|---|---|
-| `managed` | work, next, audit, spec, issues | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it. |
+| `managed` | work, next, audit, spec, issues, status, both negatives | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it - and a negative case needs that silence most: a bootstrap nudge would hand it a workflow to enter. |
 | `greenfield` | init, build | `git init` + a README, nothing else | Their asks say "brand-new empty repo" / "build an app from my idea". |
 | `legacy` | adopt | a Flask app, no spec, no toolchain, no tests | Its ask says "no spec, no toolchain". Unspecified code volume is what separates adopt from init. |
 
@@ -217,10 +254,31 @@ is the same payload `--json <path>` writes, so there is no need to pass `--json`
 Deliberately **not** in `mise run ci` - the suite spends real tokens, the same
 reason the `e2e` suite sits off the PR path. Budget roughly **$1.00-1.30 per case
 per run** across both arms (measured at `max_turns: 12`; the with-plugin arm costs
-~3× the baseline, which has no rules to read), so ~$8-10 for the suite at
-`runs: 1` and ~$25-30 at the task's `runs: 3`. The task's `--max-cost-usd 45` is
+~3× the baseline, which has no rules to read), so ~$12-15 for the suite at
+`runs: 1` and ~$33-40 at the task's `runs: 3`. The task's `--max-cost-usd 60` is
 sized against that: a ceiling near the expected spend aborts a healthy sweep, so
-re-measure it whenever case count or a `max_turns` changes.
+re-measure it whenever case count or a `max_turns` changes. Those two figures are
+projected from the 9-case run, not measured at 12.
+
+## When it runs
+
+Not on the PR path, so the cadence is declared rather than triggered:
+
+- **Every minor or major release cut** - `/release` Phase A names it, and the
+  release PR records the score. A patch release does not need it: the routing
+  surface it reads (`rules/00-router.md` plus each skill's `description` +
+  `when_to_use`) is what a minor bump moves.
+- **Before merging a PR that edits that surface** - the router rule, a public
+  skill's `description`/`when_to_use`, or a skill's public/internal tier.
+  `check_routing_fixtures.py` runs on every such PR and is the cheap half; this
+  is the half that can tell you the ask no longer lands.
+
+`--case` narrows a run to what a change actually touched, which is the honest
+way to make either of those affordable:
+
+```shell
+mise run evals -- --case 'routes-*-to-none' --runs 1
+```
 
 **`max_turns` is sized from real runs, per case, and the comment says why.** A
 run killed with `Reached maximum number of turns` is scored on a truncated

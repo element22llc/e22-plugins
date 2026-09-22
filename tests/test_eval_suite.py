@@ -22,11 +22,14 @@ PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 # Which repo state each case's ask presumes. One scaffold cannot serve all three:
 # a managed spine silences the bootstrap nudge that the init/build/adopt cases exist
 # to measure, and an unmanaged tree makes every session-start check fire an adopt
-# offer that competes with the ask in the five cases that presume a managed repo.
+# offer that competes with the ask in the eight cases that presume a managed repo.
 # Byte-equality is enforced WITHIN a variant, not across the suite.
 SCAFFOLD_VARIANTS = {
     "managed": {
+        "routes-client-status-to-status",
+        "routes-explain-code-to-none",
         "routes-fix-issue-to-work",
+        "routes-general-knowledge-to-none",
         "routes-lost-user-to-next",
         "routes-repo-health-to-audit",
         "routes-think-feature-through-to-spec",
@@ -47,6 +50,15 @@ SCAFFOLD_VARIANTS = {
         "routes-openspec-behind-to-sync",
     },
 }
+
+
+def _owner(case_dir) -> str:
+    """The skill a case asserts, from its directory name: routes-<ask>-to-<owner>.
+
+    `none` is the negative form - an ask no skill owns, which asserts the run
+    entered nothing rather than entering something.
+    """
+    return case_dir.name.rsplit("-to-", 1)[1]
 
 
 def _cases():
@@ -93,7 +105,7 @@ def test_scaffolds_are_byte_identical_within_each_variant():
 
 def test_managed_scaffold_stamps_the_current_plugin_version():
     # A spine stamped at a version other than the plugin's own reads as version
-    # drift to /steer:next, which injects a sync nudge into every run of the five
+    # drift to /steer:next, which injects a sync nudge into every run of the
     # managed cases - one more notice competing with the ask. The release bump
     # therefore has to re-stamp this fixture, and this test is the reminder.
     version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
@@ -159,9 +171,22 @@ def test_routing_is_asserted_on_the_invocation_not_the_prose():
             f"{d.name}/routed.md: needs `arm: both` - a bare `tool_used: Skill` is "
             "auto-demoted to a with-only indicator and drops out of the score"
         )
+        owner = _owner(d)
+        if owner == "none":
+            # The negative form: the ask belongs to no skill, so the assertion is
+            # that no steer skill was entered. `min` defaults to 1, so BOTH bounds
+            # have to be pinned - `max: 0` alone still asserts one call happened.
+            assert front["input_match"] == "steer:", (
+                f"{d.name}/routed.md: a negative case matches any steer skill "
+                f"('steer:'), got {front['input_match']!r}"
+            )
+            assert front.get("min") == 0 and front.get("max") == 0, (
+                f"{d.name}/routed.md: a negative case needs min: 0 AND max: 0 - "
+                "min defaults to 1, so omitting it asserts the opposite"
+            )
+            continue
         # The pattern has to name the skill the case is about, so a copy-paste
         # cannot leave a case asserting somebody else's route.
-        owner = d.name.rsplit("-to-", 1)[1]
         assert re.search(rf"\b{re.escape(owner)}\b", front["input_match"]), (
             f"{d.name}/routed.md: input_match {front['input_match']!r} does not name "
             f"the owning skill '{owner}'"
@@ -208,6 +233,14 @@ def test_answer_graders_judge_the_action_and_require_the_owner_be_named():
             f"{d.name}/answer.md: must tell the judge a next-action handoff is not "
             "starting that workflow"
         )
+        if _owner(d) == "none":
+            # Inverted for a negative: naming no skill is the correct answer here,
+            # and what must fail is entering one instead of answering.
+            assert "starts a steer workflow instead of answering" in text, (
+                f"{d.name}/answer.md: a negative case must fail a response that "
+                "starts a workflow instead of answering the ask"
+            )
+            continue
         assert "names no `/steer:*` skill at all" in text, (
             f"{d.name}/answer.md: the generic-assistant failure must be concrete - "
             "a response that names no steer skill fails"

@@ -1,0 +1,50 @@
+# Routing case - see ../README.md for what this suite measures.
+schema_version: "1.1"
+name: routes-client-status-to-status
+tags: [routing]
+
+context:
+  # A steer-managed repo, so the ask is answerable. Runs only under --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |
+    what did we ship this week? I need a client status update
+  # Higher than the 12 the other managed cases carry, and not yet measured
+  # against a real run: this ask reads the whole /spec spine AND the closed
+  # issues behind it, which is the shape that pushed the triage case to 16. A
+  # run killed with "Reached maximum number of turns" is scored on a truncated
+  # message, which says nothing about routing - so start generous and cut it
+  # once runs are on the board.
+  max_turns: 16
+  # The tracker is GitHub (spec/tracker.md), so the read path to it belongs in the
+  # case: without it the run spends its turns narrating an unreachable tracker
+  # instead of routing. Served by evals/mocks/github/, granted by `mise run evals`.
+  allowed_tools:
+    [
+      Read,
+      Glob,
+      Grep,
+      Skill,
+      mcp__github__issue_read,
+      mcp__github__list_issues,
+      mcp__github__search_issues,
+    ]
+  # Both arms run read-only. Without this the answer is dominated by permission
+  # narration - every run of the v6.1.0 suite opened by explaining what it could
+  # not write - and the judge ends up grading how well a run describes being
+  # blocked. Identical in both arms, so the ablation stays fair. The tracker
+  # tools are carved out by name: "the network is unavailable" alone made the
+  # 2026-09-04 runs treat the granted mcp__github__* tools as dead (0 tracker
+  # calls in 9 of 12 managed with-plugin runs; /steer:next reported the tracker
+  # "unreadable here (no network)").
+  append_system_prompt: |
+    This session is a sandboxed evaluation and is granted read-only tools by
+    design: Write, Edit, Bash and general network access are unavailable and
+    will remain so. Any mcp__github__* tool this session lists is live - the
+    tracker is reachable through it. Treat the rest as the shape of this
+    environment, not as a fault to diagnose or a permission to argue for. Note
+    in a single line what you cannot carry out here, then answer the ask with
+    what reading the repo (and the tracker, where listed) supports.
+
+runs: 1

@@ -167,3 +167,15 @@ fixtures:
   - ask: "steer itself just crashed - file that bug upstream"
     skill: report
     signals: ["steer plugin itself", "upstream"]
+
+  # --- negative: asks no skill owns ---------------------------------------------
+  # `skill: none` records an ask that must NOT enter a workflow. There is no
+  # owning surface to carry signals, so this gate only registers the claim (and
+  # keeps the ask unique) - proving a negative is the model-graded suite's job
+  # (plugins/steer/evals/routes-*-to-none).
+  - ask: "what does the total() function in this file do?"
+    skill: none
+    why: "reading code back to the user is ordinary assistance - no spec, issue or scaffold is involved"
+  - ask: "what is the difference between git rebase and git merge?"
+    skill: none
+    why: "general knowledge about a tool, tied to no artifact in this repo"
