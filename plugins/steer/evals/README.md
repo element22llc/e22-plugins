@@ -25,7 +25,7 @@ graders:
 | Grader | Type | Weight | Asserts |
 |---|---|---|---|
 | `routed` | `tool_used` on the `Skill` call | 3 | the run **enters** the owning skill (or the front door that hands off to it) |
-| `answer` | `llm` on `last_message` | 2 | it routes the way the standards route it, and does **not** start the named wrong workflow |
+| `answer` | `llm` on `last_message` | 2 | it **names** the owning skill and spends the body on that skill's work, rather than the named wrong workflow's |
 
 **Routing is asserted on the invocation; the answer is graded on
 `last_message`.** Those are two different claims and they need two different
