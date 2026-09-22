@@ -25,7 +25,7 @@ graders:
 | Grader | Type | Weight | Asserts |
 |---|---|---|---|
 | `routed` | `tool_used` on the `Skill` call | 3 | the run **enters** the owning skill (or the front door that hands off to it) |
-| `answer` | `llm` on `last_message` | 2 | it routes the way the standards route it, and does **not** start the named wrong workflow |
+| `answer` | `llm` on `last_message` | 2 | it **names** the owning skill and spends the body on that skill's work, rather than the named wrong workflow's |
 
 **Routing is asserted on the invocation; the answer is graded on
 `last_message`.** Those are two different claims and they need two different
@@ -55,19 +55,53 @@ front door the correct route: "front doors detect context and hand off ... so yo
 rarely route to a specialized skill directly." Discriminating init from adopt is
 the `answer` grader's job, and its criteria name the wrong workflow explicitly.
 
-**The `answer` grader judges what the run did, not what it recommends.** Every
-readout ends with a handoff naming the *next* skill (`## Recommended next actions -
-/steer:<skill>`, `Suggested command: /steer:...`), and rule `00-router` mandates
-it. In the 2026-09-04 run the two `audit` and two `issues` responses the judge
-failed were exactly the ones ending "Current recommended action: `/steer:work`" -
-read as *starting* the wrong workflow - while the responses that passed skipped
-the line. The criteria now say so in as many words. The same run had two
-greenfield and one build **baseline** response pass with a homegrown spec-first
-plan that never mentioned steer, so the "generic assistant" failure is now
-concrete: a response that names no `/steer:*` skill fails, however good it reads.
-Neither the JSON nor `report.html` carries the judge's rationale - only its
-votes - so a judge failure is diagnosed by comparing the passing and failing
-`last_message`s, which is how both of these were found.
+**A closing handoff is never a failure, and the criteria must say "do not fail"
+outright.** Every readout ends with a handoff naming the *next* skill (`##
+Recommended next actions - /steer:<skill>`, `Suggested command: /steer:...`),
+and rule `00-router` mandates it. In the 2026-09-04 run the two `audit` and two
+`issues` responses the judge failed were exactly the ones ending "Current
+recommended action: `/steer:work`" - read as *starting* the wrong workflow -
+while the responses that passed skipped the line. The exemption written for that
+(*"a finished readout that names another skill as the next action ... has not
+started that workflow"*) then caused the inverse failure in the 7.0 pre-cut
+sweep, issue #630: six conformant readouts failed 3-0, and every rationale cited
+that clause as proof the response had **done** nothing. Describing the handoff
+is not enough - the sentence has to forbid the failure, which is how the two
+negatives had always phrased it.
+
+**Passing takes two things, and the first one carries the ablation.** The
+criteria require the owning skill to be *named* - anywhere, the closing handoff
+heading included - and the body to be spent on that skill's work. The naming
+half is what tells the arms apart: no baseline run in the suite has ever named a
+`/steer:*` skill, so criteria that grade only the body pass the no-plugin answer
+too. That is measured, not assumed: the first #630 rewrite dropped the
+requirement and passed **9 of 10** baselines (`replay_judge.py --live`).
+`routes-po-idea-to-build` is the one positive that cannot require the name -
+rule `00-router` keeps a non-technical owner clear of skill names - so it names
+the build flow's two gates instead: the owner approves a written plan before any
+code, and a developer reviews before real use. A competent baseline interview
+has neither.
+
+**Diagnosing a judge failure: `replay_judge.py`.** Neither the JSON nor
+`report.html` carries the judge's rationale, only its votes, and the per-run
+`tracePath` points into a sandbox temp dir that is gone by the end of the run.
+But everything the judge saw is in `aggregate-result.json` - the criteria and
+each run's `last_message` - so the verdict replays offline for cents:
+
+```shell
+uv run python plugins/steer/evals/replay_judge.py --arm both            # fidelity
+uv run python plugins/steer/evals/replay_judge.py --mode rationale      # why
+uv run python plugins/steer/evals/replay_judge.py --live --arm both     # validate a rewrite
+```
+
+It rebuilds the CLI's judge prompt byte for byte (same system prompt, same
+"respond with exactly one word", same 3-vote majority), so the default mode's
+agreement with the recorded verdicts is the fidelity check that makes
+`--mode rationale` worth reading. `--live` grades the **stored** evidence
+against the criteria on disk, which is how a criteria change is validated
+without spending a sweep: the with-plugin arm must pass, the no-plugin arm must
+still fail. It is an authoring aid, not a gate - it cannot see a routing change,
+only a grading one.
 
 **Every run is read-only, and each case says so** via an identical
 `append_system_prompt`. Without it the answer is dominated by permission

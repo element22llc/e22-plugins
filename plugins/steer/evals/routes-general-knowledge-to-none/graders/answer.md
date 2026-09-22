@@ -13,9 +13,10 @@ history and adds a merge commit; rebase replays the commits onto a new base and
 rewrites them - in a couple of sentences. Mentioning what the repo's own
 conventions prefer is fine as an aside.
 
-Judge what the response **did**, not what it recommends. A closing pointer at a
-steer skill is a suggestion, not a workflow the response started - do not fail
-it for that.
+A closing handoff naming a steer skill is the standards' own contract, never a
+failure - do not fail the response for it, and do not read it as evidence that
+the response did nothing. A closing pointer at a steer skill is a suggestion
+about what comes next; judge the body above it.
 
 Fail the response if it:
 
