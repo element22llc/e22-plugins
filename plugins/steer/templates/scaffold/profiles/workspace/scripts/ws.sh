@@ -62,7 +62,7 @@ ws_product_name() {
 }
 
 # ws_members - one TAB-separated record per member: name repository branch profile path (unset fields empty).
-# A placeholder member (no name AND no repository - what /steer:init leaves unresolved) is dropped, not errored.
+# A placeholder member (no name AND no repository - what /steer:setup init leaves unresolved) is dropped, not errored.
 ws_members() {
 	awk '
     function clean(line, key) {
@@ -95,7 +95,7 @@ ws_local_count() {
 	ws_members | awk -F'\t' '$5 != "" { n++ } END { print n + 0 }'
 }
 
-# spec/.version is TWO lines (managed-by comment, then the version): extract the version, exactly as /steer:sync reads it.
+# spec/.version is TWO lines (managed-by comment, then the version): extract the version, exactly as /steer:setup sync reads it.
 ws_spine_version() {
 	grep -m1 -oE '[0-9]+\.[0-9]+\.[0-9]+' "$1" 2>/dev/null || printf -- '-'
 }
@@ -114,7 +114,7 @@ ws_remote() {
 
 ws_require_members() {
 	[ -n "$(ws_members)" ] ||
-		die "no members resolved in ${MANIFEST} - resolve the placeholders first (/steer:init)"
+		die "no members resolved in ${MANIFEST} - resolve the placeholders first (/steer:setup init)"
 }
 
 # --- Subcommands ------------------------------------------------------------

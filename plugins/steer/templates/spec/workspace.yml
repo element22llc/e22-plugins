@@ -7,7 +7,7 @@
 # product is made of - so it belongs with the rest of the spine rather than
 # loose at the repo root.
 #
-# /steer:init resolves the placeholders - never ship fabricated values.
+# /steer:setup init resolves the placeholders - never ship fabricated values.
 # ASCII only: this is config, not prose (see the non-ASCII anti-pattern in the
 # baseline practices rule).
 

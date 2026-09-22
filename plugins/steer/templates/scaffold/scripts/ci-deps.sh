@@ -15,7 +15,7 @@ if ! steer_ci_has_node; then
 	exit 0
 fi
 
-# Freeze only once a lockfile exists (a fresh fork has none until /steer:init generates it).
+# Freeze only once a lockfile exists (a fresh fork has none until /steer:setup init generates it).
 if [ -f pnpm-lock.yaml ]; then
 	pnpm install --frozen-lockfile
 else

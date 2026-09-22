@@ -30,7 +30,7 @@ if ! base="$(steer_ci_base)"; then
 fi
 
 if [ ! -f .changie.yaml ]; then
-	steer_ci_notice 'No .changie.yaml - repo has no changelog yet. Run /steer:sync to install it.'
+	steer_ci_notice 'No .changie.yaml - repo has no changelog yet. Run /steer:setup sync to install it.'
 	exit 0
 fi
 

@@ -163,7 +163,7 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     # an action taken from Claude Code rather than a command this reader types.
     header = (
         f"<!-- Generated from the steer plugin's agents/{name}.md - do not edit by "
-        f"hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise "
+        f"hand. Refresh with /steer:setup sync from Claude Code in a managed repo, or mise "
         f"run gen:copilot in the plugin repo. -->"
     )
 

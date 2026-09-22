@@ -5,7 +5,7 @@ argument-hint: '[idea or product description]'
 ---
 
 <!-- Generated from the steer plugin's skills/build/SKILL.md - do not edit by hand.
-     Refresh with /steer:sync from Claude Code in a managed repo, or
+     Refresh with /steer:setup sync from Claude Code in a managed repo, or
      `mise run gen:copilot` in the plugin repo. Authored for Claude Code and
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
@@ -137,8 +137,8 @@ These hold for the whole build, at every step.
    same two-line form `/steer-init` and `/steer-adopt` write:
 
    ```
-   # Spec-spine version - managed by /steer-init, /steer-adopt, /steer-build,
-   # /steer-sync. Do not edit by hand.
+   # Spec-spine version - managed by /steer-setup init, /steer-setup adopt,
+   # /steer-build, /steer-setup sync. Do not edit by hand.
    <plugin version>
    ```
 

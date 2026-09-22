@@ -1,6 +1,6 @@
 ---
-# steer - OPTIONAL gh-aw agentic workflow. NOT installed by /steer:init or
-# /steer:adopt and NOT listed in scaffold/MANIFEST.md. Opt in deliberately:
+# steer - OPTIONAL gh-aw agentic workflow. NOT installed by /steer:setup init or
+# /steer:setup adopt and NOT listed in scaffold/MANIFEST.md. Opt in deliberately:
 # see docs (GitHub -> "Agentic workflows (gh aw)") for the full recipe.
 #
 # gh-aw (GitHub Agentic Workflows) is a GitHub Next *research demonstrator* -

@@ -19,7 +19,7 @@ updates:
         update-types:
           - version-update:semver-major
 
-  # Uncomment the block matching the detected stack (/steer:init and /steer:adopt do this).
+  # Uncomment the block matching the detected stack (/steer:setup init and /steer:setup adopt do this).
 
   # Node / TypeScript - pnpm workspace at the repo root.
   # - package-ecosystem: npm

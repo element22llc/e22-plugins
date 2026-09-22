@@ -19,7 +19,7 @@ github-cli = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
 
-# IaC engine: keep what matches this repo (/steer:init enables the detected one).
+# IaC engine: keep what matches this repo (/steer:setup init enables the detected one).
 opentofu = "latest"
 terragrunt = "latest"
 "aqua:aws/aws-cli" = { version = "latest", symlink_bins = true }

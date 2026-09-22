@@ -99,7 +99,7 @@ KEEP_KEYS = ("name", "description", "argument-hint", "user-invocable")
 
 BANNER = (
     "<!-- Generated from the steer plugin's skills/{name}/SKILL.md - do not edit by hand.\n"
-    "     Refresh with /steer:sync from Claude Code in a managed repo, or\n"
+    "     Refresh with /steer:setup sync from Claude Code in a managed repo, or\n"
     "     `mise run gen:copilot` in the plugin repo. Authored for Claude Code and\n"
     "     rendered here in the cross-tool Agent Skills format (agentskills.io) that\n"
     "     Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->"

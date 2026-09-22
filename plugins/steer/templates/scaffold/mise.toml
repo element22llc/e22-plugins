@@ -1,5 +1,5 @@
 # Toolchain pins + dev-loop tasks. Rationale: /steer:reference conventions ->
-# "Toolchain", "Standard mise tasks". No mise.lock ships; /steer:init creates it.
+# "Toolchain", "Standard mise tasks". No mise.lock ships; /steer:setup init creates it.
 
 [settings]
 lockfile = true
@@ -111,7 +111,7 @@ depends = ["ci:test"]
 run = "sh scripts/ci-coverage.sh"
 
 [tasks.pre-commit]
-description = "Sub-second commit gate: hygiene + lint. Wired to .git/hooks/pre-commit by /steer:init."
+description = "Sub-second commit gate: hygiene + lint. Wired to .git/hooks/pre-commit by /steer:setup init."
 # Install per clone: `mise generate git-pre-commit --task=pre-commit --write`.
 depends = ["ci:hygiene", "ci:lint"]
 
