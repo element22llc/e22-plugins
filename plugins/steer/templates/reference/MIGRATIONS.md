@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - seven public skills: absorbed-skill invocations become front-door modes
+### v7.0.0 - seven public skills: absorbed-skill invocations become front-door modes
 
 - **What & why:** 7.0 cut the user-facing surface to seven skills - `setup`, `spec`,
   `work`, `audit`, `status`, `next`, `build` - and made the rest `user-invocable:
