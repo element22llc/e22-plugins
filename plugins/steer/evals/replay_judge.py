@@ -7,14 +7,15 @@ blocked issue #630. Everything the judge saw is in `aggregate-result.json`
 (`config.criteria` plus each run's `graders[].evidence`), so the verdict can be
 reproduced offline for cents instead of re-running a $12 sweep.
 
-**Know what this is worth before you read a verdict from it.** The prompt is
-byte-identical to the one the CLI builds, but the harness sends it as a plain
-API call and this sends it through ``claude -p`` - an agent session whose
-conditioning cannot be stripped from outside the binary. Measured agreement is
-``FIDELITY`` below, and every disagreement so far has leaned the same way,
-toward PASS. So: a baseline that still fails under rewritten criteria is a
-result you can act on, a with-arm pass is not, and only a live run proves a
-criteria fix worked.
+**Know what this is worth before you read a verdict from it.** The prompt and
+the call are byte-identical to the harness's, verified by capture rather than
+inferred: point ``ANTHROPIC_BASE_URL`` at a local stub that logs the request
+body, run one real ``claude plugin eval``, and diff its judge request against
+this one (recipe in ``README.md``). Measured agreement is ``FIDELITY`` below,
+against a ceiling of 35/36 - what this replay scores against *itself* on the
+same items, since a 3-vote majority of a stochastic judge is not a fixed
+verdict. Re-measure after any change here, and after a CLI upgrade: the prompt
+is version-bound.
 
 Two modes:
 
@@ -32,9 +33,9 @@ Two modes:
     the opposite - read the sentence, not the first word.
 
 ``--live`` re-grades the *stored* evidence against the criteria currently on
-disk. Use it for the discriminant: the no-plugin arm must still fail. It cannot
-see a routing change, and at the fidelity above it cannot vouch for the with
-arm either.
+disk - a criteria rewrite, both arms: the no-plugin arm must still fail and the
+with arm should hold. It cannot see a routing change, and a rewrite that moves
+a verdict here is still proved by a live ``--case`` run.
 
 Run from the repo root::
 
@@ -50,6 +51,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -64,10 +66,12 @@ RESULTS = EVALS / "results"
 
 JUDGE_SYSTEM = "You are a strict, terse evaluation judge for coding-agent traces."
 # Last measured agreement between this replay and the harness's own verdicts, and
-# the run it was measured against. It is not 36/36 and may never be: the harness
-# judges through a direct API call, this replays through `claude -p`. Re-measure
-# with `--mode votes` after any change here, and move these two lines.
-FIDELITY = "28/36 on the with arm, 2026-09-22T13-34-28-092Z"
+# the run it was measured against. Two consecutive passes scored 34/36 and 33/36
+# against a 35/36 replay-vs-replay ceiling, and both reproduced 7 of the 9
+# recorded FAILs; the residual is one case (client-status), where 26 of 27 votes
+# on the same three texts say PASS. Re-measure with `--mode votes` after any
+# change here, and move these lines.
+FIDELITY = "34/36 on the with arm (ceiling 35/36), 2026-09-22T13-34-28-092Z"
 ONE_WORD = "Respond with exactly one word: PASS or FAIL."
 WITH_REASON = (
     "Respond with PASS or FAIL on the first line. On the second line, in one "
@@ -119,6 +123,26 @@ def collect(payload: dict, case_glob: str, arms: list[str], live: bool) -> list[
     return items
 
 
+def judge_env() -> dict[str, str]:
+    """The environment a plain terminal would give `claude`, plus thinking off.
+
+    A replay launched from inside a Claude Code session inherits that session's
+    `CLAUDE_*` - `CLAUDE_EFFORT` among them - so the same command graded
+    differently depending on where it was run. `CLAUDE_CONFIG_DIR` stays: it is
+    where the credential lives. `MAX_THINKING_TOKENS=0` is what makes the child
+    send `thinking: disabled`, which is how the harness calls the judge.
+    """
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if not k.startswith("CLAUDE_") or k == "CLAUDE_CONFIG_DIR"
+    }
+    env.pop("CLAUDECODE", None)
+    env.pop("AI_AGENT", None)
+    env["MAX_THINKING_TOKENS"] = "0"
+    return env
+
+
 def judge(prompt: str, model: str, cwd: str) -> str:
     result = subprocess.run(
         [
@@ -132,11 +156,11 @@ def judge(prompt: str, model: str, cwd: str) -> str:
             "",
             "--strict-mcp-config",
             "--disable-slash-commands",
-            # The harness judges through a plain API call with no tools. A `claude
-            # -p` session attaches the whole tool surface, and that conditioning is
-            # the likeliest cause of the one-directional leniency measured on
-            # 2026-09-22: all nine with-arm disagreements flipped toward PASS,
-            # which sampling noise does not do.
+            # The captured harness call sends tools: [], thinking disabled and
+            # three system blocks - the billing header, the Agent SDK line and
+            # the judge line. `--tools ""` plus `--system-prompt` reproduce all
+            # of that; the one difference left is the environment
+            # system-reminder `claude -p` appends as a second message.
             "--tools",
             "",
             "--max-turns",
@@ -144,6 +168,7 @@ def judge(prompt: str, model: str, cwd: str) -> str:
             prompt,
         ],
         cwd=cwd,
+        env=judge_env(),
         capture_output=True,
         text=True,
         timeout=300,
@@ -158,17 +183,26 @@ def verdict(reply: str) -> bool:
     return bool(re.search(r"\bPASS\b", reply, re.I)) and not re.search(r"\bFAIL\b", reply, re.I)
 
 
-def grade(item: Item, mode: str, votes: int, model: str, cwd: str) -> dict:
-    tail = ONE_WORD if mode == "votes" else WITH_REASON
-    # Byte-identical to the template the CLI builds for a text focus (read out of
-    # the 2.1.278 binary). It carries no `Criterion:` label - an earlier replay
-    # added one, and a judge prompt that differs at all is judging something else.
-    prompt = (
-        "You are grading the output of a coding agent against a criterion.\n"
-        f"{item.criteria}\n"
-        f"Agent output (last_message):\n{item.evidence}\n"
+def judge_prompt(criteria: str, evidence: str, tail: str = ONE_WORD) -> str:
+    """The prompt the CLI sends its judge for a `last_message` focus.
+
+    Byte-identical to a captured `claude plugin eval` judge call, blank lines
+    included - `capture_judge.py` is what proves that and re-proves it after a
+    CLI upgrade. Reading the template out of the binary is not enough:
+    `strings` drops empty lines, so the separators there read as single
+    newlines and an earlier reconstruction lost every one of them.
+    """
+    return (
+        "You are grading the output of a coding agent against a criterion.\n\n"
+        f"Criterion:\n{criteria}\n\n\n"
+        f"Agent output (last_message):\n{evidence}\n\n\n"
         f"{tail}"
     )
+
+
+def grade(item: Item, mode: str, votes: int, model: str, cwd: str) -> dict:
+    tail = ONE_WORD if mode == "votes" else WITH_REASON
+    prompt = judge_prompt(item.criteria, item.evidence, tail)
     replies = [judge(prompt, model, cwd) for _ in range(votes)]
     marks = [verdict(r) for r in replies]
     return {
@@ -220,10 +254,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.live:
         # `--live` grades stored evidence against criteria the run never saw, so
-        # there is nothing to agree with. Say what the instrument is worth: at the
-        # fidelity below it can show a criteria change flipping a verdict, and it
-        # cannot show a routing change at all.
-        print(f"\nadvisory - last measured fidelity {FIDELITY}; a live run is the proof")
+        # there is nothing to agree with - print what the instrument is worth
+        # instead. It can show a criteria change flipping a verdict; it cannot
+        # show a routing change at all.
+        print(f"\nlast measured fidelity {FIDELITY}; a live run is the proof")
     else:
         print(f"\nagreement with the recorded verdicts: {agreed}/{len(results)}")
     passed = sum(r["passed"] for r in results)

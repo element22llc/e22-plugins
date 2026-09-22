@@ -112,11 +112,14 @@ case carries a paragraph saying so, and went 0.60 -> 0.87.
 that.** Both cases above left one run failing 3-0 out of three, and those
 responses are not distinguishable from the ones that passed 3-0 in the same
 sweep: same headings, same grooming or arbitration, same skill named in the
-handoff, no code and no diff in any of them. `replay_judge.py` returns a
-unanimous PASS on all of them and cannot reproduce a single harness FAIL. Do not
-write a third clause against a failure nobody can observe - `--threshold 0.6` is
-exactly the `routed` weight for this reason, and a case at 0.73 or 0.87 with
-`routed` 3/3 has routed correctly.
+handoff, no code and no diff in any of them. That now rests on an instrument
+that *can* fail a response: with the judge call corrected (below),
+`replay_judge.py` reproduces 7 of the 9 recorded FAILs, and the two it will not
+are both `routes-client-status-to-status`, where 26 of 27 votes over the three
+texts say PASS and the rationales for the two failed ones read the same as the
+passed one. Do not write a third clause against a failure nobody can observe -
+`--threshold 0.6` is exactly the `routed` weight for this reason, and a case at
+0.73 or 0.87 with `routed` 3/3 has routed correctly.
 
 **Diagnosing a judge failure: `replay_judge.py`.** Neither the JSON nor
 `report.html` carries the judge's rationale, only its votes, and the per-run
@@ -130,31 +133,61 @@ uv run python plugins/steer/evals/replay_judge.py --mode rationale      # why
 uv run python plugins/steer/evals/replay_judge.py --live --arm both     # validate a rewrite
 ```
 
-It rebuilds the CLI's judge prompt byte for byte - the template was read out of
-the 2.1.278 binary - with the same system prompt, the same "respond with exactly
-one word" and the same 3-vote majority. **It still does not reproduce the
-harness.** Measured against the 2026-09-22T13-34 sweep it agreed on **28 of 36**
-with-arm items, and every disagreement leaned the same way, toward PASS: it
-returned a unanimous PASS on all nine recorded failures, and 45 further votes
-across those items produced no FAIL at all. Sampling noise does not do that.
+It sends the judge the same prompt the CLI does and the same 3-vote majority,
+and against the 2026-09-22T13-34 sweep two consecutive passes agreed on **34 of
+36** and **33 of 36** with-arm items. Read that against the **ceiling: 35/36**,
+what the replay scores against *itself* on the same items - a 3-vote majority of
+a stochastic judge is not a fixed verdict, so 36/36 is not the target and never
+was. It reproduces 7 of the 9 recorded FAILs; the residual is the one case named
+under "coin flip" above.
 
-Two causes were removed and the number barely moved (27 -> 28): the replay was
-adding a `Criterion:` label the CLI does not build, and it ran the judge as a
-tool-bearing agent session (now `--tools ""`). The one hypothesis left standing
-is structural - the harness judges through a direct API call, this replays
-through `claude -p`, and that conditioning cannot be stripped from outside the
-binary.
+**Verify the judge call by capturing it, not by reading the binary.** The
+earlier 27/36 came from a prompt reconstructed out of `strings` on the CLI, and
+it was wrong twice over: `strings` drops empty lines, so every blank line in the
+template read as a single newline, and the `Criterion:` label that was removed
+on that reading is one the CLI does build. `capture_judge.py` settles it against
+the CLI on your machine - a toy plugin, one eval case, and `ANTHROPIC_BASE_URL`
+pointed at a local stub that logs the request body and answers every call, so
+nothing leaves the machine and nothing is billed:
+
+```shell
+uv run python plugins/steer/evals/capture_judge.py   # after a CLI upgrade
+```
+
+It diffs the captured judge request against `replay_judge.judge_prompt()` and
+fails loudly when they part. What it shows today, and what the replay matches:
+the prompt is
+
+```text
+You are grading the output of a coding agent against a criterion.
+
+Criterion:
+<criteria>
+
+
+Agent output (last_message):
+<evidence>
+
+
+Respond with exactly one word: PASS or FAIL.
+```
+
+sent with `tools: []`, `thinking: disabled`, three system blocks (billing
+header, the Agent SDK line, the judge line) and one user message. `claude -p
+--tools "" --system-prompt ...` reproduces all of it except the environment
+`system-reminder` it appends as a second message; `MAX_THINKING_TOKENS=0` is
+what turns thinking off, and the replay scrubs the parent session's `CLAUDE_*`
+so a run from inside Claude Code grades like a run from a terminal. **The prompt
+is version-bound** - re-capture after a CLI upgrade, and re-measure.
 
 So read it for what it can carry:
 
 - **A discriminant check is worth acting on.** Rewrite a case's criteria, run
   `--live --arm without`, and a baseline that still fails 0/3 is evidence the
-  rewrite did not open a hole. That is the one claim the leniency bias cannot
-  manufacture.
-- **A with-arm pass is not.** The replay passes nearly everything, including
-  responses that violate the naming clause - it passed a `spec` baseline whose
-  own rationale says it fails clause 1. **A live `--case` run at `--runs 3` is
-  the only proof a criteria fix worked.**
+  rewrite did not open a hole.
+- **A with-arm verdict is now worth reading too**, at the fidelity above - but
+  it grades *stored* text, so it cannot see a routing change, and **a live
+  `--case` run at `--runs 3` is still the only proof a criteria fix worked.**
 - **`--mode rationale` is a lead, not a verdict.** Verdict-first keeps the
   distribution near the one-word judge, but it also lets a reply open `PASS` and
   then argue the opposite. Read the sentence.
