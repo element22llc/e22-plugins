@@ -121,11 +121,21 @@ byte for byte (below), those failures split three ways:
 | `triage` run 2, 15-26 · `next` run 1, 15-40 · `client-status` runs 0-1, 13-34 | 7/9, 9/9, 9/9, 8/9 PASS | not reproducible. Each names its owning skill and spends its body on that skill's work; the rationales for the failed ones read like the rationales for the passed ones. |
 
 The last row is the coin flip, and 2/9, 5/9, 6/9 and 7/9 over texts that read
-alike is what a fuzzy boundary looks like. Do not write a clause against a
-failure that stays in that row - `--threshold 0.6` is exactly the `routed`
-weight for this reason, and a case at 0.73 or 0.87 with `routed` 3/3 has routed
-correctly. A failure that leaves it, as triage's did, is a criteria bug and gets
-fixed.
+alike is what a fuzzy boundary looks like. `--threshold 0.6` is exactly the
+`routed` weight for this reason, and a case at 0.73 or 0.87 with `routed` 3/3
+has routed correctly.
+
+**The triage row looked actionable and was not - two rewrites were tried and
+measured** (`--live --arm both --votes 9`, the three stored with-arm texts and
+the three baselines, 27 votes each way). Writing the collision out as its own
+paragraph - "delivery is claiming, branching, writing the fix; naming the issue
+is not" - took the with arm from 14 PASS votes of 27 to **3**: it names the
+delivery vocabulary the *correct* answers use to say what they could not do
+here, which is the trap two paragraphs up, in a new place. Folding it into the
+handoff paragraph as a sentence about placement scored **14 of 27** - the same
+total, redistributed. The baselines stayed 0/27 throughout, so neither rewrite
+opened a hole; neither moved the case either. A third clause is not what these
+texts need, and that is now measured rather than assumed.
 
 **Diagnosing a judge failure: `replay_judge.py`.** Neither the JSON nor
 `report.html` carries the judge's rationale, only its votes, and the per-run
