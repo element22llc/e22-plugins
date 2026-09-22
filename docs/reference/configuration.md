@@ -174,10 +174,11 @@ only shrinks or holds), and the per-skill `SKILL.md` body size.
 
 **The rules gate measures what a session actually receives**, in characters -
 the runtime's own unit - by running every registered part of the real
-`inject-standards.sh` against three fixture profiles: `knowledge` (a non-code
-folder, which drops every marked rule), `code` (a typical product repo) and
-`code-max` (every scope predicate satisfied - the worst case any consumer pays).
-All three are gated, against the same two harness facts: no single part may
+`inject-standards.sh` against four fixture profiles: `knowledge` (a non-code
+folder, which drops every marked rule), `code` (a typical product repo),
+`openspec` (a repo whose spec artifacts live in `openspec/`) and `code-max`
+(every scope predicate satisfied - the worst case any consumer pays).
+All four are gated, against the same two harness facts: no single part may
 exceed the 10,000-character cap Claude Code puts on one hook command's output
 (the hook fills each part to 9,500 and the slack is never spent on rules), and
 no eligible rule may be dropped for lack of parts. A rule that does not fit

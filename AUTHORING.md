@@ -358,10 +358,10 @@ drops a rule or any part exceeds the cap.
 A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
 marker, so the injected payload **differs per consumer repo** - and a
 knowledge-work folder drops every marked rule. The budget gate measures this
-same payload - every registered part, in characters - for three fixture
-profiles (`knowledge`, `code`, `code-max`), so the gate and this preview report
-the same variable; but the gate only ever sees those synthetic shapes. To see
-what *your* repo gets:
+same payload - every registered part, in characters - for four fixture
+profiles (`knowledge`, `code`, `openspec`, `code-max`), so the gate and this
+preview report the same variable; but the gate only ever sees those synthetic
+shapes. To see what *your* repo gets:
 
 ```bash
 mise run rules:preview                        # what this repo gets
