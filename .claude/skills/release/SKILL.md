@@ -118,8 +118,9 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   still lands on its skill, and a minor bump is what moves the surface it reads:
   `rules/00-router.md` and every skill's `description` / `when_to_use`. It is not
   in `mise run ci` because it spends real tokens, so **this is its declared
-  cadence** (`plugins/steer/evals/README.md` -> "When it runs"). Run it before
-  B6, report `aggregates.meanDelta` in the release PR, and treat a case scoring
+  cadence** (`plugins/steer/evals/README.md` -> "When it runs"). Run it here in
+  Phase A, before cutting, report `aggregates.meanDelta` in the release PR (B6),
+  and treat a case scoring
   below `--threshold` as a Phase-A finding rather than a footnote. A **patch**
   release skips it - say so rather than leaving the reader guessing. The suite
   needs `plugin eval` early access; where the machine does not have it, say the

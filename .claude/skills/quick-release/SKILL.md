@@ -190,7 +190,11 @@ only:
   fast-path honesty note below; PR titled `Release steer X.Y.Z`.
 - **B7 - Report:** new version, branch, PR URL, gate result.
 - **B8 - Post-merge follow-ups** (consumer `/plugin update`, docs deploy, local
-  e2e/evals). The `vX.Y.Z` tag + GitHub Release are cut automatically by
+  e2e). The **routing evals** are not a follow-up: their declared cadence is a
+  minor or major cut (`plugins/steer/evals/README.md` -> "When it runs"), so a
+  **minor** cut on this fast path either runs `mise run evals` before the PR or
+  names the skip in the Q5 honesty note. A patch cut owes them nothing. The
+  `vX.Y.Z` tag + GitHub Release are cut automatically by
   `release-publish.yml` on merge - just confirm that run went green.
 
 ### Q5. PR-body honesty - record what this fast path did *not* check.
