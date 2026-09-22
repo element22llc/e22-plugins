@@ -13,7 +13,7 @@ machine-readable body** (markers + headings + managed block) - do **not** try to
 submit a Form (it's human UI only). Default labels per kind (`source:human`,
 `needs:triage`); enters **Inbox**.
 
-**Before creating, search the corpus** via `/steer-tracker-sync search` (open +
+**Before creating, search the corpus** via `/steer-tracker-sync find` (open +
 closed) - this serves dedup (an exact match means update/skip, not a second
 issue) *and* relationship-discovery. When the new issue **overlaps, depends on,
 or conflicts with** an existing one, populate its `Related issues` heading and
@@ -68,7 +68,7 @@ issue fields, never labels** (`ISSUE-SCHEMA.md`) - never invent `priority:*` /
 
 A **read-only** backlog overview: the open issue set as one ranked,
 relationship-aware, hygiene-flagged view. **Never writes.** Reads through
-`/steer-tracker-sync` (`search`, `field-get`) and says which capability path it
+`/steer-tracker-sync` (`find`, `field-get`) and says which capability path it
 took. Four sections:
 
 - **Ranked** - issues ordered by the **composite sort key** in `NEXT-ACTIONS.md`

@@ -32,6 +32,12 @@ reference hold throughout:
   exception, `bootstrap-labels`, which runs `gh label create --force` inline
   because label-taxonomy setup is a repo-level operation the issue-scoped
   `/steer:tracker-sync` gateway exposes no op for.
+- **Lifecycle modes use the core ops only** (`find`, `get`, `create`,
+  `update-state`, `claim`, `comment`, `link-delivery`, `close`). The modes that
+  reach past them - `decompose`/`epic` (types, parent links), `triage`'s Priority
+  floor, `reconcile`'s label and type normalization - read
+  `OPERATIONS-GITHUB.md` for the one op they are about to perform, and degrade
+  where the capability is absent.
 
 ## Guardrails
 

@@ -37,7 +37,7 @@ pointing at a `vision.md` theme.
 Verbs:
 
 - **`epic --new "<title>"`** - create-or-find the epic. **Find before create**
-  (search by `dedupe-key` + semantic title via `/steer:tracker-sync search`, open
+  (search by `dedupe-key` + semantic title via `/steer:tracker-sync find`, open
   + closed - never silently reuse a semantic match). Render the `epic` body
   (`templates/github/issue-bodies/epic.md` - markers + managed block), set
   `steer:state=inbox`, and set **Type=`Epic` only when the org has it**, else keep

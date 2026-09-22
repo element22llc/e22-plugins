@@ -44,7 +44,7 @@ implementation.]
 ## Delivery
 
 [Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
-markers as a clickable line - maintained by `/steer:tracker-sync link-pr` and
+markers as a clickable line - maintained by `/steer:tracker-sync link-delivery` and
 `/steer:work`.]
 
 - PR: #NN

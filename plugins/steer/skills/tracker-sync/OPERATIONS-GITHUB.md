@@ -1,19 +1,36 @@
-# `/steer:tracker-sync` - planning operations (types, milestones, issue fields)
+# `/steer:tracker-sync` - the GitHub-native operations
 
 Read this file **only when** you are about to perform one of the operations it
-lists: `set-type`, `set-milestone`, `milestone-ensure`, `field-get`,
-`field-set`, `bootstrap-fields`. The API boundary, the integration ladder and
-the core lifecycle ops are in
+lists: `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`,
+`field-set`, `bootstrap-fields`, `link-parent`, `link-related`,
+`link-blocked-by`. The API boundary, the integration ladder and the core
+operations are in
 [`OPERATIONS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS.md) and
 bind everything here - in particular the rule that **only the queries and
 mutations these files enumerate** may be issued, and that nothing touching PR
 merge, branch protection, or repo settings belongs to this gateway at all.
 
-These ops are **capability-degrading by design**: Issue Types and native issue
-fields are org settings, so each detects support first and reports a gap rather
-than fabricating config or falling back to a label.
+These ops are what the GitHub arm can do **on top of** the core, so nothing in
+the issue lifecycle may depend on one: labels, Issue Types, milestones and
+native issue fields are repo or org settings, and native relationship edges are
+a GitHub feature. Every op here is **capability-degrading by design** - it
+detects support first and reports a gap rather than fabricating config - and the
+`steer:*` marker the core writes stays canonical when it degrades.
 
-## Operations
+Only these callers read this file: `/steer:spec roadmap` (milestones, dates),
+`/steer:issues decompose`/`epic` (types, parent and related links),
+`/steer:issues reconcile` (the labels and types it normalizes), `/steer:issues
+triage` (the Priority floor), and `/steer:setup init`/`adopt`
+(`bootstrap-fields`).
+
+## Labels and types
+
+- **`label #N`** - add/remove labels. The `source:*` label is *derived* from the
+  `steer:source` marker; never treat the label as the source of truth. Same for
+  every other label that mirrors a marker: the label exists so a human can filter
+  a board, and losing it loses nothing steer reads. (`/steer:issues
+  bootstrap-labels` creates the taxonomy itself, inline, and says so - it is the
+  documented exception to this gateway.)
 
 - **`set-type #N <Feature|Bug|Task|Epic>`** - set the Issue Type via
   `gh issue edit --type` / MCP. **Capability-degrading:** detect support + the
@@ -24,6 +41,8 @@ than fabricating config or falling back to a label.
   name, not just whether Issue Types are on; if `Epic` is missing, keep
   `steer:kind=epic`, **leave the Type unset** (never substitute `Feature`), warn,
   and do not invent an `epic` label.
+
+## Milestones and issue fields
 
 - **`set-milestone #N <title>`** - set or clear the issue's native GitHub
   **Milestone** (the field a Projects v2 release/roadmap view groups by) via
@@ -60,7 +79,7 @@ than fabricating config or falling back to a label.
   `setIssueFieldValue` mutation (or the REST issue-field-values endpoint); writes
   exactly one field. The value is the **single source of truth**; callers that
   auto-set Priority own the escalate-only + managed-block **ledger** provenance
-  (`/steer:issues`), not this op - and `field-set` has **no managed-block
+  (`/steer:work issues`), not this op - and `field-set` has **no managed-block
   concurrency guard**, so report the prior value when you change it. **Capability-
   degrading:** if the org has not enabled issue fields, or the named field/option
   does not exist, emit a non-blocking warning and **stop** - **never** fabricate a
@@ -79,5 +98,49 @@ than fabricating config or falling back to a label.
   options differ from `issue_priority` (`Urgent|High|Medium|Low` - e.g. an org using
   `P0/P1/P2`) -> **report the mismatch and stop**; never rename or fabricate options.
   Like `milestone-ensure`, it is **create-or-leave**: never overwrite an option set
-  a human configured. `/steer:init` and `/steer:adopt` call it during setup (next to
-  `bootstrap-labels`); it is safe to re-run.
+  a human configured. `/steer:setup init` and `/steer:setup adopt` call it during
+  setup (next to `bootstrap-labels`); it is safe to re-run.
+
+## Relationships
+
+Two invariants span the three link ops: **one representation only** (a native
+edge and a managed-block line for the same pair are never both written), and a
+link **informs** ranking or a human decision but never sets `steer:state` or
+closes an issue on its own.
+
+- **`link-parent #N <parent>`** - native sub-issue link, else `steer:parent-issue`.
+**Tier-agnostic:** the same op links a Feature under an Epic and a Task under a
+Feature - each is one single-parent edge, so an `Epic -> Feature -> Task` hierarchy
+is built by linking each hop. The marker fallback is single-valued (one direct
+parent per issue), which holds for every hop of the chain.
+
+- **`link-related #N <other> <relationship>`** - record a non-hierarchical
+  connection between two issues. `<relationship>` is an `issue_relationship` value
+  (`relates-to` · `depends-on` · `blocks` · `conflicts-with` · `supersedes` ·
+  `superseded-by` - see `ENUMS.md`); reject anything outside the enum. For
+  **`depends-on`/`blocks`**, prefer the native relationship via `link-blocked-by`
+  (below) when available - it is board-visible and feeds ranking. Otherwise (and
+  for the relationship types GitHub has no native form for -
+  `relates-to`/`conflicts-with`/`supersedes`), this writes the link as a
+  managed-block `Related issues` line (`#<other> - <relationship> (why)`) on `#N`
+  per `ISSUE-SCHEMA.md` - the `#<other>` mention makes GitHub
+  auto-create the backlink. **Reciprocity is the caller's choice:** by default
+  record the symmetric line on `<other>` too (`relates-to`/`conflicts-with` are
+  symmetric; `depends-on`<->`blocks` and `supersedes`<->`superseded-by` invert), but
+  only when permitted to write that issue's managed block. Idempotent - a line for
+  the same `(other, relationship)` pair is updated in place, not duplicated.
+  **Never** reclassify or close either issue: a `conflicts-with`/`supersedes` link
+  is surfaced for a human, not acted on.
+
+- **`link-blocked-by #N <blocker>`** - record a **native** GitHub issue
+  dependency (`#N` is blocked by `#blocker`; the reciprocal "blocks" edge is
+  created by GitHub automatically). Native relationships have no `gh issue`
+  subcommand - use the blocked-by add/remove mutations via `gh api graphql` (issue
+  **node id**, not number), else the MCP equivalent if it exposes them. **Capability-degrading:** where native issue
+  relationships are unavailable, fall back to `link-related #N <blocker>
+  depends-on`. **One representation only:** when the native edge is written, do
+  **not** also add a managed-block `depends-on`/`blocks` line for the same pair -
+  the native edge is canonical, the marker is the fallback (this avoids
+  double-counting in ranking; see `ISSUE-SCHEMA.md`). Idempotent. A blocked-by edge
+  **informs** ranking and may *suggest* `steer:state=blocked`, but **never sets**
+  it - `steer:state` stays canonical and a transition is the caller's decision.

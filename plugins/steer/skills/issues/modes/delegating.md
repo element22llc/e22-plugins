@@ -12,7 +12,7 @@ human-owned. Required steps, in order:
 
 1. **Read** the issue + related specs.
 2. **Search the existing issue corpus first - this is not optional.** Before
-   synthesizing, run **`/steer:tracker-sync search`** across **open *and*
+   synthesizing, run **`/steer:tracker-sync find`** across **open *and*
    closed** issues for the topic, the systems/components named, and adjacent
    decisions - don't reason only about the one issue you were handed. Search by
    the obvious keywords *and* their alternatives (e.g. an issue about "Cognito

@@ -340,7 +340,7 @@ definition, outlived the session and needs a named owner - promote it.
 
 **Assignee resolution on promotion.** When promoting, resolve the question's
 `owner:` role to a GitHub login via the **`owners:` map in `/spec/tracker.md`**
-and assign the `spec-question` issue to it (through `/steer:tracker-sync assign`,
+and assign the `spec-question` issue to it (through `/steer:tracker-sync claim <login>`,
 add-don't-replace):
 
 | `owner:` | Assigned to |

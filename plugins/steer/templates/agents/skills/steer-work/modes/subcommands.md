@@ -9,8 +9,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
 
 - **`start #N`** - resolve + validate the issue (actionable? readiness met for
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
-  **claim** it (`assign` the invoking GitHub user - self-assign - + set
-  `steer:claimed-by`, `transition` -> `in-progress`);
+  **claim** it (`claim` - self-assign the invoking GitHub user + set
+  `steer:claimed-by` - then `update-state` -> `in-progress`);
   **(pr-flow)** create or reuse the branch and **write the local work marker**
   `spec/.work/<branch>.md` (slashes -> underscores) in the format `WORK-MARKER.md`
   defines (§ Marker format), so
@@ -32,9 +32,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   state.
 - **`status #N`** - **read-only**: report state, claimant, branch, PR, blockers,
   spec readiness, and outstanding validation. Mutates nothing.
-- **`finish #N`** - run the required validation; update progress (managed block +
-  comment); commit, push, and open-or-update the PR (autonomous - Commit
-  autonomy; merge is not yours); **mark the PR ready for review** (`gh pr ready`) if it
+- **`finish #N`** - run the required validation; update progress (`update-state`
+  on the managed block + `comment`); commit, push, and open-or-update the PR (autonomous - Commit
+  autonomy; merge is not yours) and record it with `link-delivery` - in
+  solo-trunk the closing trunk commit is that ref; **mark the PR ready for review** (`gh pr ready`) if it
   is still a draft, **then watch CI
   to conclusion** (`gh pr checks --watch`) before transitioning. The order matters and is
   not cosmetic: the shipped `ci.yml` skips every job on a draft PR, and a **skipped** check
