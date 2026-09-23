@@ -203,7 +203,10 @@ because dependency bumps don't touch application logic, steer **auto-approves an
 auto-merges the low-risk subset - patch and minor updates** (where most security
 fixes land). **Major** bumps are never auto-merged: they can carry breaking changes
 and may need a [`policy/versions.yml`](policy/versions.yml) decision, so a human
-reviews them.
+reviews them. Every ecosystem also carries a 7-day `cooldown`: Dependabot proposes
+a version only once it has been public for a week - the same supply-chain guard as
+pnpm's `minimumReleaseAge` - so a hijacked release is usually yanked before
+auto-merge could land it. Security updates ignore the cooldown and arrive at once.
 
 This waives only the human *review*, never the tests: the workflow waits for the
 required `ci` check before it merges, so a bump that breaks tests, lint, or the
