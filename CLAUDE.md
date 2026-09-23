@@ -45,15 +45,15 @@ plugins/steer/
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand, invoked as /steer:<skill>:
 │                                   #   public: setup, spec, work, audit, status, next, build,
-│                                   #           issues, loop, reference, standards, report
+│                                   #           standards
 │                                   #   internal (user-invocable:false, reached via a front
 │                                   #   door or a caller): init, adopt, sync, doctor, protect
 │                                   #           (-> setup); questions, adr, intake, roadmap
-│                                   #           (-> spec); tidy (-> work); explain (-> status);
-│                                   #           help (-> next); spec-scaffold, tracker-sync
-│                                   #           (gateways, called by many skills)
-│                                   # (7.0 in progress, #584: issues -> work, loop behind the
-│                                   #  automation opt-in, reference + report internal)
+│                                   #           (-> spec); issues, tidy (-> work); explain
+│                                   #           (-> status); help (-> next); spec-scaffold,
+│                                   #           tracker-sync (gateways, called by many
+│                                   #           skills); reference, report, loop (reached
+│                                   #           by a rule; loop behind the automation opt-in)
 │                                   # (no commands/ - see "invocation syntax" below)
 └── templates/
     ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,
