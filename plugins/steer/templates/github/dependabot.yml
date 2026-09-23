@@ -1,6 +1,8 @@
 # Dependabot config (installs to .github/dependabot.yml). Paired with dependabot-auto-merge.yml:
 # patch/minor bumps auto-merge once `ci` is green; majors stay with a human and are ignored for
-# policy-governed ecosystems. Rationale: README.md#branch-protection.
+# policy-governed ecosystems. `cooldown` holds a version update until the release is 7 days old, so a
+# compromised publish is usually caught before auto-merge can land it; security updates are not delayed.
+# Rationale: README.md#branch-protection.
 version: 2
 
 updates:
@@ -9,6 +11,8 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
     groups:
       # One grouped PR per week instead of one per action.
       github-actions:
@@ -27,6 +31,8 @@ updates:
   #   schedule:
   #     interval: weekly
   #   open-pull-requests-limit: 5
+  #   cooldown:
+  #     default-days: 7
   #   groups:
   #     minor-and-patch:
   #       update-types:
@@ -43,6 +49,8 @@ updates:
   #   schedule:
   #     interval: weekly
   #   open-pull-requests-limit: 5
+  #   cooldown:
+  #     default-days: 7
   #   groups:
   #     minor-and-patch:
   #       update-types:
@@ -59,6 +67,8 @@ updates:
   #   schedule:
   #     interval: weekly
   #   open-pull-requests-limit: 5
+  #   cooldown:
+  #     default-days: 7
   #   ignore:
   #     - dependency-name: "*"
   #       update-types:
@@ -70,6 +80,8 @@ updates:
   #   schedule:
   #     interval: weekly
   #   open-pull-requests-limit: 5
+  #   cooldown:
+  #     default-days: 7
   #   ignore:
   #     - dependency-name: "*"
   #       update-types:

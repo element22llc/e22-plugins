@@ -6,8 +6,9 @@
 # with nothing chasing its dependencies.
 #
 # Policy mirrors the shipped template: weekly, grouped into one PR per
-# ecosystem, and **majors are left for a human** (they can carry breaking
-# changes and may need a `policy/versions.yml` floor decision). There is no
+# ecosystem, a 7-day `cooldown` on every ecosystem, and **majors are left for a
+# human** (they can carry breaking changes and may need a `policy/versions.yml`
+# floor decision). There is no
 # `dependabot-auto-merge.yml` here - unlike a product repo, every bump in the
 # standards repo is reviewed by a maintainer before merge.
 version: 2
@@ -20,6 +21,8 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns:
@@ -36,6 +39,8 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
     groups:
       minor-and-patch:
         update-types:
