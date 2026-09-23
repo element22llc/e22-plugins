@@ -1,6 +1,9 @@
 # Skills reference
 
-Every skill `steer` ships, invoked as **`/steer:<skill>`**. This page is kept in
+Every skill `steer` ships, named as **`/steer:<skill>`**. Only the front doors
+below are typed; the internal skills are reached through a front door or by
+Claude, and their `/steer:` name identifies them rather than inviting you to type
+it. This page is kept in
 sync with `plugins/steer/skills/` by the `/plugin-docs` skill, and the
 [`validate_docs.py`](../contributing/documentation.md) gate fails CI if any
 shipped skill is missing here.
@@ -58,7 +61,7 @@ specialized skills below as needed, so you rarely reach past this set.
 !!! info "`/steer:explain` and `/steer:status` run in a forked subagent"
     Both carry `context: fork`, so each runs in its own subagent rather than the
     main session. They are pure renderers - the whole input is the argument
-    (`[feature-id]`, `[this-week | since <date> | milestone]`) and the whole
+    (`[feature-id]`, `[this-week | since <date> | milestone [<name>] | feature <id>]`) and the whole
     output is a page - so nothing is lost by cutting them off from the
     conversation, while the spine and tracker reads behind the page stay out of
     your session's context. That is the point: you asked for the report, not for

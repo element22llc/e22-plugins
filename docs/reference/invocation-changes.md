@@ -55,7 +55,7 @@ shows you the diff before writing. It leaves append-only records alone
 account of what was run.
 
 The same sync re-copies the generated Copilot and `.agents/skills/` surfaces, so a
-Copilot teammate picks up the new `/steer-setup` prompt set in the same pass.
+Copilot teammate picks up the regenerated `.agents/skills/` tree in the same pass.
 
 !!! tip "You do not have to migrate to keep working"
     Old invocations stop resolving, but the *skills* are reachable the whole time -

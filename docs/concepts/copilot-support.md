@@ -226,8 +226,8 @@ bullets there as caveats you apply yourself.
 
 - **Forked skills are not forked here.** `context: fork` names a Claude Code
   execution mode no other agent implements, so the portable copy drops it - but the
-  two skills that use it (`/steer-explain`, `/steer-status`) argue *from* forked
-  execution in their bodies - `/steer-explain` most sharply, telling the reader
+  two skills that use it (`steer-explain`, `/steer-status`) argue *from* forked
+  execution in their bodies - `steer-explain` most sharply, telling the reader
   "this skill runs forked, and `AskUserQuestion` is removed from every subagent".
   That premise is false on this surface, and it would forbid a correct action. Both **portable** copies therefore open with a note saying the
   fork passages describe Claude Code, and that where a step says it cannot ask,
@@ -251,7 +251,7 @@ steer's subagents in the plugin's `agents/` reach VS Code as **custom agents** -
 that is `steer-reviewer`, the read-only reviewer that `/steer-audit` and
 `/steer-work --reviewed` delegate a single bounded slice to. The scheduled loop
 delegates to it too, but it is not a slash-command there: a `user-invocable:
-false` skill gets no `/steer-<name>` prompt file.
+false` skill gets no `/steer-<name>` command.
 
 The build renders one `.agent.md` per subagent (`gen_copilot_agents.py`, drift
 gate `check_copilot_agents.py`). The subagent's Claude `tools` (`Read`/`Grep`/
@@ -318,7 +318,7 @@ Repo-specific Copilot guidance you author yourself also goes in a *separate*
 Copilot in VS Code does **not** read the plugin's `.mcp.json` (that wires Claude
 Code only). So the scaffold ships **`.vscode/mcp.json`** - VS Code's `servers`
 schema - mirroring the same servers: the **GitHub** MCP server that the tracker
-gateway (`tracker-sync`, reached through `/steer-issues` and `/steer-work` - it is
+gateway (`tracker-sync`, reached through `/steer-work` and its `issues` mode - it is
 `user-invocable: false`, so no one types it directly) is built around, and
 **context7** for current library docs. The GitHub server prompts once for a PAT
 (stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
@@ -418,8 +418,9 @@ the standards in `.github/copilot-instructions.md`.
   by the `orient-session.sh` SessionStart hook as raw text, which the Copilot
   surfaces discard (only the ruleset injector emits their JSON envelope so far).
   There is deliberately no always-on polyrepo *rule* for the generator
-  to carry, so a Copilot session gets no topology note. Read
-  `/steer:reference polyrepo` from Claude Code for the full topology.
+  to carry, so a Copilot session gets no topology note. The full
+  topology is in the polyrepo reference, which Claude Code loads
+  (`/steer:reference polyrepo`).
 - **Worktree `mise trust` inheritance is Claude-only.** `check-worktree-trust.sh`
   runs on two Claude-Code registrations - `SessionStart` and `CwdChanged` - so a
   Copilot session started in *or* entered into a linked worktree does **not**

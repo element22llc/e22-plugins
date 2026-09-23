@@ -84,9 +84,9 @@ flowchart TD
 
 ## SessionStart
 
-Since the session-checks consolidation, `hooks.json` carries **three**
-`SessionStart` registrations: the rule injection, one `session-checks.sh`
-orchestrator, and the orientation hook. The session checks are no longer
+Since the session-checks consolidation, `hooks.json` registers **three**
+`SessionStart` scripts: the rule injection (one command per part), one
+`session-checks.sh` orchestrator, and the orientation hook. The session checks are no longer
 registered individually - `session-checks.sh` runs them in the order below,
 failure-isolated (a crashing check never blocks the rest) and always exiting
 `0`; each check keeps its own contract (read the payload from stdin, print a
