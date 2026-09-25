@@ -520,15 +520,15 @@ committed `compose.yaml`, so local matches deployed:
   arrive via git refs and caches, virtualenvs and build output rebuild. The
   copied `.env` keeps its fixed `POSTGRES_PORT`; `worktree-env.sh` re-derives the
   per-worktree port on top, so there is no clash.
-- **Orca worktrees get the same isolation, and a teardown of their own.** Orca
-  creates a worktree outside the repo (`~/orca/workspaces/<repo>/<name>` by
-  default) or under `.orca/worktrees/`, on a `<user>/<name>` branch. steer treats
-  it as any linked worktree: the session inherits the primary checkout's
-  `mise trust`, and `worktree-env.sh` gives it its own project name and ports.
-  Orca deletes the worktree itself, so Claude Code's `WorktreeRemove` never
-  fires. The scaffold's `orca.yaml` `scripts.archive` hook runs `docker:clean`
-  instead. It is fail-soft because a failing archive hook blocks Orca's removal.
-  Orca's CLI skips the hook unless given `orca worktree rm --run-hooks`.
+- **A worktree another tool manages needs that tool's teardown.** steer keys
+  off the `.git` file's `gitdir:` pointer, so trust inheritance and
+  `worktree-env.sh` work wherever the worktree lives - Orca's
+  `~/orca/workspaces/<repo>/<name>` included. Only Claude Code raises
+  `WorktreeRemove`, though: Orca, Conductor or a plain `git worktree remove`
+  delete a worktree without it, leaving its stack running. `/steer:setup
+  worktrees` checks a repo, installs the tool's hook (for Orca, an `orca.yaml`
+  `scripts.archive` from `templates/worktrees/`) and sweeps the stacks deleted
+  worktrees left behind.
 
 ## Internal monorepo layout
 

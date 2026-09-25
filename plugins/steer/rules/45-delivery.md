@@ -64,5 +64,7 @@ worktree before any `mise run ...` - it is path-based, so an untrusted worktree
 fails on trust, not on the task. Start services only through `mise run ...` so
 the per-worktree project name and port offset apply, never a bare `docker
 compose up` or a hardcoded port. Clean up what you started (`mise run
-docker:clean`); the lifecycle hooks are best-effort and Claude-Code-only.
+docker:clean`); the lifecycle hooks are best-effort and Claude-Code-only, so a
+repo whose worktrees another tool manages (Orca, Conductor) needs
+`/steer:setup worktrees`.
 Mechanics: `/steer:reference conventions`.

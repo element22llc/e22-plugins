@@ -161,10 +161,9 @@ owned it is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`. Only th
 `WorktreeRemove` half is dependable; the `SessionEnd` half is opportunistic, so
 the rules still ask the agent to stop what it started.
 
-An **Orca** worktree never raises `WorktreeRemove`: Orca deletes it without the
-harness. The scaffold's `orca.yaml` `scripts.archive` hook runs the same
-`docker:clean` there, fail-soft, since a failing archive hook blocks Orca's
-removal.
+A worktree deleted by another tool - Orca, Conductor, `git worktree remove` -
+never raises `WorktreeRemove`. `/steer:setup worktrees` installs that tool's own
+teardown hook and sweeps the stacks it already orphaned.
 
 ## Shared input extraction (`lib/json.sh`)
 

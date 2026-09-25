@@ -1,15 +1,16 @@
 kind: Added
 body: |-
-  - **Orca worktrees get the full Docker teardown.** Orca deletes its worktrees
-    without Claude Code's `WorktreeRemove`, so the `docker:clean` steer runs
-    there never fired and a deleted Orca worktree left its containers and
-    volumes behind. The scaffold now ships `orca.yaml`, whose `scripts.archive`
-    hook runs `docker:clean` (`ws:docker:clean` in a workspace root) as Orca
-    removes the worktree. It is fail-soft, because a failing archive hook blocks
-    Orca's removal, and honours `STEER_NO_WORKTREE_TEARDOWN`. The scaffold
-    `.gitignore` and the version-pin scanner also skip Orca's per-project
-    `.orca/worktrees/` location. In an existing repo, `/steer:setup sync`
-    surfaces both as scaffold deltas to merge.
+  - **Added: `/steer:setup worktrees`.** Only Claude Code tells steer a worktree
+    is being deleted, so a worktree removed by Orca, Conductor or a plain
+    `git worktree remove` left its Compose containers and volumes running. The
+    new mode checks a repo's parallel-worktree handling whoever manages it -
+    inherited `mise trust`, per-worktree ports, the git-ignored boot files
+    `.worktreeinclude` must carry, in-repo worktree dirs ignored - installs the
+    tool's own teardown on confirmation (for Orca, an `orca.yaml` archive hook
+    that runs `docker:clean`, fail-soft because a failing one blocks Orca's
+    removal), and sweeps the stacks deleted worktrees left behind. Nothing is
+    added to the scaffold; a repo gets the Orca hook only when it uses Orca. The
+    version-pin scanner also skips Orca's in-repo `.orca/worktrees/`.
 time: 2026-09-25T12:00:00.000000000-04:00
 custom:
   Slug: orca-worktree-teardown

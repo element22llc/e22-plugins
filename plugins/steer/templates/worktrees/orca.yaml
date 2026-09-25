@@ -1,4 +1,4 @@
-# Orca worktree hooks: Orca deletes worktrees itself, so Claude Code's WorktreeRemove teardown never fires - this archive hook runs it instead.
+# Orca worktree hooks, installed by /steer:setup worktrees: Orca deletes worktrees itself, so Claude Code's WorktreeRemove teardown never fires - this archive hook runs it instead.
 # Rationale: steer rule "Parallel worktrees". Fail-soft and exit-free: a failing archive hook blocks the removal, and Orca may append a local script.
 scripts:
   archive: |

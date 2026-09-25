@@ -1,7 +1,7 @@
 ---
 name: steer-setup
-description: One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of the spec spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing vibe-coded repo) or `sync` (apply migrations and reconcile drift after a plugin release); `doctor` fixes the local prerequisites first, `protect` raises the branch-protection wall last.
-argument-hint: '[init | adopt | sync | doctor | protect] [--check]'
+description: One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of the spec spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing vibe-coded repo) or `sync` (apply migrations and reconcile drift after a plugin release); `doctor` fixes the local prerequisites first, `protect` raises the branch-protection wall last, `worktrees` checks parallel-worktree handling.
+argument-hint: '[init | adopt | sync | doctor | protect | worktrees] [--check]'
 ---
 
 <!-- Generated from the steer plugin's skills/setup/SKILL.md - do not edit by hand.
@@ -10,9 +10,9 @@ argument-hint: '[init | adopt | sync | doctor | protect] [--check]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to set up, onboard, bootstrap or adopt a repo, sync to the latest plugin, get a machine ready, or protect main - the single entry point whenever you would otherwise guess which path fits. `init` covers a brand-new repo and a template fork with bracketed fill-in placeholders left; `adopt` covers an existing repo whose code has no spec spine; `sync` brings a managed or openspec repo up to date after a plugin release, with `sync --check` the read-only drift report; `doctor` diagnoses missing prerequisites (git, mise, Docker - "command not found", a shadowed runtime); `protect` verifies or applies branch protection and merge rules, graduates solo trunk to PR flow, or waives it.
+**When to use.** Use when asked to set up, onboard, bootstrap or adopt a repo, sync to the latest plugin, get a machine ready, or protect main - the single entry point whenever you would otherwise guess which path fits. `init` covers a brand-new repo and a template fork with bracketed fill-in placeholders left; `adopt` covers an existing repo whose code has no spec spine; `sync` brings a managed or openspec repo up to date after a plugin release, with `sync --check` the read-only drift report; `doctor` diagnoses missing prerequisites (git, mise, Docker - "command not found", a shadowed runtime); `protect` verifies or applies branch protection and merge rules, graduates solo trunk to PR flow, or waives it; `worktrees` checks worktrees another tool (Orca, Conductor, git) manages and sweeps stacks deleted ones left.
 
-<!-- steer:modes init,adopt,sync,doctor,protect -->
+<!-- steer:modes init,adopt,sync,doctor,protect,worktrees -->
 
 # Set up a repo on the standards
 
@@ -34,8 +34,9 @@ entry and follow it; never restate its steps here.
 | `sync` | Steady state: ledger migrations, spine/scaffold reconcile, capability + invocation repair, lands a PR. `sync --check` reports and writes nothing | `/steer-sync` |
 | `doctor` | Local prerequisites: git, mise and the runtimes it manages, Docker - flags a shadowed runtime, installs mise + runtimes on confirmation | `/steer-doctor` |
 | `protect` | Branch protection: diff `policy/branch-protection.yml` against live settings and apply the gaps, graduate solo trunk to PR flow, or `waive` | `/steer-protect` |
+| `worktrees` | Parallel worktrees made by any tool (Claude Code, Orca, Conductor, git): trust, Compose isolation, env files, the tool's teardown hook, orphaned stacks | `/steer-worktrees` |
 
-All five are `user-invocable: false` - a user reaches them **only** through this
+All six are `user-invocable: false` - a user reaches them **only** through this
 door, so a recommendation you hand back names `/steer-setup <mode>`, never the
 owning skill.
 
@@ -44,7 +45,8 @@ prerequisites have to hold before `init`/`adopt`/`sync` can run at all, and
 protection is the last step each of them ends on. Both are also reached on their
 own - a broken toolchain and a merge-rules question arrive without any bootstrap
 in sight - so route straight to the mode when the ask names it, without running
-spine detection first.
+spine detection first. `worktrees` is the same: a worktree tool's setup or a stack
+left running after a worktree was deleted needs no bootstrap either.
 
 ## Detect, then route
 
@@ -139,10 +141,10 @@ prototype-ceremony handling. This section governs the developer path that lands 
 
 Power users can skip detection by naming the mode: `setup init`, `setup adopt`,
 `setup sync` (`setup sync --check` for the read-only report), `setup doctor`, or
-`setup protect` (with `verify` / `apply [--solo | --team]` / `waive`). Honor the explicit
+`setup protect` (with `verify` / `apply [--solo | --team]` / `waive`), or `setup worktrees`. Honor the explicit
 mode, but if it clearly contradicts the detected state (e.g. `setup init` on a repo
 that's already `managed`), say what you detected and confirm before proceeding.
-`doctor` and `protect` contradict nothing - they run at any spine state.
+`doctor`, `protect` and `worktrees` contradict nothing - they run at any spine state.
 
 ## Why this exists
 
