@@ -47,8 +47,8 @@ plugins/steer/
 │                                   #   public: setup, spec, work, audit, status, next, build,
 │                                   #           standards
 │                                   #   internal (user-invocable:false, reached via a front
-│                                   #   door or a caller): init, adopt, sync, doctor, protect
-│                                   #           (-> setup); questions, adr, intake, roadmap
+│                                   #   door or a caller): init, adopt, sync, doctor, protect,
+│                                   #           worktrees (-> setup); questions, adr, intake, roadmap
 │                                   #           (-> spec); issues, tidy (-> work); explain
 │                                   #           (-> status); help (-> next); spec-scaffold,
 │                                   #           tracker-sync (gateways, called by many
@@ -61,12 +61,14 @@ plugins/steer/
     ├── reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, ...)
     ├── docker/                     # on-demand Dockerfile refs (Node/Python) - instantiated per
     │                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
+    ├── worktrees/                  # on-demand worktree-tool hooks (orca.yaml) - installed by
+    │                               #   /steer:setup worktrees only where that tool is used
     ├── github/                     # GitHub templates - single source of truth (issue forms,
     │                               #   workflows/ ci.yml + claude.yml + dependabot-auto-merge.yml + ...,
     │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
     │                               #   (copilot-instructions.md, agents/, instructions/ -
     │                               #    via `mise run gen:copilot`)
-    ├── agents/skills/              # GENERATED cross-tool skill surface (all 26 skills in the
+    ├── agents/skills/              # GENERATED cross-tool skill surface (all 27 skills in the
     │                               #   open Agent Skills format) - consumers install it as
     │                               #   .agents/skills/; via `mise run gen:copilot`
     └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, ...)

@@ -1,0 +1,16 @@
+kind: Added
+body: |-
+  - **Added: `/steer:setup worktrees`.** Only Claude Code tells steer a worktree
+    is being deleted, so a worktree removed by Orca, Conductor or a plain
+    `git worktree remove` left its Compose containers and volumes running. The
+    new mode checks a repo's parallel-worktree handling whoever manages it -
+    inherited `mise trust`, per-worktree ports, the git-ignored boot files
+    `.worktreeinclude` must carry, in-repo worktree dirs ignored - installs the
+    tool's own teardown on confirmation (for Orca, an `orca.yaml` archive hook
+    that runs `docker:clean`, fail-soft because a failing one blocks Orca's
+    removal), and sweeps the stacks deleted worktrees left behind. Nothing is
+    added to the scaffold; a repo gets the Orca hook only when it uses Orca. The
+    version-pin scanner also skips Orca's in-repo `.orca/worktrees/`.
+time: 2026-09-25T12:00:00.000000000-04:00
+custom:
+  Slug: orca-worktree-teardown

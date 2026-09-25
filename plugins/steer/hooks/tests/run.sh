@@ -3272,6 +3272,147 @@ for _pair in 'SessionEnd on-session-end.sh' 'WorktreeRemove on-worktree-remove.s
 	grep -q "$2" "${HOOKS}/hooks.json" && ok || bad "hooks.json: $2 wired"
 done
 
+# (m) Orca layout: the worktree lives OUTSIDE the primary checkout
+#     (~/orca/workspaces/<repo>/<name>) and its git dir is named `<pid>-<uuid>`,
+#     not after the worktree. Trust inheritance and the SessionEnd stop must key
+#     off the `gitdir:` pointer alone, never a `.claude/worktrees/` path.
+ORCA_P="${WORK}/orcaPrimary/repo"
+ORCA_W="${WORK}/orca/workspaces/repo/Feat-X"
+ORCA_GD="${ORCA_P}/.git/worktrees/24339-70eed91b-36e2-4b5b-91b1-02da19eb5ad6"
+mkdir -p "${ORCA_GD}" "${ORCA_W}"
+for _d in "${ORCA_P}" "${ORCA_W}"; do
+	printf '[env]\n_.source = "scripts/worktree-env.sh"\n' >"${_d}/mise.toml"
+	printf 'services: {}\n' >"${_d}/compose.yaml"
+done
+printf 'gitdir: %s\n' "${ORCA_GD}" >"${ORCA_W}/.git"
+: >"${WT_LOG}"
+out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG} MISE_STUB_TRUSTED=${ORCA_P}" \
+	run_hook check-worktree-trust.sh "$(session_json "${ORCA_W}" orca1)")"
+assert_has "worktree-trust: Orca worktree outside the repo inherits" "${out}" "inherited the primary checkout"
+: >"${LC_LOG}"
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
+	run_hook on-session-end.sh "$(session_end_json "${ORCA_W}" logout)")"
+grep -q "mise run -C ${ORCA_W} docker:down" "${LC_LOG}" && ok ||
+	bad "session-end: stops an Orca worktree's services (log: $(cat "${LC_LOG}"))"
+unset ENV
+
+# (n) the orca.yaml archive hook /steer:setup worktrees installs - the teardown
+#     Orca runs instead of WorktreeRemove. A failing archive hook BLOCKS Orca's
+#     removal, so it must exit 0 whatever mise does, and it must not `exit`
+#     (Orca may append a local script after it).
+ORCA_YAML="${PLUGIN}/templates/worktrees/orca.yaml"
+ORCA_ARCHIVE="$(sed -n '/^  archive: |/,$p' "${ORCA_YAML}" | sed '1d' | sed -n 's/^    //p')"
+[ -n "${ORCA_ARCHIVE}" ] && ok || bad "orca.yaml: scripts.archive block found"
+printf '%s' "${ORCA_ARCHIVE}" | grep -q 'exit' &&
+	bad "orca.yaml: archive must not exit (a local script may follow)" || ok
+ORCA_FAIL="${WORK}/orcafail"
+mkdir -p "${ORCA_FAIL}"
+printf '#!/bin/sh\nprintf "mise %%s\\n" "$*" >>"${MISE_STUB_LOG:?}"\nexit 1\n' >"${ORCA_FAIL}/mise"
+chmod +x "${ORCA_FAIL}/mise"
+orca_archive() { # <stub-dir> [VAR=value...] - run the hook as Orca does, in the worktree
+	_stubs="$1"
+	shift
+	(cd "${ORCA_W}" && env PATH="${_stubs}:/usr/bin:/bin" MISE_STUB_LOG="${LC_LOG}" "$@" sh -c "${ORCA_ARCHIVE}")
+}
+: >"${LC_LOG}"
+orca_archive "${LC_STUBS}" && ok || bad "orca.yaml: archive exits 0"
+grep -q 'mise run docker:clean' "${LC_LOG}" && ok ||
+	bad "orca.yaml: archive runs docker:clean (log: $(cat "${LC_LOG}"))"
+: >"${LC_LOG}"
+orca_archive "${ORCA_FAIL}" && ok || bad "orca.yaml: archive exits 0 when mise fails"
+grep -q 'mise run ws:docker:clean' "${LC_LOG}" && ok ||
+	bad "orca.yaml: archive falls back to ws:docker:clean (log: $(cat "${LC_LOG}"))"
+: >"${LC_LOG}"
+orca_archive "/nonexistent" 2>/dev/null && ok || bad "orca.yaml: archive exits 0 with no mise on PATH"
+: >"${LC_LOG}"
+orca_archive "${LC_STUBS}" STEER_NO_WORKTREE_TEARDOWN=1 && ok ||
+	bad "orca.yaml: archive exits 0 when disabled"
+[ -s "${LC_LOG}" ] &&
+	bad "orca.yaml: STEER_NO_WORKTREE_TEARDOWN disables the archive teardown" || ok
+
+# ---------------------------------------------------------------------------
+# scripts/scan-worktrees.sh - the /steer:setup worktrees detector. A real git
+# repo with worktrees from three managers: Claude Code (in-repo, ignored), Orca
+# in-repo (unignored) and Orca external. Stubbed mise answers trust; stubbed
+# docker answers `compose ls`, so the orphan verdicts are deterministic.
+# ---------------------------------------------------------------------------
+SCANWT="${PLUGIN}/scripts/scan-worktrees.sh"
+if command -v git >/dev/null 2>&1; then
+	SW_P="$(git_repo swPrim main)"
+	SW_STUBS="${WORK}/swstubs"
+	mkdir -p "${SW_STUBS}" "${SW_P}/scripts" "${SW_P}/apps/web"
+	ln -s "${WT_STUBS}/mise" "${SW_STUBS}/mise"
+	cat >"${SW_STUBS}/docker" <<'STUB'
+#!/bin/sh
+[ -n "${DOCKER_STUB_JSON:-}" ] || exit 1
+cat "${DOCKER_STUB_JSON}"
+STUB
+	chmod +x "${SW_STUBS}/docker"
+	printf '[env]\n_.source = "scripts/worktree-env.sh"\n' >"${SW_P}/mise.toml"
+	printf 'services: {}\n' >"${SW_P}/compose.yaml"
+	printf ': \n' >"${SW_P}/scripts/worktree-env.sh"
+	printf '.env\n.env.local\n.claude/worktrees/\n' >"${SW_P}/.gitignore"
+	printf '.env\n' >"${SW_P}/.worktreeinclude"
+	(cd "${SW_P}" && git add -A && git commit -q -m scaffold &&
+		git worktree add -q -b c1 .claude/worktrees/c1 &&
+		git worktree add -q -b o1 .orca/worktrees/o1 &&
+		git worktree add -q -b o2 "${WORK}/orca/workspaces/swPrim/Feat") >/dev/null 2>&1
+	printf 'A=1\n' >"${SW_P}/.env"
+	printf 'A=1\n' >"${SW_P}/apps/web/.env"
+	printf 'A=1\n' >"${SW_P}/apps/web/.env.local"
+	printf '[{"Name":"swprim-gone","Status":"exited(1)","ConfigFiles":"%s/gone/compose.yaml"},{"Name":"swprim-live","Status":"running(1)","ConfigFiles":"%s/compose.yaml"},{"Name":"other-gone","Status":"exited(1)","ConfigFiles":"%s/gone2/compose.yaml"}]\n' \
+		"${WORK}" "${SW_P}" "${WORK}" >"${WORK}/sw-ls.json"
+	sw_scan() { # [VAR=value...] - scan the primary; findings land in $out
+		out="$(env PATH="${SW_STUBS}:/usr/bin:/bin" MISE_STUB_LOG="${WT_LOG}" \
+			MISE_STUB_TRUSTED="${SW_P}" ORCA_WORKTREE_ID= TERM_PROGRAM= \
+			CONDUCTOR_WORKSPACE_PATH= CONDUCTOR_ROOT_PATH= "$@" sh "${SCANWT}" "${SW_P}")"
+	}
+	sw_line() { printf '%s\n' "${out}" | grep -F "$(printf '%s\t%s' "$1" "$2")"; }
+	sw_scan DOCKER_STUB_JSON="${WORK}/sw-ls.json"
+	sw_line checkout primary >/dev/null && ok || bad "scan-worktrees: primary checkout (got: ${out})"
+	for _m in claude-code orca; do
+		[ "$(sw_line manager "${_m}" | wc -l | tr -d ' ')" = 1 ] && ok ||
+			bad "scan-worktrees: manager ${_m} reported once (got: ${out})"
+	done
+	sw_line manager git >/dev/null && bad "scan-worktrees: no plain-git manager here" || ok
+	sw_line primary-trust trusted >/dev/null && ok || bad "scan-worktrees: primary trusted"
+	sw_line trust untrusted | grep -q '.orca/worktrees/o1' && ok ||
+		bad "scan-worktrees: a linked worktree reported untrusted (got: ${out})"
+	sw_line env-isolation ok >/dev/null && ok || bad "scan-worktrees: env-isolation wired"
+	# A slash-less `.env` covers apps/web/.env at any depth; only .env.local is uncovered.
+	[ "$(sw_line worktreeinclude incomplete | cut -f3)" = "apps/web/.env.local" ] && ok ||
+		bad "scan-worktrees: only apps/web/.env.local uncovered (got: ${out})"
+	sw_line env-copy missing | grep -q 'orca/workspaces/swPrim/Feat: ' && ok ||
+		bad "scan-worktrees: external worktree lacks the env files (got: ${out})"
+	sw_line worktree-dir ignored | grep -q '.claude/worktrees' && ok ||
+		bad "scan-worktrees: .claude/worktrees ignored"
+	sw_line worktree-dir unignored | grep -q '.orca/worktrees' && ok ||
+		bad "scan-worktrees: .orca/worktrees unignored (got: ${out})"
+	sw_line teardown hooked | grep -q 'claude-code' && ok || bad "scan-worktrees: claude-code hooked"
+	sw_line teardown absent | grep -q 'orca' && ok || bad "scan-worktrees: orca teardown absent"
+	sw_line orphan swprim-gone | grep -q "${WORK}/gone" && ok ||
+		bad "scan-worktrees: this repo's stack with its dir gone is an orphan (got: ${out})"
+	sw_line orphan swprim-live >/dev/null && bad "scan-worktrees: a live stack is never an orphan" || ok
+	sw_line orphan other-gone >/dev/null && bad "scan-worktrees: another repo's stack is not ours" || ok
+	sw_line orphans 1 >/dev/null && ok || bad "scan-worktrees: one orphan counted"
+
+	cp "${ORCA_YAML}" "${SW_P}/orca.yaml"
+	sw_scan
+	sw_line teardown ok | grep -q 'orca' && ok || bad "scan-worktrees: installed orca.yaml is ok"
+	sw_line orphans n/a >/dev/null && ok || bad "scan-worktrees: docker failure is n/a, not an error"
+	printf 'scripts:\n  setup: pnpm install\n' >"${SW_P}/orca.yaml"
+	sw_scan
+	sw_line teardown merge | grep -q 'orca' && ok || bad "scan-worktrees: foreign orca.yaml needs a merge"
+
+	# from inside a linked worktree the scan anchors on the same primary.
+	out="$(env PATH="${SW_STUBS}:/usr/bin:/bin" MISE_STUB_LOG="${WT_LOG}" ORCA_WORKTREE_ID=x \
+		sh "${SCANWT}" "${WORK}/orca/workspaces/swPrim/Feat")"
+	sw_line checkout linked | grep -q 'swPrim' && ok || bad "scan-worktrees: linked checkout (got: ${out})"
+	sw_line manager orca | grep -q 'session env' && ok || bad "scan-worktrees: Orca seen from session env"
+	sh "${SCANWT}" "${WORK}/not-a-repo-anywhere" >/dev/null 2>&1
+	[ $? = 3 ] && ok || bad "scan-worktrees: outside a work tree exits 3"
+fi
+
 # ---------------------------------------------------------------------------
 # inject-standards.sh - parts under the 10,000-character cap on hook stdout.
 #

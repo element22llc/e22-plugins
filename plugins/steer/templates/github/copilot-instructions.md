@@ -57,10 +57,10 @@ the changelog, opens the PR, and stops at the merge); a production incident is
 `/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`.
 
 **Front doors** detect context and hand off (`setup` -> `init` / `adopt` /
-`sync` / `doctor` / `protect`; `spec` -> `questions` / `adr` / `intake` /
-`roadmap`; `work` -> `issues` / `tidy`), so you rarely route to a specialized
-skill directly; `/steer:tracker-sync` and `/steer:spec-scaffold` are internal
-gateways, not front doors. Where nothing is auto-injected (Desktop chat,
+`sync` / `doctor` / `protect` / `worktrees`; `spec` -> `questions` / `adr` /
+`intake` / `roadmap`; `work` -> `issues` / `tidy`), so you rarely route to a
+specialized skill directly; `/steer:tracker-sync` and `/steer:spec-scaffold` are
+internal gateways, not front doors. Where nothing is auto-injected (Desktop chat,
 claude.ai web), run `/steer:standards`.
 
 **Deliberately not in this payload** - Artifact rendering, design sources, the
@@ -549,7 +549,9 @@ worktree before any `mise run ...` - it is path-based, so an untrusted worktree
 fails on trust, not on the task. Start services only through `mise run ...` so
 the per-worktree project name and port offset apply, never a bare `docker
 compose up` or a hardcoded port. Clean up what you started (`mise run
-docker:clean`); the lifecycle hooks are best-effort and Claude-Code-only.
+docker:clean`); the lifecycle hooks are best-effort and Claude-Code-only, so a
+repo whose worktrees another tool manages (Orca, Conductor) needs
+`/steer:setup worktrees`.
 Mechanics: `/steer:reference conventions`.
 
 

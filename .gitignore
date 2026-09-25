@@ -43,6 +43,8 @@ Desktop.ini
 **/.claude/.cache/
 .claude/worktrees/
 **/.claude/worktrees/
+.orca/worktrees/
+**/.orca/worktrees/
 
 # Cowork mount artifacts - Cowork sometimes leaves an empty folder named
 # after the connected workspace inside the workspace itself. Ignore any

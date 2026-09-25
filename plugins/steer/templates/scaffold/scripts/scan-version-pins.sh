@@ -58,9 +58,9 @@ scan_file() {
 }
 
 VIOLATIONS="$(
-	# Prune .claude/worktrees by PATH (not -name): linked worktrees are full checkouts, so each file would be reported once per worktree.
+	# Prune .claude/worktrees and .orca/worktrees by PATH (not -name): linked worktrees are full checkouts, so each file would be reported once per worktree.
 	find "${ROOT}" \
-		\( -path '*/.claude/worktrees' -o -name .git -o -name node_modules \
+		\( -path '*/.claude/worktrees' -o -path '*/.orca/worktrees' -o -name .git -o -name node_modules \
 		-o -name .venv -o -name venv \
 		-o -name vendor -o -name dist -o -name build -o -name target \
 		-o -name .terraform -o -name .next -o -name .work \) -prune -o \

@@ -88,6 +88,7 @@ below give the detail.
 | Lock branch protection or flip the delivery mode | `/steer:setup protect` |
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
+| Run parallel worktrees from Orca, Conductor or `git worktree`, or clean up stacks deleted worktrees left running | `/steer:setup worktrees` |
 | steer itself is misbehaving | Say so - Claude files the plugin bug upstream (`/steer:report`) |
 | Answer accumulated open questions | `/steer:spec questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:spec adr` |
@@ -104,6 +105,7 @@ below give the detail.
 | [`/steer:setup adopt`](adopt.md) | An existing app with working code but no spine. |
 | `/steer:setup doctor` | The local toolchain is missing or a runtime is shadowed - this runs before any of the others can. |
 | `/steer:setup protect` | Raise the branch-protection wall, or graduate off solo trunk - the step each bootstrap path ends on. |
+| `/steer:setup worktrees` | Worktrees made by another tool (Orca, Conductor, git) need that tool's teardown hook - this checks and installs it, and sweeps orphaned stacks. |
 
 ## Build loop
 

@@ -184,7 +184,7 @@ def test_real_plugin_tree_is_in_sync_and_fully_resolved():
     from conftest import REPO_ROOT
 
     tree = gen_agent_skills.build(REPO_ROOT / gen_agent_skills.SKILLS_DIR)
-    assert len({p.parts[0] for p in tree}) == 26, "every authored skill must ship"
+    assert len({p.parts[0] for p in tree}) == 27, "every authored skill must ship"
     for rel, text in tree.items():
         assert "CLAUDE_PLUGIN_ROOT" not in text, f"unresolved plugin-root path in {rel}"
         body = _after_banner(text)

@@ -260,6 +260,13 @@ raises a prompt. Be honest about the tiers:
   ports.** Raise the budget yourself if you want it to fit:
   `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`. `WorktreeRemove` takes
   the ordinary command-hook timeout and is the dependable half.
+- **`WorktreeRemove` fires only for worktrees Claude Code deletes.** Orca,
+  Conductor and a plain `git worktree remove` delete theirs without it, so the
+  stack keeps running. Trust inheritance, per-worktree ports and the
+  `SessionEnd` stop still apply. `/steer:setup worktrees` installs the tool's
+  own teardown - for Orca, an `orca.yaml` archive hook, which needs Orca's
+  repository hook policy to allow shared scripts and which `orca worktree rm`
+  skips without `--run-hooks` - and sweeps the stacks already orphaned.
 - **The `CwdChanged` trust notices do not reach you.** `check-worktree-trust.sh`
   applies `mise trust` fine on that path, but it writes its human-facing notices to
   stdout, and `CwdChanged` stdout goes to the debug log rather than the transcript.
