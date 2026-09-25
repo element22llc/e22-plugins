@@ -516,10 +516,19 @@ committed `compose.yaml`, so local matches deployed:
   first, or its containers and volumes are orphaned.
 - **`.worktreeinclude` lists only git-ignored, boot-critical files** (`.env*`,
   `.mise.local.toml`, `.claude/settings.local.json`) for Claude Code to copy
-  into each `claude --worktree`; committed files arrive via git refs and caches,
-  virtualenvs and build output rebuild. The copied `.env` keeps its fixed
-  `POSTGRES_PORT`; `worktree-env.sh` re-derives the per-worktree port on top, so
-  there is no clash.
+  into each `claude --worktree` (Orca reads the same file); committed files
+  arrive via git refs and caches, virtualenvs and build output rebuild. The
+  copied `.env` keeps its fixed `POSTGRES_PORT`; `worktree-env.sh` re-derives the
+  per-worktree port on top, so there is no clash.
+- **Orca worktrees get the same isolation, and a teardown of their own.** Orca
+  creates a worktree outside the repo (`~/orca/workspaces/<repo>/<name>` by
+  default) or under `.orca/worktrees/`, on a `<user>/<name>` branch. steer treats
+  it as any linked worktree: the session inherits the primary checkout's
+  `mise trust`, and `worktree-env.sh` gives it its own project name and ports.
+  Orca deletes the worktree itself, so Claude Code's `WorktreeRemove` never
+  fires. The scaffold's `orca.yaml` `scripts.archive` hook runs `docker:clean`
+  instead. It is fail-soft because a failing archive hook blocks Orca's removal.
+  Orca's CLI skips the hook unless given `orca worktree rm --run-hooks`.
 
 ## Internal monorepo layout
 

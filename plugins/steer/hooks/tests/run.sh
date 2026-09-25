@@ -3272,6 +3272,64 @@ for _pair in 'SessionEnd on-session-end.sh' 'WorktreeRemove on-worktree-remove.s
 	grep -q "$2" "${HOOKS}/hooks.json" && ok || bad "hooks.json: $2 wired"
 done
 
+# (m) Orca layout: the worktree lives OUTSIDE the primary checkout
+#     (~/orca/workspaces/<repo>/<name>) and its git dir is named `<pid>-<uuid>`,
+#     not after the worktree. Trust inheritance and the SessionEnd stop must key
+#     off the `gitdir:` pointer alone, never a `.claude/worktrees/` path.
+ORCA_P="${WORK}/orcaPrimary/repo"
+ORCA_W="${WORK}/orca/workspaces/repo/Feat-X"
+ORCA_GD="${ORCA_P}/.git/worktrees/24339-70eed91b-36e2-4b5b-91b1-02da19eb5ad6"
+mkdir -p "${ORCA_GD}" "${ORCA_W}"
+for _d in "${ORCA_P}" "${ORCA_W}"; do
+	printf '[env]\n_.source = "scripts/worktree-env.sh"\n' >"${_d}/mise.toml"
+	printf 'services: {}\n' >"${_d}/compose.yaml"
+done
+printf 'gitdir: %s\n' "${ORCA_GD}" >"${ORCA_W}/.git"
+: >"${WT_LOG}"
+out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG} MISE_STUB_TRUSTED=${ORCA_P}" \
+	run_hook check-worktree-trust.sh "$(session_json "${ORCA_W}" orca1)")"
+assert_has "worktree-trust: Orca worktree outside the repo inherits" "${out}" "inherited the primary checkout"
+: >"${LC_LOG}"
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
+	run_hook on-session-end.sh "$(session_end_json "${ORCA_W}" logout)")"
+grep -q "mise run -C ${ORCA_W} docker:down" "${LC_LOG}" && ok ||
+	bad "session-end: stops an Orca worktree's services (log: $(cat "${LC_LOG}"))"
+unset ENV
+
+# (n) the scaffold's orca.yaml archive hook - the teardown Orca runs instead of
+#     WorktreeRemove. A failing archive hook BLOCKS Orca's removal, so it must
+#     exit 0 whatever mise does, and it must not `exit` (Orca may append a local
+#     script after it).
+ORCA_YAML="${PLUGIN}/templates/scaffold/orca.yaml"
+ORCA_ARCHIVE="$(sed -n '/^  archive: |/,$p' "${ORCA_YAML}" | sed '1d' | sed -n 's/^    //p')"
+[ -n "${ORCA_ARCHIVE}" ] && ok || bad "orca.yaml: scripts.archive block found"
+printf '%s' "${ORCA_ARCHIVE}" | grep -q 'exit' &&
+	bad "orca.yaml: archive must not exit (a local script may follow)" || ok
+ORCA_FAIL="${WORK}/orcafail"
+mkdir -p "${ORCA_FAIL}"
+printf '#!/bin/sh\nprintf "mise %%s\\n" "$*" >>"${MISE_STUB_LOG:?}"\nexit 1\n' >"${ORCA_FAIL}/mise"
+chmod +x "${ORCA_FAIL}/mise"
+orca_archive() { # <stub-dir> [VAR=value...] - run the hook as Orca does, in the worktree
+	_stubs="$1"
+	shift
+	(cd "${ORCA_W}" && env PATH="${_stubs}:/usr/bin:/bin" MISE_STUB_LOG="${LC_LOG}" "$@" sh -c "${ORCA_ARCHIVE}")
+}
+: >"${LC_LOG}"
+orca_archive "${LC_STUBS}" && ok || bad "orca.yaml: archive exits 0"
+grep -q 'mise run docker:clean' "${LC_LOG}" && ok ||
+	bad "orca.yaml: archive runs docker:clean (log: $(cat "${LC_LOG}"))"
+: >"${LC_LOG}"
+orca_archive "${ORCA_FAIL}" && ok || bad "orca.yaml: archive exits 0 when mise fails"
+grep -q 'mise run ws:docker:clean' "${LC_LOG}" && ok ||
+	bad "orca.yaml: archive falls back to ws:docker:clean (log: $(cat "${LC_LOG}"))"
+: >"${LC_LOG}"
+orca_archive "/nonexistent" 2>/dev/null && ok || bad "orca.yaml: archive exits 0 with no mise on PATH"
+: >"${LC_LOG}"
+orca_archive "${LC_STUBS}" STEER_NO_WORKTREE_TEARDOWN=1 && ok ||
+	bad "orca.yaml: archive exits 0 when disabled"
+[ -s "${LC_LOG}" ] &&
+	bad "orca.yaml: STEER_NO_WORKTREE_TEARDOWN disables the archive teardown" || ok
+
 # ---------------------------------------------------------------------------
 # inject-standards.sh - parts under the 10,000-character cap on hook stdout.
 #

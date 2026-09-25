@@ -1,0 +1,15 @@
+kind: Added
+body: |-
+  - **Orca worktrees get the full Docker teardown.** Orca deletes its worktrees
+    without Claude Code's `WorktreeRemove`, so the `docker:clean` steer runs
+    there never fired and a deleted Orca worktree left its containers and
+    volumes behind. The scaffold now ships `orca.yaml`, whose `scripts.archive`
+    hook runs `docker:clean` (`ws:docker:clean` in a workspace root) as Orca
+    removes the worktree. It is fail-soft, because a failing archive hook blocks
+    Orca's removal, and honours `STEER_NO_WORKTREE_TEARDOWN`. The scaffold
+    `.gitignore` and the version-pin scanner also skip Orca's per-project
+    `.orca/worktrees/` location. In an existing repo, `/steer:setup sync`
+    surfaces both as scaffold deltas to merge.
+time: 2026-09-25T12:00:00.000000000-04:00
+custom:
+  Slug: orca-worktree-teardown

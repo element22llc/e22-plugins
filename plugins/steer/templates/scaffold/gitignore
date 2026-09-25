@@ -30,8 +30,9 @@ out/
 .claude/steer-faults.log
 .claude/steer-faults.surfaced
 
-# Claude Code worktrees (linked checkouts; .worktreeinclude picks what gets copied in)
+# Claude Code and Orca per-project worktrees (linked checkouts; .worktreeinclude picks what gets copied in)
 .claude/worktrees/
+.orca/worktrees/
 
 # /steer:work claim markers
 spec/.work/
