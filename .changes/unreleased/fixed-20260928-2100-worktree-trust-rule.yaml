@@ -1,0 +1,12 @@
+kind: Fixed
+body: |-
+  - **Fixed: rule 45 no longer tells the model to trust every new worktree.**
+    Its Parallel worktrees section said to run `mise trust` in any new
+    worktree, with no condition. The trust hook and `/steer:setup worktrees`
+    both forbid creating trust when the primary checkout is itself untrusted,
+    because that first decision belongs to a human. The rule now says the same:
+    trust a worktree only when the primary checkout is trusted, and otherwise
+    ask the human to run `mise trust && mise install` there.
+time: 2026-09-28T21:00:00.000000000-04:00
+custom:
+  Slug: worktree-trust-rule

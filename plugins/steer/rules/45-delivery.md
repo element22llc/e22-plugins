@@ -59,9 +59,11 @@ Full shape and rationale: `/steer:reference conventions`.
 ### Parallel worktrees
 
 Several agents may work one repo at once, each in its own worktree, so local
-services must not collide with or outlive a sibling's. Run `mise trust` in a new
-worktree before any `mise run ...` - it is path-based, so an untrusted worktree
-fails on trust, not on the task. Start services only through `mise run ...` so
+services must not collide with or outlive a sibling's. `mise trust` is
+path-based, so a new worktree fails on trust, not on the task: before any `mise
+run ...`, run `mise trust` in it only if the primary checkout is trusted (that
+copies a decision already made). If the primary is untrusted, never create
+trust: ask the human to run `mise trust && mise install` there. Start services only through `mise run ...` so
 the per-worktree project name and port offset apply, never a bare `docker
 compose up` or a hardcoded port. Clean up what you started (`mise run
 docker:clean`); the lifecycle hooks are best-effort and Claude-Code-only, so a
