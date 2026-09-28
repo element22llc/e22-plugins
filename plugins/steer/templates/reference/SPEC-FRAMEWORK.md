@@ -88,8 +88,16 @@ only in the `_Resolution:_` line or the issue.
 `created:` is **optional** - stamp it (with today's date) when you write a new
 question so staleness can be measured; the SessionStart open-questions hook
 escalates a **blocking** question still open after `STEER_QUESTION_STALE_DAYS`
-(14) so it can't rot unseen. When `created:` is absent the hook falls back to the
-line's `git blame` date, so older questions still get an age. `owner:` is the role
+(14), and a **non-blocking** one after `STEER_QUESTION_STALE_NONBLOCKING_DAYS`
+(60, or 14 once its feature is `live` - it has outlived the work it was meant to
+inform), so neither can rot unseen. When `created:` is absent the hook falls back
+to the heading line's `git blame` date, so older questions still get an age.
+
+A bare `- [ ]` item under `## Open questions` is the **retired** pre-structured
+format: it has no status, owner, gate, or date, so nothing can age or route it.
+The SessionStart hook reports such items on their own line, and
+`/steer:setup sync` converts them (the migration ledger's legacy-checkbox entry).
+Write new questions only as `### Q-NNN` blocks. `owner:` is the role
 that should decide; on promotion it resolves to a GitHub assignee via the
 `owners:` frontmatter map in `spec/tracker.md` (see
 [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md)).
@@ -110,9 +118,13 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `tracker:` ref back;
 - a `resolved` question with no recorded resolution folded into the spec;
 - a `created:` field present but not a well-formed `YYYY-MM-DD` date (**fails**);
-- a `blocking` question stale past `STEER_QUESTION_STALE_DAYS` (14) with no
-  `tracker:` ref - not yet promoted (**warns**, mirroring the closed-issue trap:
-  it nudges you to promote or defer, it does not block the gate).
+- a `blocking` question stale past `STEER_QUESTION_STALE_DAYS` (14), or a
+  `non-blocking` one past `STEER_QUESTION_STALE_NONBLOCKING_DAYS` (60; 14 in a
+  `live` feature), with no `tracker:` ref - not yet promoted (**warns**,
+  mirroring the closed-issue trap: it nudges you to promote or defer, it does not
+  block the gate);
+- a bare `- [ ]` item under `## Open questions` (**warns**: the retired format -
+  `/steer:setup sync` converts it).
 
 `validate` runs at `/steer:spec approve` and is called by `/steer:work issues`
 (`materialize`, `status`, `reconcile`); a spec-changing PR should run it too.

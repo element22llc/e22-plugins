@@ -54,8 +54,10 @@ still unresolved, blocks that gate.
 A `created:` field, when present, is a **date** in `YYYY-MM-DD` form - not an
 enum. It is **optional**; stamp it with today's date when writing a new question
 so the SessionStart open-questions hook can measure staleness and escalate a
-`blocking` question still open after `STEER_QUESTION_STALE_DAYS` (14). When it is
-absent the hook falls back to the line's `git blame` date. A malformed
+`blocking` question still open after `STEER_QUESTION_STALE_DAYS` (14), or a
+`non-blocking` one after `STEER_QUESTION_STALE_NONBLOCKING_DAYS` (60; 14 once its
+feature is `live`). When it is absent the hook falls back to the line's
+`git blame` date. A malformed
 `created:` fails `/steer:spec validate`.
 
 ## `required_before` - the gate a question must clear before

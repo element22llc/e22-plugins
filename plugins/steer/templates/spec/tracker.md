@@ -63,8 +63,9 @@ owners:
   `<!-- steer:question-id=Q-NNN -->`, and that pair is the bidirectional link -
   `/steer:spec validate` fails a promoted question with no `tracker:` ref back.
   A **blocking**
-  question still open after 14 days is escalated by the SessionStart hook so it
-  can't rot unseen; promotion routes it to a named human via the **Owners map**.
+  question still open after 14 days (a non-blocking one after 60) is escalated
+  by the SessionStart hook so it can't rot unseen; promotion routes it to a
+  named human via the **Owners map**.
 - **Owners map (`owners:` frontmatter):** maps a question's `owner:` role
   (`product`/`development`/`design`/`security`) to a GitHub login. On promotion,
   `/steer:spec questions` assigns the `spec-question` issue to the mapped login;

@@ -20,32 +20,30 @@ question.
 ## 2. Legacy `- [ ]` checkbox items
 
 A spec predating the structured `### Q-NNN` format may still carry plain
-`- [ ]` items.
+`- [ ]` items. The window in which they counted as ordinary backlog is **closed**:
+they have no status, owner, gate, or date, so nothing can age or route them, and
+waiting to convert each "as it is touched" left untouched features carrying them
+forever. Convert them all, **before** gathering.
 
 **In scope** are only those **inside a `## Open questions` section and outside
-any `### ` block** - the scope `check-open-questions.sh` counts as backlog
-(`inq && !inblk`, skipping a bracketed `[placeholder]` rest) for one deprecation
-window.
+any `### ` block**, skipping a bracketed `[placeholder]` rest - the exact scope
+`lib/questions.sh` reports and `check-open-questions.sh` flags. A `- [ ]` bullet
+*inside* a `### Q-NNN` block is part of that question, never a separate one.
 
-```sh
-grep -rn -A20 '^## Open questions' spec/vision.md spec/features/*/intent.md \
-  spec/PRODUCTIONIZATION.md 2>/dev/null | grep -E '^\S+[:-][0-9]+[:-]- \[ \] '
-```
-
-The grep anchors the *section* but cannot express the rest: it has no block
-state, so **you** must drop any hit that sits inside a `### Q-NNN` block (a
-sub-task bullet within a question is part of that question, not a separate one -
-never split it out) or whose text is a bracketed placeholder.
-
-**Never sweep a `- [ ]` line outside that section.** `## PO acceptance`, the
+**Never touch a `- [ ]` line outside that section.** `## PO acceptance`, the
 acceptance criteria, and the productionization gap checklists are `- [ ]` too,
 and they are **gates** - `/steer-spec approve` ticks them. Converting one into a
-`Q-NNN` block, or closing it as `resolved`, destroys the PO gate. Confirm each
-hit's section before touching it.
+`Q-NNN` block, or closing it as `resolved`, destroys the PO gate.
 
-In-scope legacy items are swept like any other question, and **converted into a
-`### Q-NNN` block as you resolve one** - this skill is the opportunistic
-converter the **v1.38.0** migration entry names
-([`MIGRATIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md)); never bulk-rewrite
-a file just to convert. A legacy item you resolve this run must not be left as a
-checkbox.
+Don't hand-convert: run the converter the **legacy-checkbox** entry in
+[`MIGRATIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md) names, which applies
+that scope mechanically and dates each question from its original line:
+
+```sh
+sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/convert-legacy-questions.sh"          # proposed diff, writes nothing
+sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/convert-legacy-questions.sh" --apply  # after a yes
+```
+
+Show the diff, apply it on a yes, then sweep the converted blocks like any other
+question. Each comes out `impact: non-blocking` with a blank `owner:` - triage
+sets both as you work through it.

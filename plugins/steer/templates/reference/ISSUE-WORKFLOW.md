@@ -336,7 +336,10 @@ durable *record*.
 **Staleness is a promotion trigger.** A `blocking` question still `open` after
 `STEER_QUESTION_STALE_DAYS` (14, measured from its `created:` date - the
 SessionStart open-questions hook surfaces these every session) has, by
-definition, outlived the session and needs a named owner - promote it.
+definition, outlived the session and needs a named owner - promote it. A
+`non-blocking` question is escalated the same way after
+`STEER_QUESTION_STALE_NONBLOCKING_DAYS` (60, or 14 once its feature is `live`):
+promote it, defer it with a revisit trigger, or cancel it.
 
 **Assignee resolution on promotion.** When promoting, resolve the question's
 `owner:` role to a GitHub login via the **`owners:` map in `/spec/tracker.md`**

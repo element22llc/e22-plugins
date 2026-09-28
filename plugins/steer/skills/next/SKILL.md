@@ -164,7 +164,10 @@ fall back to sweeping the dimensions manually as specified below.
   `## Open questions` for `### Q-NNN` entries: `status:`,
   `impact: blocking | non-blocking`, `required_before:`
   (`intent-approval | contract-approval | implementation | non-prod-validation |
-  production-release`), and `owner:`.
+  production-release`), and `owner:`. The snapshot's `most urgent` line is the
+  one question the SessionStart notice leads with (blocking-now first, then
+  stale, then oldest); a question-driven candidate names **that** question by id
+  and title, never just a count.
 - **Proposed ADRs** - `spec/decisions/NNNN-*.md` whose status header reads
   `Proposed` (awaiting ratification by its Deciders). Accept **both** header forms:
   the bundled template's blockquote `> Status: Proposed` and a hand-written

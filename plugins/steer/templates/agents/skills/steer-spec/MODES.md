@@ -61,10 +61,13 @@ Flag each of these, citing the `Q-NNN` and file:
   `question-id`) with no `tracker:` ref back;
 - ✗ a `created:` field present but not a well-formed `YYYY-MM-DD` date (the
   staleness clock can't read it);
-- ⚠ a `blocking` question open past the staleness threshold (14 days from
-  `created:`) with no `tracker:` ref - not yet promoted. This **warns**, it does
+- ⚠ an open question past its staleness threshold with no `tracker:` ref - not
+  yet promoted: 14 days from `created:` for a `blocking` one, 60 for a
+  `non-blocking` one (14 when the feature is `live`). This **warns**, it does
   not block: it mirrors the SessionStart hook's escalation, nudging you to
-  promote (assign its owner via the tracker.md map) or defer with a reason.
+  promote (assign its owner via the tracker.md map) or defer with a reason;
+- ⚠ a bare `- [ ]` item under `## Open questions` - the retired format, which
+  `/steer-setup sync` converts to a `### Q-NNN` block.
 
 **Cross-artifact analyze checks** - the pre-implementation consistency pass
 (intent <-> contract <-> tracker), run in the same sweep. All warnings (⚠): each

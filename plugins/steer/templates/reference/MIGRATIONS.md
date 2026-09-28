@@ -94,6 +94,54 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - legacy `- [ ]` open questions become `### Q-NNN` blocks
+
+- **What & why:** before the structured open-question format, a question was a
+  bare `- [ ]` item under `## Open questions`. The v1.38.0 entry left converting
+  them to `/steer:spec questions` "when it next touches a question", and the
+  SessionStart hook counted them as backlog "for one deprecation window" that
+  never ended. So a feature nobody revisited kept its checkboxes through every
+  sync - an adopted repo was found with them in 23 of 26 intents after six syncs.
+  A checkbox has no status, owner, gate, or date, so the staleness escalation
+  could never see one, however old. The window is now **closed**: this entry
+  converts them, and the hook reports any that remain on their own line instead
+  of as backlog. **This supersedes the v1.38.0 entry's "opportunistic"
+  clause.** Additive reconciliation cannot carry it: it rewrites lines a
+  materialized file already has.
+- **Precondition:** the converter lists at least one item (run from repo root):
+
+  ```sh
+  sh "${CLAUDE_PLUGIN_ROOT}/scripts/convert-legacy-questions.sh" --list
+  ```
+
+  Empty output => nothing to convert => no-op. It reports exactly the scope the
+  hook flags: inside `## Open questions`, outside any `### ` block (a bullet in
+  a block belongs to that question), bracketed `[placeholder]` items skipped.
+- **Action:** read-then-propose, one pass over `spec/vision.md`,
+  `spec/features/*/intent.md`, and `spec/PRODUCTIONIZATION.md`.
+  1. Run the converter with no flag - it prints the proposed change as a
+     unified diff and writes nothing. Show that diff.
+  2. On a yes, run it again with `--apply`. Each item becomes a `### Q-NNN`
+     block numbered after the file's highest id (an unfilled placeholder seed
+     included, so a later seed removal can't collide), with `status: open`,
+     `impact: non-blocking`, and a blank `owner:` / `required_before:` /
+     `tracker:` - an honest "needs triage", never a guessed owner. Wrapped text
+     after the question and any sub-bullets are kept as the block's context.
+  3. `created:` is the author date of the **original checkbox line** (`git
+     blame`), taken before the rewrite: afterwards, blame would date the new
+     heading to this migration's commit and every old question would read as
+     brand new. An uncommitted item gets a blank `created:` - **never today**,
+     which would reset its clock and hide the rot. Say in the PR how many came
+     out undated.
+  4. If the section's own prose promises the old behaviour (for example "will
+     convert them to structured `Q-NNN` entries as it touches them"), propose
+     deleting that sentence in the same diff - it is no longer true.
+  **False-positive guard:** never convert a `- [ ]` line outside `## Open
+  questions` - `## PO acceptance`, acceptance criteria, and productionization
+  checklists are gates `/steer:spec approve` ticks - and never a `- [x]` item.
+  The converter enforces both; do not hand-edit around it.
+  Idempotent: once applied, `--list` is empty.
+
 ### v7.0.0 - seven public skills: absorbed-skill invocations become front-door modes
 
 - **What & why:** 7.0 cut the user-facing surface to seven skills - `setup`, `spec`,
