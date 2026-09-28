@@ -26,7 +26,9 @@ steer_questions_parse() {
 	awk '
     function dash(v) { return v == "" ? "-" : v }
     function clean(v) { gsub(/\t/, " ", v); sub(/^[[:space:]]+/, "", v); sub(/[[:space:]]+$/, "", v); return v }
-    function val(line, key,   v) { v = line; sub("^" key ":[[:space:]]*", "", v); sub(/[[:space:]].*$/, "", v); return v }
+    # A lone "#" opens the field comment the spec templates ship on an empty
+    # field ("- tracker:   # issue ref ..."), not a value; "#142" is a real ref.
+    function val(line, key,   v) { v = line; sub("^" key ":[[:space:]]*", "", v); if (v ~ /^#([[:space:]]|$)/) return ""; sub(/[[:space:]].*$/, "", v); return v }
     function status_out() { if (!st_done) { printf "S\t%s\n", dash(st); st_done = 1 } }
     function endblock() {
       if (inblk) {
