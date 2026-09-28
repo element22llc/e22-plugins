@@ -20,7 +20,7 @@ body: |-
     - an unknown `required_before:` or a malformed `created:`;
     - a blocking question still open at a gate its feature has already passed.
 
-    `/steer:setup sync` wires the stage in through the `drift-gate` capability,
+    `/steer:setup sync` wires the stage in through a new `question-gate` capability,
     after the ledger has converted checkboxes and removed seeds, so the sync PR
     does not turn its own check red. (#649)
 time: 2026-09-28T12:20:00.000000000-04:00

@@ -20,6 +20,9 @@
 #   feature with nothing else is left alone: there it is still the example.
 #   The block runs from its heading to the next heading, its `_Resolution:_`
 #   line included; surrounding blank lines are collapsed to one.
+#   It REFUSES, and reports on stderr, a marked block with a real title (a
+#   question hidden by a stray marker) or with anything beyond the template's
+#   field bullets and `_Resolution:_` sentence: those are a human's to edit.
 #
 # USAGE
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/remove-question-seeds.sh" [--list|--apply] [repo-root]
@@ -62,11 +65,41 @@ seed_file() {
     $1 == "P" { n++; line[n] = $2; id[n] = $3; next }
     END { if (past || real) for (i = 1; i <= n; i++) printf "%s\t%s\n", line[i], id[i] }
   ' >"${TMP}/cands"
-	: >"${TMP}/seeds"
-	while IFS="$(printf '\t')" read -r _ln _id; do
-		sed -n "${_ln}p" "${_f}" | grep -q '^###[[:space:]]*Q-[0-9]*[[:space:]]*-[[:space:]]*\[' &&
-			printf '%s\t%s\n' "${_ln}" "${_id}" >>"${TMP}/seeds"
-	done <"${TMP}/cands"
+	# Keep a candidate only if it is still the template's seed: the bracketed
+	# title (matched on its text, not its separator - templates before the
+	# ASCII sweep wrote an em dash) and nothing in the block but the field
+	# bullets and the `_Resolution:_` sentence. Anything else is a human's, and
+	# a deletion that guesses is the one thing this script must not do.
+	awk -F '\t' '
+    FNR == NR { want[$1] = $2; next }
+    FNR in want {
+      if (cur) verdict()
+      cur = FNR; id = want[FNR]
+      ok = (index($0, "[Anything ambiguous the PO needs to decide]") > 0); extra = 0; inres = 0
+      next
+    }
+    cur && /^(# |## |### )/ { verdict(); cur = 0 }
+    cur {
+      l = $0
+      if (l ~ /^[[:space:]]*$/) { inres = 0; next }
+      if (l ~ /^- (created|status|impact|owner|required_before|tracker):/) next
+      # The `_Resolution:_` sentence, however an older template wrapped it.
+      if (l ~ /^_Resolution:_/) { inres = 1; next }
+      if (inres) next
+      extra = 1
+    }
+    function verdict() {
+      if (!ok) printf "TITLE\t%d\t%s\n", cur, id
+      else if (extra) printf "EXTRA\t%d\t%s\n", cur, id
+      else printf "%d\t%s\n", cur, id
+    }
+    END { if (cur) verdict() }
+  ' "${TMP}/cands" "${_f}" >"${TMP}/verdicts"
+	grep -v -e '^EXTRA	' -e '^TITLE	' "${TMP}/verdicts" >"${TMP}/seeds" || :
+	awk -F '\t' -v f="${_rel}" '
+    $1 == "EXTRA" { printf "%s:%s: %s has content beyond the template seed - remove it by hand\n", f, $2, $3 }
+    $1 == "TITLE" { printf "%s:%s: %s carries the placeholder marker on a real title - drop the marker so it is counted\n", f, $2, $3 }
+  ' "${TMP}/verdicts" >&2
 	[ -s "${TMP}/seeds" ] || return 0
 	if [ "${MODE}" = list ]; then
 		awk -F '\t' -v f="${_rel}" '{ printf "%s:%s: %s\n", f, $1, $2 }' "${TMP}/seeds"

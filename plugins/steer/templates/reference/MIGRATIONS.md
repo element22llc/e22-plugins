@@ -127,8 +127,11 @@ Name the file and say what to carry forward.
   **False-positive guard:** never delete a block whose title is not the
   bracketed template text - a real question someone wrote under the marker is
   hidden from every count, so propose dropping just the marker there instead,
-  and name it in the PR. The remover enforces the title test; do not hand-edit
-  around it. Idempotent: once applied, `--list` is empty.
+  and name it in the PR. Nor one holding anything beyond the template's field
+  bullets and `_Resolution:_` sentence. The remover enforces both - it matches
+  the title by its text, so a seed written with the pre-ASCII em dash still
+  qualifies - and reports each block it refuses on stderr; handle those by hand
+  in the same PR, never by editing around the script. Idempotent: once applied, `--list` is empty.
 
 ### [Unreleased] - legacy `- [ ]` open questions become `### Q-NNN` blocks
 

@@ -386,6 +386,24 @@ else
 	emit "changelog-fragments" "absent" "$F"
 fi
 
+# --- question-gate - the open-question contract enforced in CI ---
+# n/a without a spine: there is no contract to check. The parser copy must be
+# byte-identical to hooks/lib/questions.sh, or CI and the session hook disagree
+# on what counts as a question.
+QS="scripts/ci-spec.sh"
+QP="scripts/spec-questions.sh"
+qg_files=".github/workflows/ci.yml,mise.toml,$QS,$QP"
+if ! exists "spec/.version"; then
+	emit "question-gate" "n/a" "$qg_files"
+elif ! exists "$QS" && ! has ".github/workflows/ci.yml" "ci:spec"; then
+	emit "question-gate" "absent" "$qg_files"
+elif has ".github/workflows/ci.yml" "mise run ci:spec" && has "mise.toml" "ci:spec" && exists "$QS" &&
+	cmp -s "$ROOT/$QP" "$PLUGIN/hooks/lib/questions.sh" 2>/dev/null; then
+	emit "question-gate" "present-wired" "$qg_files"
+else
+	emit "question-gate" "mis-wired" "$qg_files"
+fi
+
 # --- line-ending-normalization - LF pinned for every checkout ---
 # Presence-only: whether the file's CONTENT carries the current pins is step 5's
 # additive reconcile, not a capability gap. This entry exists solely to close the
