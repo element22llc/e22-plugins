@@ -112,6 +112,15 @@ for _qf in "${ROOT}"/spec/vision.md "${ROOT}"/spec/features/*/intent.md; do
 	fi
 done
 [ "${_qfound}" -eq 1 ] || printf -- '- none\n'
+# The SessionStart hook's own ranking, so /steer:next names the same single
+# question the session notice leads with (and counts legacy checkboxes, which
+# the detail above does not list) instead of re-deriving an order of its own.
+_oq_notice="$(printf '{"cwd":"%s"}' "${ROOT}" |
+	CLAUDE_PLUGIN_ROOT="${PLUGIN_ROOT}" sh "${PLUGIN_ROOT}/hooks/check-open-questions.sh" 2>/dev/null)"
+_oq_sum="$(printf '%s\n' "${_oq_notice}" | sed -n 's/^ℹ //p' | head -n 1)"
+_oq_top="$(printf '%s\n' "${_oq_notice}" | grep '^- `Q-' | head -n 1 | sed 's/^- //')"
+[ -n "${_oq_sum}" ] && printf -- '- summary: %s\n' "${_oq_sum}"
+[ -n "${_oq_top}" ] && printf -- '- most urgent: %s\n' "${_oq_top}"
 
 # --- decisions ----------------------------------------------------------------
 steer_decisions_dir "${ROOT}"

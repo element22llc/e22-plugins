@@ -1,0 +1,15 @@
+kind: Fixed
+body: |-
+  - **Fixed: non-blocking open questions never went stale.** Only a blocking
+    question was escalated when left open too long. A non-blocking one could
+    sit for months, counted in the backlog but never named, which is where
+    most rot actually is. Now a non-blocking question that nobody has promoted
+    is escalated after 60 days. If its feature is already `live`, the limit is
+    14 days, because the question has outlived the work it was meant to
+    inform. The "promote or defer" prompt is the same one blocking questions
+    get. `/steer:spec validate` warns on both limits, and on any bare `- [ ]`
+    question left in the retired format. An undated question now costs one
+    `git blame` per spec file instead of one per question. (#647)
+time: 2026-09-28T12:11:00.000000000-04:00
+custom:
+  Slug: non-blocking-question-staleness

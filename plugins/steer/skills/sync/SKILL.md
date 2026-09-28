@@ -6,6 +6,7 @@ argument-hint: "[--check]"
 # Internal update path behind `/steer:setup sync` - see the note on `init`.
 user-invocable: false
 allowed-tools:
+  - Bash(sh *scripts/convert-legacy-questions.sh*)
   - Bash(git status *)
   - Bash(git branch *)
   - Bash(git switch *)

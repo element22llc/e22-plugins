@@ -6,6 +6,8 @@ argument-hint: "[bundle [<feature-id>]]"
 # Internal question sweep behind `/steer:spec questions`. Model-callable, hidden
 # from the slash menu - see the note on `init`.
 user-invocable: false
+allowed-tools:
+  - Bash(sh *scripts/convert-legacy-questions.sh*)
 ---
 <!-- steer:modes default,bundle -->
 
@@ -58,16 +60,18 @@ a feature's `## Open questions` list has grown and nobody circled back.
 
 A SessionStart hook (`check-open-questions.sh`) surfaces the backlog every
 session so it can't quietly accumulate - this skill is how you clear that
-nudge. The hook also **escalates a blocking question still open after 14 days**
-(from its `created:` date, or the heading's `git blame` date when absent) with
-its own loud line - the cue to promote it (step 6) or defer it (step 7).
+nudge. It names only the few most urgent questions, and it **escalates a
+stale one** - a blocking question still open after 14 days, or a non-blocking
+one after 60 (14 once its feature is `live`), aged from its `created:` date or
+the heading's `git blame` date when absent - the cue to promote it (step 6) or
+defer it (step 7).
 
 That hook is **Claude Code only** - no other surface has a SessionStart channel
-that can reach you, so nothing announces either the backlog or the 14-day
+that can reach you, so nothing announces either the backlog or the staleness
 escalation there. Apply both yourself instead: read each feature's `## Open
-questions` list, and age every blocking entry from its `created:` date (or the
-heading's `git blame` date). Wherever a step below says "hook-escalated", read it
-as "stale by that same test".
+questions` list, and age every open entry from its `created:` date (or the
+heading's `git blame` date) against those thresholds. Wherever a step below says
+"hook-escalated", read it as "stale by that same test".
 
 ## Steps
 
@@ -104,12 +108,11 @@ as "stale by that same test".
    `check-open-questions.sh` ignores it for the same reason).
 
    **Legacy `- [ ]` checkboxes.** A spec predating the structured format may
-   still carry plain `- [ ]` items inside `## Open questions`; those are in
-   scope, but sweeping them safely has its own rules - and a `- [ ]` line
+   still carry plain `- [ ]` items inside `## Open questions`. Convert them
+   **before** gathering, with the ledger's converter - a `- [ ]` line
    **outside** that section is a **PO gate** that converting or resolving would
-   destroy. The moment you see any, read
-   [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §2 before
-   touching them.
+   destroy, and the converter is what knows the difference. The moment you see
+   any, read [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §2.
 
    **In a member** all three of those paths are absent by design, so the grep
    returns nothing - that is **not** a clean sweep. Resolve the workspace by the
@@ -119,8 +122,8 @@ as "stale by that same test".
 
 3. **Present a worklist.** Print a consolidated table - **product-level
    (`vision.md`) first**, then per feature - with the source file and the
-   question. Hook-escalated **stale** questions (blocking, open >14 days) jump
-   the queue: promote (step 6) or defer (step 7). If there are none, say so
+   question. Hook-escalated **stale** questions (blocking open >14 days,
+   non-blocking >60) jump the queue: promote (step 6) or defer (step 7). If there are none, say so
    and stop. Don't bury the list; this is the artifact the PO/dev acts on.
 
    **Stamp `created:` as you go.** Any question you newly raise gets
@@ -199,7 +202,7 @@ as "stale by that same test".
    - A question that needs a **named owner, blocks multiple features, needs
      stakeholder/research input, or could outlive the session** -> promote it to
      a tracker item (keep-vs-promote test: `ISSUE-WORKFLOW.md`). **A blocking
-     question the hook flagged as stale (open >14 days) has, by that fact,
+     question the hook flagged as stale (past its threshold) has, by that fact,
      outlived the session - promote it now.** Keep the structured `Q-NNN` in
      the spec and set its `tracker:` field to the ref - don't delete it; the
      issue carries the same id via `<!-- steer:question-id=Q-NNN -->`. On a
@@ -235,8 +238,8 @@ as "stale by that same test".
   drops out of the SessionStart count, so mislabelling an unanswered blocking
   question hides it from the one mechanism built to resurface it - while
   `/steer:spec approve` still refuses it. Leaving it `open` is the honest outcome.
-- No legacy `- [ ]` item you resolved this run is left as a checkbox - it is a
-  `### Q-NNN` block now (step 2).
+- No legacy `- [ ]` item is left under any `## Open questions` you swept - each
+  is a `### Q-NNN` block now (step 2).
 
 ## Recommend the next action
 

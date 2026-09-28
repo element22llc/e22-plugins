@@ -24,6 +24,7 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now - next transition (L4) | owning skill |
 | Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/steer:spec questions` |
 | Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/steer:spec questions` |
+| Open question gone stale (past its threshold, not promoted - the snapshot's `most urgent` line says `stale`), or questions still in the retired `- [ ]` format | Recommended (L6) | `/steer:spec questions` for a stale one (name it by id and title); `/steer:setup sync` converts the checkboxes |
 | `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/steer:work start #N`, `/steer:work issues ...`, `/steer:setup sync` |
 | Every workflow settled across all dimensions | Complete - no action required (L7) | - |
 

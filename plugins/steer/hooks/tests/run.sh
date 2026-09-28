@@ -823,6 +823,7 @@ oq_repo() {
 	printf '%s' "${_r}"
 }
 oq_grep() { printf '%s' "$3" | grep -q "$2" && ok || bad "$1 (got: $3)"; }
+oq_ngrep() { printf '%s' "$3" | grep -q "$2" && bad "$1 (unexpected: $3)" || ok; }
 
 # Placeholder-marked seed (the bundled template) must NOT fire on a fresh scaffold.
 OQ1="$(oq_repo oq1 seed)"
@@ -882,15 +883,18 @@ printf '# questions\n' >"${OQ7}/spec/SPEC-QUESTIONS.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ7}" oq7)")"
 oq_grep "open-questions: retired SPEC-QUESTIONS.md migration notice" 'SPEC-QUESTIONS.md' "${out}"
 
-# Legacy `- [ ]` checkbox still detected for one deprecation window.
+# Legacy `- [ ]` checkbox: the deprecation window is closed - still counted, but
+# as its own bucket naming the converter, never as silent non-blocking backlog.
 OQ8="$(oq_repo oq8 f)"
 printf '> Status: draft\n\n## Open questions\n\n- [ ] a real legacy question\n' >"${OQ8}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ8}" oq8)")"
 oq_grep "open-questions: legacy checkbox still detected" 'open question' "${out}"
+oq_grep "open-questions: legacy checkbox reported in its own bucket" 'retired `- \[ \]` format' "${out}"
+oq_grep "open-questions: legacy checkbox names the converter" '/steer:setup sync' "${out}"
+oq_ngrep "open-questions: legacy checkbox no longer counted as backlog" 'non-blocking' "${out}"
 
 # Staleness escalation (STEER_TODAY pins "today" for hermetic age math; sentinel
 # created dates make the threshold decision deterministic on any run date).
-oq_ngrep() { printf '%s' "$3" | grep -q "$2" && bad "$1 (unexpected: $3)" || ok; }
 
 # Blocking question created long ago, not promoted -> escalated as rotted.
 OQ9="$(oq_repo oq9 f)"
@@ -958,6 +962,101 @@ out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_
 oq_grep "open-questions: GitHub tracker keeps the owners-map wording" 'owners:' "${out}"
 oq_grep "open-questions: GitHub tracker keeps the spec-question wording" 'spec-question' "${out}"
 oq_grep "open-questions: GitHub per-question line keeps the owner auto-assign" 'assign its owner' "${out}"
+
+# Non-blocking questions expire too (60d), and sooner (14d) once the feature is live.
+oq_nb() { # <name> <feature-status> <created>
+	_r="$(oq_repo "$1" f)"
+	{
+		printf '> Status: %s\n\n## Open questions\n\n' "$2"
+		printf '### Q-001 - polish\n- created: %s\n- status: open\n- impact: non-blocking\n- owner: design\n- tracker:\n' "$3"
+	} >"${_r}/spec/features/f/intent.md"
+	printf '%s' "${_r}"
+}
+OQ15="$(oq_nb oq15 approved 2026-04-01)"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ15}" oq15)")"
+oq_grep "open-questions: non-blocking open 79d escalated" 'rotted' "${out}"
+oq_grep "open-questions: stale non-blocking line carries the cue" 'stale: promote' "${out}"
+OQ16="$(oq_nb oq16 approved 2026-05-20)"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ16}" oq16)")"
+oq_ngrep "open-questions: non-blocking open 30d not escalated" 'rotted' "${out}"
+OQ17="$(oq_nb oq17 live 2026-05-20)"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ17}" oq17)")"
+oq_grep "open-questions: non-blocking open 30d in a live feature escalated" 'rotted' "${out}"
+
+# The notice is bounded: one summary line and the top 3, blocking-now first,
+# however many questions there are.
+OQ18="$(oq_repo oq18 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	for _n in 1 2 3 4 5; do
+		printf '### Q-00%s - nb %s\n- created: 2026-06-0%s\n- status: open\n- impact: non-blocking\n- owner: product\n- tracker:\n\n' "${_n}" "${_n}" "${_n}"
+	done
+	printf '### Q-009 - the blocker\n- created: 2026-06-18\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
+} >"${OQ18}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ18}" oq18)")"
+oq_grep "open-questions: bounded list says how many it shows" 'Most urgent 3 of 6' "${out}"
+assert_eq "open-questions: bounded list names exactly 3" "$(printf '%s\n' "${out}" | grep -c '^- `Q-')" "3"
+assert_eq "open-questions: blocking-now ranks first" "$(printf '%s\n' "${out}" | grep '^- `Q-' | head -n 1 | cut -c1-9)" '- `Q-009`'
+assert_eq "open-questions: then oldest first" "$(printf '%s\n' "${out}" | grep '^- `Q-' | sed -n 2p | cut -c1-9)" '- `Q-001`'
+oq_grep "open-questions: PO-dominated backlog points at the bundle" 'questions bundle' "${out}"
+oq_ngrep "open-questions: no per-file listing" 'spec/features/f/intent.md` -' "${out}"
+
+# Unowned-dominated backlog points at triage.
+OQ19="$(oq_repo oq19 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 - who knows\n- status: open\n- impact: non-blocking\n- owner:\n- tracker:\n'
+} >"${OQ19}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ19}" oq19)")"
+oq_grep "open-questions: unowned backlog points at triage" 'no `owner:`' "${out}"
+oq_grep "open-questions: unowned question shown as such" 'no owner' "${out}"
+
+if command -v git >/dev/null 2>&1; then
+	# An undated question is aged from ONE whole-file blame of its heading line.
+	OQ20="${WORK}/oq20"
+	mkdir -p "${OQ20}/spec/features/f"
+	git -C "${OQ20}" init -q
+	{
+		printf '> Status: draft\n\n## Open questions\n\n'
+		printf '### Q-001 - undated\n- status: open\n- impact: non-blocking\n- owner: product\n- tracker:\n'
+	} >"${OQ20}/spec/features/f/intent.md"
+	git -C "${OQ20}" add -A
+	GIT_AUTHOR_DATE='2026-01-01T12:00:00Z' GIT_COMMITTER_DATE='2026-01-01T12:00:00Z' \
+		git -C "${OQ20}" -c user.name=t -c user.email=t@t commit -qm seed
+	out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ20}" oq20)")"
+	oq_grep "open-questions: undated question aged from git blame" 'open 169d' "${out}"
+	oq_grep "open-questions: blame-aged non-blocking escalates" 'rotted' "${out}"
+
+	# convert-legacy-questions.sh - the ledger's converter.
+	CV="${WORK}/cv"
+	mkdir -p "${CV}/spec/features/f"
+	git -C "${CV}" init -q
+	{
+		printf '# F\n> Status: approved\n\n## PO acceptance\n\n- [ ] PO reviewed this intent\n\n'
+		printf '## Open questions\n\n- [ ] When is the cache\n  recomputed? It drives billing.\n- [ ] [placeholder]\n- [x] answered\n\n'
+		printf '### Q-003 - kept\n- status: open\n- impact: blocking\n- [ ] sub-task of Q-003\n'
+	} >"${CV}/spec/features/f/intent.md"
+	git -C "${CV}" add -A
+	GIT_AUTHOR_DATE='2026-03-04T12:00:00Z' GIT_COMMITTER_DATE='2026-03-04T12:00:00Z' \
+		git -C "${CV}" -c user.name=t -c user.email=t@t commit -qm seed
+	_cvf="${CV}/spec/features/f/intent.md"
+	run_sh "${PLUGIN}/scripts/convert-legacy-questions.sh" --list "${CV}"
+	assert_eq "convert: --list names only the in-scope item" "${out}" 'spec/features/f/intent.md:10: When is the cache'
+	run_sh "${PLUGIN}/scripts/convert-legacy-questions.sh" "${CV}"
+	oq_grep "convert: default mode proposes a diff" '^+### Q-004 - When is the cache recomputed?' "${out}"
+	grep -q '^- \[ \] When is the cache' "${_cvf}" && ok || bad "convert: default mode writes nothing"
+	run_sh "${PLUGIN}/scripts/convert-legacy-questions.sh" --apply "${CV}"
+	grep -q '^### Q-004 - When is the cache recomputed?$' "${_cvf}" && ok || bad "convert: id continues past the highest"
+	grep -q '^- created: 2026-03-04$' "${_cvf}" && ok || bad "convert: created: from the checkbox line's commit"
+	grep -q '^It drives billing\.$' "${_cvf}" && ok || bad "convert: text after the question kept as context"
+	grep -q '^- \[ \] PO reviewed this intent$' "${_cvf}" && ok || bad "convert: PO acceptance gate untouched"
+	grep -q '^- \[ \] sub-task of Q-003$' "${_cvf}" && ok || bad "convert: in-block sub-task untouched"
+	grep -q '^- \[x\] answered$' "${_cvf}" && ok || bad "convert: checked item untouched"
+	run_sh "${PLUGIN}/scripts/convert-legacy-questions.sh" --list "${CV}"
+	assert_empty "convert: idempotent once applied" "${out}"
+else
+	printf 'SKIP: git unavailable, open-question blame + converter tests skipped\n' >&2
+fi
 
 # ---------------------------------------------------------------------------
 # orient-session.sh - natural-language orientation (SessionStart, managed only)
