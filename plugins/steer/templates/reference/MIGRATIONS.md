@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - unfilled `Q-001` placeholder seeds leave features past `draft`
+### v7.1.0 - unfilled `Q-001` placeholder seeds leave features past `draft`
 
 - **What & why:** the feature-intent template seeds `## Open questions` with a
   `### Q-001 - [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->`
@@ -135,7 +135,7 @@ Name the file and say what to carry forward.
   qualifies - and reports each block it refuses on stderr; handle those by hand
   in the same PR, never by editing around the script. Idempotent: once applied, `--list` is empty.
 
-### [Unreleased] - legacy `- [ ]` open questions become `### Q-NNN` blocks
+### v7.1.0 - legacy `- [ ]` open questions become `### Q-NNN` blocks
 
 - **What & why:** before the structured open-question format, a question was a
   bare `- [ ]` item under `## Open questions`. The v1.38.0 entry left converting
