@@ -105,7 +105,9 @@ vision/users/glossary to the **workspace** session instead.
 Otherwise, interview the dev (or PO) to fill `/spec/vision.md`, `/spec/users.md`,
 `/spec/glossary.md` - **ask, don't invent**. Seed each from what the code
 implies, then confirm with a human; unresolved product-level questions go to
-`vision.md` -> `## Open questions`, not into guessed prose.
+`vision.md` -> `## Open questions`, not into guessed prose. Triage and format
+them exactly as Phase 5 says: what the code answers is written down, not asked,
+and each remaining question is a structured `### Q-NNN` block.
 
 ## Phase 5 - Extract a spec per feature
 
@@ -115,8 +117,33 @@ Fill `contract.md` from the **real code** (data model, API surface, behavior
 rules) and mark derived sections `derived from existing code - dev confirms` (the
 same "confirm at review" convention the contract template already uses). Draft
 `intent.md`'s what/why from the feature's behavior but leave the PO-acceptance
-boxes **unchecked** - the PO has not validated these yet. Ambiguities -> that
-feature's `## Open questions`.
+boxes **unchecked** - the PO has not validated these yet.
+
+**Answer from the code before you ask.** Adoption is reverse-engineering, so most
+ambiguities it meets are facts about what the code already does ("when is this
+cache recomputed?", "where does this field come from?"), not decisions. Triage
+each one before writing anything, using the same split `/steer-spec questions`
+applies (its step 4):
+
+- **Code-fact** - the code you are reading answers it. Read the file or symbol
+  it names and write the answer into `contract.md` (or the intent's behavior
+  prose), marked `derived from existing code - dev confirms`. It is **not** an
+  open question. When reading leaves a fact unsettled (a path that may be dead,
+  a behavior that looks like a bug), ask the dev now and record the answer the
+  same way; it becomes a question (`owner: development`) only if the dev can't
+  answer it either.
+- **Human-decision** - a product, policy, or intent call the code cannot make
+  (what "delete" should mean, who may see a record, a retention window). Only
+  these go to that feature's `## Open questions`.
+
+Write every question as a structured `### Q-NNN` block per the open-question
+format in `SPEC-FRAMEWORK.md`, never as a bare `- [ ]` item: number from `Q-001`
+up (the scaffold's placeholder seed is replaced by the first real question, not
+kept beside it), set `created:` to today, `status: open`, `owner:`, `impact:`,
+and `required_before:`. A question the adopted code already works around is
+usually `non-blocking`; `blocking` at `intent-approval` is for one the PO must
+answer before this intent can be approved. If a feature ends with no real
+question, leave the unfilled seed as the scaffold wrote it.
 
 ## Phase 6 - Inventory as-built architectural choices, without inventing decisions
 
@@ -156,7 +183,7 @@ in that feature's `intent.md`. Write a valid root `DESIGN.md` in the
 DESIGN.md`). **Same as-built discipline as Phases 4-5:** seed from what the code
 shows, mark derived or uncertain values for the dev to confirm, and route anything
 *not* evidenced in the code (intended brand tone, colors that don't appear
-anywhere) to `## Open questions` - **never invent** visual rules.
+anywhere) to `## Open questions` as `### Q-NNN` blocks - **never invent** visual rules.
 
 ## Phase 8 - Triage productionization
 

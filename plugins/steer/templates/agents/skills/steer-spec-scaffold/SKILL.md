@@ -52,8 +52,9 @@ feature, using the canonical templates bundled with this plugin.
    reconciliation".
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
-   ambiguity in this feature's own `## Open questions` section rather than
-   inventing details (run `/steer-questions` later to drive them to answers).
+   ambiguity in this feature's own `## Open questions` section, as a structured
+   `### Q-NNN` block (never a bare `- [ ]` item), rather than inventing details
+   (run `/steer-spec questions` later to drive them to answers).
 5. For a Greenfield/design-originated feature, populate the `Design source`
    section per `/steer-reference design-sources`.
 
