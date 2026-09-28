@@ -50,11 +50,14 @@ runbook seems to conflict with one of these, the guardrail wins.
   forward decision, and stays **`Proposed`** until the named decider accepts it -
   adoption never manufactures a rationale or an `Accepted` status from code alone,
   and PR approval does not ratify it.
-- **Ask, don't invent - humans decide product intent.** Product intent and
-  ambiguous behavior go to the human and to the owning feature's `## Open
-  questions` (or `vision.md` for product-level) - never guessed into the spec.
-  PO-acceptance boxes stay **unchecked**; the PO has not validated extracted
-  intents. Run `/steer-questions` to resolve open questions.
+- **Answer what the code answers; ask only what it can't.** A question about
+  what the code does is a fact to read and record in `contract.md` (`derived
+  from existing code - dev confirms`), not an open question. Product intent and
+  genuine decisions go to the human and to the owning feature's `## Open
+  questions` (or `vision.md` for product-level) as structured `### Q-NNN` blocks,
+  never bare `- [ ]` items and never guessed into the spec. PO-acceptance boxes
+  stay **unchecked**; the PO has not validated extracted intents. Run
+  `/steer-spec questions` to resolve open questions.
 - **Propose big restructures, don't force them.** Layout moves, rewrites, and
   risky changes are *proposed*; the dev's PR review is the hard gate. Never
   restructure silently.
@@ -143,7 +146,8 @@ phase you are on there before executing it.
    `glossary.md` by interviewing the human; unknowns -> `## Open questions`.
    -> PROCEDURE Phase 4
 5. **Extract a spec per feature** - `intent.md` + `contract.md` from the real
-   code; PO-acceptance boxes stay unchecked. -> PROCEDURE Phase 5
+   code; PO-acceptance boxes stay unchecked. Answer code-facts from the code;
+   only human decisions become `### Q-NNN` questions. -> PROCEDURE Phase 5
 6. **Inventory as-built architectural choices** - record observation + evidence +
    disposition in `PRODUCTIONIZATION.md`; **no ADR from inference** (guardrails).
    -> PROCEDURE Phase 6
