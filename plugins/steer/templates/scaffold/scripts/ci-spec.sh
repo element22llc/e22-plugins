@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # steer - the open-question contract, enforced on every push and PR.
-# Rationale: /steer:reference spec-framework -> "Open-question format".
+# Rationale: the steer plugin's templates/reference/SPEC-FRAMEWORK.md -> "Open-question format".
 # The SessionStart hook only advises, and only in Claude Code; this is the gate
 # that holds for every contributor. It fails on:
 #   - a bare `- [ ]` question under `## Open questions` (the retired format),
@@ -70,7 +70,7 @@ for f in spec/vision.md spec/features/*/intent.md spec/PRODUCTIONIZATION.md; do
 done
 
 if [ "${failed}" -ne 0 ]; then
-	steer_ci_error 'The open-question contract failed (see above). The format is in /steer:reference spec-framework; /steer:spec questions resolves questions.'
+	steer_ci_error 'The open-question contract failed (see above). The format is in the steer spec framework (SPEC-FRAMEWORK.md, "Open-question format"); /steer:spec questions resolves questions.'
 	exit 1
 fi
 printf 'Open-question contract holds across %s spec file(s).\n' "${checked}"

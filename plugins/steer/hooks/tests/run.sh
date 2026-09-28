@@ -983,6 +983,16 @@ OQ17="$(oq_nb oq17 live 2026-05-20)"
 out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ17}" oq17)")"
 oq_grep "open-questions: non-blocking open 30d in a live feature escalated" 'rotted' "${out}"
 
+# A question filled in the template's shape keeps each field's trailing comment,
+# so an empty `tracker:` still reads as un-promoted and the question still ages.
+OQ17T="$(oq_repo oq17t f)"
+{
+	printf '> Status: approved\n\n## Open questions\n\n'
+	printf '### Q-001 - polish\n- created: 2026-04-01\n- status: open            # open | resolved\n- impact: non-blocking    # blocking | non-blocking\n- owner: design           # product | design\n- tracker:                # issue ref once promoted (e.g. #142), else empty\n'
+} >"${OQ17T}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ17T}" oq17t)")"
+oq_grep "open-questions: template-commented empty tracker still escalates" 'rotted' "${out}"
+
 # The notice is bounded: one summary line and the top 3, blocking-now first,
 # however many questions there are.
 OQ18="$(oq_repo oq18 f)"
@@ -1192,6 +1202,12 @@ cs_case "malformed created fails" 'draft
 - created: last week
 - status: open
 - impact: non-blocking' 1 'YYYY-MM-DD'
+# Filling in the template's seed as it says (drop the marker, retitle) keeps the
+# field comments, so an empty `created:` must still read as empty.
+sed 's/ <!-- steer:placeholder -->//; s/\[Anything[^]]*\]/real question/' \
+	"${PLUGIN}/templates/spec/feature-intent.md" >"${CS}/spec/features/f/intent.md"
+ci_spec "${CS}"
+assert_eq "ci-spec: a question filled in the template's shape passes" "${rc}" "0"
 cs_case "PO acceptance checkboxes are not questions" 'approved
 
 ## PO acceptance
