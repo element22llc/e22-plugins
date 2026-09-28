@@ -50,6 +50,13 @@ flowchart TD
   scaffold manifest when the scaffold is installed, the migrations ledger only on
   a resume). So the first thing you see is what adopt found in your repo, not
   adopt reading its own bundle.
+- **Answer from the code, ask only for decisions.** A question about what the
+  code does ("when is this cache recomputed?") is answered from the code and
+  recorded in `contract.md` as `derived from existing code - dev confirms`. Only
+  a genuine product or intent decision becomes an open question, written as a
+  structured `### Q-NNN` block with its owner, impact, gate, and `created:` date,
+  so an adopted repo does not start with a backlog of questions nobody needs to
+  answer.
 - **No ADR from inference.** Adopt must never infer a *ratified* ADR from code.
   The as-built spine records what exists; a decision that was never explicitly
   made is not an ADR. See [Product spine](../concepts/product-spine.md).
