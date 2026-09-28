@@ -3,8 +3,9 @@
 # their purpose.
 #
 # WHY THIS EXISTS
-#   The feature-intent template seeds `## Open questions` with a
-#   `<!-- steer:placeholder -->` example block so a fresh draft shows the format.
+#   The feature-intent, vision and productionization templates each seed their
+#   open questions with a `<!-- steer:placeholder -->` example block so a fresh
+#   scaffold shows the format.
 #   An open-question scaffold reconcile inserted that seed into features that
 #   were long approved, and nothing ever removed an unfilled one. Anything that
 #   does not know the placeholder convention reads each as an open blocking
@@ -14,7 +15,7 @@
 #
 # WHAT IT REMOVES
 #   A seed block (`P` record from lib/questions.sh) whose heading still carries
-#   the bracketed template title, when EITHER its feature's Status is past
+#   its template's bracketed title, when EITHER its feature's Status is past
 #   `draft`, OR the same section already holds a real `### Q-NNN` question -
 #   exactly what the scaffolded ci-spec.sh gate fails on. A seed in a draft
 #   feature with nothing else is left alone: there it is still the example.
@@ -65,17 +66,21 @@ seed_file() {
     $1 == "P" { n++; line[n] = $2; id[n] = $3; next }
     END { if (past || real) for (i = 1; i <= n; i++) printf "%s\t%s\n", line[i], id[i] }
   ' >"${TMP}/cands"
-	# Keep a candidate only if it is still the template's seed: the bracketed
-	# title (matched on its text, not its separator - templates before the
-	# ASCII sweep wrote an em dash) and nothing in the block but the field
-	# bullets and the `_Resolution:_` sentence. Anything else is a human's, and
-	# a deletion that guesses is the one thing this script must not do.
+	# Keep a candidate only if it is still a template's seed: one of the three
+	# bracketed titles (matched on its text, not its separator - templates
+	# before the ASCII sweep wrote an em dash) and nothing in the block but the
+	# field bullets and the `_Resolution:_` sentence. Anything else is a
+	# human's, and a deletion that guesses is the one thing this script must
+	# not do.
 	awk -F '\t' '
     FNR == NR { want[$1] = $2; next }
     FNR in want {
       if (cur) verdict()
       cur = FNR; id = want[FNR]
-      ok = (index($0, "[Anything ambiguous the PO needs to decide]") > 0); extra = 0; inres = 0
+      ok = (index($0, "[Anything ambiguous the PO needs to decide]") > 0 ||
+        index($0, "[Anything ambiguous about the product the PO/dev still needs to decide]") > 0 ||
+        index($0, "[A dev-facing hardening ambiguity this adoption surfaced]") > 0)
+      extra = 0; inres = 0
       next
     }
     cur && /^(# |## |### )/ { verdict(); cur = 0 }

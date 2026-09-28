@@ -1113,6 +1113,22 @@ sh "${PLUGIN}/scripts/remove-question-seeds.sh" --apply "${SD2}" >/dev/null 2>&1
 grep -q 'Anything ambiguous' "${SD2}/spec/features/dash/intent.md" && bad "seeds: em-dash seed removed" || ok
 grep -q 'section of the spec above' "${SD2}/spec/features/dash/intent.md" && bad "seeds: wrapped _Resolution:_ removed with it" || ok
 grep -q 'about billing' "${SD2}/spec/features/extra/intent.md" && ok || bad "seeds: refused seed left intact"
+# The vision and productionization templates seed their own titles; beside a
+# real question each is removed, the same as an intent seed.
+SD3="${WORK}/seeds3"
+mkdir -p "${SD3}/spec"
+printf '' >"${SD3}/.git"
+sed -n '/^## Open questions/,$p' "${PLUGIN}/templates/spec/vision.md" >"${SD3}/spec/vision.md"
+printf '\n### Q-002 - real vision question\n- status: open\n- impact: non-blocking\n' >>"${SD3}/spec/vision.md"
+sed -n '/^## Open questions/,$p' "${PLUGIN}/templates/spec/productionization.md" >"${SD3}/spec/PRODUCTIONIZATION.md"
+printf '\n### Q-002 - real hardening question\n- status: open\n- impact: non-blocking\n' >>"${SD3}/spec/PRODUCTIONIZATION.md"
+out="$(sh "${PLUGIN}/scripts/remove-question-seeds.sh" --list "${SD3}" 2>"${WORK}/seeds3.err")"
+oq_grep "seeds: vision seed listed" 'spec/vision.md:' "${out}"
+oq_grep "seeds: productionization seed listed" 'spec/PRODUCTIONIZATION.md:' "${out}"
+assert_empty "seeds: vision/productionization seeds not refused" "$(cat "${WORK}/seeds3.err")"
+sh "${PLUGIN}/scripts/remove-question-seeds.sh" --apply "${SD3}" >/dev/null 2>&1
+grep -q 'steer:placeholder -->$' "${SD3}/spec/vision.md" "${SD3}/spec/PRODUCTIONIZATION.md" && bad "seeds: vision/productionization seed removed" || ok
+grep -q '^### Q-002 - real hardening question$' "${SD3}/spec/PRODUCTIONIZATION.md" && ok || bad "seeds: productionization real question kept"
 
 ci_spec() { # <repo> -> out/rc of the scaffold gate, run from the repo root as CI does
 	out="$(cd "$1" && sh "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" 2>&1)"
