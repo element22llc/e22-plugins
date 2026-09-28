@@ -67,7 +67,16 @@ Flag each of these, citing the `Q-NNN` and file:
   not block: it mirrors the SessionStart hook's escalation, nudging you to
   promote (assign its owner via the tracker.md map) or defer with a reason;
 - ⚠ a bare `- [ ]` item under `## Open questions` - the retired format, which
-  `/steer-setup sync` converts to a `### Q-NNN` block.
+  `/steer-setup sync` converts to a `### Q-NNN` block;
+- ✗ an unfilled placeholder seed (`<!-- steer:placeholder -->` on the template's
+  bracketed `Q-001`) in a feature past `draft`, or beside real questions -
+  delete it.
+
+The mechanical subset - bare checkboxes, stale seeds, malformed blocks, and a
+blocking question open at a gate its feature has passed - also runs in CI as
+the scaffolded `ci:spec` stage (`scripts/ci-spec.sh`), so it holds for every
+contributor, not just a session that runs this mode. Where that script exists,
+`sh scripts/ci-spec.sh` from the repo root is the quick way to run it here.
 
 **Cross-artifact analyze checks** - the pre-implementation consistency pass
 (intent <-> contract <-> tracker), run in the same sweep. All warnings (⚠): each
@@ -160,7 +169,13 @@ you may not record their approval for them.
    human-facing mirror) with the `Approval comment/link:`. When the approval was
    given in-session rather than in an offline review, say so in the
    `Approval comment/link:` so the channel is part of the record.
-2. Flip `> Status:` to `approved`.
+2. Flip `> Status:` to `approved`. If `## Open questions` still holds the
+   scaffold's **unfilled seed** - the `### Q-001 - [Anything ambiguous ...]`
+   block marked `<!-- steer:placeholder -->` - delete it, heading through its
+   `_Resolution:_` line: past `draft` it is no longer an example, anything that
+   doesn't know the marker reads it as an open blocking question, and the
+   scaffolded `ci:spec` gate fails on it. A block whose marker sits on a real,
+   filled-in question is not a seed - drop just the marker so it is counted.
 3. Write **one** `/spec/history/` entry file (what / why / who-asked / refs) -
    in a member, to the workspace's ledger per rule `30-spec` § Living documentation.
 4. Recommend the local next action - decompose into work

@@ -1058,6 +1058,107 @@ else
 	printf 'SKIP: git unavailable, open-question blame + converter tests skipped\n' >&2
 fi
 
+# remove-question-seeds.sh + the scaffold's ci-spec.sh gate share one rule: an
+# unfilled seed goes once its feature is past draft or has a real question.
+SEED="${PLUGIN}/templates/spec/feature-intent.md"
+SD="${WORK}/seeds"
+mkdir -p "${SD}/spec/features/done" "${SD}/spec/features/fresh" "${SD}/spec/features/mixed"
+printf '' >"${SD}/.git"
+sed 's/^> Status: draft | approved | live$/> Status: approved/' "${SEED}" >"${SD}/spec/features/done/intent.md"
+sed 's/^> Status: draft | approved | live$/> Status: draft/' "${SEED}" >"${SD}/spec/features/fresh/intent.md"
+{
+	sed 's/^> Status: draft | approved | live$/> Status: draft/' "${SEED}"
+	printf '\n### Q-002 - real\n\n- status: open\n- impact: non-blocking\n'
+} >"${SD}/spec/features/mixed/intent.md"
+grep -q '^> Status: approved$' "${SD}/spec/features/done/intent.md" && ok || bad "seeds: fixture Status rewrite (template header changed?)"
+run_sh "${PLUGIN}/scripts/remove-question-seeds.sh" --list "${SD}"
+oq_grep "seeds: approved feature's seed listed" 'spec/features/done/intent.md:[0-9]*: Q-001' "${out}"
+oq_grep "seeds: seed beside a real question listed" 'spec/features/mixed/intent.md' "${out}"
+oq_ngrep "seeds: a draft's lone seed is still the example" 'features/fresh' "${out}"
+run_sh "${PLUGIN}/scripts/remove-question-seeds.sh" --apply "${SD}"
+grep -q 'steer:placeholder -->$' "${SD}/spec/features/done/intent.md" && bad "seeds: approved seed removed" || ok
+grep -q '_Resolution:_ recorded here' "${SD}/spec/features/done/intent.md" && bad "seeds: seed's _Resolution:_ line removed with it" || ok
+grep -q '^### Q-002 - real$' "${SD}/spec/features/mixed/intent.md" && ok || bad "seeds: real question kept"
+grep -q 'steer:placeholder -->$' "${SD}/spec/features/fresh/intent.md" && ok || bad "seeds: draft seed kept"
+assert_eq "seeds: no double blank lines left at the cut" "$(awk 'prev == "" && $0 == "" { n++ } { prev = $0 } END { print n + 0 }' "${SD}/spec/features/done/intent.md")" "0"
+run_sh "${PLUGIN}/scripts/remove-question-seeds.sh" --list "${SD}"
+assert_empty "seeds: idempotent once applied" "${out}"
+
+ci_spec() { # <repo> -> out/rc of the scaffold gate, run from the repo root as CI does
+	out="$(cd "$1" && sh "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" 2>&1)"
+	rc=$?
+}
+CS="${WORK}/cispec"
+mkdir -p "${CS}/scripts" "${CS}/spec/features/f"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/spec-questions.sh" "${CS}/scripts/"
+ci_spec "${CS}"
+assert_eq "ci-spec: no spine -> passes" "${rc}" "0"
+oq_grep "ci-spec: no spine -> says why" 'no steer spec spine' "${out}"
+printf '7.0.0\n' >"${CS}/spec/.version"
+cp "${SD}/spec/features/fresh/intent.md" "${CS}/spec/features/f/intent.md"
+ci_spec "${CS}"
+assert_eq "ci-spec: a draft's lone seed passes" "${rc}" "0"
+cs_case() { # <name> <intent body after the Status line> <want-rc> <grep>
+	printf '> Status: %s\n' "$2" >"${CS}/spec/features/f/intent.md"
+	ci_spec "${CS}"
+	assert_eq "ci-spec: $1 (rc)" "${rc}" "$3"
+	[ -z "$4" ] || oq_grep "ci-spec: $1 (message)" "$4" "${out}"
+}
+cs_case "bare checkbox fails" 'draft
+
+## Open questions
+
+- [ ] old style' 1 'run /steer:setup sync'
+cs_case "seed in an approved feature fails" 'approved
+
+## Open questions
+
+### Q-001 - [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->
+- status: open
+- impact: blocking' 1 'past draft'
+cs_case "blocking question past its gate fails" 'approved
+
+## Open questions
+
+### Q-001 - late
+- status: open
+- impact: blocking
+- required_before: intent-approval' 1 'already passed'
+cs_case "blocking question for a later gate passes" 'approved
+
+## Open questions
+
+### Q-001 - later
+- status: open
+- impact: blocking
+- required_before: production-release' 0 ''
+cs_case "missing status fails" 'draft
+
+## Open questions
+
+### Q-001 - broken
+- impact: blocking' 1 'has no status'
+cs_case "malformed created fails" 'draft
+
+## Open questions
+
+### Q-001 - dated
+- created: last week
+- status: open
+- impact: non-blocking' 1 'YYYY-MM-DD'
+cs_case "PO acceptance checkboxes are not questions" 'approved
+
+## PO acceptance
+
+- [ ] PO reviewed this intent
+
+## Open questions
+
+### Q-001 - fine
+- status: resolved
+- impact: blocking
+- required_before: intent-approval' 0 ''
+
 # ---------------------------------------------------------------------------
 # orient-session.sh - natural-language orientation (SessionStart, managed only)
 # (emits plain markdown wrapped into additionalContext by the harness - assert on

@@ -219,7 +219,8 @@ and **Repair**.
 - **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
   `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
   `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
-  `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
+  `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`,
+  `scripts/ci-spec.sh`, `scripts/spec-questions.sh`
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** `ci.yml` reaches the hygiene stage - now via `mise run ci:hygiene`,
   which runs `scan-version-pins.sh` - **and** `mise.toml` defines the `check` + `ci`
@@ -227,13 +228,20 @@ and **Repair**.
   template is present (it carries the spec-sync, drift-gate, and living-docs
   checklists). A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
   such tasks is the one broken state this capability exists to catch: the required
-  check fails on every PR.
+  check fails on every PR. The `ci:spec` stage counts: `ci.yml` runs `mise run
+  ci:spec`, `mise.toml` defines it inside `ci`'s `depends`, and
+  `scripts/spec-questions.sh` is byte-identical to
+  `${CLAUDE_PLUGIN_ROOT}/hooks/lib/questions.sh`. **Order on a repo gaining it:**
+  apply the ledger first (it converts legacy `- [ ]` questions and removes stale
+  placeholder seeds, the two failures a sync can fix), then wire this stage, so
+  the sync PR does not turn its own check red.
 - **Repair:** additively splice the missing job/step, the missing `ci:*`/`check`/`ci`
   tasks, or the PR-template section; copy any missing `scripts/ci-*.sh` from the
   scaffold. Never clobber product-specific CI steps or a product's adapted stage
   script. Sources under `templates/github/` and `templates/scaffold/`.
 - **Verbatim:** `scripts/ci-lib.sh` yes - its stack predicates must stay in lockstep
-  with the plugin's `hooks/lib/scope.sh`; the stage scripts and `ci.yml` no (a
+  with the plugin's `hooks/lib/scope.sh`; `scripts/spec-questions.sh` yes - re-copy
+  it from `hooks/lib/questions.sh`; the stage scripts and `ci.yml` no (a
   product adapts them to its toolchain).
 - **Why it matters:** `ci.yml` is the single required status check behind branch
   protection; the PR template is where drift classes are surfaced before merge.

@@ -1017,10 +1017,11 @@ def check_authorization(errors: list[str]) -> None:
 # --- check 10: scaffold policy/governance copies stay in sync ---
 
 # Files the scaffold ships verbatim from the plugin so a consumer repo carries
-# the same scanner/policy the plugin would apply (consumer CI can run the
-# scanner without the plugin checked out; the same policy seeds the repo).
+# the same scanner/policy/parser the plugin would apply (consumer CI can run
+# them without the plugin checked out; the same policy seeds the repo).
 # They MUST stay byte-identical.
 _SCAFFOLD_COPIES = [
+    ("templates/scaffold/scripts/spec-questions.sh", "hooks/lib/questions.sh"),
     ("templates/scaffold/scripts/scan-version-pins.sh", "scripts/scan-version-pins.sh"),
     ("templates/scaffold/scripts/version-policy.sh", "hooks/lib/version-policy.sh"),
     ("templates/scaffold/policy/versions.yml", "policy/versions.yml"),
@@ -1033,7 +1034,7 @@ def check_scaffold_version_copies(errors: list[str]) -> None:
         copy = PLUGIN_ROOT / copy_rel
         src = PLUGIN_ROOT / src_rel
         if not src.is_file():
-            errors.append(f"{src}: version-governance source is missing")
+            errors.append(f"{src}: scaffold copy source is missing")
             continue
         if not copy.is_file():
             errors.append(f"{copy}: scaffold copy is missing (ship it from {src_rel})")
@@ -1041,8 +1042,28 @@ def check_scaffold_version_copies(errors: list[str]) -> None:
         if copy.read_bytes() != src.read_bytes():
             errors.append(
                 f"{copy}: scaffold copy drifted from {src_rel} - re-copy so consumer CI "
-                f"runs the same scanner/policy"
+                f"runs the same scanner/policy/parser"
             )
+
+
+# ci-spec.sh runs in consumer CI with no enums.registry to read, so it embeds the
+# `required_before` gate order. It must be the registry's order, or CI ranks a
+# question's gate differently from the session hook.
+_CI_SPEC = "templates/scaffold/scripts/ci-spec.sh"
+
+
+def check_ci_spec_gate_order(errors: list[str], reg: dict[str, list[str]]) -> None:
+    path = PLUGIN_ROOT / _CI_SPEC
+    if not path.is_file():
+        return
+    m = re.search(r"^STEER_SPEC_RB_ORDER='([^']*)'$", path.read_text(encoding="utf-8"), re.M)
+    want = reg.get("required_before", [])
+    got = m.group(1).split() if m else None
+    if got != want:
+        errors.append(
+            f"{_CI_SPEC}: STEER_SPEC_RB_ORDER is {got} but enums.registry "
+            f"required_before is {want} - keep them equal"
+        )
 
 
 # --- check 11: installed payload carries no org-specific branding ---
@@ -1595,6 +1616,7 @@ def run_checks(errors: list[str]) -> None:
         check_token_membership(errors, reg)
         check_cross_field(errors, reg)
         check_crosswalk(errors, reg)
+        check_ci_spec_gate_order(errors, reg)
     check_manifest(errors)
     check_manifest_reverse(errors)
     check_readme_inventory(errors, skills)

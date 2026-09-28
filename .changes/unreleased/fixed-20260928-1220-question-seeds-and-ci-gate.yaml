@@ -1,0 +1,28 @@
+kind: Fixed
+body: |-
+  - **Fixed: unfilled `Q-001` seeds lingered in approved features, and CI never
+    checked the open-question contract.** An open-question scaffold reconcile
+    had spliced the template's `<!-- steer:placeholder -->` example question
+    into features that were long approved, and nothing ever removed one. Any
+    reader that doesn't know the marker saw an open blocking question in every
+    finished feature. The only check was the advisory session hook, which runs
+    only in Claude Code. A new migration-ledger entry, applied by
+    `/steer:setup sync`, runs `scripts/remove-question-seeds.sh`. It deletes a
+    seed only while it still has the bracketed template title, and only once
+    its feature is past `draft` or the seed sits beside real questions.
+    `/steer:spec approve` now drops the seed when it approves an intent. Every
+    repo also gets a new `ci:spec` stage in the required `ci` check
+    (`scripts/ci-spec.sh`, with `scripts/spec-questions.sh`, a byte-identical
+    copy of the hook's parser). It fails on:
+    - bare `- [ ]` questions;
+    - leftover seeds;
+    - `### Q-NNN` blocks missing `status:`/`impact:`;
+    - an unknown `required_before:` or a malformed `created:`;
+    - a blocking question still open at a gate its feature has already passed.
+
+    `/steer:setup sync` wires the stage in through the `drift-gate` capability,
+    after the ledger has converted checkboxes and removed seeds, so the sync PR
+    does not turn its own check red. (#649)
+time: 2026-09-28T12:20:00.000000000-04:00
+custom:
+  Slug: question-seeds-and-ci-gate
