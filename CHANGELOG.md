@@ -3,6 +3,125 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.1.0
+
+- **Security: Dependabot waits a week before proposing a release.** The
+  shipped `.github/dependabot.yml` sets a 7-day `cooldown` on every ecosystem
+  block, live and commented, so a version is only proposed - and, for
+  patch/minor, auto-merged - once it has been public for a week. This extends
+  pnpm's `minimumReleaseAge` guard to Actions, Python, Docker and Terraform,
+  and replaces GitHub's implicit 3-day default with a stated policy. Security
+  updates are not delayed. In an existing repo, `/steer:setup sync` surfaces
+  it as a scaffold delta to merge.
+- **Added: `/steer:setup worktrees`.** Only Claude Code tells steer a worktree
+  is being deleted, so a worktree removed by Orca, Conductor or a plain
+  `git worktree remove` left its Compose containers and volumes running. The
+  new mode checks a repo's parallel-worktree handling whoever manages it -
+  inherited `mise trust`, per-worktree ports, the git-ignored boot files
+  `.worktreeinclude` must carry, in-repo worktree dirs ignored - installs the
+  tool's own teardown on confirmation (for Orca, an `orca.yaml` archive hook
+  that runs `docker:clean`, fail-soft because a failing one blocks Orca's
+  removal), and sweeps the stacks deleted worktrees left behind. Nothing is
+  added to the scaffold; a repo gets the Orca hook only when it uses Orca. The
+  version-pin scanner also skips Orca's in-repo `.orca/worktrees/`.
+- **Fixed: `/steer:setup adopt` asked questions the code already answers.**
+  Adoption filed every ambiguity it met under the feature's `## Open questions`,
+  so an adopted repo started with dozens of PO-facing questions that were
+  really facts about the code ("when is this cache recomputed?"). They sat open
+  for months and buried the real decisions. Adopt now answers a code-fact from
+  the code it is already reading and records it in `contract.md` as `derived
+  from existing code - dev confirms`; only genuine product or intent decisions
+  become questions, and those are written as structured `### Q-NNN` blocks with
+  `created:`, `owner:`, `impact:` and `required_before:` set, never as bare
+  `- [ ]` items. `/steer:spec-scaffold` gets the same format rule. (#645)
+- **Fixed: legacy `- [ ]` open questions were never converted.** A question
+  written as a bare checkbox under `## Open questions`, the format before
+  `### Q-NNN`, was left for `/steer:spec questions` to convert "as it touches
+  them". The SessionStart hook counted such questions as backlog "for one
+  deprecation window" that had no end. A feature nobody revisited therefore
+  kept its checkboxes through every sync, with no status, owner or date, so
+  nothing could age them. A new migration-ledger entry, applied by
+  `/steer:setup sync`, runs `scripts/convert-legacy-questions.sh`. The
+  script turns each checkbox into a `### Q-NNN` block marked `open` and
+  `non-blocking` with no owner. Its `created:` date comes from `git blame`
+  on the original checkbox line, because blaming after the rewrite would
+  date every old question to the migration commit. It shows a diff first
+  and touches only the scope the hook reports: inside `## Open questions`
+  and outside any question block. It never changes a `## PO acceptance` or
+  acceptance-criteria checkbox. The window is now closed: any checkbox that
+  remains is reported on its own line, naming `/steer:setup sync`, instead
+  of as backlog. (#646)
+- **Fixed: non-blocking open questions never went stale.** Only a blocking
+  question was escalated when left open too long. A non-blocking one could
+  sit for months, counted in the backlog but never named, which is where
+  most rot actually is. Now a non-blocking question that nobody has promoted
+  is escalated after 60 days. If its feature is already `live`, the limit is
+  14 days, because the question has outlived the work it was meant to
+  inform. The "promote or defer" prompt is the same one blocking questions
+  get. `/steer:spec validate` warns on both limits, and on any bare `- [ ]`
+  question left in the retired format. An undated question now costs one
+  `git blame` per spec file instead of one per question. (#647)
+- **Changed: the open-questions session notice names what to act on.** The
+  old notice listed every spec file with a count, followed by a generic
+  "sweep them" prompt. On a large backlog that was dozens of identical lines
+  every session, and people learned to skip it. It is now one summary line
+  split by gate, then the three most urgent questions by id, title, owner and
+  age (blocking-now first, then stale, then oldest), then one specific fix:
+  `/steer:setup sync` when bare checkboxes remain, triage when most questions
+  have no owner, and `/steer:spec questions bundle` when most belong to the
+  PO. The notice is the same length however big the backlog grows.
+  `/steer:next` reads the same ranking from `workspace-snapshot.sh` (a new
+  `most urgent` line), so a question it recommends is named, not counted.
+  (#648)
+- **Fixed: unfilled `Q-001` seeds lingered in approved features, and CI never
+  checked the open-question contract.** An open-question scaffold reconcile
+  had spliced the template's `<!-- steer:placeholder -->` example question
+  into features that were long approved, and nothing ever removed one. Any
+  reader that doesn't know the marker saw an open blocking question in every
+  finished feature. The only check was the advisory session hook, which runs
+  only in Claude Code. A new migration-ledger entry, applied by
+  `/steer:setup sync`, runs `scripts/remove-question-seeds.sh`. It deletes a
+  seed only while it still has the bracketed template title, and only once
+  its feature is past `draft` or the seed sits beside real questions.
+  `/steer:spec approve` now drops the seed when it approves an intent. Every
+  repo also gets a new `ci:spec` stage in the required `ci` check
+  (`scripts/ci-spec.sh`, with `scripts/spec-questions.sh`, a byte-identical
+  copy of the hook's parser). It fails on:
+  - bare `- [ ]` questions;
+  - leftover seeds;
+  - `### Q-NNN` blocks missing `status:`/`impact:`;
+  - an unknown `required_before:` or a malformed `created:`;
+  - a blocking question still open at a gate its feature has already passed.
+
+  `/steer:setup sync` wires the stage in through a new `question-gate` capability,
+  after the ledger has converted checkboxes and removed seeds, so the sync PR
+  does not turn its own check red. (#649)
+- **Fixed: the seed-removal migration also clears the vision and
+  productionization seeds.** `remove-question-seeds.sh` recognized only the
+  feature-intent template's bracketed title. `spec/vision.md` and
+  `spec/PRODUCTIONIZATION.md` seed their own, so beside a real question their
+  unfilled `Q-001` was refused as "a real title" while `ci:spec` failed on it
+  and pointed back to `/steer:setup sync`. The remover now accepts each
+  template's seed title.
+- **Fixed: a question filled in the template's shape failed `ci:spec` and
+  never went stale.** This corrects the `ci:spec` stage and the non-blocking
+  staleness check added in this same release. The spec templates leave a
+  trailing comment on each empty field (`- created:   # YYYY-MM-DD ...`), and
+  the shared question parser read that comment's `#` as the value. So an
+  empty `created:` failed the required `ci` check as "not YYYY-MM-DD", and an
+  empty `tracker:` counted as promoted, which kept the question from ever
+  being escalated. A field whose value is a lone `#` now reads as empty; a
+  real `tracker: #142` ref is unchanged. The `ci:spec` failure message also
+  now points to the spec framework's "Open-question format" section instead
+  of a `/steer:reference` topic that does not exist.
+- **Fixed: rule 45 no longer tells the model to trust every new worktree.**
+  Its Parallel worktrees section said to run `mise trust` in any new
+  worktree, with no condition. The trust hook and `/steer:setup worktrees`
+  both forbid creating trust when the primary checkout is itself untrusted,
+  because that first decision belongs to a human. The rule now says the same:
+  trust a worktree only when the primary checkout is trusted, and otherwise
+  ask the human to run `mise trust && mise install` there.
+
 ## 7.0.0
 
 - **`/steer:issues` is now `/steer:work issues`,** folding the backlog layer

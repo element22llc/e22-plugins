@@ -427,10 +427,11 @@ the standards in `.github/copilot-instructions.md`.
   inherit the primary checkout's trust, and its first `mise run ...` fails on
   *trust*, not on the task - the cost a polyrepo pays per member per feature. The
   standards carry the remedy instead of a hook: rule `45-delivery` § Parallel worktrees tells the agent
-  to run `mise trust` in the worktree before its first `mise run ...` and names the
-  inheriting check as Claude-Code-only, so no Copilot surface is told trust it does
-  not have. `mise trust` is idempotent, so the instruction is also free on Claude
-  Code where the check already ran.
+  to run `mise trust` in the worktree before its first `mise run ...` - only when
+  the primary checkout is already trusted, the same condition the hook applies -
+  and otherwise to ask the human to run `mise trust && mise install` there, so no
+  surface creates first-time trust. `mise trust` is idempotent, so the instruction
+  is also free on Claude Code where the check already ran.
 - **Worktree *teardown* is Claude-only too.** Stopping a worktree's Docker stack
   is now done by two Claude-Code lifecycle hooks (`SessionEnd` -> `docker:down`,
   `WorktreeRemove` -> `docker:clean`), and neither event exists on a Copilot
