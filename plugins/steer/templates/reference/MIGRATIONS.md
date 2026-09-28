@@ -94,6 +94,45 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - unfilled `Q-001` placeholder seeds leave features past `draft`
+
+- **What & why:** the feature-intent template seeds `## Open questions` with a
+  `### Q-001 - [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->`
+  example block (`status: open`, `impact: blocking`). An open-question scaffold
+  reconcile spliced that seed into features that were **already approved**, and
+  nothing ever removes an unfilled one - an adopted repo was found with it in 23
+  approved intents. steer's own readers skip the marker, but any consumer that
+  doesn't know it reads each as an open blocking question, and the scaffolded
+  `ci:spec` gate now fails on it. This is the complement of the fix that stopped
+  reconciliation flagging the seed's *absence* (#231): nothing cleaned up its
+  *presence*. Removal is a deletion, which additive reconciliation never does -
+  and because `template-reconcile.sh` strips `steer:placeholder` lines from both
+  sides, a removed seed is never proposed back.
+- **Precondition:** the remover lists at least one seed (run from repo root):
+
+  ```sh
+  sh "${CLAUDE_PLUGIN_ROOT}/scripts/remove-question-seeds.sh" --list
+  ```
+
+  Empty output => no-op. It lists a seed only when its heading still carries the
+  bracketed template title **and** either its feature's `Status` is past `draft`
+  or the same section already holds a real `### Q-NNN` question. A seed in a
+  draft with nothing else is still the example and stays.
+- **Action:** read-then-propose. Run the remover with no flag (it prints a
+  unified diff and writes nothing), show it, and on a yes run it with `--apply`.
+  Each seed block is deleted from its heading through its `_Resolution:_` line,
+  with the surrounding blank lines collapsed to one. If the section's intro
+  prose still says "the seed block below is marked ...", propose deleting that
+  sentence in the same diff.
+  **False-positive guard:** never delete a block whose title is not the
+  bracketed template text - a real question someone wrote under the marker is
+  hidden from every count, so propose dropping just the marker there instead,
+  and name it in the PR. Nor one holding anything beyond the template's field
+  bullets and `_Resolution:_` sentence. The remover enforces both - it matches
+  the title by its text, so a seed written with the pre-ASCII em dash still
+  qualifies - and reports each block it refuses on stderr; handle those by hand
+  in the same PR, never by editing around the script. Idempotent: once applied, `--list` is empty.
+
 ### [Unreleased] - legacy `- [ ]` open questions become `### Q-NNN` blocks
 
 - **What & why:** before the structured open-question format, a question was a

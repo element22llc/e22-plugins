@@ -238,6 +238,32 @@ and **Repair**.
 - **Why it matters:** `ci.yml` is the single required status check behind branch
   protection; the PR template is where drift classes are surfaced before merge.
 
+### question-gate - the open-question contract enforced in CI
+- **Files:** `scripts/ci-spec.sh`, `scripts/spec-questions.sh`, the `ci:spec` task
+  in `mise.toml`, and its step in `.github/workflows/ci.yml`
+- **Conditional:** the repo has a spine (`spec/.version`); without one there is
+  no contract to check, so it is `n/a`.
+- **Wired-when:** `ci.yml` runs `mise run ci:spec`, `mise.toml` defines `ci:spec`
+  (inside the `ci` task's `depends`), `scripts/ci-spec.sh` is present, and
+  `scripts/spec-questions.sh` is byte-identical to
+  `${CLAUDE_PLUGIN_ROOT}/hooks/lib/questions.sh`.
+- **Repair:** copy the two scripts from the scaffold, add the `ci:spec` task and
+  its `ci` depends entry to `mise.toml`, and splice the `Spec open-question
+  contract` step into `ci.yml` - additively, never over a product's own steps.
+  **Apply the ledger first.** A repo gaining this stage usually still has the two
+  failures a sync can fix - legacy `- [ ]` questions and stale placeholder seeds -
+  and the ledger entries that convert and remove them run in step 4, before this
+  repair in step 6. Then run `sh scripts/ci-spec.sh` and say in the PR what still
+  fails: a blocking question open past its gate is a human's to resolve, and the
+  PR is where they learn about it.
+- **Verbatim:** `scripts/spec-questions.sh` yes - re-copy it, the CI and the
+  session hook must agree on what a question is; `scripts/ci-spec.sh` no (a
+  product may adapt it).
+- **Why it matters:** the SessionStart hook only advises, and only in Claude
+  Code. Without this stage nothing stops a PR that leaves bare checkboxes,
+  leftover seeds, or a blocking question open past the gate its feature has
+  already passed.
+
 ### commit-gate - the pre-commit hook wired to `mise run pre-commit`
 - **Files:** `.git/hooks/pre-commit` (**not versioned** - per-clone local state),
   backed by the `pre-commit` task in `mise.toml`

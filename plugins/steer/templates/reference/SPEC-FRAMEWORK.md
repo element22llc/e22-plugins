@@ -124,7 +124,15 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   mirroring the closed-issue trap: it nudges you to promote or defer, it does not
   block the gate);
 - a bare `- [ ]` item under `## Open questions` (**warns**: the retired format -
-  `/steer:setup sync` converts it).
+  `/steer:setup sync` converts it);
+- an unfilled placeholder seed in a feature past `draft` or beside real
+  questions (**fails** - `/steer:spec approve` removes it at approval, and
+  `/steer:setup sync` removes any left behind).
+
+The mechanical checks also run as the scaffolded **`ci:spec`** CI stage
+(`scripts/ci-spec.sh`), which fails on bare checkboxes, stale seeds, malformed
+blocks, and a blocking question open at a gate its feature has already passed -
+so the contract holds on every PR, not only in a session that ran `validate`.
 
 `validate` runs at `/steer:spec approve` and is called by `/steer:work issues`
 (`materialize`, `status`, `reconcile`); a spec-changing PR should run it too.

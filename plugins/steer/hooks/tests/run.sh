@@ -1058,6 +1058,137 @@ else
 	printf 'SKIP: git unavailable, open-question blame + converter tests skipped\n' >&2
 fi
 
+# remove-question-seeds.sh + the scaffold's ci-spec.sh gate share one rule: an
+# unfilled seed goes once its feature is past draft or has a real question.
+SEED="${PLUGIN}/templates/spec/feature-intent.md"
+SD="${WORK}/seeds"
+mkdir -p "${SD}/spec/features/done" "${SD}/spec/features/fresh" "${SD}/spec/features/mixed"
+printf '' >"${SD}/.git"
+sed 's/^> Status: draft | approved | live$/> Status: approved/' "${SEED}" >"${SD}/spec/features/done/intent.md"
+sed 's/^> Status: draft | approved | live$/> Status: draft/' "${SEED}" >"${SD}/spec/features/fresh/intent.md"
+{
+	sed 's/^> Status: draft | approved | live$/> Status: draft/' "${SEED}"
+	printf '\n### Q-002 - real\n\n- status: open\n- impact: non-blocking\n'
+} >"${SD}/spec/features/mixed/intent.md"
+grep -q '^> Status: approved$' "${SD}/spec/features/done/intent.md" && ok || bad "seeds: fixture Status rewrite (template header changed?)"
+run_sh "${PLUGIN}/scripts/remove-question-seeds.sh" --list "${SD}"
+oq_grep "seeds: approved feature's seed listed" 'spec/features/done/intent.md:[0-9]*: Q-001' "${out}"
+oq_grep "seeds: seed beside a real question listed" 'spec/features/mixed/intent.md' "${out}"
+oq_ngrep "seeds: a draft's lone seed is still the example" 'features/fresh' "${out}"
+run_sh "${PLUGIN}/scripts/remove-question-seeds.sh" --apply "${SD}"
+grep -q 'steer:placeholder -->$' "${SD}/spec/features/done/intent.md" && bad "seeds: approved seed removed" || ok
+grep -q '_Resolution:_ recorded here' "${SD}/spec/features/done/intent.md" && bad "seeds: seed's _Resolution:_ line removed with it" || ok
+grep -q '^### Q-002 - real$' "${SD}/spec/features/mixed/intent.md" && ok || bad "seeds: real question kept"
+grep -q 'steer:placeholder -->$' "${SD}/spec/features/fresh/intent.md" && ok || bad "seeds: draft seed kept"
+assert_eq "seeds: no double blank lines left at the cut" "$(awk 'prev == "" && $0 == "" { n++ } { prev = $0 } END { print n + 0 }' "${SD}/spec/features/done/intent.md")" "0"
+run_sh "${PLUGIN}/scripts/remove-question-seeds.sh" --list "${SD}"
+assert_empty "seeds: idempotent once applied" "${out}"
+# A seed from before the ASCII sweep (em dash separator) still qualifies; one
+# with a human's line in it, or the marker on a real title, is refused.
+SD2="${WORK}/seeds2"
+mkdir -p "${SD2}/spec/features/dash" "${SD2}/spec/features/extra" "${SD2}/spec/features/real"
+printf '' >"${SD2}/.git"
+sd2() { # <feature> <heading-separator> <extra-line>
+	{
+		printf '> Status: approved\n\n## Open questions\n\n'
+		printf '### Q-001 %s [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->\n\n' "$2"
+		printf -- '- status: open            # open | investigating\n- impact: blocking\n%s\n' "$3"
+		printf '_Resolution:_ recorded here when answered, then folded into the normative\nsection of the spec above.\n'
+	} >"${SD2}/spec/features/$1/intent.md"
+}
+sd2 dash "$(printf '\342\200\224')" ''
+sd2 extra '-' 'We think this is about billing.'
+{
+	printf '> Status: approved\n\n## Open questions\n\n'
+	printf '### Q-001 - Who owns refunds? <!-- steer:placeholder -->\n- status: open\n- impact: blocking\n'
+} >"${SD2}/spec/features/real/intent.md"
+out="$(sh "${PLUGIN}/scripts/remove-question-seeds.sh" --list "${SD2}" 2>"${WORK}/seeds2.err")"
+oq_grep "seeds: em-dash seed listed" 'features/dash/intent.md' "${out}"
+oq_ngrep "seeds: seed with extra content not listed" 'features/extra' "${out}"
+oq_ngrep "seeds: marked real question not listed" 'features/real' "${out}"
+_err="$(cat "${WORK}/seeds2.err")"
+oq_grep "seeds: extra content reported for hand removal" 'extra/intent.md:5: Q-001 has content beyond' "${_err}"
+oq_grep "seeds: marked real title reported" 'real/intent.md:5: Q-001 carries the placeholder marker' "${_err}"
+sh "${PLUGIN}/scripts/remove-question-seeds.sh" --apply "${SD2}" >/dev/null 2>&1
+grep -q 'Anything ambiguous' "${SD2}/spec/features/dash/intent.md" && bad "seeds: em-dash seed removed" || ok
+grep -q 'section of the spec above' "${SD2}/spec/features/dash/intent.md" && bad "seeds: wrapped _Resolution:_ removed with it" || ok
+grep -q 'about billing' "${SD2}/spec/features/extra/intent.md" && ok || bad "seeds: refused seed left intact"
+
+ci_spec() { # <repo> -> out/rc of the scaffold gate, run from the repo root as CI does
+	out="$(cd "$1" && sh "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" 2>&1)"
+	rc=$?
+}
+CS="${WORK}/cispec"
+mkdir -p "${CS}/scripts" "${CS}/spec/features/f"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/spec-questions.sh" "${CS}/scripts/"
+ci_spec "${CS}"
+assert_eq "ci-spec: no spine -> passes" "${rc}" "0"
+oq_grep "ci-spec: no spine -> says why" 'no steer spec spine' "${out}"
+printf '7.0.0\n' >"${CS}/spec/.version"
+cp "${SD}/spec/features/fresh/intent.md" "${CS}/spec/features/f/intent.md"
+ci_spec "${CS}"
+assert_eq "ci-spec: a draft's lone seed passes" "${rc}" "0"
+cs_case() { # <name> <intent body after the Status line> <want-rc> <grep>
+	printf '> Status: %s\n' "$2" >"${CS}/spec/features/f/intent.md"
+	ci_spec "${CS}"
+	assert_eq "ci-spec: $1 (rc)" "${rc}" "$3"
+	[ -z "$4" ] || oq_grep "ci-spec: $1 (message)" "$4" "${out}"
+}
+cs_case "bare checkbox fails" 'draft
+
+## Open questions
+
+- [ ] old style' 1 'run /steer:setup sync'
+cs_case "seed in an approved feature fails" 'approved
+
+## Open questions
+
+### Q-001 - [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->
+- status: open
+- impact: blocking' 1 'past draft'
+cs_case "blocking question past its gate fails" 'approved
+
+## Open questions
+
+### Q-001 - late
+- status: open
+- impact: blocking
+- required_before: intent-approval' 1 'already passed'
+cs_case "blocking question for a later gate passes" 'approved
+
+## Open questions
+
+### Q-001 - later
+- status: open
+- impact: blocking
+- required_before: production-release' 0 ''
+cs_case "missing status fails" 'draft
+
+## Open questions
+
+### Q-001 - broken
+- impact: blocking' 1 'has no status'
+cs_case "malformed created fails" 'draft
+
+## Open questions
+
+### Q-001 - dated
+- created: last week
+- status: open
+- impact: non-blocking' 1 'YYYY-MM-DD'
+cs_case "PO acceptance checkboxes are not questions" 'approved
+
+## PO acceptance
+
+- [ ] PO reviewed this intent
+
+## Open questions
+
+### Q-001 - fine
+- status: resolved
+- impact: blocking
+- required_before: intent-approval' 0 ''
+
 # ---------------------------------------------------------------------------
 # orient-session.sh - natural-language orientation (SessionStart, managed only)
 # (emits plain markdown wrapped into additionalContext by the harness - assert on
@@ -1365,6 +1496,26 @@ assert_eq "cap: stock claude.yml -> mis-wired" "$(capstatus "${out}" in-ci-plugi
 printf 'with:\n  plugin_marketplaces: e22-plugins\n' >>"${CR2}/.github/workflows/claude.yml"
 capscan "${CR2}"
 assert_eq "cap: claude.yml with marketplace -> present-wired" "$(capstatus "${out}" in-ci-plugin-loading)" "present-wired"
+
+# question-gate: n/a without a spine; wired only with the step, the task, the
+# stage script, and a byte-identical parser copy.
+CRQ="${WORK}/capq"
+mkdir -p "${CRQ}/.github/workflows" "${CRQ}/scripts" "${CRQ}/spec"
+capscan "${CRQ}"
+assert_eq "cap: question-gate n/a without a spine" "$(capstatus "${out}" question-gate)" "n/a"
+printf '7.0.0\n' >"${CRQ}/spec/.version"
+printf 'jobs: {}\n' >"${CRQ}/.github/workflows/ci.yml"
+capscan "${CRQ}"
+assert_eq "cap: question-gate absent on an older repo" "$(capstatus "${out}" question-gate)" "absent"
+printf '      - run: mise run ci:spec\n' >>"${CRQ}/.github/workflows/ci.yml"
+printf '[tasks."ci:spec"]\nrun = "sh scripts/ci-spec.sh"\n' >"${CRQ}/mise.toml"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" "${CRQ}/scripts/"
+printf '# stale copy\n' >"${CRQ}/scripts/spec-questions.sh"
+capscan "${CRQ}"
+assert_eq "cap: question-gate mis-wired on a drifted parser" "$(capstatus "${out}" question-gate)" "mis-wired"
+cp "${PLUGIN}/hooks/lib/questions.sh" "${CRQ}/scripts/spec-questions.sh"
+capscan "${CRQ}"
+assert_eq "cap: question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
 
 # agent-surface-current: the retired-surface check keys on steer's OWN artifacts.
 # The migration that retires .github/prompts/ deliberately leaves a team-authored

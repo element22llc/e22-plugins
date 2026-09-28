@@ -7,6 +7,7 @@ argument-hint: "[--check]"
 user-invocable: false
 allowed-tools:
   - Bash(sh *scripts/convert-legacy-questions.sh*)
+  - Bash(sh *scripts/remove-question-seeds.sh*)
   - Bash(git status *)
   - Bash(git branch *)
   - Bash(git switch *)

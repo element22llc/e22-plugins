@@ -91,6 +91,9 @@ jobs:
           STEER_CI_BEFORE: ${{ github.event.before }}
         run: mise run ci:changelog
 
+      - name: Spec open-question contract
+        run: mise run ci:spec
+
       # The workflow context the gate needs; locally the script falls back to origin/main.
       - name: Coverage (changed-line gate)
         env:
