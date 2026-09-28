@@ -98,8 +98,10 @@ Name the file and say what to carry forward.
 
 - **What & why:** the feature-intent template seeds `## Open questions` with a
   `### Q-001 - [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->`
-  example block (`status: open`, `impact: blocking`). An open-question scaffold
-  reconcile spliced that seed into features that were **already approved**, and
+  example block (`status: open`, `impact: blocking`); `spec/vision.md` and
+  `spec/PRODUCTIONIZATION.md` carry their own bracketed seed the same way. An
+  open-question scaffold reconcile spliced that seed into features that were
+  **already approved**, and
   nothing ever removes an unfilled one - an adopted repo was found with it in 23
   approved intents. steer's own readers skip the marker, but any consumer that
   doesn't know it reads each as an open blocking question, and the scaffolded
@@ -114,8 +116,8 @@ Name the file and say what to carry forward.
   sh "${CLAUDE_PLUGIN_ROOT}/scripts/remove-question-seeds.sh" --list
   ```
 
-  Empty output => no-op. It lists a seed only when its heading still carries the
-  bracketed template title **and** either its feature's `Status` is past `draft`
+  Empty output => no-op. It lists a seed only when its heading still carries its
+  template's bracketed title **and** either its feature's `Status` is past `draft`
   or the same section already holds a real `### Q-NNN` question. A seed in a
   draft with nothing else is still the example and stays.
 - **Action:** read-then-propose. Run the remover with no flag (it prints a

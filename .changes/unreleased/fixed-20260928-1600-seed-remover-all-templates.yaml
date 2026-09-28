@@ -1,0 +1,12 @@
+kind: Fixed
+body: |-
+  - **Fixed: the seed-removal migration also clears the vision and
+    productionization seeds.** `remove-question-seeds.sh` recognized only the
+    feature-intent template's bracketed title. `spec/vision.md` and
+    `spec/PRODUCTIONIZATION.md` seed their own, so beside a real question their
+    unfilled `Q-001` was refused as "a real title" while `ci:spec` failed on it
+    and pointed back to `/steer:setup sync`. The remover now accepts each
+    template's seed title.
+time: 2026-09-28T16:00:00.000000000-04:00
+custom:
+  Slug: seed-remover-all-templates
