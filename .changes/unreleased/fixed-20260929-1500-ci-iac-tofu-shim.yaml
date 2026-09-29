@@ -4,8 +4,9 @@ body: |-
     The scaffold's `scripts/ci-iac.sh` checked `command -v tofu` before the
     root format check. With the mise shims directory on PATH (Orca terminals,
     `mise activate` setups) that test passed even when only `infra/mise.toml`
-    pins OpenTofu, so `tofu fmt` hit "No version is set for shim" and blocked
-    every commit. The script now runs `tofu version` to confirm tofu resolves,
+    pins OpenTofu, so `tofu fmt` hit "No version is set for shim" and failed
+    the `ci` gate - and every commit, where a repo's pre-commit hook runs
+    `ci:iac`. The script now runs `tofu version` to confirm tofu resolves,
     and otherwise takes its existing skip branch. Re-sync the scaffold with
     `/steer:setup sync` to pick it up (#657).
 time: 2026-09-29T15:00:00.000000000-04:00
