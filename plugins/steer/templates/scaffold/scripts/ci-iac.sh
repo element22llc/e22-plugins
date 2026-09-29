@@ -14,13 +14,14 @@ ran=0
 
 if steer_ci_has_tf; then
 	ran=1
-	# `tofu` is on PATH only when the ROOT toolchain pins it (app-profile repos keep IaC under infra/): skip, don't fail.
-	if command -v tofu >/dev/null 2>&1; then
+	# Only a ROOT pin makes `tofu` resolve (app-profile repos keep IaC under infra/): skip, don't fail.
+	# Run it rather than `command -v`: an unpinned mise shim is on PATH yet errors when invoked.
+	if tofu version >/dev/null 2>&1; then
 		steer_ci_group 'tofu fmt'
 		tofu fmt -check -recursive -diff
 		steer_ci_endgroup
 	else
-		steer_ci_notice "*.tf/*.hcl present but 'tofu' is not on PATH at the repo root (an app-profile repo pins IaC tools under infra/, not root). Skipping the root format check."
+		steer_ci_notice "*.tf/*.hcl present but 'tofu' does not resolve at the repo root (an app-profile repo pins IaC tools under infra/, not root). Skipping the root format check."
 	fi
 fi
 
