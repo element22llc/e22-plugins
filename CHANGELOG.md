@@ -3,6 +3,18 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.1.1
+
+- **Fixed: `ci:iac` no longer fails on an unpinned `tofu` mise shim.**
+  The scaffold's `scripts/ci-iac.sh` checked `command -v tofu` before the
+  root format check. With the mise shims directory on PATH (Orca terminals,
+  `mise activate` setups) that test passed even when only `infra/mise.toml`
+  pins OpenTofu, so `tofu fmt` hit "No version is set for shim" and failed
+  the `ci` gate - and every commit, where a repo's pre-commit hook runs
+  `ci:iac`. The script now runs `tofu version` to confirm tofu resolves,
+  and otherwise takes its existing skip branch. Re-sync the scaffold with
+  `/steer:setup sync` to pick it up (#657).
+
 ## 7.1.0
 
 - **Security: Dependabot waits a week before proposing a release.** The
