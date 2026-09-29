@@ -1140,6 +1140,26 @@ sh "${PLUGIN}/scripts/remove-question-seeds.sh" --apply "${SD3}" >/dev/null 2>&1
 grep -q 'steer:placeholder -->$' "${SD3}/spec/vision.md" "${SD3}/spec/PRODUCTIONIZATION.md" && bad "seeds: vision/productionization seed removed" || ok
 grep -q '^### Q-002 - real hardening question$' "${SD3}/spec/PRODUCTIONIZATION.md" && ok || bad "seeds: productionization real question kept"
 
+# ci-iac: a mise shim satisfies `command -v tofu` with no root pin, then errors
+# when run - the gate must skip on a tofu that does not resolve, not fail (#657).
+CI="${WORK}/ciiac"
+mkdir -p "${CI}/scripts" "${CI}/bin"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/ci-iac.sh" "${CI}/scripts/"
+(cd "${CI}" && git init -q && : >main.tf && git add main.tf)
+printf '#!/bin/sh
+echo "mise ERROR No version is set for shim: tofu" >&2
+exit 1
+' >"${CI}/bin/tofu"
+chmod +x "${CI}/bin/tofu"
+out="$(cd "${CI}" && PATH="${CI}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
+assert_eq "ci-iac: unpinned tofu shim skips" "$?" "0"
+case "${out}" in *"Skipping the root format check"*) ok ;; *) bad "ci-iac: unpinned shim takes the skip branch (got '${out}')" ;; esac
+printf '#!/bin/sh
+echo "tofu $*"
+' >"${CI}/bin/tofu"
+out="$(cd "${CI}" && PATH="${CI}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
+case "${out}" in *"tofu fmt -check"*) ok ;; *) bad "ci-iac: resolvable tofu runs fmt (got '${out}')" ;; esac
+
 ci_spec() { # <repo> -> out/rc of the scaffold gate, run from the repo root as CI does
 	out="$(cd "$1" && sh "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" 2>&1)"
 	rc=$?
