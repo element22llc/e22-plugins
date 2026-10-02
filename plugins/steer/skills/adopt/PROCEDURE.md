@@ -115,7 +115,10 @@ For each feature from Phase 3, instantiate the feature spec (this skill invokes
 `/steer:spec-scaffold <id>` to create `intent.md` + `contract.md`).
 Fill `contract.md` from the **real code** (data model, API surface, behavior
 rules) and mark derived sections `derived from existing code - dev confirms` (the
-same "confirm at review" convention the contract template already uses). Draft
+same "confirm at review" convention the contract template already uses). Write
+each behavior rule as a named `### R-NNN` requirement block per the template,
+with the same marker after its statement, so a later PR that changes it shows up
+in the Spec delta as a change to as-built behavior. Draft
 `intent.md`'s what/why from the feature's behavior but leave the PO-acceptance
 boxes **unchecked** - the PO has not validated these yet.
 

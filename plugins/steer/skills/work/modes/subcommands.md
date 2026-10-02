@@ -46,7 +46,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   nothing is the normal outcome; whatever is written ships in this delivery.
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
-  autonomy; merge is not yours) and record it with `link-delivery` - in
+  autonomy; merge is not yours), writing its **Spec delta** when the branch
+  changes a `contract.md` (below), and record it with `link-delivery` - in
   solo-trunk the closing trunk commit is that ref; **mark the PR ready for review** (`gh pr ready`) if it
   is still a draft, **then watch CI
   to conclusion** (`gh pr checks --watch`) before transitioning. The order matters and is
@@ -75,3 +76,23 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
 phase reconciles rather than duplicates.
+
+## Spec delta - derived, never staged
+
+When the branch changes any `spec/features/<id>/contract.md`, fill the PR
+template's `## Spec delta` section from the diff itself - there is no staged
+delta file. Per changed contract, compare the `### R-NNN` headings and blocks on
+the base (`git show <base>:<path>`) against the branch:
+
+- **Added** - an ID only the branch has.
+- **Modified** - an ID on both sides whose heading or block changed (a dropped
+  `(derived ...)` marker counts: confirming as-built behavior is a change).
+- **Removed** - an ID only the base has. Each one needs a `Reason:` line (why the
+  behavior goes) and a `Migration:` line (what callers or users do instead, or
+  `none` and why) - ask the dev rather than invent either.
+
+Write one line per ID, `R-003 - <short name>`. An edit to plain unnumbered
+bullets is listed as `Unnumbered rules changed` - never mint IDs to describe
+it. In solo-trunk there is no PR body; put the same block in the trunk commit
+body. When updating an open PR, recompute the block from the current diff
+rather than appending to it.

@@ -118,6 +118,23 @@ def test_placeholder_seed_lines_are_never_reported(tmp_path: Path):
     assert _run(existing, bundled).stdout == ""
 
 
+def test_unnumbered_contract_rules_need_no_splice(tmp_path: Path):
+    """Requirement blocks are adopt-on-touch: a contract written with plain
+    `- Given ...` bullets must reconcile clean against the shipped template, or
+    sync would push every existing contract toward an `R-001` seed rewrite."""
+    existing = _write(
+        tmp_path / "contract.md",
+        "# Export - Contract\n\n"
+        "## Behavior rules\n\n- Given a list, when exported, then a CSV downloads\n\n"
+        "## Data model\n\nN/A\n\n## API surface\n\n"
+        "## Implementation pointers (optional)\n\n"
+        "## Dependencies\n\n* none\n\n## Notable decisions\n\n* none\n",
+    )
+    bundled = REPO_ROOT / "plugins" / "steer" / "templates" / "spec" / "feature-contract.md"
+
+    assert _run(existing, bundled).stdout == ""
+
+
 def test_missing_anchors_are_reported(tmp_path: Path):
     existing = _write(tmp_path / "existing.md", "## Alpha\n")
     bundled = _write(tmp_path / "bundled.md", "## Alpha\n## Beta\n- [ ] two\n")

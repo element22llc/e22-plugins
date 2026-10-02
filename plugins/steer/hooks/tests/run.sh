@@ -2950,6 +2950,16 @@ printf '# Some feature\n\njust a title\n' >"${TD3}/spec/features/f/intent.md"
 out="$(run_hook check-template-drift.sh "$(session_json "${TD3}/apps/web" td3)")"
 assert_has "template-drift: subdir cwd resolves root and reports drift" "${out}" "## Open questions"
 
+# (e) a contract.md with every template section but plain, unnumbered rule bullets
+#     -> silent. The template's `### R-001` seed is placeholder-marked; without
+#     that, every pre-existing contract would draw a drift notice each session.
+TD4="$(new_repo td4)"
+mkdir -p "${TD4}/spec/features/f"
+grep '^## ' "${PLUGIN}/templates/spec/feature-contract.md" >"${TD4}/spec/features/f/contract.md"
+printf -- '- Given a list, when exported, then a CSV downloads\n' >>"${TD4}/spec/features/f/contract.md"
+out="$(run_hook check-template-drift.sh "$(session_json "${TD4}" td4)")"
+assert_empty "template-drift: unnumbered contract rules are not drift" "${out}"
+
 # ---------------------------------------------------------------------------
 # session-checks.sh - consolidated SessionStart orchestrator. Sequencing only:
 # the individual checks stay authoritative (tested above); these cases

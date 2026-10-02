@@ -35,6 +35,23 @@ If this PR changes user-facing behavior, did you update the relevant spec?
 - [ ] Spec-only PR - no code change
 - [ ] If the originating issue linked a Claude Design URL (or other design source), it is captured in `/spec/features/[id]/intent.md` under `Design source`
 
+## Spec delta
+
+Only when this PR changes a `contract.md`. List the requirement IDs (`### R-NNN`
+headings) it added, modified or removed, read off this PR's diff of each
+contract. Every removed requirement needs a Reason and a Migration line.
+Changes to older unnumbered rules: write `Unnumbered rules changed`.
+
+`spec/features/[id]/contract.md`
+
+- Added:
+- Modified:
+- Removed:
+  - Reason:
+  - Migration:
+
+- [ ] N/A - no `contract.md` changed
+
 ## Review-sensitive flags (drift gates)
 
 Check every class that applies - each checked item is a flag the reviewer must

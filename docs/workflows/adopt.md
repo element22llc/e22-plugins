@@ -52,7 +52,9 @@ flowchart TD
   adopt reading its own bundle.
 - **Answer from the code, ask only for decisions.** A question about what the
   code does ("when is this cache recomputed?") is answered from the code and
-  recorded in `contract.md` as `derived from existing code - dev confirms`. Only
+  recorded in `contract.md` as `derived from existing code - dev confirms`; a
+  behavior rule becomes a named `### R-NNN` requirement carrying that marker, so
+  a later change to it reads as a change to as-built behavior. Only
   a genuine product or intent decision becomes an open question, written as a
   structured `### Q-NNN` block with its owner, impact, gate, and `created:` date,
   so an adopted repo does not start with a backlog of questions nobody needs to

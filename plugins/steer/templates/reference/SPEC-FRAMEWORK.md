@@ -129,7 +129,13 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `/steer:setup sync` converts it);
 - an unfilled placeholder seed in a feature past `draft` or beside real
   questions (**fails** - `/steer:spec approve` removes it at approval, and
-  `/steer:setup sync` removes any left behind).
+  `/steer:setup sync` removes any left behind);
+- in a `contract.md`'s `### R-NNN` requirement blocks: a duplicate ID
+  (**fails**); a requirement with no Given/When/Then scenario, a test citing
+  `<feature-id>/R-NNN` for a removed requirement, or change-oriented wording
+  ("now", "no longer", "as before", "previously", "changed to") in a contract,
+  which states current truth (each **warns**). Older unnumbered rule bullets
+  are not checked.
 
 The mechanical checks also run as the scaffolded **`ci:spec`** CI stage
 (`scripts/ci-spec.sh`), which fails on bare checkboxes, stale seeds, malformed
