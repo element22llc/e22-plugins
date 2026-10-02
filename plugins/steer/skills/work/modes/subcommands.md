@@ -16,7 +16,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   defines (§ Marker format), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
-  load linked specs (`steer:spec-path`, acceptance criteria);
+  load linked specs (`steer:spec-path`, acceptance criteria); **check prior
+  learnings** - grep `spec/learnings/*.md` frontmatter (`area:`, `symptoms:`,
+  `applies_when:`) for terms from the issue and the paths you expect to touch,
+  and read only the files that match (no directory, nothing to do);
   begin implementation.
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
@@ -32,8 +35,17 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   state.
 - **`status #N`** - **read-only**: report state, claimant, branch, PR, blockers,
   spec readiness, and outstanding validation. Mutates nothing.
-- **`finish #N`** - run the required validation; update progress (`update-state`
-  on the managed block + `comment`); commit, push, and open-or-update the PR (autonomous - Commit
+- **`finish #N`** - run the required validation; **capture what was learned** -
+  if the work turned on reasoning that is non-obvious and absent from the final
+  code, tests and docs, put it on the first rung of the enforcement ladder that
+  can carry it: regression test -> lint rule or hook -> `contract.md` rule ->
+  product `CLAUDE.md` pattern -> `/steer:report` for a steer defect -> only then
+  `spec/learnings/<slug>.md` from
+  `${CLAUDE_PLUGIN_ROOT}/templates/spec/learning.md`, updating a matching
+  learning over adding one (`/steer:reference traceability` section 3). Writing
+  nothing is the normal outcome; whatever is written ships in this delivery.
+  Then update progress (`update-state` on the managed block + `comment`);
+  commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours) and record it with `link-delivery` - in
   solo-trunk the closing trunk commit is that ref; **mark the PR ready for review** (`gh pr ready`) if it
   is still a draft, **then watch CI

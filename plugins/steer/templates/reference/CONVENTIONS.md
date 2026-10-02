@@ -847,6 +847,8 @@ product spine, a member only its own (`/steer:reference polyrepo`).
 - **`/spec/app`** - knowledge docs: usage, workflows, roles,
   configuration, limitations, troubleshooting, release notes.
 - **`/spec/decisions`** - ADRs.
+- **`/spec/learnings`** - non-obvious lessons no test, lint rule or
+  contract could carry; created on first use.
 - **`/spec/sources`** - **recurring**, versioned PO source documents,
   maintained by `/steer:spec intake`.
 - **`/spec/reference`** - **one-off** source/research materials feeding the

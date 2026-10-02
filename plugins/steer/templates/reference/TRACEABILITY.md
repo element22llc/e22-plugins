@@ -31,13 +31,15 @@ already approved.
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) - usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; the PO-acceptance checkbox in `intent.md` (its `Status:` becomes `live` only at the actual release) |
 | A **notable event** - decision ratified, scope changed, repo-level event, PO document absorbed, incident (not an ordinary merged change) | `/spec/history/` entry: what, why, who asked, refs |
+| "That failed because..." - a non-obvious root cause the final code, tests and docs do not explain | The strongest home that can carry it, learning file last - see section 3 |
 
 **In a polyrepo member** (`spec/PRODUCT.md` present), the product-level
 destinations in this table - `/spec/history/`, `/spec/app/`,
 `/spec/features/` - are the **workspace's**. Do not create them locally: route
 the entry to the workspace checkout (`workspace.path` in `spec/PRODUCT.md`), else
-carry it in the PR description. `spec/decisions/` and `spec/design/` are the
-member's own, so ADRs are recorded normally.
+carry it in the PR description. `spec/decisions/`, `spec/design/` and
+`spec/learnings/` are the member's own, so ADRs and learnings are recorded
+normally.
 
 ### Extraction discipline
 
@@ -144,7 +146,56 @@ timeline).
 
 ---
 
-## 3. App knowledge documentation (`/spec/app/`)
+## 3. Learnings (`/spec/learnings/`) - enforcement first, notes last
+
+The commonest durable debugging fact - "X fails because Y; symptom Z misleads" -
+has no other home in the spine, and left alone it ends up in a commit message or
+lost. A learning file catches it, but only after every stronger home was ruled
+out: a note is read when someone thinks to look, while a test or a hook fires on
+its own.
+
+**Trigger.** A unit of work produced reasoning that is non-obvious **and** absent
+from the final code, tests and docs - a misleading symptom, a cause found only by
+elimination, an environment quirk. A routine fix writes nothing; **skipping is the
+normal, successful outcome.**
+
+**The enforcement ladder.** Route the lesson to the first rung that can carry it:
+
+1. **A regression test** that fails when the lesson is forgotten.
+2. **A lint rule or a hook** that rejects the mistake mechanically.
+3. **A `contract.md` rule** when the lesson is a behavior the code must keep.
+4. **A product `CLAUDE.md` pattern or anti-pattern** ("Patterns we follow" /
+   "Things to avoid") when it is a team habit.
+5. **A defect in steer itself** -> `/steer:report` (rule `00-router`), never a
+   local note.
+6. **Only then a learning file**, `spec/learnings/<slug>.md`, from the bundled
+   template `templates/spec/learning.md`.
+
+**Shape.** One file per learning, kebab-case slug, no date in the filename (it
+lives in the frontmatter). Small frontmatter - `area`, `symptoms` (1-5),
+`root_cause`, `applies_when`, `retire_when`, `refs`, `date` - then a short body:
+what happened, why, what to do. The directory is created on first use; bootstrap
+and adoption never pre-seed it, and an existing repo needs no migration.
+
+**Update beats add.** Before writing, grep the existing frontmatter (`area:`,
+`symptoms:`, `applies_when:`) for the same problem; extend the match rather than
+writing a second file.
+
+**Readers.** `/steer:work` planning and the `--reviewed` plan reviewer grep the
+same three keys for terms from the issue and the touched paths, then read only
+the matching files. No corpus, no cost.
+
+**Upkeep.** `/steer:audit code` flags learnings whose cited paths no longer exist
+or whose `retire_when` holds, and proposes retiring them or promoting them up the
+ladder. A learning that keeps recurring is a test or a lint rule nobody wrote yet.
+
+**Where it lives.** Per repo, like ADRs: a polyrepo member keeps its own (the
+lesson is bound to that code). On an OpenSpec repo, `openspec/steer/learnings/`
+(rule `33-spec-workflow-openspec`).
+
+---
+
+## 4. App knowledge documentation (`/spec/app/`)
 
 Documentation about *using and operating* the product - distinct from specs
 (what to build) and contracts (how it must behave internally). Index:
@@ -168,7 +219,7 @@ on it.
 
 ---
 
-## 4. Issue tracker integration (client-agnostic)
+## 5. Issue tracker integration (client-agnostic)
 
 Every client brings their own tracker. The model: **the spec spine is the
 in-repo source of truth; the tracker is the scheduling/ownership system; refs
@@ -211,7 +262,7 @@ no `tracker:` ref back.
 
 ---
 
-## 5. Drift gates - what must be surfaced before merge
+## 6. Drift gates - what must be surfaced before merge
 
 Drift is any meaningful mismatch along intent <-> spec <-> contract <-> tracker <->
 app docs <-> action history <-> tests <-> delivered behavior. The standing rule
@@ -254,7 +305,7 @@ change* class - pure shell and git, no stack and no Python, so it runs anywhere:
 
 ---
 
-## 6. SOC 2 / ISO 27001-aligned delivery
+## 7. SOC 2 / ISO 27001-aligned delivery
 
 The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations -
 say "aligned", never "compliant": no plugin, workflow, or generated artifact
@@ -277,7 +328,7 @@ What the workflow contributes, mapped to what auditors typically ask for:
 
 ---
 
-## 7. Worked examples
+## 8. Worked examples
 
 ### A PO's day (plain language in, artifacts out)
 

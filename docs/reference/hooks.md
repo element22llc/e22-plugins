@@ -266,21 +266,23 @@ helper's refusal to read a bare `spec/` as a spine. Making these **states**
 rather than a bypass in front of one caller is what keeps `/steer:setup doctor`,
 `/steer:setup sync` and `/steer:audit` answering the same question the same way.
 
-### Where the three steer artifacts live
+### Where the steer artifacts live
 
-OpenSpec models none of an ADR log, a tracker declaration or an app guide, so
-steer keeps all three - on an OpenSpec repo, under `openspec/steer/`:
+OpenSpec models none of an ADR log, a tracker declaration, an app guide or a
+learnings log, so steer keeps all four - on an OpenSpec repo, under
+`openspec/steer/`:
 
 | Artifact | Native repo | OpenSpec repo |
 | --- | --- | --- |
 | ADRs | `spec/decisions/` | `openspec/steer/decisions/` |
 | Tracker declaration | `spec/tracker.md` | `openspec/steer/tracker.md` |
 | App guide | `spec/app/` | `openspec/steer/app/` |
+| Learnings | `spec/learnings/` | `openspec/steer/learnings/` |
 
 The `steer/` segment is deliberate: `openspec/` is written by a third-party CLI
 (`openspec update` regenerates `openspec/AGENTS.md` wholesale; `archive`
 relocates whole change directories), so a flat `openspec/decisions/` would be one
-upstream release away from a collision. Both paths resolve through
+upstream release away from a collision. Learnings are written by skills only and no hook reads them. For the other three, both paths resolve through
 `steer_tracker_file` / `steer_decisions_dir` / `steer_app_docs_dir` in
 `hooks/lib/scope.sh` - the single definition every hook and script reads, so
 nothing can disagree about which file declares the tracker. `steer_tracker_rel`

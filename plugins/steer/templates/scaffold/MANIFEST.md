@@ -96,12 +96,14 @@ The product-level spec artifacts live with the other spec templates in
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
 | `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec adr` populates it. |
 
-Nine more `templates/spec/` templates also live there but are instantiated **on
+Ten more `templates/spec/` templates also live there but are instantiated **on
 demand** by their skills - not copied at bootstrap - so they are not in this
 install map: `feature-intent.md` + `feature-contract.md` (`/steer:spec-scaffold`),
 `adr.md` (`/steer:spec adr`), `build-status.md` + `productionization.md`
 (`/steer:build`), `source-manifest.md` (`/steer:spec intake`),
-`history-entry.md` (every change that logs an action-history entry), and the two polyrepo
+`history-entry.md` (every change that logs an action-history entry),
+`learning.md` (`/steer:work`, as `spec/learnings/<slug>.md` - no directory is
+pre-seeded), and the two polyrepo
 markers (`/steer:setup init` / `/steer:setup adopt`) - `product.md` -> `spec/PRODUCT.md` for a
 **member** and `workspace.yml` -> `spec/workspace.yml` for the **workspace**. Their
 presence is the `has-product-pointer` / `has-workspace-manifest` trait, so a

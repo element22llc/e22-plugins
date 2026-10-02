@@ -23,8 +23,9 @@ while the subcommands below read an issue and deliver it.
     `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
     opening the PR are autonomous, as everywhere). Once the fire is
-    out, a **mandatory follow-up** backfills the issue, the spec/ADR, and a
-    `/spec/history/` entry: Definition of Done is *deferred, never waived*.
+    out, a **mandatory follow-up** backfills the issue, the spec/ADR, puts the
+    incident's root cause on the [enforcement ladder](#learnings-enforcement-first),
+    and writes a `/spec/history/` entry: Definition of Done is *deferred, never waived*.
 
 ## End-to-end flow
 
@@ -71,10 +72,24 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 
 | Mode | What it does |
 | --- | --- |
-| `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, begin implementing. |
+| `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
-| `finish` | Open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. |
+| `finish` | Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. |
+
+## Learnings - enforcement first
+
+When a unit of work turned on reasoning that is non-obvious and absent from the
+final code, tests and docs ("X fails because Y; symptom Z misleads"), `finish`
+puts the lesson on the first rung that can carry it: a regression test, a lint
+rule or hook, a `contract.md` rule, a product `CLAUDE.md` pattern, a
+`/steer:report` for a steer defect - and only then a learning file at
+`spec/learnings/<slug>.md` (template `templates/spec/learning.md`), updating a
+matching one rather than adding a second. Writing nothing is the normal outcome;
+whatever is written ships in the same PR. `start` and the `--reviewed` plan
+reviewer grep the learnings' `area:` / `symptoms:` / `applies_when:` frontmatter
+and read only the matches; `/steer:audit code` proposes retiring or promoting
+stale ones. Full prose: `/steer:reference traceability`.
 
 ## Closing refs across repositories
 

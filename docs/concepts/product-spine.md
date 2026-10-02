@@ -21,6 +21,7 @@ among others:
 | `sources/` | Versioned home for recurring PO source documents, maintained by [`/steer:spec intake`](../workflows/intake.md). |
 | `reference/` | Catch-all home for durable **one-off** (non-versioned) source/research material feeding the spec - inventories, vendor metadata, schema/DDL dumps, discovery docs. Created on demand by [`/steer:work tidy`](../workflows/index.md); a document sent once can stay here, but the moment it starts arriving in versions it belongs under `sources/`. |
 | ADRs | Ratified, hard-to-reverse decisions (see [Decisions](../decisions/index.md)). |
+| `learnings/` | Non-obvious lessons ("X fails because Y") that no regression test, lint rule, contract rule or `CLAUDE.md` pattern could carry - one `<slug>.md` per lesson, created on first use by [`/steer:work`](../workflows/work.md#learnings-enforcement-first). Per member in a polyrepo, like ADRs. |
 | `.version` | Stamps the plugin version the spine was reconciled against. |
 
 ## Spec vs tracker vs ADR

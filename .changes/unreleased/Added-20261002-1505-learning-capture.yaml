@@ -1,0 +1,25 @@
+kind: Added
+time: 2026-10-02T15:05:00.000000-04:00
+custom:
+  Slug: learning-capture
+body: |
+  - **Added: learning capture for managed product repos, enforcement first.**
+    The spine had homes for behavior, costly decisions, notable events and team
+    patterns, but none for the commonest durable debugging fact - "X fails
+    because Y; symptom Z misleads" - which ended up in a commit message or was
+    lost. `/steer:work finish` (and the mandatory `--hotfix` follow-up) now
+    puts such a lesson on the first rung of an enforcement ladder that can carry
+    it - regression test, lint rule or hook, `contract.md` rule, product
+    `CLAUDE.md` pattern, `/steer:report` for a steer defect - and only then
+    writes `spec/learnings/<slug>.md` from the new `templates/spec/learning.md`
+    (small frontmatter: `area`, `symptoms`, `root_cause`, `applies_when`,
+    `retire_when`, `refs`, `date`). Writing nothing stays the normal outcome.
+    `/steer:work start` and the `--reviewed` plan reviewer grep that frontmatter
+    for the issue's terms and read only the matches. `/steer:audit code` gains
+    an eleventh dimension, learning upkeep, proposing retire or promote for a
+    learning whose cited paths are gone or whose `retire_when` holds. The
+    directory is created on first use - no migration, nothing pre-seeded. It is
+    per member in a polyrepo, like ADRs, and `openspec/steer/learnings/` on an
+    OpenSpec repo (rule `33-spec-workflow-openspec` now names four steer
+    artifacts). Routing: one clause in rule `30-spec`, detail in
+    `/steer:reference traceability`.

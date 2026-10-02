@@ -59,6 +59,7 @@ reports the contradiction.
 
 - `spec/PRODUCT.md` - the pointer, and the thing that makes the repo a member
 - `spec/decisions/` - ADRs about *this repo's* internals
+- `spec/learnings/` - non-obvious lessons bound to *this repo's* code
 - `spec/design/` and `DESIGN.md` - this repo's own design sources and system design
 - `ARCHITECTURE.md` - how *this repo* is built
 - the code
