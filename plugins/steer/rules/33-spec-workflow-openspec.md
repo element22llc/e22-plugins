@@ -28,7 +28,7 @@ bootstrap routes would lay a second, competing spine.
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
-**Three artifacts are steer's, because OpenSpec has no equivalent - and on this
+**Four artifacts are steer's, because OpenSpec has no equivalent - and on this
 repo they live under `openspec/steer/`, NOT in `spec/`:**
 
 - **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:spec adr`**). A
@@ -39,11 +39,13 @@ repo they live under `openspec/steer/`, NOT in `spec/`:**
 - **App guide** -> `openspec/steer/app/`. Living documentation (how to use and
   operate the product), not a spec artifact - Living docs applies unchanged,
   only the path moves.
+- **Learnings** -> `openspec/steer/learnings/<slug>.md`, created on first use.
 
 **This overrides every skill and rule that names a `spec/` path for these
-three.** A skill body still says `spec/decisions/`, `spec/tracker.md` or
-`spec/app/` - read it as `openspec/steer/...` here. The `steer/` segment keeps steer's durable artifacts
-out of the namespace the `openspec` CLI regenerates. If you find them at the old
+four.** A skill body still says `spec/decisions/`, `spec/tracker.md`,
+`spec/app/` or `spec/learnings/` - read it as `openspec/steer/...` here. The
+`steer/` segment keeps steer's durable artifacts out of the namespace the
+`openspec` CLI regenerates. If you find them at the old
 `spec/` paths, the repo predates the move: run **`/steer:setup sync`**.
 
 Toolchain and CI scaffolding are still steer's - the bundled scaffold (mise,

@@ -55,8 +55,9 @@ owning artifact **in the same change as the code**: goals and acceptance ->
 `contract.md`; a hard-to-reverse choice -> an ADR; ambiguity -> `## Open
 questions`, **never a guessed answer**; usage, workflows, configuration and
 release notes -> the app guide; stack and data flow -> `ARCHITECTURE.md` with
-its diagram; visual identity -> `DESIGN.md`. The PR that establishes the stack
-or first app also retires the scaffold's now-false placeholder prose. Full
+its diagram; visual identity -> `DESIGN.md`; a non-obvious root cause no test,
+lint or contract can carry -> `/spec/learnings/`. The PR that establishes the
+stack or first app also retires the scaffold's now-false placeholder prose. Full
 routing table and register: **`/steer:reference traceability`**.
 
 - A **notable event** - ratified decision, scope change, repo-level event,
@@ -75,5 +76,5 @@ routing table and register: **`/steer:reference traceability`**.
 - **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, the
   product-level files, `/spec/app/` and `/spec/history/` are the **workspace's**
   - write through `workspace.path`, never a local copy, and say so in the PR if
-  it does not resolve. `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member
-  (`/steer:reference polyrepo`).
+  it does not resolve. `ARCHITECTURE.md`, `DESIGN.md`, ADRs and learnings stay
+  per member (`/steer:reference polyrepo`).

@@ -32,8 +32,10 @@ What changes versus the normal flow:
   the PR are autonomous (Commit autonomy), while `gh pr merge` and any deploy
   stay human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up (not optional).** Once the fire is out, restore traceability:
-  backfill/finish the issue, write the spec/ADR if a durable decision was made, and
-  write a `/spec/history/` entry (in a polyrepo member, to the **workspace's**
+  backfill/finish the issue, write the spec/ADR if a durable decision was made,
+  put the incident's root cause on the enforcement ladder (`finish` in
+  `modes/subcommands.md` - an incident is the strongest trigger, and a regression
+  test is the expected rung), and write a `/spec/history/` entry (in a polyrepo member, to the **workspace's**
   ledger via `workspace.path`, else the PR description - never a local copy).
   Definition of Done is **deferred, not waived**
   (rule 50) - track the follow-up to closure rather than declaring the hotfix done.

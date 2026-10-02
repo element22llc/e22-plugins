@@ -19,8 +19,10 @@ stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
   context, **not** `steer-reviewer` (that agent reviews existing on-disk code and
   needs `path:line` evidence a prospective plan can't supply). Give it the plan,
   the **restated requirements** (what success means, in your words), and the
-  relevant **steer rules** as the rubric. Ask for severity-ranked findings plus a
-  "what's missing" pass. **Revise on every high-severity finding**; never review
+  relevant **steer rules** as the rubric, plus any `spec/learnings/` files the
+  `start` grep matched (frontmatter and body). Ask for severity-ranked findings
+  plus a "what's missing" pass; a plan that ignores a matched learning is a
+  finding. **Revise on every high-severity finding**; never review
   your own plan.
 - **Human plan sign-off - answerable in-session.** Present the vetted plan before a
   significant change (`--reviewed` is the caller opting into gates; rule

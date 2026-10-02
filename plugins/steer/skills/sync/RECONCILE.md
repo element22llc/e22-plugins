@@ -42,9 +42,9 @@ the template: they are derived from `spec/workspace.yml`, which the team owns.
 
 **An OpenSpec repo reconciles steer's surface only.** On spine state
 `openspec`, steps 4-6 touch the scaffold (mise, compose, CI, PR template,
-`.claude/`, `.gitignore`) and the three artifacts rule
-`33-spec-workflow-openspec` names as steer's: `openspec/steer/tracker.md`,
-`openspec/steer/decisions/` (ADRs, exempt from reconciliation as everywhere) and
+`.claude/`, `.gitignore`) and the artifacts rule `33-spec-workflow-openspec`
+names as steer's: `openspec/steer/tracker.md`, `openspec/steer/decisions/` and
+`openspec/steer/learnings/` (exempt from reconciliation as everywhere) and
 `openspec/steer/app/README.md`. Read every skill body's `spec/tracker.md` /
 `spec/app/` as its `openspec/steer/` path here. **Off-limits: `spec/**` in its
 entirety** - reconciling or stamping it lays the competing spine rule 33 forbids
@@ -71,8 +71,8 @@ is visible rather than silent.
    (never overwrite, reorder, or delete a dev/PO-added row). The helper reports
    `##`/`###` headings and checklist items only, so a template that gained a
    **table row** shows an empty diff - compare tables by eye. Reference prose
-   (`templates/reference/*`) and ADRs are exempt - do not reconcile them (they're
-   read in place / immutable).
+   (`templates/reference/*`), ADRs and learnings are exempt - do not reconcile
+   them (read in place / immutable / authored per lesson).
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.

@@ -12,7 +12,8 @@ security to `/security-review`, mechanical cleanup to `/simplify` (name the
 skill; don't run it here). A cluttered repo root is handed to `/steer:work tidy`, not
 reported stray-by-stray. **If there is no `/spec` spine yet,** the spec-coverage
 dimension can't run - note that, redirect to `/steer:setup adopt` for the spec, and
-run the code-health dimensions (2-10) without it.
+run the code-health dimensions (2-10) without it; dimension 11 has nothing to
+read either.
 
 ## When to run
 
@@ -23,15 +24,15 @@ run the code-health dimensions (2-10) without it.
 
 ## Audit dimensions
 
-Ten standards dimensions, anchored to the baseline (`rules/85-practices.md`,
+Eleven standards dimensions, anchored to the baseline (`rules/85-practices.md`,
 Definition of Done, the high-risk rule) - **not** a generic checklist:
 **1** spec conformance & coverage *(needs `/spec`)* · **2** architecture &
 boundaries · **3** data layer · **4** input validation & config · **5** error
 handling & escape hatches · **6** testing · **7** toolchain & dependency health
 (incl. the branch-protection / solo-trunk graduation check) · **8** design
 consistency *(UI repos only)* · **9** DX & docs · **10** comment noise (the
-Code comments rule). Skip any dimension that doesn't
-apply to the repo and say so. The full catalogue - what each dimension looks for -
+Code comments rule) · **11** learning upkeep *(needs `spec/learnings/`)*.
+Skip any dimension that doesn't apply to the repo and say so. The full catalogue - what each dimension looks for -
 is [`AUDIT-DIMENSIONS.md`](../../../templates/reference/AUDIT-DIMENSIONS.md);
 load it before fanning out reviewers.
 

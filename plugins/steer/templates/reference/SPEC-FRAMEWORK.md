@@ -43,8 +43,10 @@ validation, and operation. Treat it as infrastructure.
 │   └── [feature-id]/
 │       ├── intent.md           # The what and why - PO-facing
 │       └── contract.md         # Behavior rules, API/data model, owning app(s)/package(s)
-└── decisions/
-    └── 000N-[slug].md          # Architecture decisions worth remembering
+├── decisions/
+│   └── 000N-[slug].md          # Architecture decisions worth remembering
+└── learnings/                  # Non-obvious lessons no test, lint rule or contract could carry - created on first use
+    └── [slug].md
 ```
 
 The canonical templates are shipped by this plugin. Use `/steer:spec <id>`

@@ -128,7 +128,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    `openspec/steer/tracker.md` per setup's row rather than syncing.
 
    **On `openspec`, sync runs against steer's surface only** - the scaffold
-   (mise, compose, CI, PR template) and the three artifacts under
+   (mise, compose, CI, PR template) and steer's artifacts under
    `openspec/steer/`. OpenSpec owns the spec spine (rule
    `33-spec-workflow-openspec`), so `spec/**` is off-limits: never reconcile a
    `spec/` spine here and never write `spec/.version`, which is the competing-spine
@@ -241,7 +241,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 8. **Record and hand off.** On an **`openspec`** repo the PR description is the
    record - rule 33 makes the OpenSpec archive this repo's action history and
-   names only three artifacts as steer's, so write no `spec/history/` entry here
+   names no history artifact as steer's, so write no `spec/history/` entry here
    and put the same content in the PR body. Everywhere else, write a
    `/spec/history/` entry (what synced -
    `FROM -> TARGET`, which migrations applied, which templates reconciled, which

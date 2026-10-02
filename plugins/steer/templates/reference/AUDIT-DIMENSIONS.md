@@ -67,6 +67,15 @@ so in the report.
     `/simplify`-class cleanup, so route it there rather than listing lines. A
     file carrying `steer:allow-comments <reason>` has already been triaged -
     report it only if the recorded reason no longer holds.
+11. **Learning upkeep** *(needs `spec/learnings/`)* - a learning whose cited
+    paths (`area:`, paths in the body) no longer exist, or whose `retire_when`
+    condition now holds (the dependency was upgraded, the module was removed).
+    Propose **retire** (delete it) or **promote** (move it to a stronger rung -
+    a regression test, a lint rule or hook, a `contract.md` rule, a product
+    `CLAUDE.md` pattern; ladder in `/steer:reference traceability`), never
+    edit it here. A learning several PRs keep tripping over is a promote
+    finding. No directory, nothing to report - say so rather than skipping
+    silently.
 
 **Out of scope of every dimension** - correctness bugs, security
 vulnerabilities, and mechanical cleanup are delegated, never re-run by the
