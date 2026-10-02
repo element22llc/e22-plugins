@@ -73,6 +73,11 @@ is visible rather than silent.
    **table row** shows an empty diff - compare tables by eye. Reference prose
    (`templates/reference/*`), ADRs and learnings are exempt - do not reconcile
    them (read in place / immutable / authored per lesson).
+   **Never rewrite a contract's behavior rules into `### R-NNN` requirement
+   blocks.** Plain `- Given ...` bullets under `## Behavior rules` stay valid and
+   are numbered only when a later change touches them; the template's `R-001`
+   seed is placeholder-marked, so the diff never asks for it. At most, report
+   which contracts still carry unnumbered rules.
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.

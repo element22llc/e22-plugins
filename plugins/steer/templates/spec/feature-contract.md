@@ -8,9 +8,30 @@
 
 [Concrete rules the implementation must satisfy. These should be testable.]
 
-- Given X, when Y, then Z
-- Validation: [field rules]
-- Error states: [what happens when things go wrong]
+Write each rule as a named requirement: a `### R-NNN - <short name>` heading, a
+one-line statement, and one or more Given/When/Then scenarios. Validation and
+error states are requirements too. IDs are per feature (`R-001`, `R-002`, ...),
+never renumbered, and never reused once a requirement is removed - take the next
+number above the highest this file has ever used (`git log -p` on it shows
+removed ones). A PR that changes this file lists the IDs it added, modified or
+removed in its Spec delta. State current truth; how a rule changed belongs in
+that Spec delta, not here.
+
+A requirement reverse-engineered from existing code carries `(derived from
+existing code - dev confirms)` after its statement, so a reviewer knows a change
+to it alters as-built behavior; the dev deletes the marker on confirming it.
+Tests may cite a requirement as `<feature-id>/R-001` in a test name or comment -
+optional, not a gate. Rules written before this format, as plain `- Given ...`
+bullets, stay valid; number them when you next touch them.
+
+The seed below is marked `<!-- steer:placeholder -->` - delete the marker (and
+the bracketed text) when you write a real requirement.
+
+### R-001 - [Short name] <!-- steer:placeholder -->
+
+[One sentence stating what must hold.]
+
+- Given [context], when [action], then [observable outcome]
 
 ## Data model
 

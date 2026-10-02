@@ -1,0 +1,25 @@
+kind: Added
+time: 2026-10-02T15:07:05.000000-04:00
+custom:
+  Slug: contract-requirement-deltas
+body: |
+  - **Added: named requirements in `contract.md`, and a Spec delta in the PR.**
+    A contract's behavior rules were unnumbered Given/When/Then bullets, so a
+    diff could not be reviewed requirement by requirement and a test had
+    nothing stable to cite. The contract template now writes each rule as a
+    `### R-NNN - <short name>` block: a one-line statement and one or more
+    Given/When/Then scenarios. IDs are per feature, never renumbered and never
+    reused. A rule `/steer:setup adopt` reverse-engineers from code carries
+    `(derived from existing code - dev confirms)`, so a change to it reads as
+    a change to as-built behavior. Tests may cite `<feature-id>/R-003`;
+    nothing enforces it. When a branch changes a `contract.md`,
+    `/steer:work` fills the PR template's new `## Spec delta` section with the
+    added, modified and removed IDs, read off the git diff rather than a
+    staged file. Each removed ID needs a Reason and a Migration line.
+    `/steer:spec validate` now fails a duplicate ID. It warns on a requirement
+    with no scenario, on a test citing a removed ID, and on change-oriented
+    wording ("no longer", "previously", ...) in a contract, which states
+    current truth. Existing unnumbered bullets stay valid and are numbered
+    only when touched. `/steer:setup sync` never rewrites them, and the
+    template's `R-001` seed is placeholder-marked so reconciliation never
+    asks for it. No migration-ledger entry.

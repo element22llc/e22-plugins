@@ -96,6 +96,23 @@ is a judgment call the human resolves, never a mechanical block:
   on the edge behavior the feature obviously has). Cite the criterion and say
   which property fails.
 
+**Contract requirement checks** - over each `contract.md`'s `### R-NNN`
+requirement blocks (the template's `## Behavior rules` format), in the same
+sweep. Plain unnumbered rule bullets are the older format and stay valid -
+none of these fire on them:
+
+- ✗ a requirement ID used twice in one contract - the Spec delta and any test
+  citing it become ambiguous;
+- ⚠ a requirement with no Given/When/Then scenario bullet - nothing in it is
+  testable as written;
+- ⚠ a test that cites `<feature-id>/R-NNN` (in a test name or comment) for an ID
+  the contract no longer has - the requirement was removed but the test still
+  claims to cover it. Search the test tree for the citation; cite the file;
+- ⚠ change-oriented wording in a contract - "now", "no longer", "as before",
+  "previously", "changed to" - a contract states current truth, and the change
+  belongs in the PR's Spec delta. Cite the line; whether a hit actually narrates
+  a change is the human's call.
+
 The closed-issue check needs the tracker; when GitHub is unavailable, run the
 GitHub-independent checks and **say** the tracker-coupled ones were skipped -
 silence must never read as "passed." A failing check **blocks the relevant gate**

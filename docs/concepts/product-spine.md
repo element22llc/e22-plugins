@@ -13,7 +13,7 @@ among others:
 | Artifact | Role |
 | --- | --- |
 | `intent.md` (per feature) | The feature's purpose, acceptance criteria, tracker ref, and `## Open questions`. |
-| `contract.md` | The feature's externally observable contract. |
+| `contract.md` | The feature's externally observable contract - behavior rules as named `### R-NNN` requirements with Given/When/Then scenarios, which a PR's Spec delta and a test can cite. |
 | `vision.md`, `users.md`, `glossary.md` | Product-level framing shared across features. |
 | `history/` | Append-only log of **notable events** - a ratified decision, a scope change, a repo-level event, an absorbed PO document, an incident - with tracker `Refs:`; **one immutable file per entry** (`YYYY-MM-DD-HHMM-<slug>.md`), so concurrent PRs never conflict on it. An ordinary merged change writes none: the reviewed PR is its record. A repo bootstrapped before the directory keeps a frozen `HISTORY.md` archive beside it. |
 | `tracker.md` | Declares the issue-tracking system and ref format. |
