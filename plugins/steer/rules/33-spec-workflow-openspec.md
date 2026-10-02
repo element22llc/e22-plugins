@@ -45,8 +45,10 @@ repo they live under `openspec/steer/`, NOT in `spec/`:**
 four.** A skill body still says `spec/decisions/`, `spec/tracker.md`,
 `spec/app/` or `spec/learnings/` - read it as `openspec/steer/...` here. The
 `steer/` segment keeps steer's durable artifacts out of the namespace the
-`openspec` CLI regenerates. If you find them at the old
-`spec/` paths, the repo predates the move: run **`/steer:setup sync`**.
+`openspec` CLI regenerates. If you find the first three at the old `spec/`
+paths, the repo predates the move: run **`/steer:setup sync`**. A
+`spec/learnings/` is a misfiled note sync never moves - `git mv` it under
+`openspec/steer/`.
 
 Toolchain and CI scaffolding are still steer's - the bundled scaffold (mise,
 compose, CI, PR template) applies here unchanged. Reach it via **`/steer:setup`**

@@ -76,8 +76,8 @@ replacements:
   # plugin's own version reads as drift to /steer:next, which injects a sync
   # nudge into every run of those cases. They were re-stamped by hand, which
   # meant the release remembered or test_eval_suite.py failed after the bump.
-  # The eight files are byte-identical by contract, and each carries exactly one
-  # bare version line.
+  # Every managed-variant and cluttered-variant scaffold carries exactly one
+  # bare version line; test_eval_suite.py fails when this list misses one.
   - path: plugins/steer/evals/routes-client-status-to-status/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
@@ -90,15 +90,57 @@ replacements:
   - path: plugins/steer/evals/routes-general-knowledge-to-none/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-load-conventions-to-reference/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-loose-documents-to-tidy/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-lost-user-to-next/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-missing-mise-to-doctor/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-nightly-loop-to-loop/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-open-questions-to-questions/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-postgres-decision-to-adr/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-production-down-to-work/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-protect-main-to-protect/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-release-timeline-to-roadmap/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-repo-health-to-audit/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-requirements-resent-to-intake/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-stakeholder-page-to-explain/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-steer-crashed-to-report/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-think-feature-through-to-spec/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-triage-backlog-to-issues/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-web-chat-to-standards/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-what-can-steer-do-to-help/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'

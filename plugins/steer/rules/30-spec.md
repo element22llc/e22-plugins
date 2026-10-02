@@ -56,7 +56,7 @@ owning artifact **in the same change as the code**: goals and acceptance ->
 questions`, **never a guessed answer**; usage, workflows, configuration and
 release notes -> the app guide; stack and data flow -> `ARCHITECTURE.md` with
 its diagram; visual identity -> `DESIGN.md`; a non-obvious root cause no test,
-lint or contract can carry -> `/spec/learnings/`. The PR that establishes the
+lint, contract or `CLAUDE.md` pattern can carry -> `/spec/learnings/`. The PR that establishes the
 stack or first app also retires the scaffold's now-false placeholder prose. Full
 routing table and register: **`/steer:reference traceability`**.
 

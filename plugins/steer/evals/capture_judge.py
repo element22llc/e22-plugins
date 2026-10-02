@@ -131,7 +131,7 @@ def main() -> int:
                 "--ablation",
                 "none",
                 "--judge-model",
-                "sonnet",
+                "claude-opus-5-5",
                 "--trust-plugin",
                 "--no-publish",
                 "--mocks",
@@ -143,10 +143,6 @@ def main() -> int:
                 **os.environ,
                 "ANTHROPIC_BASE_URL": f"http://127.0.0.1:{port}",
                 "ANTHROPIC_API_KEY": "stub-key",
-                # Same reason `mise.toml`'s evals task sets it: `plugin eval` is
-                # early access and exits without it on a machine the rollout has
-                # not reached.
-                "CLAUDE_CODE_WALNUT_SPIRE": "1",
             },
             capture_output=True,
             text=True,

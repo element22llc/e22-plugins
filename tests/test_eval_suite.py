@@ -22,7 +22,7 @@ PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 # Which repo state each case's ask presumes. One scaffold cannot serve all three:
 # a managed spine silences the bootstrap nudge that the init/build/adopt cases exist
 # to measure, and an unmanaged tree makes every session-start check fire an adopt
-# offer that competes with the ask in the eight cases that presume a managed repo.
+# offer that competes with the ask in every case that presumes a managed repo.
 # Byte-equality is enforced WITHIN a variant, not across the suite.
 SCAFFOLD_VARIANTS = {
     "managed": {
@@ -34,6 +34,24 @@ SCAFFOLD_VARIANTS = {
         "routes-repo-health-to-audit",
         "routes-think-feature-through-to-spec",
         "routes-triage-backlog-to-issues",
+        "routes-load-conventions-to-reference",
+        "routes-missing-mise-to-doctor",
+        "routes-nightly-loop-to-loop",
+        "routes-open-questions-to-questions",
+        "routes-postgres-decision-to-adr",
+        "routes-production-down-to-work",
+        "routes-protect-main-to-protect",
+        "routes-release-timeline-to-roadmap",
+        "routes-requirements-resent-to-intake",
+        "routes-stakeholder-page-to-explain",
+        "routes-steer-crashed-to-report",
+        "routes-web-chat-to-standards",
+        "routes-what-can-steer-do-to-help",
+    },
+    # The managed repo plus loose root documents with an unambiguous /spec home:
+    # the tidy ask needs strays to file, and every other managed case needs none.
+    "cluttered": {
+        "routes-loose-documents-to-tidy",
     },
     "greenfield": {
         "routes-greenfield-bootstrap-to-init",
@@ -107,16 +125,23 @@ def test_managed_scaffold_stamps_the_current_plugin_version():
     # A spine stamped at a version other than the plugin's own reads as version
     # drift to /steer:next, which injects a sync nudge into every run of the
     # managed cases - one more notice competing with the ask. `.changie.yaml`
-    # re-stamps all eight managed scaffolds on `changie merge`, in the same pass
-    # as the three manifests, so this test guards that wiring rather than asking
-    # a human to remember.
+    # re-stamps every stamping scaffold on `changie merge`, in the same pass as
+    # the three manifests, so this test guards that wiring rather than asking a
+    # human to remember.
     version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
-    scaffold = (EVALS / "routes-fix-issue-to-work" / "scaffold.sh").read_text(encoding="utf-8")
-    stamped = re.findall(r"^(\d+\.\d+\.\d+)$", scaffold, flags=re.MULTILINE)
-    assert stamped == [version], (
-        f"the managed scaffold stamps spec/.version as {stamped}, but the plugin is "
-        f"at {version} - re-stamp it (and propagate to the whole managed variant)"
-    )
+    changie = (REPO_ROOT / ".changie.yaml").read_text(encoding="utf-8")
+    restamped = set(re.findall(r"plugins/steer/evals/([\w-]+)/scaffold\.sh", changie))
+    for name in sorted(SCAFFOLD_VARIANTS["managed"] | SCAFFOLD_VARIANTS["cluttered"]):
+        scaffold = (EVALS / name / "scaffold.sh").read_text(encoding="utf-8")
+        stamped = re.findall(r"^(\d+\.\d+\.\d+)$", scaffold, flags=re.MULTILINE)
+        assert stamped == [version], (
+            f"{name} stamps spec/.version as {stamped}, but the plugin is at "
+            f"{version} - re-stamp it (and propagate to the whole variant)"
+        )
+        assert name in restamped, (
+            f"{name} stamps spec/.version but .changie.yaml does not re-stamp it - "
+            "the next release bump would leave it behind"
+        )
 
 
 def test_mock_responders_name_tools_the_plugin_actually_calls():

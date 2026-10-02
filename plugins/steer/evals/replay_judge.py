@@ -220,7 +220,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--mode", default="votes", choices=["votes", "rationale"])
     ap.add_argument("--votes", type=int, help="judge calls per item (default: 3, 1 rationale)")
     ap.add_argument("--live", action="store_true", help="grade with graders/answer.md on disk")
-    ap.add_argument("--model", default="sonnet", help="judge model (match the run's)")
+    ap.add_argument("--model", default="claude-opus-5-5", help="judge model (match the run's)")
     ap.add_argument("--concurrency", type=int, default=6)
     ap.add_argument("--json", type=Path, help="write the full result here")
     args = ap.parse_args(argv)
