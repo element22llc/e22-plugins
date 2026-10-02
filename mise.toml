@@ -291,9 +291,15 @@ depends = [
 # result is noise - the same case has scored 0.6/0/0.6/0/0.6 across five identical
 # runs. Forward `-- --runs 1` for the cheap authoring loop.
 #
-# --judge-model sonnet: the `answer` grader reads prose for "did the ask reach the
-# skill that owns it". The default judge (haiku) flips on exactly the borderline
-# prose this suite is made of.
+# --model claude-sonnet-5-5 pins the agent under test, so a default-model rollout
+# is never mistaken for a routing regression; Sonnet halves the executor cost,
+# which is nearly all of a sweep. The suite then measures routing on Sonnet - a
+# consumer on another model is measured by forwarding `-- --model <id>`.
+#
+# --judge-model claude-opus-5-5: the `answer` grader reads prose for "did the ask
+# reach the skill that owns it". The default judge (haiku) flips on exactly the
+# borderline prose this suite is made of; a judge call is a few hundred tokens, so
+# the strongest judge costs little. Match it in replay_judge.py --model.
 #
 # --threshold 0.6 makes the exit code mean something: exit 1 if any case scores
 # below it. The default is 1.0, which fails on any imperfect case. 0.6 is exactly
@@ -301,12 +307,12 @@ depends = [
 # skill even if the prose judge docked it". Read `aggregates.meanDelta` in the
 # results JSON for the actual health signal; this is a floor, not the number.
 #
-# --max-cost-usd 60 is a runaway guard, not a budget: the ceiling has to sit clear
-# of a healthy sweep or it aborts one (exit 2, partial results). 45 was sized
-# against 9 cases at $25-30; the suite is 12 now (a `status` case and two
-# negatives), which projects to ~$33-40 at --runs 3 on the same per-case measure.
-# Re-measure it when case count or max_turns changes - this figure is projected
-# from the 9-case run, not measured at 12.
+# --max-cost-usd 90 is a runaway guard, not a budget: the ceiling has to sit clear
+# of a healthy sweep or it aborts one (exit 2, partial results). 26 cases at
+# --runs 3 on a Sonnet executor project to ~$45-55 (the 12-case suite measured
+# ~$1.00-1.30 per case per run on the default model; Sonnet is half its price).
+# Projected, not measured - re-measure on the first sweep and when case count or
+# max_turns changes.
 #
 # --no-publish keeps the HTML report local. Publishing it to claude.ai is the CLI
 # default wherever the account supports it, and a task run on every routing change
@@ -321,25 +327,19 @@ depends = [
 # option), so `mise run evals -- --case routes-fix-issue-to-work --runs 1` narrows
 # and cheapens a run without editing the task. --allow-tools stays off the end of
 # the command line for that reason: it is variadic, and it would swallow them.
-#
-# `claude plugin eval` is EARLY ACCESS, enabled per organization: on a machine the
-# rollout has not reached, or one that cannot receive it (CI runners, gateways,
-# telemetry-disabled clients), it prints "currently in early access" and exits.
-# CLAUDE_CODE_WALNUT_SPIRE=1 is the enablement flag, set here so the task works
-# unchanged on any machine. It only lifts the preview gate - it is not a credential
-# and grants nothing; drop it once the feature ships generally.
+
 [tasks."evals"]
-description = "Run the model-graded routing evals against the plugin (slow, ~$33-40; needs plugin-eval early access)"
-env = { CLAUDE_CODE_WALNUT_SPIRE = "1" }
+description = "Run the model-graded routing evals against the plugin (slow, ~$45-55)"
 run = """
 claude plugin eval plugins/steer \
   --scaffold \
   --ablation with-without \
   --allow-tools mcp__github__issue_read mcp__github__list_issues mcp__github__search_issues \
   --runs 3 \
-  --judge-model sonnet \
+  --model claude-sonnet-5-5 \
+  --judge-model claude-opus-5-5 \
   --threshold 0.6 \
-  --max-cost-usd 60 \
+  --max-cost-usd 90 \
   --no-publish
 """
 

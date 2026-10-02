@@ -247,6 +247,25 @@ either that skill or the public door it now lives behind.
 | `build` | `routes-po-idea-to-build` |
 | (none) | `routes-explain-code-to-none` · `routes-general-knowledge-to-none` |
 
+Beyond the public doors, every **mode** - an internal skill or a lane reached
+through one - has one case of its own, tagged `mode` (`--tag mode` runs only
+these). A front door that routes correctly can still hand off to the wrong mode,
+and the cheap lexical gate cannot see that. Each accepts the mode or the door
+that hands off to it, the same rule as the front-door cases above.
+
+| Mode | Case |
+|---|---|
+| `doctor` · `protect` | `routes-missing-mise-to-doctor` · `routes-protect-main-to-protect` |
+| `adr` · `intake` · `questions` · `roadmap` | `routes-postgres-decision-to-adr` · `routes-requirements-resent-to-intake` · `routes-open-questions-to-questions` · `routes-release-timeline-to-roadmap` |
+| `work --hotfix` · `tidy` | `routes-production-down-to-work` · `routes-loose-documents-to-tidy` |
+| `explain` · `help` | `routes-stakeholder-page-to-explain` · `routes-what-can-steer-do-to-help` |
+| `standards` · `report` · `reference` · `loop` | `routes-web-chat-to-standards` · `routes-steer-crashed-to-report` · `routes-load-conventions-to-reference` · `routes-nightly-loop-to-loop` |
+
+Two of these assert a *correct decline*, not a happy path: the managed repo has
+nothing deployed, so the hotfix lane's objective condition fails and the skill
+says so, and its spine has no open questions, so the sweep reports none. The
+`answer` grader for each says that checking and declining is the skill's work.
+
 The last row is the point of the negatives. Rule `00-router` tells the model to
 map a plain-language goal to the owning skill and **invoke it without being
 asked** - the instruction that makes routing feel effortless is also the one
@@ -274,14 +293,15 @@ is Δ.
 
 ## The scaffolds
 
-Each case builds its own repo from its own `scaffold.sh`. There are **four
+Each case builds its own repo from its own `scaffold.sh`. There are **five
 variants**, because one fixture cannot serve every ask:
 
 | Variant | Cases | Repo state | Why |
 |---|---|---|---|
-| `managed` | work, next, audit, spec, issues, status, both negatives | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it - and a negative case needs that silence most: a bootstrap nudge would hand it a workflow to enter. |
+| `managed` | work, next, audit, spec, issues, status, both negatives, and every per-mode case but tidy | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it - and a negative case needs that silence most: a bootstrap nudge would hand it a workflow to enter. |
 | `greenfield` | init, build | `git init` + a README, nothing else | Their asks say "brand-new empty repo" / "build an app from my idea". |
 | `legacy` | adopt | a Flask app, no spec, no toolchain, no tests | Its ask says "no spec, no toolchain". Unspecified code volume is what separates adopt from init. |
+| `cluttered` | tidy | the managed repo plus a CSV, a PDF and a diagram at the root | The tidy ask needs strays with an unambiguous `/spec` home; every other managed case needs a clean root. |
 | `openspec` | sync | an OpenSpec spine, no `spec/.version` | OpenSpec owns the spine, so a stamped spine would contradict the state under test and an unspecified tree would route to adopt. |
 
 **Silence is the contract for `managed`.** A `foreign` spine (a `spec/` with no
@@ -370,6 +390,7 @@ managed fixture is *meant* to offer is the code defect (`total()` ignores
 mise run evals                                           # whole suite, health settings
 mise run evals -- --case 'routes-fix-issue-to-work'      # one case, still 3 runs
 mise run evals -- --runs 1 --judge-model haiku           # cheap authoring loop
+mise run evals -- --tag mode --runs 1                    # only the per-mode cases
 ```
 
 Two things that cost real runs while these cases were authored:
@@ -394,9 +415,10 @@ each commented in `mise.toml`.
 | `--ablation with-without` | adds the no-plugin baseline arm - the Δ is the whole point |
 | `--allow-tools` (3 read tools) | the tracker stand-ins above; without the grant every managed run narrates a credential fault instead of routing |
 | `--runs 3` | the per-case default is `runs: 1` so an ad-hoc run stays cheap, and at one run the result is noise: the same case has scored 0.6 / 0 / 0.6 / 0 / 0.6 across five identical runs, and the judge's majority-of-three vote flips on borderline prose |
-| `--judge-model sonnet` | the `answer` grader reads exactly that borderline prose; the default `haiku` judge is too coarse for it - authoring the negatives measured that directly: `routes-explain-code-to-none` scored 0.60 under haiku (`answer`: FAIL FAIL FAIL) and 1.00 under sonnet, on a run whose `routed` grader passed both times |
+| `--model claude-sonnet-5-5` | pins the agent under test, so a default-model rollout never reads as a routing regression, and halves the executor cost that is nearly all of a sweep. The suite measures routing **on Sonnet**; forward `-- --model <id>` to measure another |
+| `--judge-model claude-opus-5-5` | the `answer` grader reads exactly that borderline prose; the default `haiku` judge is too coarse for it - authoring the negatives measured that directly: `routes-explain-code-to-none` scored 0.60 under haiku (`answer`: FAIL FAIL FAIL) and 1.00 under sonnet, on a run whose `routed` grader passed both times. A judge call is a few hundred tokens, so the strongest judge costs little; `replay_judge.py --model` defaults to the same |
 | `--threshold 0.6` | gives the exit code meaning: exit 1 if any case scores below it. Default is `1.0`, which fails any imperfect case; `0.6` is exactly the `routed` grader's weight - "entered the right skill even if the prose judge docked it" |
-| `--max-cost-usd 45` | runaway guard, sitting clear of the $25-30 a healthy sweep costs, so it aborts a runaway (exit 2, partial results) rather than a good run |
+| `--max-cost-usd 90` | runaway guard, sitting clear of what a healthy sweep costs, so it aborts a runaway (exit 2, partial results) rather than a good run |
 | `--no-publish` | keeps the HTML report local instead of publishing it to claude.ai (the CLI default where the account supports it). Forward `-- --publish-report` for the link |
 
 Forwarded args override the task's defaults - the CLI takes the last occurrence of
@@ -408,16 +430,15 @@ is the same payload `--json <path>` writes, so there is no need to pass `--json`
 `--threshold` is a floor on the worst case, not the health number.
 
 Deliberately **not** in `mise run ci` - the suite spends real tokens, the same
-reason the `e2e` suite sits off the PR path. Budget roughly **$1.00-1.30 per case
-per run** across both arms (measured at `max_turns: 12`; the with-plugin arm costs
-~3× the baseline, which has no rules to read), so ~$12-15 for the suite at
-`runs: 1` and ~$33-40 at the task's `runs: 3`. The task's `--max-cost-usd 60` is
-sized against that: a ceiling near the expected spend aborts a healthy sweep, so
-re-measure it whenever case count or a `max_turns` changes. Those two figures are
-projected from the 9-case run: the three cases added since were piloted at
-`--runs 1` and came in **under** the per-case estimate - `$0.94` for the status
-case across both arms, `$0.37` and `$0.49` for the negatives, which answer in
-1 and 6 turns.
+reason the `e2e` suite sits off the PR path. On the default model the 12-case
+suite measured roughly **$1.00-1.30 per case per run** across both arms (at
+`max_turns: 12`; the with-plugin arm costs ~3× the baseline, which has no rules
+to read). The pinned Sonnet executor is half that model's price, so the 26-case
+suite projects to ~$15-18 at `runs: 1` and ~$45-55 at the task's `runs: 3`, and
+the task's `--max-cost-usd 90` sits clear of it. **That is a projection, not a
+measurement**: re-measure on the first sweep, and whenever case count or a
+`max_turns` changes. The per-mode cases still carry the managed default
+`max_turns: 12` - raise one from its first run's errors and record why.
 
 ## When it runs
 
@@ -448,14 +469,3 @@ its budget 3 runs out of 3 and `issues` once, so those two are higher (20 and
 but check first whether the *skill* is the thing spending the turns: the adopt
 overrun was a real plugin defect (template reads before the survey), not a
 too-small budget.
-
-## Availability
-
-`claude plugin eval` is in **early access, enabled per organization**. Where the
-rollout has not reached a machine it prints `plugin eval is currently in early
-access` and exits. `mise.toml`'s `evals` task sets the enablement flag
-(`CLAUDE_CODE_WALNUT_SPIRE=1`) itself, so the task works unchanged on machines
-outside the rollout too (CI runners, gateways, telemetry-disabled clients).
-Invoking the CLI directly needs that variable in your own environment. It only
-lifts the preview gate - not a credential, and it grants nothing - and comes out
-once the feature ships generally.

@@ -114,7 +114,7 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   is current and that *prior* docs changes are live. The post-merge deploy is a
   Phase-B follow-up the user owns (Step B8).
 - **Routing evals, on a minor or major cut.** The model-graded suite
-  (`mise run evals`, ~$33-40) is steer's only check that a plain-language ask
+  (`mise run evals`, ~$45-55) is steer's only check that a plain-language ask
   still lands on its skill, and a minor bump is what moves the surface it reads:
   `rules/00-router.md` and every skill's `description` / `when_to_use`. It is not
   in `mise run ci` because it spends real tokens, so **this is its declared
