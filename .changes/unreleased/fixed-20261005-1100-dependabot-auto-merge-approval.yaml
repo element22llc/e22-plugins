@@ -1,0 +1,20 @@
+kind: Fixed
+body: |-
+  - **Fixed: Dependabot auto-merge now approves only after every check has
+    passed, and `/steer:setup protect` checks the setting it needs.** The
+    shipped `dependabot-auto-merge.yml` approved first and then waited on
+    required checks only, so a bump could merge while a non-required e2e job
+    was still running or failing, and a skipped check read as green. The
+    workflow now waits for every check, aborts on a failure or cancellation,
+    requires each check in its new `GATING_CHECKS` list (`ci` by default) to
+    actually pass, and merges pinned to the commit it verified. Its
+    `GITHUB_TOKEN` approval needs "Allow GitHub Actions to create and approve
+    pull requests", which was off by default and checked nowhere, so most bumps
+    never merged. `policy/branch-protection.yml` now names that setting (schema
+    4), and `/steer:setup protect` verifies it while the workflow is installed
+    and enables it on confirmation, stating the trade-off: any workflow can
+    then approve any PR. Run `/steer:setup sync`, then `/steer:setup protect`
+    (#660).
+time: 2026-10-05T11:00:00.000000000-04:00
+custom:
+  Slug: dependabot-auto-merge-approval
