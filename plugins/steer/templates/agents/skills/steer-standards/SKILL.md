@@ -39,6 +39,9 @@ Do this now:
    `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/rules/`
 
    The files concatenate, in that order, to form the full operating manual.
+   Read them even when the hook already injected rules this session: an
+   injection can skip `inject-when`-scoped files, and a matching version is not
+   a reason to read nothing.
 
 2. Adopt their contents as your standing operating rules for the rest of this
    session - the same **authority** they would carry had the hook injected them.
