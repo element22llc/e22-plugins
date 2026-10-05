@@ -51,10 +51,12 @@ Do this now:
    you and ignore the rest - a code rule in a specs-only folder is inert, not a
    contradiction.
 
-3. Give the user a one-line confirmation naming the plugin version (read it from
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json`) - e.g. "Standards
-   vX.Y.Z loaded." Do **not** dump the full ruleset back to the user;
-   just confirm and proceed.
+3. Give the user a one-line confirmation naming this skill and the plugin
+   version (read it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json`) -
+   e.g. "`/steer-standards`: standards vX.Y.Z loaded." Where the hook had
+   already injected them, say so in the same line rather than as a reason to
+   skip the load. Do **not** dump the full ruleset back to the user; just
+   confirm and proceed.
 
 The router (`00-router.md`) points to the on-demand reference skills
 (`/steer-reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`,

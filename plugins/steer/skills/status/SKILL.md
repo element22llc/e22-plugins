@@ -65,8 +65,8 @@ asking a PO to know which of two skills to name.
 **`feature <id>` delegates.** Invoke `/steer:explain` with the resolved id - an
 internal skill, `user-invocable: false`, that owns the single-feature page:
 status pipeline, acceptance meter, user journey, scope and open-question boards.
-Do not re-derive that page here. Everything below this section is the
-window-scoped report.
+Do not re-derive that page here: relay what it returns, its closing heading
+included. Everything below this section is the window-scoped report.
 
 Turn the current state of the workspace into a **client-readable progress report
 for a time window**: what shipped this period, what's in flight, what's waiting on

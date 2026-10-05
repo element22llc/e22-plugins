@@ -222,7 +222,9 @@ from a **different** session needs that URL anyway - steer does not store it. Th
 
 ## Recommended next action
 
-After rendering, surface the single most useful follow-up, and stop:
+After rendering, surface the single most useful follow-up under `## Recommended
+next actions - /steer:status feature <id>` (the door, per `NEXT-ACTIONS.md` §5 -
+the caller relays this heading with the page), and stop:
 
 - Spec `Status:` still `draft`/unapproved -> offer `/steer:spec approve <id>`.
 - Open blocking questions remain -> offer `/steer:spec questions` (or `/steer:spec`).

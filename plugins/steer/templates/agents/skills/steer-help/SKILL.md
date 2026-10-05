@@ -108,6 +108,11 @@ group, put it under **Govern & plumbing** rather than
 dropping it; a skill silently missing from this menu is the failure mode this
 check exists to prevent.
 
+Open the menu with one heading naming its door - `## What steer can do -
+/steer-next capabilities` - which is this skill's attribution (`NEXT-ACTIONS.md`
+§5); it carries no handoff block, and the bare `/steer-next` names the navigator,
+not this menu.
+
 For each entry render one compact line: the **plain-language goal** first (from
 the frontmatter, in your words), then the invocation in backticks -
 e.g. `- Think a feature through without building it - /steer-spec`. Lead with the

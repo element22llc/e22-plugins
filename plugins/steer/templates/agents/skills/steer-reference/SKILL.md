@@ -64,6 +64,11 @@ column earlier in this skill) is for *routing* only - it is deliberately not a
 substitute for the prose, and answering from it instead of opening the file is
 the failure mode this loader exists to prevent.
 
+**Open the answer with its source** - "From `/steer-reference <topic>`
+(`<FILE>.md`): ..." - and say where the file is silent rather than filling the
+gap from memory. That first line is this skill's attribution (`NEXT-ACTIONS.md`
+§5); it carries no handoff block.
+
 If you need a fuller contents listing to choose between two topics, read
 [`COVERAGE.md`](COVERAGE.md) - an index
 of what each doc contains. It is still an index, not the prose.

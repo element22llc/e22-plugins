@@ -114,6 +114,10 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    never merges. Point at rule
    53 for the boundary and note the workflow can be triggered on demand from the
    Actions tab (`workflow_dispatch`) to test it before the first scheduled run.
+7. **Close with `## Recommended next actions - /steer-loop`** per
+   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` - from whichever
+   step this stopped at: a failed precondition, the opt-in awaiting the dev's
+   answer, or the PR opened.
 
 ## Verify (read-only)
 
