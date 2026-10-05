@@ -1,0 +1,14 @@
+kind: Fixed
+time: 2026-10-05T11:30:00.000000-04:00
+custom:
+  Slug: explain-acceptance-meter
+body: |
+  - **Fixed: `/steer:status feature <id>` no longer mixes up sign-off and
+    acceptance criteria.** The page's "acceptance meter" counted the intent's four
+    `## PO acceptance` sign-off boxes, so the summary reported "3 of 4 criteria
+    met" for a feature whose acceptance criteria stood at 2 of 3 (2026-10-02 eval
+    sweep). The page also showed a ticked criterion as met while an open bug said
+    the code ignored it. The meter is now the **sign-off** meter. The acceptance
+    criteria are a separate checklist with their own count, labelled "checked off
+    in the spec", never "met", with delivery state left to the tracker ref. The
+    skill still reads only the spec.
