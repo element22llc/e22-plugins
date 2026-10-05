@@ -314,6 +314,11 @@ depends = [
 # Projected, not measured - re-measure on the first sweep and when case count or
 # max_turns changes.
 #
+# check_eval_env.py runs first and refuses the sweep when ANTHROPIC_BASE_URL is
+# set in the shell or in the user settings `env` (which `env -u` cannot clear): a
+# compressing proxy corrupts what every run reads. STEER_EVALS_ALLOW_BASE_URL=1
+# lets a pass-through gateway through.
+#
 # --no-publish keeps the HTML report local. Publishing it to claude.ai is the CLI
 # default wherever the account supports it, and a task run on every routing change
 # should not push a report outward each time - forward `-- --publish-report` when
@@ -331,6 +336,7 @@ depends = [
 [tasks."evals"]
 description = "Run the model-graded routing evals against the plugin (slow, ~$45-55)"
 run = """
+uv run python scripts/check_eval_env.py && \
 claude plugin eval plugins/steer \
   --scaffold \
   --ablation with-without \
