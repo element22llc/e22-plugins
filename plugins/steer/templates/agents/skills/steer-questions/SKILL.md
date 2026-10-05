@@ -247,9 +247,9 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
 
 ## Recommend the next action
 
-End with a `## Recommended next actions` block per
+End with a `## Recommended next actions - /steer-spec questions` block per
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to the
-questions just swept (locality rule).
+questions just swept (locality rule) - including when the sweep found none.
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|

@@ -12,7 +12,10 @@ For the full per-command catalog (including internal helpers), see the
     next?") and Claude routes to the matching skill itself, announcing the choice
     in one line. You can always see which one ran: the `Recommended next actions`
     heading that closes a workflow names it (`## Recommended next actions -
-    /steer:audit code`), so a wrong route is easy to spot and say so about. The
+    /steer:audit code`), so a wrong route is easy to spot and say so about. That
+    holds when a workflow pauses on a question or declines as well; a one-shot
+    answer such as `/steer:reference conventions` names its source in its first
+    line instead. The
     `/steer:*` forms below are the explicit way to invoke a workflow - handy when
     you already know the one you want - not something you must memorize. Decision gates (creating issues, approving a spec, merging,
     deploying) still pause for a human regardless of how the skill was

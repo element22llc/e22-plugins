@@ -178,6 +178,21 @@ the attribution the reader cannot tell what just ran, and a misroute is not
 reportable. It is one heading suffix, not a status line - do not expand it into a
 summary of what the skill did.
 
+- **Name the door and the mode, not the skill file.** An internal skill reached
+  through a front door is attributed by the invocation a user would type -
+  `/steer:spec questions`, `/steer:status feature checkout`, `/steer:next
+  capabilities` - never the bare door (`/steer:spec` names a different workflow)
+  and never the internal name.
+- **Every exit path is attributed, not only the finished one.** A skill that
+  pauses on its own question, declines because a precondition failed, or finds
+  nothing to do still closes with this heading - those are the exits where the
+  body names no workflow of its own, so the heading is the only attribution left.
+- **A loader names itself in its first line instead.** A skill whose whole
+  output is one answer (`/steer:reference`, `/steer:standards`) carries no block;
+  it opens with the source - "From `/steer:reference conventions`
+  (`CONVENTIONS.md`): ..." - so the answer is visibly the loaded file, not
+  memory.
+
 ```markdown
 ## Recommended next actions - /steer:<skill>
 

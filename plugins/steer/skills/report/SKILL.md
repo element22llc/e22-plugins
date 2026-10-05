@@ -150,3 +150,7 @@ gh issue create --repo element22llc/e22-plugins \
 - Never commit these files or the report to the product repo - the only *repo*
   this channel files into is the plugin's, and the fault log it clears here is
   git-ignored scratch state, never a tracked product file.
+- Close with `## Recommended next actions - /steer:report` per
+  `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md` - on every exit:
+  filed, deduped onto an existing issue, the manual-filing fallback, or §1's
+  "nothing to file" stop, where the action is the detail the user must supply.
