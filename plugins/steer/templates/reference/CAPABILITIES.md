@@ -305,14 +305,14 @@ and **Repair**.
 - **Repair:** create either missing file from `templates/github/`. When restoring
   `dependabot.yml`, uncomment the ecosystem block(s) matching the detected stack
   (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. The repo
-  settings the exception relies on (Dependabot alerts + security updates) are
-  **`/steer:setup protect`**'s job - name it as the follow-up; sync writes the files, it
+  settings the exception relies on (Dependabot alerts + security updates, and
+  Actions being allowed to approve PRs) are **`/steer:setup protect`**'s job - name it as the follow-up; sync writes the files, it
   does not configure GitHub. The workflow scopes auto-merge to Dependabot itself;
   no repo-wide `allow_auto_merge` setting is used.
 - **Verbatim:** no (ecosystems are adapted per stack)
 - **Why it matters:** dependencies stay patched without manual chasing; the
-  documented review-gate exception lets low-risk bumps auto-merge while the `ci`
-  check stays the hard gate. Without the workflow, Dependabot PRs pile up awaiting
+  documented review-gate exception lets low-risk bumps auto-merge while CI
+  stays the hard gate. Without the workflow, Dependabot PRs pile up awaiting
   a human even though they're safe once CI is green.
 
 ### toolchain-pin - pinned dev toolchain
