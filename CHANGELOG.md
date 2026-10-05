@@ -3,6 +3,138 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.2.0
+
+- **Added: learning capture for managed product repos, enforcement first.**
+  The spine had homes for behavior, costly decisions, notable events and team
+  patterns, but none for the commonest durable debugging fact - "X fails
+  because Y; symptom Z misleads" - which ended up in a commit message or was
+  lost. `/steer:work finish` (and the mandatory `--hotfix` follow-up) now
+  puts such a lesson on the first rung of an enforcement ladder that can carry
+  it - regression test, lint rule or hook, `contract.md` rule, product
+  `CLAUDE.md` pattern, `/steer:report` for a steer defect - and only then
+  writes `spec/learnings/<slug>.md` from the new `templates/spec/learning.md`
+  (small frontmatter: `area`, `symptoms`, `root_cause`, `applies_when`,
+  `retire_when`, `refs`, `date`). Writing nothing stays the normal outcome.
+  `/steer:work start` and the `--reviewed` plan reviewer grep that frontmatter
+  for the issue's terms and read only the matches. `/steer:audit code` gains
+  an eleventh dimension, learning upkeep, proposing retire or promote for a
+  learning whose cited paths are gone or whose `retire_when` holds. The
+  directory is created on first use - no migration, nothing pre-seeded. It is
+  per member in a polyrepo, like ADRs, and `openspec/steer/learnings/` on an
+  OpenSpec repo (rule `33-spec-workflow-openspec` now names four steer
+  artifacts). Routing: one clause in rule `30-spec`, detail in
+  `/steer:reference traceability`.
+
+- **Added: named requirements in `contract.md`, and a Spec delta in the PR.**
+  A contract's behavior rules were unnumbered Given/When/Then bullets, so a
+  diff could not be reviewed requirement by requirement and a test had
+  nothing stable to cite. The contract template now writes each rule as a
+  `### R-NNN - <short name>` block: a one-line statement and one or more
+  Given/When/Then scenarios. IDs are per feature, never renumbered and never
+  reused. A rule `/steer:setup adopt` reverse-engineers from code carries
+  `(derived from existing code - dev confirms)`, so a change to it reads as
+  a change to as-built behavior. Tests may cite `<feature-id>/R-003`;
+  nothing enforces it. When a branch changes a `contract.md`,
+  `/steer:work` fills the PR template's new `## Spec delta` section with the
+  added, modified and removed IDs, read off the git diff rather than a
+  staged file. Each removed ID needs a Reason and a Migration line.
+  `/steer:spec validate` now fails a duplicate ID. It warns on a requirement
+  with no scenario, on a test citing a removed ID, and on change-oriented
+  wording ("no longer", "previously", ...) in a contract, which states
+  current truth. Existing unnumbered bullets stay valid and are numbered
+  only when touched. `/steer:setup sync` never rewrites them, and the
+  template's `R-001` seed is placeholder-marked so reconciliation never
+  asks for it. No migration-ledger entry.
+
+- **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): python 3.10->3.11. EOL floors only - what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
+
+- **Fixed: every skill exit now names the workflow that ran.** Rule
+  `00-router` asks a skill to name itself when it finishes, but six skills
+  (`reference`, `standards`, `loop`, `report`, `help`, `explain`) had no
+  closing step that did it, and `spec` and `questions` did it only on the
+  finished path. In the 2026-10-02 eval sweep, 20 of the 22 failed runs had
+  called the right skill and then never named it - a pause on "which
+  feature?", a declined precondition, an answer from `CONVENTIONS.md`. The
+  reader could not tell what ran, or report a misroute. `NEXT-ACTIONS.md` §5
+  now says so once: attribute by the door and its mode (`/steer:spec
+  questions`, `/steer:status feature <id>`, `/steer:next capabilities`), on
+  every exit path. A loader (`/steer:reference`, `/steer:standards`) names its
+  source in its first line instead of a block. Each affected skill points at
+  that, and `/steer:status feature` relays the page's closing heading.
+
+- **Fixed: `/steer:work --hotfix` checks the repo before opening the lane.**
+  Rule `61-gates` opens the lane only on an objective condition, a deployed
+  production with an active incident, but `modes/hotfix.md` defined the
+  condition without saying how to verify it. In the 2026-10-02 eval sweep, two
+  of three runs on a repo with nothing deployed took "production is down" as
+  the confirmation and planned a `hotfix/` branch. The mode now reads the repo
+  first. A solo-trunk marker, `environments: []` or `production_gate: none`
+  declines the lane and continues on the normal flow. A `Status: live`
+  feature opens it. With neither, it asks which deployed environment is down
+  before taking it. A seeded `delivery.yml` that lists `prod` is not evidence,
+  since the scaffold writes it before anything ships.
+
+- **Docs: `CONVENTIONS.md` now says why pnpm is the Node default.** The
+  reference named pnpm and its guards but never the reason over npm or yarn,
+  so every `/steer:reference conventions` answer to "why pnpm?" in the
+  2026-10-02 eval sweep said the file was silent and guessed. Workspace
+  tooling gains the three reasons the standards lean on: a strict
+  `node_modules` that enforces the declared-dependency baseline, native
+  workspaces and `catalog:`, and supply-chain guards on by default.
+
+- **Fixed: `/steer:status feature <id>` no longer mixes up sign-off and
+  acceptance criteria.** The page's "acceptance meter" counted the intent's four
+  `## PO acceptance` sign-off boxes, so the summary reported "3 of 4 criteria
+  met" for a feature whose acceptance criteria stood at 2 of 3 (2026-10-02 eval
+  sweep). The page also showed a ticked criterion as met while an open bug said
+  the code ignored it. The meter is now the **sign-off** meter. The acceptance
+  criteria are a separate checklist with their own count, labelled "checked off
+  in the spec", never "met", with delivery state left to the tracker ref. The
+  skill still reads only the spec.
+
+- **Fixed: an unverified hotfix lane now stays closed.** The entry check
+  added to `modes/hotfix.md` was not enough on its own. In a clean re-run of
+  the production-down eval, two of three runs said they could not confirm a
+  deployed production, then planned a `hotfix/` branch with one reviewer
+  anyway. `/steer:work` now states the check on its `--hotfix` line. Until a
+  `live` feature or the dev's answer names the deployed environment that is
+  down, it plans on the normal flow and offers no hotfix relaxation. The mode
+  file now says "can't confirm" is that outcome, not a caveat on the lane.
+
+- **Fixed: `/steer:standards` reads the rule files even after a hook
+  injection.** In one of three eval runs, the skill saw the SessionStart hook
+  had already injected the standards and the version matched, so it read
+  nothing and reported them loaded. An injection can skip `inject-when`-scoped
+  rules, so step 1 now reads every file regardless.
+
+- **Fixed: `/steer:status feature <id>` always names itself.** The page is
+  rendered by a forked skill, and in all three runs of an uncompressed eval the
+  fork returned a correct page without its closing heading, most often when
+  nothing was outstanding. `status` passed the page on unchanged, so the reply
+  named no workflow. `status` now closes with the heading itself, adding it
+  when the page came back without one, and `explain` keeps the heading even
+  when the action is "No action is required."
+
+- **Fixed: a feature page now names the command that made it.** In two
+  uncompressed eval sweeps, `/steer:status feature <id>` returned a correct
+  page with no attribution. The closing heading was dropped first by the
+  forked renderer and then by `status`, even after `status` was told to add
+  it. The page now ends with a provenance footer, "Generated from the spec by
+  `/steer:status feature <id>` - re-run it after the spec changes." The
+  footer is part of the page, so it survives being passed on unchanged, and it
+  tells the stakeholder the page is derived and how to refresh it.
+
+- **Fixed: wording drift the 7.2.0 pre-release audit found.** The
+  `SPEC-FRAMEWORK.md` spine tree now names the product `CLAUDE.md` rung before
+  `learnings/`, and `/steer:reference`'s `traceability` row lists learnings.
+  The `/steer:next capabilities` menu no longer closes with a plain-language
+  reminder its own later step forbids; `NEXT-ACTIONS.md` §5 now counts it
+  with the loaders that name themselves up front instead of carrying a block.
+  `/steer:status feature` no longer calls its closing heading the page's only
+  attribution next to the provenance footer.
+
+
 ## 7.1.1
 
 - **Fixed: `ci:iac` no longer fails on an unpinned `tofu` mise shim.**

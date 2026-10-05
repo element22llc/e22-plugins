@@ -188,10 +188,10 @@ summary of what the skill did.
   nothing to do still closes with this heading - those are the exits where the
   body names no workflow of its own, so the heading is the only attribution left.
 - **A loader names itself in its first line instead.** A skill whose whole
-  output is one answer (`/steer:reference`, `/steer:standards`) carries no block;
-  it opens with the source - "From `/steer:reference conventions`
-  (`CONVENTIONS.md`): ..." - so the answer is visibly the loaded file, not
-  memory.
+  output is one answer (`/steer:reference`, `/steer:standards`, the `/steer:next
+  capabilities` menu) carries no block; it opens with the source - "From
+  `/steer:reference conventions` (`CONVENTIONS.md`): ..." - so the answer is
+  visibly the loaded file, not memory.
 
 ```markdown
 ## Recommended next actions - /steer:<skill>

@@ -19,10 +19,11 @@ while the subcommands below read an issue and deliver it.
     Add `--hotfix` **only** for a genuine production incident - a change to an
     already-deployed system with real users/data **and** an active outage or
     regression (rule `61-gates` § Hotfix). "Urgent" feature work is not a hotfix, and
-    "production is down" alone does not open it: the skill looks for a `live`
-    feature or a `policy/delivery.yml` that rules production out, and with
-    neither it asks which deployed environment is down, planning on the normal flow
-    until the answer names one. The lane
+    "production is down" alone does not open it: the skill declines the lane
+    when the `CLAUDE.md` delivery mode is `solo-trunk` or `policy/delivery.yml`
+    rules production out, opens it on a `live` feature, and with neither asks
+    which deployed environment is down, planning on the normal flow until the
+    answer names one. The lane
     relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
     `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and

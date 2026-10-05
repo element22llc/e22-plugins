@@ -107,11 +107,6 @@ e.g. `- Think a feature through without building it - /steer:spec`. Lead with th
 goal, not the skill name; the whole point is that the user recognizes their
 intent, not that they memorize a command.
 
-Close with one line reminding them they can just **say what they want in plain
-language** - the router will pick the skill - and that `/steer:next` with no mode
-answers "what should I do *now*" in a specific repo, which this menu deliberately
-does not.
-
 ## Phase 3 - offer a shareable visual menu (Artifact)
 
 The inline menu above is the fast, always-available render - where the `Artifact`
