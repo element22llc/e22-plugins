@@ -1,0 +1,13 @@
+kind: Fixed
+time: 2026-10-05T17:00:00.000000-04:00
+custom:
+  Slug: release-audit-coherence
+body: |
+  - **Fixed: wording drift the 7.2.0 pre-release audit found.** The
+    `SPEC-FRAMEWORK.md` spine tree now names the product `CLAUDE.md` rung before
+    `learnings/`, and `/steer:reference`'s `traceability` row lists learnings.
+    The `/steer:next capabilities` menu no longer closes with a plain-language
+    reminder its own later step forbids; `NEXT-ACTIONS.md` §5 now counts it
+    with the loaders that name themselves up front instead of carrying a block.
+    `/steer:status feature` no longer calls its closing heading the page's only
+    attribution next to the provenance footer.

@@ -45,7 +45,7 @@ validation, and operation. Treat it as infrastructure.
 │       └── contract.md         # Behavior rules, API/data model, owning app(s)/package(s)
 ├── decisions/
 │   └── 000N-[slug].md          # Architecture decisions worth remembering
-└── learnings/                  # Non-obvious lessons no test, lint rule or contract could carry - created on first use
+└── learnings/                  # Non-obvious lessons no test, lint rule, contract or `CLAUDE.md` pattern could carry - created on first use
     └── [slug].md
 ```
 

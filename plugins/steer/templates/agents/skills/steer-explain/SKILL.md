@@ -240,7 +240,7 @@ the caller relays this heading with the page), and stop:
 - Spec `Status:` still `draft`/unapproved -> offer `/steer-spec approve <id>`.
 - Open blocking questions remain -> offer `/steer-spec questions` (or `/steer-spec`).
 - Nothing outstanding -> `No action is required.` - still under the heading,
-  which is this page's only attribution.
+  which attributes the reply as the provenance footer attributes the page.
 
 ## Reference
 
