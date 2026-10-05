@@ -447,7 +447,8 @@ is metadata driving the version bump and grouping, and is not rendered.
 - **CI enforces it.** `ci:changelog` fails a PR that changes shipping code
   without *adding* a fragment. Editing an existing fragment is amending someone
   else's pending entry, not recording yours. Paths that ship nothing - `spec/`,
-  `docs/`, `.github/`, tests, and Markdown anywhere - are exempt;
+  `docs/`, `.github/`, test directories, colocated test files (`*.test.ts`,
+  `*.spec.tsx`, `test_*.py`, ...), and Markdown anywhere - are exempt;
   `scripts/ci-changelog.sh` is the authoritative list.
 
 ### Changelog vs. the other two logs
