@@ -178,7 +178,7 @@ phase reconciles rather than duplicates.
 - **`--hotfix`** - the production-incident fast path (rule `61-gates` § Hotfix): a
   `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
   mandatory traceability follow-up. Relaxes ceremony, never the human gates.
-  Use it **only** for an active incident on a deployed production system.
+  **Only** for an active incident on a confirmed-deployed production; else normal flow.
   -> procedure: [`modes/hotfix.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/hotfix.md)
 
 Neither flag changes the subcommands above; both leave the merge and deploy
