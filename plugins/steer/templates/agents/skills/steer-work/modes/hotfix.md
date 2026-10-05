@@ -28,7 +28,9 @@ one of:
 - **Neither** -> the condition is **unverified**. A `delivery.yml` that lists
   `prod` is not evidence: the scaffold seeds it before anything ships. Ask one
   question - which deployed environment is down, and since when - and stay on
-  the normal flow until the dev's answer names one.
+  the normal flow until the dev's answer names one. "Can't confirm" is this
+  branch, not a caveat on the lane: the plan and the handoff use
+  `issue/<n>-slug` and normal review, never `hotfix/` or one reviewer.
 
 The ask's own wording is never the confirmation; that is the self-assessment
 rule `61-gates` rules out.

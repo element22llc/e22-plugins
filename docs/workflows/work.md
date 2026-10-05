@@ -21,7 +21,8 @@ while the subcommands below read an issue and deliver it.
     regression (rule `61-gates` § Hotfix). "Urgent" feature work is not a hotfix, and
     "production is down" alone does not open it: the skill looks for a `live`
     feature or a `policy/delivery.yml` that rules production out, and with
-    neither it asks which deployed environment is down before taking the lane. The lane
+    neither it asks which deployed environment is down, planning on the normal flow
+    until the answer names one. The lane
     relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
     `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
