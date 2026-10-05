@@ -1,0 +1,10 @@
+kind: Fixed
+time: 2026-10-05T14:30:00.000000-04:00
+custom:
+  Slug: standards-always-reads
+body: |
+  - **Fixed: `/steer:standards` reads the rule files even after a hook
+    injection.** In one of three eval runs, the skill saw the SessionStart hook
+    had already injected the standards and the version matched, so it read
+    nothing and reported them loaded. An injection can skip `inject-when`-scoped
+    rules, so step 1 now reads every file regardless.
