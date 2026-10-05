@@ -96,7 +96,7 @@ The same tool now runs **on demand** as the scaffold's mise task, which
 mise run convert:doc path/to/document.docx     # Markdown on stdout
 ```
 
-It runs `uvx --from 'markitdown[all]' markitdown` - the `[all]` extras are
+It runs `uvx --from "markitdown[all]" markitdown` - the `[all]` extras are
 load-bearing, since the bare package ships no format handlers - so it needs `uv`
 (and a Python for `uv` to manage) on
 `PATH` - no token. The scaffold `mise.toml` pins `node`, `python`, and `uv` as

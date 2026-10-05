@@ -1160,6 +1160,19 @@ echo "tofu $*"
 out="$(cd "${CI}" && PATH="${CI}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
 case "${out}" in *"tofu fmt -check"*) ok ;; *) bad "ci-iac: resolvable tofu runs fmt (got '${out}')" ;; esac
 
+# changelog:new: argv reaches changie verbatim, no shell in between (#671).
+if command -v node >/dev/null 2>&1; then
+	CN="${WORK}/changelognew"
+	mkdir -p "${CN}/bin"
+	printf '#!/bin/sh\nfor a in "$@"; do printf "[%%s]" "$a"; done\n' >"${CN}/bin/changie"
+	chmod +x "${CN}/bin/changie"
+	out="$(PATH="${CN}/bin:${PATH}" KIND=Fixed SLUG=a-b BODY="it's \"q\" & <x> | y" node "${PLUGIN}/templates/scaffold/scripts/changelog-new.mjs" 2>&1)"
+	assert_eq "changelog:new: argv passed verbatim" "${out}" "[new][-k][Fixed][-m][Slug=a-b][-b][it's \"q\" & <x> | y]"
+	out="$(env -u KIND -u SLUG BODY=x node "${PLUGIN}/templates/scaffold/scripts/changelog-new.mjs" 2>&1)"
+	assert_eq "changelog:new: missing vars exit 1" "$?" "1"
+	case "${out}" in *"set KIND="*"set SLUG"*) ok ;; *) bad "changelog:new: one hint per missing var (got '${out}')" ;; esac
+fi
+
 ci_spec() { # <repo> -> out/rc of the scaffold gate, run from the repo root as CI does
 	out="$(cd "$1" && sh "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" 2>&1)"
 	rc=$?

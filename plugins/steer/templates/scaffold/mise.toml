@@ -61,11 +61,7 @@ run = "pnpm --recursive --if-present run db:seed"
 
 [tasks."changelog:new"]
 description = "Record a changelog entry (KIND=Fixed SLUG=short-name BODY='- **Fixed: ...**')"
-run = """
-changie new -k "${KIND:?set KIND=Added|Changed|Fixed|Security|Docs}" \
-  -m "Slug=${SLUG:?set SLUG to 3-6 kebab-case words}" \
-  -b "${BODY:?set BODY to the entry text}"
-"""
+run = "node scripts/changelog-new.mjs"
 
 [tasks."changelog:merge"]
 description = "Reassemble CHANGELOG.md from .changes/ (run after a release cut)"
@@ -130,7 +126,7 @@ depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage", "ci:changelo
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake. Usage: mise run convert:doc <file>"
 # `[all]` pulls the per-format extras; without it every format raises MissingDependency.
-run = "uvx --from 'markitdown[all]' markitdown"
+run = 'uvx --from "markitdown[all]" markitdown'
 
 # Opt-in diagram renderers (LikeC4 model, D2 topology) - see /steer:reference architecture-diagrams.
 # [tasks."diagrams:render"]

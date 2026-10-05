@@ -94,6 +94,31 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `changelog:new` and `convert:doc` run under `cmd.exe` on Windows
+
+- **What & why:** mise runs an inline task through `cmd.exe` on Windows. The
+  scaffold's `changelog:new` was inline POSIX `sh` (`${KIND:?...}` expansions), so
+  changie received the literal text and every Windows dev failed on their first
+  fragment - which `ci:changelog` requires. `convert:doc` single-quoted
+  `'markitdown[all]'`, and `cmd.exe` passes single quotes through, so uvx got an
+  invalid requirement. Tracked as issue #671.
+- **Precondition:** either task still carries the old text - this fires:
+
+  ```sh
+  grep -nE 'changie new -k "\$\{KIND|--from '"'"'markitdown\[all\]'"'"'' mise.toml 2>/dev/null
+  ```
+
+  No output => already migrated, or the repo rewrote the task => no-op.
+- **Action:** copy `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/scripts/changelog-new.mjs`
+  to `scripts/changelog-new.mjs` if absent. In `mise.toml`, replace **only** the
+  matched `run` values:
+  - `[tasks."changelog:new"]` -> `run = "node scripts/changelog-new.mjs"` (the
+    whole multi-line `run = """..."""` body goes; the `description` stays).
+  - `[tasks."convert:doc"]` -> `run = 'uvx --from "markitdown[all]" markitdown'`.
+
+  Show the diff; leave every other task alone. Idempotent: once both are replaced
+  the precondition is empty. **No history entry is earned.**
+
 ### v7.1.0 - unfilled `Q-001` placeholder seeds leave features past `draft`
 
 - **What & why:** the feature-intent template seeds `## Open questions` with a

@@ -75,4 +75,4 @@ depends = ["ws:docker:up"]
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake"
 # The one unprefixed task: its `run` must stay identical to the core scaffold's (check_standards.py asserts it).
-run = "uvx --from 'markitdown[all]' markitdown"
+run = 'uvx --from "markitdown[all]" markitdown'
