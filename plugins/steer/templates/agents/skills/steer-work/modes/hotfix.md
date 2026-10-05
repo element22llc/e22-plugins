@@ -12,6 +12,27 @@ outage, or regression. "Urgent" feature work and pre-MVP repos are **not** hotfi
 drop the flag and use the normal flow. A hotfix presupposes a deployed product, so it
 implies **pr-flow** (a solo-trunk pre-MVP repo has nothing to hot-fix).
 
+## Check the entry condition before anything else
+
+The ask supplies the *incident* half. The *deployed* half comes from the repo,
+never from the urgency of the ask - "production is down" says something is
+wrong, not that this repo ships to a production with real users. Then exactly
+one of:
+
+- **Evidence against** - the `CLAUDE.md` delivery mode is `solo-trunk`, or
+  `policy/delivery.yml` says `environments: []` or `production_gate: none` ->
+  **decline the lane**: name the line, and continue the fix on the normal flow
+  (`issue/<n>-slug`, issue first).
+- **Evidence for** - a feature intent at `Status: live` (`ENUMS.md`) -> open the
+  lane and name the feature that showed it.
+- **Neither** -> the condition is **unverified**. A `delivery.yml` that lists
+  `prod` is not evidence: the scaffold seeds it before anything ships. Ask one
+  question - which deployed environment is down, and since when - and stay on
+  the normal flow until the dev's answer names one.
+
+The ask's own wording is never the confirmation; that is the self-assessment
+rule `61-gates` rules out.
+
 What changes versus the normal flow:
 
 - **Branch.** Work on a `hotfix/<n>-slug` branch (not `issue/<n>`) so the
