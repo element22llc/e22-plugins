@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `changelog:new` and `convert:doc` run under `cmd.exe` on Windows
+### v7.2.1 - `changelog:new` and `convert:doc` run under `cmd.exe` on Windows
 
 - **What & why:** mise runs an inline task through `cmd.exe` on Windows. The
   scaffold's `changelog:new` was inline POSIX `sh` (`${KIND:?...}` expansions), so
@@ -119,7 +119,7 @@ Name the file and say what to carry forward.
   Show the diff; leave every other task alone. Idempotent: once both are replaced
   the precondition is empty. **No history entry is earned.**
 
-### [Unreleased] - `dependabot-auto-merge.yml` approves only after every check passed
+### v7.2.1 - `dependabot-auto-merge.yml` approves only after every check passed
 
 - **What & why:** the shipped merge step approved the PR **first**, then waited on
   `gh pr checks --watch --required`. A non-required e2e job could still be running
