@@ -566,6 +566,23 @@ package manager you use.
   scripts behind `allowBuilds`: a dependency that legitimately needs its
   postinstall (esbuild via tsx, linking its native binary) must be listed there
   or `pnpm install` fails with `ERR_PNPM_IGNORED_BUILDS`.
+
+  **Why pnpm over npm or yarn.** Three properties the standards lean on:
+  - **Strict `node_modules`.** A package resolves only the dependencies it
+    declares, never a sibling's hoisted one, so an undeclared import fails
+    locally instead of in a clean environment - the "every import resolves to a
+    declared dependency" baseline, enforced by the layout. npm's flat tree lets
+    that phantom dependency work until it doesn't.
+  - **Workspaces without a second tool.** `pnpm-workspace.yaml`, `catalog:` and
+    `--recursive --filter` cover the monorepo layout natively; npm has no
+    catalog, and Yarn's Plug'n'Play mode trades the same strictness for tooling
+    compatibility.
+  - **Supply-chain defaults on.** Dependency build scripts are off unless listed
+    (`allowBuilds`), and `minimumReleaseAge` holds back fresh releases - the
+    guards above, on by default rather than configured per repo.
+
+  A content-addressed store makes installs fast and cheap on disk; that is a
+  benefit, not the reason.
 - **Python -> [uv](https://docs.astral.sh/uv/).** Use uv for environments,
   dependency resolution, and locking (`uv add`, `uv sync`, `uv run`). Prefer it
   over pip/Poetry/pip-tools.

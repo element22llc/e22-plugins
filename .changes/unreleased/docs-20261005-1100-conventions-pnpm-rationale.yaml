@@ -1,0 +1,12 @@
+kind: Docs
+time: 2026-10-05T11:00:00.000000-04:00
+custom:
+  Slug: conventions-pnpm-rationale
+body: |
+  - **Docs: `CONVENTIONS.md` now says why pnpm is the Node default.** The
+    reference named pnpm and its guards but never the reason over npm or yarn,
+    so every `/steer:reference conventions` answer to "why pnpm?" in the
+    2026-10-02 eval sweep said the file was silent and guessed. Workspace
+    tooling gains the three reasons the standards lean on: a strict
+    `node_modules` that enforces the declared-dependency baseline, native
+    workspaces and `catalog:`, and supply-chain guards on by default.
