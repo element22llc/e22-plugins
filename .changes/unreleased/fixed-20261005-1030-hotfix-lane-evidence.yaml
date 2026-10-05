@@ -1,0 +1,16 @@
+kind: Fixed
+time: 2026-10-05T10:30:00.000000-04:00
+custom:
+  Slug: hotfix-lane-evidence
+body: |
+  - **Fixed: `/steer:work --hotfix` checks the repo before opening the lane.**
+    Rule `61-gates` opens the lane only on an objective condition, a deployed
+    production with an active incident, but `modes/hotfix.md` defined the
+    condition without saying how to verify it. In the 2026-10-02 eval sweep, two
+    of three runs on a repo with nothing deployed took "production is down" as
+    the confirmation and planned a `hotfix/` branch. The mode now reads the repo
+    first. A solo-trunk marker, `environments: []` or `production_gate: none`
+    declines the lane and continues on the normal flow. A `Status: live`
+    feature opens it. With neither, it asks which deployed environment is down
+    before taking it. A seeded `delivery.yml` that lists `prod` is not evidence,
+    since the scaffold writes it before anything ships.
