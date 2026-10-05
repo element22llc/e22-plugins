@@ -1,6 +1,6 @@
 ---
 name: explain
-description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback): status pipeline, acceptance meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
+description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
 when_to_use: "Reached via /steer:status feature <id> - not a direct entry point."
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
@@ -41,7 +41,7 @@ the spec is `/steer:spec`. Never auto-generate per feature.
 
 Turn one feature's approved intent into a **high-level page a stakeholder can
 read at a glance** - not a five-page wall of text but a **visual, interactive
-summary**: a status pipeline, an acceptance meter, a clickable user-journey, and
+summary**: a status pipeline, a sign-off meter, a clickable user-journey, and
 scope/open-question boards, so the reader gets the gist in seconds and drills in
 only where they want to. Published as a **Claude Code Artifact** (a private,
 hosted page on claude.ai you can then share with a teammate), or rendered as
@@ -156,10 +156,16 @@ chart. Map the intent's own sections to these visuals:
   inferred onto it - an `approved` feature may be half-built or merged, and only
   its tracker issue knows which. If the reader needs that, point them at the issue
   (`> Tracker:`) rather than drawing a stage the spec cannot support.
-- **PO acceptance -> a completion meter.** Show the four acceptance checkboxes as a
-  small progress meter / ring with the ratio (e.g. "2 of 4"), each item's ticked
-  state taken **verbatim** from the intent - never tick a box the spec leaves
-  unchecked.
+- **PO sign-off -> a completion meter.** Show the four `## PO acceptance`
+  checkboxes as a small progress meter / ring labelled **sign-off** with the
+  ratio (e.g. "sign-off 2 of 4"), each item's ticked state taken **verbatim**
+  from the intent - never tick a box the spec leaves unchecked.
+- **Acceptance criteria -> a separate checklist.** The `## Acceptance criteria`
+  boxes are a different list with their own count - never merged into the
+  sign-off meter or reported against its denominator. A ticked criterion is the
+  spec's record, not a check of the build: label the count "checked off in the
+  spec", never "met" or "done", and point at the tracker ref for delivery
+  state.
 - **User experience -> a clickable journey.** Turn the numbered steps into a
   stepper the reader advances one step at a time, instead of a prose list - the
   single biggest "don't make me read five pages" win. Steps are the intent's own,
@@ -179,7 +185,7 @@ chart. Map the intent's own sections to these visuals:
 ### 3b. Interactivity - lead with the gist, disclose on demand
 
 - **One-screen summary first.** Open with what/why + the status pipeline + the
-  acceptance meter above the fold; put everything else behind collapsible sections
+  sign-off meter above the fold; put everything else behind collapsible sections
   with a sticky jump-nav. Nobody should scroll five pages to learn the feature's
   state.
 - **Keep it accessible and shareable.** Every interactive control is
@@ -198,7 +204,8 @@ in `/steer:reference artifacts` - and do not restate it here. Two things are
   Write only there (a system temp dir), never under the repo tree.
 - **The Markdown fallback keeps this skill's at-a-glance shape** - status as an
   inline pipeline (`draft -> **approved** -> live`),
-  acceptance as a checklist with its "N of 4" count, the journey as a numbered list,
+  sign-off as a checklist with its "N of 4" count, the acceptance criteria as
+  a second checklist with their own count, the journey as a numbered list,
   scope as two ✓ / ✗ lists. Print it inline; never write it to a file under the
   repo (that would be the drifting second copy of the spec this skill avoids).
 
