@@ -1,0 +1,13 @@
+kind: Fixed
+time: 2026-10-05T16:30:00.000000-04:00
+custom:
+  Slug: explain-page-provenance
+body: |
+  - **Fixed: a feature page now names the command that made it.** In two
+    uncompressed eval sweeps, `/steer:status feature <id>` returned a correct
+    page with no attribution. The closing heading was dropped first by the
+    forked renderer and then by `status`, even after `status` was told to add
+    it. The page now ends with a provenance footer, "Generated from the spec by
+    `/steer:status feature <id>` - re-run it after the spec changes." The
+    footer is part of the page, so it survives being passed on unchanged, and it
+    tells the stakeholder the page is derived and how to refresh it.

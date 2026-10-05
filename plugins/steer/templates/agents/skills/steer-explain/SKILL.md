@@ -132,6 +132,11 @@ git/CI/ADR/stack jargon). Build the page around the intent's own sections:
   terms, flagging which **block** progress.
 - **Contract detail** (data model, API surface) is **dev jargon** - summarize it in
   a sentence or omit it. Do not paste tables of fields/types onto a stakeholder page.
+- **A provenance footer, last** - one small line: "Generated from the spec by
+  `/steer-status feature <id>` - re-run it after the spec changes." It tells the
+  reader the page is derived and how to refresh it, and it is the attribution
+  that survives the caller relaying the page verbatim - a closing heading
+  outside the page is the first thing that gets dropped.
 
 Style the page from the repo's `DESIGN.md` tokens when it declares them (repo
 root, or `apps/<app>/DESIGN.md` - see `/steer-reference design-sources`), else the
@@ -205,7 +210,7 @@ in `/steer-reference artifacts` - and do not restate it here. Two things are
   inline pipeline (`draft -> **approved** -> live`),
   sign-off as a checklist with its "N of 4" count, the acceptance criteria as
   a second checklist with their own count, the journey as a numbered list,
-  scope as two ✓ / ✗ lists. Print it inline; never write it to a file under the
+  scope as two ✓ / ✗ lists, the provenance footer last. Print it inline; never write it to a file under the
   repo (that would be the drifting second copy of the spec this skill avoids).
 
 ## Updating a previously shared page
