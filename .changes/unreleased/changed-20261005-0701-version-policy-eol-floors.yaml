@@ -1,0 +1,6 @@
+kind: Changed
+time: 2026-10-05T07:01:07.433480+00:00
+custom:
+  Slug: version-policy-eol-floors
+body: |
+  - **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): python 3.10->3.11. EOL floors only - what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
