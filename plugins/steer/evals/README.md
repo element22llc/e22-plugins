@@ -393,7 +393,17 @@ mise run evals -- --runs 1 --judge-model haiku           # cheap authoring loop
 mise run evals -- --tag mode --runs 1                    # only the per-mode cases
 ```
 
-Two things that cost real runs while these cases were authored:
+Three things that cost real runs while these cases were authored:
+
+- **A proxy in `ANTHROPIC_BASE_URL` corrupts the sweep.** Claude Code applies
+  the `env` block of `~/.claude/settings.json` itself, so a value set there
+  survives `env -u` in the shell. Every sweep through 2026-10-05 went through a
+  compressing proxy that way: runs reported skill output "garbled" or a
+  "compressed stub", rebuilt it by hand, and failed the `answer` grader for
+  dropping the attribution. `mise run evals` now refuses to start while the
+  variable is set in the shell or in the user settings; remove it for the
+  sweep, or set `STEER_EVALS_ALLOW_BASE_URL=1` for a gateway that passes
+  requests through unmodified.
 
 - **`--case` takes one glob, not a list.** A second `--case` silently *replaces*
   the first (the CLI keeps the last occurrence of an option), so three of them
