@@ -300,8 +300,9 @@ and **Repair**.
 - **Files:** `.github/dependabot.yml`, `.github/workflows/dependabot-auto-merge.yml`
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** both present; the auto-merge workflow guards on
-  `github.actor == 'dependabot[bot]'` and gates on the `update-type`
-  (patch/minor approved, majors left for a human).
+  `github.event.pull_request.user.login == 'dependabot[bot]'` (never
+  `github.actor`, which names the last actor - see MIGRATIONS) and gates on the
+  `update-type` (patch/minor approved, majors left for a human).
 - **Repair:** create either missing file from `templates/github/`. When restoring
   `dependabot.yml`, uncomment the ecosystem block(s) matching the detected stack
   (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. The repo

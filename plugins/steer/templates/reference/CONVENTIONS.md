@@ -720,9 +720,9 @@ follows it; only a gate *weaker* than this default needs an ADR.
     Tighten freely; a *weaker* per-repo policy needs an ADR.
   - **Repo-wide `allow_auto_merge` stays off.** It would expose the auto-merge
     button on every PR. Dependabot auto-merge is scoped by its workflow instead:
-    it waits for the required `ci` check and covers patch and minor bumps only -
-    majors stay human-reviewed because they may need a `policy/versions.yml`
-    floor decision. The bot's approval satisfies only a *count-based* required
+    it waits for every check (each `GATING_CHECKS` entry must pass) and covers
+    patch and minor bumps only - majors stay human-reviewed because they may
+    need a `policy/versions.yml` floor decision. The bot's approval satisfies only a *count-based* required
     review; a CODEOWNERS-required review, if a repo adds one, still needs a
     human - by design.
 - **Observable by default** - a deployed environment ships logs, metrics with
