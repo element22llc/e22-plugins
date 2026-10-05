@@ -208,12 +208,24 @@ a version only once it has been public for a week - the same supply-chain guard 
 pnpm's `minimumReleaseAge` - so a hijacked release is usually yanked before
 auto-merge could land it. Security updates ignore the cooldown and arrive at once.
 
-This waives only the human *review*, never the tests: the workflow waits for the
-required `ci` check before it merges, so a bump that breaks tests, lint, or the
-version-pin scan never lands - **CI, not a human, is what guarantees the bump is
-safe.** Auto-merge is scoped to Dependabot by the workflow's `dependabot[bot]`
-guard - GitHub's repo-wide `allow_auto_merge` setting is deliberately left **off**,
-so no other PR gets an auto-merge button. `/steer:setup protect` enables Dependabot
-alerts + security updates (so security PRs get opened); the merge itself is enacted
-by the workflow, not by protect. Want zero automated merges? Delete that workflow -
-Dependabot PRs then go through the same human gate as everything else.
+This waives only the human *review*, never the tests: the workflow waits for
+**every** check on the PR to finish, approves only once none failed and each check
+in its `GATING_CHECKS` list (`ci` by default - add your e2e or integration jobs)
+reports an actual pass - a skipped one blocks - then merges pinned to the commit it
+verified. A bump that breaks tests, lint, or the version-pin scan never lands -
+**CI, not a human, is what guarantees the bump is safe.** Auto-merge is scoped to
+Dependabot by the workflow's `dependabot[bot]` guard - GitHub's repo-wide
+`allow_auto_merge` setting is deliberately left **off**, so no other PR gets an
+auto-merge button. `/steer:setup protect` enables Dependabot alerts + security
+updates (so security PRs get opened); the merge itself is enacted by the workflow,
+not by protect.
+
+The workflow approves with `GITHUB_TOKEN`, which needs **Settings -> Actions ->
+General -> "Allow GitHub Actions to create and approve pull requests"**;
+`/steer:setup protect` checks it and turns it on when you confirm. The trade-off:
+with it on, *any* workflow can approve *any* PR, so someone with write access could
+self-approve through a workflow on their own branch. A merge made with
+`GITHUB_TOKEN` also triggers no `push` workflows, so a bot-merged bump does not
+deploy to non-prod by itself - the next human merge carries it. Want neither? Delete
+that workflow - Dependabot PRs then go through the same human gate as everything
+else.

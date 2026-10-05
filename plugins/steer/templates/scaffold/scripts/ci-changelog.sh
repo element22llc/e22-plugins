@@ -17,6 +17,12 @@ is_exempt() {
 	case "$1" in
 	spec/* | docs/* | .github/* | .claude/* | .vscode/* | .changes/*) return 0 ;;
 	tests/* | test/* | */tests/* | */test/*) return 0 ;;
+	__tests__/* | */__tests__/* | __snapshots__/* | */__snapshots__/*) return 0 ;;
+	# Colocated tests. Extensions are listed, not `*.spec.*`, so a shipping
+	# `openapi.spec.yaml` still needs its entry.
+	*.test.[cm][jt]s | *.test.[jt]s | *.test.[jt]sx) return 0 ;;
+	*.spec.[cm][jt]s | *.spec.[jt]s | *.spec.[jt]sx) return 0 ;;
+	test_*.py | */test_*.py | *_test.py | conftest.py | */conftest.py) return 0 ;;
 	# Prose ships no behaviour, wherever it lives. A docs change that IS worth an
 	# entry can still have one - this only says it is never *required*.
 	*.md) return 0 ;;

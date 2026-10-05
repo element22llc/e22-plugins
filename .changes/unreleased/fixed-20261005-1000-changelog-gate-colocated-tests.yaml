@@ -1,0 +1,14 @@
+kind: Fixed
+body: |-
+  - **Fixed: `ci:changelog` no longer asks for a fragment on a test-only PR
+    with colocated tests.** The scaffold's `scripts/ci-changelog.sh` exempted
+    `tests/` and `test/` directories but not test files living next to the
+    code, so a Vitest or Jest repo adding only `src/foo.test.ts` failed the
+    gate for a change that ships nothing. It now also exempts `__tests__/`,
+    `__snapshots__/`, `*.test.*` / `*.spec.*` JS and TS files, and pytest's
+    `test_*.py`, `*_test.py` and `conftest.py`. Non-code `*.spec.*` files such
+    as `openapi.spec.yaml` still need an entry. Re-sync the scaffold with
+    `/steer:setup sync` to pick it up (#661).
+time: 2026-10-05T10:00:00.000000000-04:00
+custom:
+  Slug: changelog-gate-colocated-tests

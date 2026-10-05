@@ -119,6 +119,30 @@ Name the file and say what to carry forward.
   Show the diff; leave every other task alone. Idempotent: once both are replaced
   the precondition is empty. **No history entry is earned.**
 
+### [Unreleased] - `dependabot-auto-merge.yml` approves only after every check passed
+
+- **What & why:** the shipped merge step approved the PR **first**, then waited on
+  `gh pr checks --watch --required`. A non-required e2e job could still be running
+  or failing when the bump merged, and `gh pr checks` reads a skipped check as
+  green. The approval also needs "Allow GitHub Actions to create and approve pull
+  requests", which nothing checked, so on most repos the step failed outright.
+  Tracked as issue #660.
+- **Precondition:** the workflow still carries the old step - this fires:
+
+  ```sh
+  grep -l 'gh pr checks "$PR_URL" --watch --required' .github/workflows/dependabot-auto-merge.yml 2>/dev/null
+  ```
+
+  No output => already migrated, the file is absent, or the repo rewrote the step
+  => no-op.
+- **Action:** a **section re-take**. Replace the step from its `- name: Approve,
+  wait for CI, merge (patch/minor)` line up to the next `- name:` with the step
+  from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
+  and add that file's `timeout-minutes: 60` to the job. Carry forward any check the
+  repo's old step named, into `GATING_CHECKS`. Show the diff. Then name
+  `/steer:setup protect` as the follow-up for the Actions-approval setting - sync
+  writes the file, it does not configure GitHub. **No history entry is earned.**
+
 ### v7.1.0 - unfilled `Q-001` placeholder seeds leave features past `draft`
 
 - **What & why:** the feature-intent template seeds `## Open questions` with a

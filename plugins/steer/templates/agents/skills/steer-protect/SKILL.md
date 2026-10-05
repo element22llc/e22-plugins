@@ -178,6 +178,10 @@ Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
+With `.github/workflows/dependabot-auto-merge.yml` installed (else skip), diff
+`actions_can_approve_pull_requests` (`true` if absent) against
+`can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
+
 Produce a **per-rule diff table** - for each policy field: `compliant` /
 `drifted (actual -> desired)` / `absent`. With more than one branch in scope, give
 **one table per branch** (default branch first, then each declared branch),
@@ -269,6 +273,6 @@ confirmation.
   **not** enable GitHub's repo-wide `allow_auto_merge` - that switch would expose
   auto-merge to every PR; auto-merge is scoped to Dependabot by the workflow
   itself. The merge is enacted by `.github/workflows/dependabot-auto-merge.yml`
-  (installed via the scaffold / `/steer-setup sync`), which waits for `ci` then merges
-  the single Dependabot PR directly - **protect never merges.** If that workflow is
-  absent, say so: alerts are on but nothing auto-merges yet.
+  (installed via the scaffold / `/steer-setup sync`), which waits for every check
+  then merges the single Dependabot PR directly - **protect never merges.** If that
+  workflow is absent, say so: alerts are on but nothing auto-merges yet.

@@ -1160,6 +1160,25 @@ echo "tofu $*"
 out="$(cd "${CI}" && PATH="${CI}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
 case "${out}" in *"tofu fmt -check"*) ok ;; *) bad "ci-iac: resolvable tofu runs fmt (got '${out}')" ;; esac
 
+# ci-changelog: colocated tests ship nothing, so a test-only PR needs no fragment (#661).
+CC="${WORK}/cichangelog"
+mkdir -p "${CC}/scripts" "${CC}/src"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/ci-changelog.sh" "${CC}/scripts/"
+(cd "${CC}" && git init -q && : >.changie.yaml && git add . && git -c user.name=t -c user.email=t@t commit -qm base)
+ci_changelog() { # <path>... -> rc of the gate on a commit adding those paths
+	(cd "${CC}" && git checkout -q -B probe "$(git rev-list --max-parents=0 HEAD)" &&
+		for p in "$@"; do mkdir -p "$(dirname "$p")" && : >"$p"; done &&
+		git add -A && git -c user.name=t -c user.email=t@t commit -qm probe)
+	(cd "${CC}" && STEER_CI_BASE=probe~1 sh scripts/ci-changelog.sh >/dev/null 2>&1)
+	rc=$?
+}
+ci_changelog src/foo.test.ts src/foo.test.tsx src/bar.spec.ts src/x.int.test.mjs src/__tests__/a.ts src/test_a.py
+assert_eq "ci-changelog: colocated tests need no fragment" "${rc}" "0"
+ci_changelog src/foo.ts src/foo.test.ts
+assert_eq "ci-changelog: source beside its test still needs one" "${rc}" "1"
+ci_changelog api/openapi.spec.yaml
+assert_eq "ci-changelog: a non-test *.spec.* file still needs one" "${rc}" "1"
+
 # changelog:new: argv reaches changie verbatim, no shell in between (#671).
 if command -v node >/dev/null 2>&1; then
 	CN="${WORK}/changelognew"

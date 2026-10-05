@@ -52,6 +52,18 @@ When rules are drifted or absent:
      block;
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
+   - **Actions approving PRs** - only when verify diffed it. The auto-merge
+     workflow approves with `GITHUB_TOKEN`, so while this is off every
+     patch/minor bump fails at its approve step. Say what it costs in the
+     prompt: **any** workflow can then approve **any** PR, so a writer could
+     self-approve through a workflow on their own branch; the alternative is
+     deleting the workflow and reviewing bumps by hand. A `false` policy with
+     the workflow installed is that alternative half-done - recommend the
+     deletion rather than flipping the setting.
+     `echo '{"can_approve_pull_request_reviews":true}' | gh api -X PUT
+     "repos/${OWNER}/${REPO}/actions/permissions/workflow" --input -`. A `409`
+     means the **organization** forbids it - the repo cannot override that; name
+     the org setting and let an org admin decide.
 4. After applying, re-run the verify diff and report the new state.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a
