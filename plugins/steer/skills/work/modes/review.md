@@ -114,7 +114,9 @@ ones that are yours:
 - **CI red or conflicting** - `/steer:work resume #<issue>` fixes it on its
   branch.
 - **Stacked, independent** - rebase onto the default branch and retarget
-  (`gh pr edit <n> --base <default>`), one PR per run; the force push asks.
+  (`gh pr edit <n> --base <default>`), one PR per run. Force-push as `git push
+  --force-with-lease origin <branch>`: the flag ahead of `origin` keeps it out
+  of this skill's `git push origin *` grant, so it asks.
 - **No reviewer requested** - ask the human who, then `gh pr edit <n>
   --add-reviewer <login>`. Never pick a reviewer yourself.
 

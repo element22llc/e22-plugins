@@ -106,9 +106,9 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 > pre-approves read-only git and PR inspection, `git fetch`, branch
 > create/switch, the Rule-45-autonomous `git add` / `git commit`, the delivery
 > moves `git push` / `gh pr create` / `gh pr edit`, and read-only CI status, so
-> the post-push CI watch runs without a prompt per poll. It deliberately does
-> **not** pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
-> run`, or destructive git (`push --force`, `reset --hard`, `clean -fdx`,
+> the post-push CI watch runs without a prompt per poll. It does **not**
+> pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
+> run`, or destructive git (`push --force` flag-first, `reset --hard`, `clean -fdx`,
 > `branch -D`) - merge and approval stay human; tracker I/O routes through
 > `/steer:tracker-sync`.
 > Two hooks can still ask (rule 45): the trunk-push gate in an ungraduated
