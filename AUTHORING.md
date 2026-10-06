@@ -403,6 +403,14 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - Add a fixture case to `plugins/steer/hooks/tests/run.sh` for any new behaviour,
   then run `mise run hooktests` (deterministic, no network). `mise run shell`
   (shellcheck hard gate, shfmt advisory) must also pass.
+- **The one non-`sh` exception is the mod, `hooks/register.tsx`** (named under
+  `modules` in `hooks.json`). It only draws and answers commands: it never
+  gates, denies or rewrites, because a mod is skipped on older Claude Code,
+  off-terminal surfaces and under `allowManagedModsOnly`, where the shell hooks
+  still run. Data it shows comes from an `sh` script, never from logic in the
+  module. Keep it to read-only `$` calls, run `claude plugin validate
+  plugins/steer` (it lists what the module hooks and calls), and cover changes in
+  `register.test.tsx` (`mise run modtests`).
 
 ## CHANGELOG & versioning
 

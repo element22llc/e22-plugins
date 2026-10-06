@@ -1,0 +1,18 @@
+kind: Added
+body: |-
+  - **Added: a steer status band above the prompt, and `/steer-snapshot`.** In
+    the Claude Code terminal and the Desktop Code tab (v2.1.287 or later), a
+    managed repo now shows one dim line above the prompt: delivery mode, branch,
+    feature and draft counts, open questions, ADRs awaiting ratification, work
+    claims, and unfiled steer faults (pointing at `/steer:report`). It refreshes
+    at session start and after each turn, and stays hidden in a repo with no
+    spec spine. `/steer-snapshot` prints the full workspace snapshot at once,
+    with no Claude turn, even while Claude is working. Both are a read-only mod
+    (`hooks/register.tsx`) over `scripts/workspace-snapshot.sh`, whose new
+    `--brief` mode prints the band's counts. They enforce nothing: every gate
+    stays in the shell hooks. Older Claude Code versions, other surfaces, and
+    organizations that allow only managed mods skip the mod and keep every
+    existing hook.
+time: 2026-10-06T10:30:00.000000000-04:00
+custom:
+  Slug: status-band-mod
