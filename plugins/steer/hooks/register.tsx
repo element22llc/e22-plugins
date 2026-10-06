@@ -1,4 +1,4 @@
-// steer mod - read-only status band above the prompt + /steer-snapshot. Every
+// steer mod - read-only status band above the prompt + /steer_snapshot. Every
 // count comes from scripts/workspace-snapshot.sh; this module only draws. It
 // enforces nothing: gates stay in the sh hooks, which run where mods do not.
 import type { EngineInterface, Register } from 'claude-code'
@@ -71,7 +71,7 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     void refresh($, e.cwd)
     await $.command.register({
-      name: 'steer-snapshot',
+      name: 'steer_snapshot',
       description: 'Print the steer workspace snapshot now, without a Claude turn',
       immediate: true,
     })
@@ -91,7 +91,7 @@ export const register: Register = on => {
     return next(e)
   }).catch(($, e, next) => next(e))
 
-  on('command.run', { command: 'steer-snapshot' }, async $ => {
+  on('command.run', { command: 'steer_snapshot' }, async $ => {
     try {
       const run = await snapshot($, [])
       return { text: run.exitCode === 0 ? run.stdout : `steer snapshot failed: ${run.stderr}` }

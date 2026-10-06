@@ -89,7 +89,7 @@ test('a snapshot that cannot run hides the band and reports the failure', async 
   expect(await ui.find({ type: 'Text', text: /steer/ })).toBeUndefined()
   await ui.unmount()
   const out = await $.command.run({
-    command: 'steer-snapshot',
+    command: 'steer_snapshot',
     args: '',
     origin: { kind: 'composer' },
     presentation: { isFullscreen: false, columns: 120 },
@@ -97,10 +97,10 @@ test('a snapshot that cannot run hides the band and reports the failure', async 
   expect(out.text).toContain('steer snapshot failed')
 })
 
-test('/steer-snapshot answers with the full report', async ($, on) => {
+test('/steer_snapshot answers with the full report', async ($, on) => {
   on('process.run', async () => ran('## Workspace snapshot'))
   const out = await $.command.run({
-    command: 'steer-snapshot',
+    command: 'steer_snapshot',
     args: '',
     origin: { kind: 'composer' },
     presentation: { isFullscreen: false, columns: 120 },

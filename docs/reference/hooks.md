@@ -176,11 +176,15 @@ stays a shell hook, because a mod does not run everywhere they do.
 | --- | --- |
 | `session.start`, `turn.complete`, `classic.CwdChanged` | Runs `scripts/workspace-snapshot.sh --brief` in the session's directory (the new one after a change) and keeps one summary line: delivery mode, branch, feature and draft counts, open questions, Proposed ADRs, work claims, unfiled steer faults. Empty where the spine is `unmanaged` or `foreign`. |
 | `ui.render` on `AbovePrompt` | Draws that line, dim, above the prompt. Steps aside while a survey shows. |
-| `command.run` on `steer-snapshot` | `/steer-snapshot` prints the full workspace snapshot at once, with no Claude turn, even mid-turn. |
+| `command.run` on `steer_snapshot` | `/steer_snapshot` prints the full workspace snapshot at once, with no Claude turn, even mid-turn. |
 
 Where it runs: the band draws in the terminal and the Desktop Code tab, on
-Claude Code v2.1.287 or later. The VS Code chat panel, `claude -p` and cloud
-sessions run the command but draw nothing. Older versions skip the module, and
+Claude Code v2.1.287 or later. The Claude Code VS Code extension, `claude -p`
+and cloud sessions run the command but draw nothing. GitHub Copilot (CLI and
+VS Code) loads no mods, so neither the band nor the command exists there (see
+[GitHub Copilot support](../concepts/copilot-support.md#surfaces-at-a-glance));
+the command is named `steer_snapshot`, not `steer-snapshot`, so it never reads
+as a Copilot `/steer-<skill>`. Older versions skip the module, and
 an organization that sets `allowManagedModsOnly` refuses it (steer installs from
 a GitHub marketplace, so it counts as a user's mod); in both cases every shell
 hook keeps running. `claude plugin validate plugins/steer` lists what it hooks
