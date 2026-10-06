@@ -2,8 +2,8 @@
 # Fields map 1:1 to the classic protection API; rationale: /steer:reference conventions.
 # steer:allow-comments each note names why a protection setting is what it is -- deleting them loses the security rationale, not noise
 
-schema: 4          # additive - v1 (no `protected_branches`), v2 (no profiles) and v3 (no
-                   # `actions_can_approve_pull_requests`) stay valid.
+schema: 5          # additive - v1 (no `protected_branches`), v2 (no profiles), v3 (no
+                   # `actions_can_approve_pull_requests`) and v4 (no `allow_auto_merge`) stay valid.
 
 # `team` applies everything below as written; `solo` layers `profiles.solo` on top.
 # GitHub blocks a PR's author from approving it, so on a one-contributor repo the
@@ -53,10 +53,15 @@ dependabot_alerts: true
 dependabot_security_updates: true
 
 # Review-gate exception: Dependabot patch/minor bumps auto-merge via
-# .github/workflows/dependabot-auto-merge.yml once every check is green (majors stay human-reviewed).
-# Repo-wide `allow_auto_merge` stays OFF - it would expose the button to every PR.
+# .github/workflows/dependabot-auto-merge.yml (majors stay human-reviewed). The workflow arms
+# GitHub's native auto-merge, so `required_status_checks` above - not a billed runner polling
+# them - is what makes a bump wait for green: every check that must gate it belongs in `contexts`.
+# Native auto-merge needs repo-wide `allow_auto_merge`, which offers the button on every PR; it
+# still merges only once that PR satisfies this protection, reviews included.
+allow_auto_merge: true
 # The workflow approves with GITHUB_TOKEN, which needs "Allow GitHub Actions to create and
 # approve pull requests". That lets ANY workflow approve ANY PR, so a writer could
 # self-approve through a workflow on their own branch. Checked only while the workflow is
-# installed; `false` declines the exception, and then the workflow should be deleted.
+# installed; `false` on either setting declines the exception, and then the workflow should
+# be deleted.
 actions_can_approve_pull_requests: true

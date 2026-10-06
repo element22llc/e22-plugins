@@ -94,6 +94,33 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `dependabot-auto-merge.yml` arms native auto-merge instead of polling
+
+- **What & why:** the merge step looped `gh pr checks` + `sleep 30` on a hosted
+  runner for up to 60 minutes, so every Dependabot PR paid for CI's whole
+  wall-clock a second time in idle billed minutes. It now approves and arms
+  GitHub's native auto-merge, so branch protection's required checks gate the
+  merge, and it refuses to arm unless each `GATING_CHECKS` entry is required.
+  Tracked as issue #687.
+- **Precondition:** the workflow still carries the polling step - this fires:
+
+  ```sh
+  grep -l 'Wait for every check, approve, merge' .github/workflows/dependabot-auto-merge.yml 2>/dev/null
+  ```
+
+  No output => already migrated, the file is absent, or the repo rewrote the step
+  => no-op.
+- **Action:** a **section re-take**. Replace the step from its `- name: Wait for
+  every check, approve, merge (patch/minor)` line up to the next `- name:` with the
+  step from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
+  and set the job's `timeout-minutes` to that file's `5`. Carry the repo's
+  `GATING_CHECKS` value forward. Add `allow_auto_merge: true` to
+  `policy/branch-protection.yml` if absent, and add each `GATING_CHECKS` entry to
+  the default branch's `required_status_checks.contexts` if missing. Show the
+  diff. Then name `/steer:setup protect` as the follow-up: until it enables
+  "Allow auto-merge" and requires those checks, the step fails instead of merging.
+  **No history entry is earned.**
+
 ### [Unreleased] - `ci.yml`'s advisory checks share one `advisory` job
 
 - **What & why:** `design-lint`, `spec-drift` and `ai-slop` each ran as their own

@@ -64,6 +64,13 @@ When rules are drifted or absent:
      "repos/${OWNER}/${REPO}/actions/permissions/workflow" --input -`. A `409`
      means the **organization** forbids it - the repo cannot override that; name
      the org setting and let an org admin decide.
+   - **Allow auto-merge** - only when verify diffed it. The workflow arms
+     native auto-merge, so while this is off every patch/minor bump fails at
+     its merge step. Say what it costs: every PR gets the auto-merge button,
+     though it merges only once that PR's protection is satisfied.
+     `gh api -X PATCH "repos/${OWNER}/${REPO}" -F allow_auto_merge=true`.
+   - **A `GATING_CHECKS` name missing from the required `contexts`** - add it
+     to the policy's `contexts`, then re-run the protection PUT above.
 4. After applying, re-run the verify diff and report the new state.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a

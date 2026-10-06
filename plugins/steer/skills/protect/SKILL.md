@@ -180,7 +180,9 @@ disabled). These back the documented Dependabot auto-merge exception (see Notes)
 
 With `.github/workflows/dependabot-auto-merge.yml` installed (else skip), diff
 `actions_can_approve_pull_requests` (`true` if absent) against
-`can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
+`can_approve_pull_request_reviews` from `.../actions/permissions/workflow`, and
+`allow_auto_merge` against the repo's. Each `GATING_CHECKS` name missing from
+the default branch's required `contexts` is drift: it would not gate the merge.
 
 Produce a **per-rule diff table** - for each policy field: `compliant` /
 `drifted (actual -> desired)` / `absent`. With more than one branch in scope, give
@@ -269,10 +271,8 @@ confirmation.
   to the required human review: Dependabot **patch/minor** PRs (majors excluded)
   are auto-approved and auto-merged once every check is green - CI, not a human,
   guarantees the bump is safe. protect enables Dependabot alerts + security
-  updates and, with the workflow installed, Actions PR approval. It deliberately does
-  **not** enable GitHub's repo-wide `allow_auto_merge` - that switch would expose
-  auto-merge to every PR; auto-merge is scoped to Dependabot by the workflow
-  itself. The merge is enacted by `.github/workflows/dependabot-auto-merge.yml`
-  (installed via the scaffold / `/steer:setup sync`), which waits for every check
-  then merges the single Dependabot PR directly - **protect never merges.** If that
-  workflow is absent, say so: alerts are on but nothing auto-merges yet.
+  updates and, with the workflow installed, Actions PR approval and
+  `allow_auto_merge` (the button on every PR, no PR's protection loosened).
+  `.github/workflows/dependabot-auto-merge.yml` arms native auto-merge, so the
+  **required** checks gate it - **protect never merges.** If that workflow is
+  absent, say so: alerts are on but nothing auto-merges yet.
