@@ -1,0 +1,5 @@
+kind: Added
+body: '- **Added: the steer status band is now clickable, with a detail pane.** Each count in the band above the prompt (features, open questions, ADRs to ratify, work claims) is a button that opens a `steer` pane listing the items behind it: features with their status, open questions ranked blocking-first with their `required_before`, Proposed ADRs, and claimed issues with their branch (or title, for older markers). Each row has a button that puts the owning command in the prompt (`/steer:spec <feature>`, `/steer:spec adr accept <n>`, `/steer:work resume #<n>`, ...) and closes the pane; nothing is sent until you press Enter, so every gate stays yours. A steer-fault count fills `/steer:report`. `scripts/workspace-snapshot.sh --items` is the new machine-readable source the pane reads; it runs only while the pane is open.'
+time: 2026-10-06T13:00:56.046965-04:00
+custom:
+    Slug: interactive-status-band-pane

@@ -20,11 +20,17 @@
 #   /steer:next's rule that silence must never read as "nothing there".
 #
 # USAGE
-#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" [--brief] [repo-root]
+#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" [--brief | --items] [repo-root]
 #   (defaults to resolving the work-tree root from the current directory)
 #   --brief prints counts only, one `key=value` per line, for the status band
 #   in hooks/register.tsx - a machine format, so keep its keys stable. It
 #   carries no branch: Claude Code's status line already shows it.
+#   --items prints the items behind those counts for the mod's pane, one
+#   tab-separated record per line - also a machine format, keep it stable:
+#     F <feature-id> <status>
+#     Q <feature-id | vision> <Q-id> <status> <impact> <required_before> <title>
+#     A <adr-number> <title>                      (Proposed ADRs only)
+#     C <issue> <branch>                          (work claims)
 #
 # CONSTRAINTS (per repo CLAUDE.md): POSIX sh, no jq.
 
@@ -38,10 +44,11 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(CDPATH='' cd -- "$(dirname -- "$0")/.." && 
 . "${PLUGIN_ROOT}/hooks/lib/report-fault.sh"
 
 BRIEF=0
-if [ "${1:-}" = "--brief" ]; then
-	BRIEF=1
-	shift
-fi
+ITEMS=0
+case "${1:-}" in
+--brief) BRIEF=1 && shift ;;
+--items) ITEMS=1 && shift ;;
+esac
 ROOT="${1:-}"
 if [ -z "${ROOT}" ]; then
 	ROOT="$(steer_repo_root ".")" || ROOT="."
@@ -51,33 +58,57 @@ fi
 	exit 1
 }
 
-if [ "${BRIEF}" -eq 1 ]; then
+if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 	_features=0
 	_drafts=0
 	for _intent in "${ROOT}"/spec/features/*/intent.md; do
 		[ -f "${_intent}" ] || continue
 		_features=$((_features + 1))
-		sed -n 's/^> *Status: *//p' "${_intent}" | head -1 | grep -qi '^draft' &&
-			_drafts=$((_drafts + 1))
+		_fstatus="$(sed -n 's/^> *Status: *//p' "${_intent}" | head -1)"
+		printf '%s' "${_fstatus}" | grep -qi '^draft' && _drafts=$((_drafts + 1))
+		[ "${ITEMS}" -eq 1 ] && printf 'F\t%s\t%s\n' "$(basename "$(dirname "${_intent}")")" \
+			"$(printf '%s' "${_fstatus:-unknown}" | awk '{ print tolower($1) }')"
 	done
 	_questions=0
 	for _qf in "${ROOT}"/spec/vision.md "${ROOT}"/spec/features/*/intent.md; do
 		[ -f "${_qf}" ] || continue
-		_n="$(steer_questions_parse "${_qf}" |
-			awk -F '\t' '$1 == "Q" && ($4 == "open" || $4 == "investigating")' | grep -c '' || :)"
-		_questions=$((_questions + _n))
+		_scope=vision
+		case "${_qf}" in */intent.md) _scope="$(basename "$(dirname "${_qf}")")" ;; esac
+		_qrecs="$(steer_questions_parse "${_qf}" |
+			awk -F '\t' -v OFS='\t' -v s="${_scope}" \
+				'$1 == "Q" && ($4 == "open" || $4 == "investigating") { print "Q", s, $2, $4, $5, $6, $10 }')"
+		[ -n "${_qrecs}" ] || continue
+		_questions=$((_questions + $(printf '%s\n' "${_qrecs}" | grep -c '')))
+		[ "${ITEMS}" -eq 1 ] && printf '%s\n' "${_qrecs}"
 	done
 	steer_decisions_dir "${ROOT}"
 	_proposed=0
 	for _adr in "${STEER_DECISIONS_DIR}"/[0-9]*.md; do
 		[ -f "${_adr}" ] || continue
 		sed -n -e 's/^- \*\*Status:\*\* *//p' -e 's/^> *Status: *//p' "${_adr}" | head -1 |
-			grep -qi '^proposed[^|]*$' && _proposed=$((_proposed + 1))
+			grep -qi '^proposed[^|]*$' || continue
+		_proposed=$((_proposed + 1))
+		[ "${ITEMS}" -eq 1 ] && printf 'A\t%s\t%s\n' \
+			"$(basename "${_adr}" | sed 's/^0*\([0-9][0-9]*\).*/\1/')" \
+			"$(sed -n 's/^# *//p' "${_adr}" | head -1 | tr '\t' ' ')"
 	done
 	_claims=0
 	for _wm in "${ROOT}"/spec/.work/*; do
-		[ -e "${_wm}" ] && _claims=$((_claims + 1))
+		[ -e "${_wm}" ] || continue
+		_claims=$((_claims + 1))
+		[ "${ITEMS}" -eq 1 ] || continue
+		# Markers in the wild predate WORK-MARKER.md: `issue:` without the list
+		# dash, `#715`, or no `branch:` at all. Fall back to the title, then the
+		# file name, so no claim draws as an empty row.
+		_wissue="$(sed -n 's/^\(- \)\{0,1\}issue: *#*\([0-9][0-9]*\).*/\2/p' "${_wm}" | head -1)"
+		_wname="$(basename "${_wm}" .md)"
+		[ -n "${_wissue}" ] ||
+			_wissue="$(printf '%s' "${_wname}" | sed -n 's/^[a-z]*_\([0-9][0-9]*\)-.*/\1/p')"
+		_wlabel="$(sed -n -e 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)"
+		[ -n "${_wlabel}" ] || _wlabel="$(sed -n 's/^\(- \)\{0,1\}title: *//p' "${_wm}" | head -1)"
+		printf 'C\t%s\t%s\n' "${_wissue}" "$(printf '%s' "${_wlabel:-${_wname}}" | tr '\t' ' ')"
 	done
+	[ "${ITEMS}" -eq 1 ] && exit 0
 	_faults="$(grep -c '' "$(steer_faults_file "${ROOT}")" 2>/dev/null || :)"
 	printf 'delivery=%s\n' "$(steer_delivery_mode "${ROOT}")"
 	printf 'spine=%s\n' "$(steer_spine_state "${ROOT}")"

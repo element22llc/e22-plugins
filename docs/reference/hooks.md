@@ -169,13 +169,15 @@ teardown hook and sweeps the stacks it already orphaned.
 
 `hooks.json` also names one hooks module under `modules`: a Claude Code
 [mod](https://code.claude.com/docs/en/plugins/mods/overview), the only hook code
-here that is not `sh`. It is read-only and enforces nothing; every gate above
-stays a shell hook, because a mod does not run everywhere they do.
+here that is not `sh`. It writes nothing and enforces nothing - a press only
+fills the prompt, never submits it - and every gate above stays a shell hook,
+because a mod does not run everywhere they do.
 
 | Hook | Role |
 | --- | --- |
 | `session.start`, `turn.complete`, `classic.CwdChanged` | Runs `scripts/workspace-snapshot.sh --brief` in the session's directory (the new one after a change) and keeps one summary line: delivery mode, feature and draft counts, open questions, Proposed ADRs, work claims, unfiled steer faults - steer state only, nothing the status line already shows (branch, cwd, model, context). Empty where the spine is `unmanaged` or `foreign`. |
-| `ui.render` on `AbovePrompt` | Draws that line, dim, above the prompt. Steps aside while a survey shows. |
+| `ui.render` on `AbovePrompt` | Draws that line, dim, above the prompt, each count a button that opens the pane on that section; the fault count fills `/steer:report`. Steps aside while a survey shows. |
+| `ui.render` on the `steer` `Pane` | Runs `workspace-snapshot.sh --items` while open and lists the items behind each count: features and status, open questions blocking-first, Proposed ADRs, claimed issues and branches. Each row's button fills the prompt with the owning command (`/steer:spec <feature>`, `/steer:spec adr accept <n>`, `/steer:work resume #<n>`, `/steer:spec questions [bundle]`, `/steer:status feature <id>`) and closes the pane. |
 | `command.run` on `steer_snapshot` | `/steer_snapshot` prints the full workspace snapshot at once, with no Claude turn, even mid-turn. |
 
 Where it runs: the band draws in the terminal and the Desktop Code tab, on
