@@ -1,0 +1,19 @@
+kind: Added
+time: 2026-10-06T13:00:00.000000000-04:00
+custom:
+  Slug: batch-pr-review
+body: |-
+  - **Added: `/steer:work review` clears a PR review queue in one batch.** The
+    review-queue cap stops new work at `review_queue_limit`, but draining the
+    queue was still one PR at a time. `review` collects every PR awaiting your
+    review in one call, sends draft, red and conflicting ones straight to
+    *Blocked*, reviews the rest in parallel - one read-only subagent per PR,
+    each returning a short card - and buckets them as *Ready*, *Changes*,
+    *Look* or *Blocked*. You name the *Ready* PRs to approve and the approvals
+    post in a single command, skipping any PR pushed to since its card was
+    built. High-risk and drift-flagged PRs are never batch-approved, nothing is
+    pre-selected, an unattended loop approves nothing, and it never merges.
+    `review --mine` works the author's side of the same queue: it marks
+    finished drafts ready, routes red ones to `resume`, retargets an
+    independent stacked PR onto the default branch, and asks who should review
+    an unassigned one. `start` offers it when the queue is full.
