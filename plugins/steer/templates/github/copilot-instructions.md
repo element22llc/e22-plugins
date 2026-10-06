@@ -511,7 +511,7 @@ pr-flow rather than defining it; `/steer:setup protect` moves a repo between the
   one waits on everything below it. Stack only on a PR whose unmerged code you
   need, keep it to a few layers, and say why in the PR. **Don't outrun review**:
   at `review_queue_limit` of your PRs open (`policy/delivery.yml`, default 10),
-  start nothing new - point the dev at the queue.
+  start nothing new - point the dev at the queue (`/steer:work review`).
 - **Solo trunk mode (declared, pre-MVP).** Commit **directly to `main` and push
   without asking**. CI still runs; the spine, tests and Definition of Done are
   **unchanged**, and the issue is still closed from the trunk commit where

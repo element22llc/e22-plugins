@@ -13,7 +13,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   (`gh pr list --author @me --state open --json number --jq length`); at or
   above `review_queue_limit` in `policy/delivery.yml` (absent -> 10, `0` -> no
   check), stop before claiming, list the oldest unreviewed PRs, and say new work
-  waits for review - a new issue is not a reason to raise the limit;
+  waits for review - a new issue is not a reason to raise the limit; offer
+  `/steer-work review --mine` to make each one reviewable;
   **claim** it (`claim` - self-assign the invoking GitHub user + set
   `steer:claimed-by` - then `update-state` -> `in-progress`);
   **(pr-flow)** create or reuse the branch - a new one **from the freshly
