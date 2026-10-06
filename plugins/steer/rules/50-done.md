@@ -40,7 +40,7 @@ behavior change · security-sensitive · compliance-impacting · operational
 (deploy/CI/infra) · local setup or deployment changed · app docs invalidated ·
 architecture/stack drift (`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer resolves it - you may not waive your own flag. The advisory
-`spec-drift` CI job warns when behavior changes without its `contract.md`; a
+`spec-drift` CI check warns when behavior changes without its `contract.md`; a
 warning is a prompt, not a substitute for the flag. Sweeps: `/steer:audit`.
 
 The workflow is **aligned with** SOC 2 / ISO 27001 delivery expectations - say

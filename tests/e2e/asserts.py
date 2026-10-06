@@ -90,7 +90,7 @@ def assert_branch_protection_policy(repo: Path) -> None:
 
 
 def assert_drift_gate(repo: Path) -> None:
-    """capability ``drift-gate``: CI hygiene job + advisory spec-drift job + PR template."""
+    """capability ``drift-gate``: CI hygiene job + advisory spec-drift check + PR template."""
     assert_contains(repo, ".github/workflows/ci.yml", "scan-version-pins.sh")
     # Advisory spec-drift gate shipped to product repos (#243).
     assert_contains(repo, ".github/workflows/ci.yml", "spec-drift")
