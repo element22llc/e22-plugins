@@ -56,9 +56,9 @@ describe('bandText', () => {
     expect(bandText(parseBrief('spine=managed\nfeatures=3\ndrafts=2'))).toBe('steer - 3 features (2 drafts)')
   })
 
-  test('names an abnormal spine and routes faults to /steer:report', async () => {
+  test('names an abnormal spine and routes faults to a report ask', async () => {
     expect(bandText(parseBrief('spine=damaged\ndelivery=solo-trunk\nfaults=2'))).toBe(
-      'steer - solo-trunk - spine: damaged - 2 steer faults -> /steer:report',
+      'steer - solo-trunk - spine: damaged - 2 steer faults -> report them',
     )
   })
 })

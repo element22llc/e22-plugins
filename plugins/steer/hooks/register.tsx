@@ -69,8 +69,9 @@ export function bandParts(b: Brief): BandPart[] | null {
     part(count(b.questions, 'open question', 'open questions'), { section: 'questions' }),
     part(count(b.proposed_adrs, 'ADR to ratify', 'ADRs to ratify'), { section: 'adrs' }),
     part(count(b.claims, 'work claim', 'work claims'), { section: 'claims' }),
-    part(count(b.faults, 'steer fault -> /steer:report', 'steer faults -> /steer:report'), {
-      command: '/steer:report',
+    // report is model-only (user-invocable: false), so the fill is an ask Claude routes, not a slash command.
+    part(count(b.faults, 'steer fault -> report it', 'steer faults -> report them'), {
+      command: 'Report the unfiled steer fault upstream.',
     }),
   ]
   return parts.filter((p): p is BandPart => p !== null)

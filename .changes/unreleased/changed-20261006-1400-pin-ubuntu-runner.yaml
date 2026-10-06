@@ -1,5 +1,0 @@
-kind: Changed
-body: '- **Changed: the bundled GitHub workflows run on `ubuntu-26.04` instead of `ubuntu-latest`.** GitHub moves `ubuntu-latest` to Ubuntu 26.04 between October 19 and November 19, 2026 and warns on every run until then. Naming the image explicitly silences the warning and means the next image change is a reviewed template bump, not a shift under running CI. Applies to `ci.yml`, `claude.yml`, `copilot-setup-steps.yml`, `dependabot-auto-merge.yml` and `steer-loop.yml`. actionlint does not know the new label yet, so the scaffold also ships `.github/actionlint.yaml` declaring it. `/steer:setup sync` carries existing repos over through a migration entry. A repo that depends on Ubuntu 24.04-specific packages can pin `ubuntu-24.04` instead.'
-time: 2026-10-06T14:00:00.000000-04:00
-custom:
-    Slug: pin-ubuntu-runner
