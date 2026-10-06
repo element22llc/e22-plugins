@@ -2947,7 +2947,7 @@ assert_empty "trunk-push: no repo silent" "${out}"
 
 # --- stacked-PR gate of check-bash-actions.sh (PreToolUse, Bash) ---
 # Asks when a PR targets a work branch; silent on the default branch, a
-# long-lived integration branch, and the promotion PR (head = default).
+# long-lived integration branch (release/*, batch/*), and the promotion PR.
 SP="$(new_repo sp_repo)"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp1 'gh pr create --base issue/910-x --title t --body b')")"
 assert_ask "stacked-pr: --base work branch asks" "${out}"
@@ -2970,6 +2970,8 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp8 'gh pr create --b
 assert_empty "stacked-pr: promotion PR silent" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp9 'gh pr create --base release/2.0 --fill')")"
 assert_empty "stacked-pr: release branch silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp9b 'gh pr create --base batch/oct-fixes --fill')")"
+assert_empty "stacked-pr: batch integration branch silent" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp10 'gh pr edit 12 --add-label bug')")"
 assert_empty "stacked-pr: edit without --base silent" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp11 'gh pr list --base feat/a')")"

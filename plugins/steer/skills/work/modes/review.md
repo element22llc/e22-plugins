@@ -16,9 +16,8 @@ Two queues, chosen by argument:
 
 - **`review [#PR ...]`** (default) - PRs awaiting **your** review:
   `review-requested:@me`, or the PR numbers given. You can approve these.
-- **`review --mine`** - **your own** open PRs, the queue `start` stops at when
-  `review_queue_limit` is reached. GitHub blocks an author's approval, so this
-  queue gets readiness work only (Step 5), never Step 4.
+- **`review --mine`** - **your own** open PRs. GitHub blocks an author's
+  approval, so this queue gets readiness work only (Step 5), never Step 4.
 
 ## Step 1 - collect the queue in one call
 
@@ -40,7 +39,8 @@ Compute per PR, from Step 1's JSON alone:
 - **Mergeable** - `CONFLICTING` is a blocker for the author, not a review
   finding.
 - **Stacked** - `baseRefName` is another work branch (rule 45). Order a stack
-  bottom-up; a PR can merge only after the one below it.
+  bottom-up; a PR can merge only after the one below it. A `batch/*` base is
+  not a stack: its PRs are siblings and merge in any order.
 - **Risk class** - High-risk when any path touches a rule `60-high-risk` area
   (auth, permissions, migrations, `/infra`, secrets, deletion, billing,
   CI/deploy workflows); otherwise leave the class to Step 3.

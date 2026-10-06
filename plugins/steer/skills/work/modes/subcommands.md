@@ -9,12 +9,6 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
 
 - **`start #N`** - resolve + validate the issue (actionable? readiness met for
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
-  **(pr-flow) check the review queue** - count your open PRs
-  (`gh pr list --author @me --state open --json number --jq length`); at or
-  above `review_queue_limit` in `policy/delivery.yml` (absent -> 10, `0` -> no
-  check), stop before claiming, list the oldest unreviewed PRs, and say new work
-  waits for review - a new issue is not a reason to raise the limit; offer
-  `/steer:work review --mine` to make each one reviewable;
   **claim** it (`claim` - self-assign the invoking GitHub user + set
   `steer:claimed-by` - then `update-state` -> `in-progress`);
   **(pr-flow)** create or reuse the branch - a new one **from the freshly
@@ -23,7 +17,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   out: a branch cut from another work branch silently stacks on it. Base it on
   another work branch only when this issue needs that PR's unmerged code; then
   open the PR with `--base <that branch>` and name the dependency in its
-  description - and **write the local work marker**
+  description. When the dev batches fixes into one merge, branch from the
+  default branch as usual and open the PR with `--base batch/<slug>` - a
+  sibling, not a stack - and **write the local work marker**
   `spec/.work/<branch>.md` (slashes -> underscores) in the format `WORK-MARKER.md`
   defines (§ Marker format), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as

@@ -37,9 +37,7 @@ while the subcommands below read an issue and deliver it.
 ```mermaid
 flowchart TD
     START["/steer:work start #123"] --> VALIDATE[Read + validate the issue]
-    VALIDATE --> QUEUE{Your open PRs below<br/>review_queue_limit?}
-    QUEUE -->|no| WAIT[Stop - list PRs awaiting review]
-    QUEUE -->|yes| CLAIM[Claim it · self-assign · set in-progress]
+    VALIDATE --> CLAIM[Claim it · self-assign · set in-progress]
     CLAIM --> BRANCH[Create or reuse issue/* branch<br/>from the default branch + work marker]
     BRANCH --> SPEC[Load linked /spec]
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
@@ -79,7 +77,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 
 | Mode | What it does |
 | --- | --- |
-| `start` | Validate, check the review queue (pr-flow: at `review_queue_limit` of your open PRs - `policy/delivery.yml`, default 10 - it stops and lists them instead), claim (self-assigns the invoking GitHub user), branch from the freshly fetched default branch - never the checked-out work branch; stacking on another PR only when the issue needs its unmerged code - + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
+| `start` | Validate, claim (self-assigns the invoking GitHub user), branch from the freshly fetched default branch - never the checked-out work branch; stacking on another PR only when the issue needs its unmerged code, and targeting a `batch/*` branch when the dev lands many fixes as one merge - + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
 | `finish` | Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). |
@@ -87,8 +85,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 
 ## Batch review - `/steer:work review`
 
-The queue cap in `start` stops new work; `review` is how the queue drains.
-It reads every PR awaiting your review (`review-requested:@me`, or the numbers
+`review` drains a review queue in one pass. It reads every PR awaiting your review (`review-requested:@me`, or the numbers
 given) and does the reviewer's legwork in parallel:
 
 1. **Triage from metadata** in one `gh pr list` call - draft, red CI and

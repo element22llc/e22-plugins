@@ -14,8 +14,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   / push to `main` or any protected branch / real secrets. Loop-opened PRs are
   **drafts by convention** - the deliberate signal that nobody attended the
   run; a reviewer flips one to ready. A loop **never stacks** a draft on
-  another work branch, and opens none while the review queue is full
-  (`review_queue_limit`) - it reports the queue instead.
+  another work branch.
 - **A loop presupposes PR flow.** Protect `main` first (`/steer:setup protect`);
   never point a loop at a solo-trunk repo - unattended direct-to-`main`
   delivery has no gate at all.

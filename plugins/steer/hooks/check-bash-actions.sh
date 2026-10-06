@@ -79,7 +79,8 @@
 #   session-once sibling gates: each stacked PR is its own dependency claim.
 #   Not stacked, so silent: a base that is the default branch (origin/HEAD,
 #   else `main`), a long-lived integration or environment branch (prod,
-#   production, staging, develop, release/*), and a `--head` that is the
+#   production, staging, develop, release/*, batch/* - the sibling-PR way to
+#   land many fixes as one merge), and a `--head` that is the
 #   default branch (the /steer:work promote PR into prod). Silent outside a git
 #   work tree - fail-open.
 #
@@ -184,7 +185,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			_base="$(_flag '--base|-B')"
 			_head="$(_flag '--head|-H')"
 			case "${_base}" in
-			"" | "${DEFAULT}" | prod | production | staging | develop | release/* | releases/*) ;;
+			"" | "${DEFAULT}" | prod | production | staging | develop | release/* | releases/* | batch/*) ;;
 			*) [ "${_head}" = "${DEFAULT}" ] || STACK_BASE="${_base}" ;;
 			esac
 		fi
@@ -194,7 +195,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			else
 				WHAT="this PR targets ${STACK_BASE}, not ${DEFAULT}"
 			fi
-			REASON="$(steer_json_safe "Stacked-PR gate (rule 45): ${WHAT}. A stacked PR cannot merge until every PR below it is approved and merged, so an independent change riding a stack waits on all of them - and a long stack becomes a review queue nobody can clear. Stack only when this change needs that branch's unmerged code, and say so in the PR description. Otherwise rebase onto ${DEFAULT} (git rebase --onto origin/${DEFAULT} <old-base>) and open the PR against ${DEFAULT}. Approving this prompt opens the stacked PR anyway.")"
+			REASON="$(steer_json_safe "Stacked-PR gate (rule 45): ${WHAT}. A stacked PR cannot merge until every PR below it is approved and merged, so an independent change riding a stack waits on all of them - and a long stack becomes a review queue nobody can clear. Stack only when this change needs that branch's unmerged code, and say so in the PR description. Otherwise rebase onto ${DEFAULT} (git rebase --onto origin/${DEFAULT} <old-base>) and open the PR against ${DEFAULT} - or, to land many fixes as one merge, against a batch/<slug> integration branch cut from ${DEFAULT}. Approving this prompt opens the stacked PR anyway.")"
 			printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"
 			exit 0
 		fi
