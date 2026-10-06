@@ -18,11 +18,11 @@ export type Items = {
 
 const QUIET_SPINES = new Set(['unmanaged', 'foreign'])
 const PANE = 'steer'
-const SECTIONS: { section: Section; label: string; hotkey: string }[] = [
-  { section: 'features', label: 'Features', hotkey: 'f' },
-  { section: 'questions', label: 'Open questions', hotkey: 'q' },
-  { section: 'adrs', label: 'ADRs to ratify', hotkey: 'a' },
-  { section: 'claims', label: 'Work claims', hotkey: 'c' },
+const SECTIONS: { section: Section; label: string }[] = [
+  { section: 'features', label: 'Features' },
+  { section: 'questions', label: 'Open questions' },
+  { section: 'adrs', label: 'ADRs to ratify' },
+  { section: 'claims', label: 'Work claims' },
 ]
 
 export function parseBrief(stdout: string): Brief {
@@ -201,7 +201,6 @@ export const register: Register = on => {
                 label={p.text}
                 plain
                 dimColor
-                hotkey={SECTIONS.find(s => s.section === section)?.hotkey}
                 onPress={() => show($, section)}
               />,
             ]
@@ -270,7 +269,6 @@ export const register: Register = on => {
             <Button
               key={`tab-${s.section}`}
               label={sizes ? `${s.label} ${sizes[s.section]}` : s.label}
-              hotkey={s.hotkey}
               variant={s.section === shown ? 'primary' : 'secondary'}
               onPress={() => {
                 shown = s.section

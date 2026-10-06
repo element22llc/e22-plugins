@@ -96,9 +96,17 @@ if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 	for _wm in "${ROOT}"/spec/.work/*; do
 		[ -e "${_wm}" ] || continue
 		_claims=$((_claims + 1))
-		[ "${ITEMS}" -eq 1 ] && printf 'C\t%s\t%s\n' \
-			"$(sed -n 's/^- issue: *//p' "${_wm}" | head -1)" \
-			"$(sed -n 's/^- branch: *//p' "${_wm}" | head -1)"
+		[ "${ITEMS}" -eq 1 ] || continue
+		# Markers in the wild predate WORK-MARKER.md: `issue:` without the list
+		# dash, `#715`, or no `branch:` at all. Fall back to the title, then the
+		# file name, so no claim draws as an empty row.
+		_wissue="$(sed -n 's/^\(- \)\{0,1\}issue: *#*\([0-9][0-9]*\).*/\2/p' "${_wm}" | head -1)"
+		_wname="$(basename "${_wm}" .md)"
+		[ -n "${_wissue}" ] ||
+			_wissue="$(printf '%s' "${_wname}" | sed -n 's/^[a-z]*_\([0-9][0-9]*\)-.*/\1/p')"
+		_wlabel="$(sed -n -e 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)"
+		[ -n "${_wlabel}" ] || _wlabel="$(sed -n 's/^\(- \)\{0,1\}title: *//p' "${_wm}" | head -1)"
+		printf 'C\t%s\t%s\n' "${_wissue}" "$(printf '%s' "${_wlabel:-${_wname}}" | tr '\t' ' ')"
 	done
 	[ "${ITEMS}" -eq 1 ] && exit 0
 	_faults="$(grep -c '' "$(steer_faults_file "${ROOT}")" 2>/dev/null || :)"

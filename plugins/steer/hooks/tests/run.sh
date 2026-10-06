@@ -3109,6 +3109,15 @@ assert_has "snapshot --items: claim record" "${out}" "^C${_tab}42${_tab}issue/42
 printf '%s' "${out}" | grep -q 'Q-999' && bad "snapshot --items: placeholder question must be excluded" || ok
 printf '%s' "${out}" | grep -q "^A${_tab}[23]${_tab}" && bad "snapshot --items: only Proposed ADRs listed" || ok
 printf '%s' "${out}" | grep -q '=' && bad "snapshot --items: must not print the brief counts" || ok
+# Legacy marker shapes: no list dash, a `#` ref, no branch line (title, then file name).
+printf 'issue: #715\nbranch: issue/715-bot\n' >"${WS1}/spec/.work/issue_715-bot.md"
+printf 'issue: 29\ntitle: docs: fold PR 6\n' >"${WS1}/spec/.work/issue_29-fold"
+printf -- '- session\n' >"${WS1}/spec/.work/issue_31-bare.md"
+run_sh "${SNAP}" --items "${WS1}"
+assert_has "snapshot --items: undashed #ref claim" "${out}" "^C${_tab}715${_tab}issue/715-bot$"
+assert_has "snapshot --items: claim without branch shows its title" "${out}" "^C${_tab}29${_tab}docs: fold PR 6$"
+assert_has "snapshot --items: bare claim falls back to its file name" "${out}" "^C${_tab}31${_tab}issue_31-bare$"
+rm -f "${WS1}/spec/.work/issue_715-bot.md" "${WS1}/spec/.work/issue_29-fold" "${WS1}/spec/.work/issue_31-bare.md"
 
 # (b) empty unmanaged repo: dimensions print explicit "none", never silence.
 WS2="$(new_repo wsEmpty)"
