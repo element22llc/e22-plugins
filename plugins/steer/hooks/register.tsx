@@ -30,7 +30,7 @@ export function bandText(b: Brief): string | null {
     b.delivery,
     b.branch,
     b.spine === 'managed' ? null : `spine: ${b.spine}`,
-    features && drafts > 0 ? `${features} (${drafts} draft)` : features,
+    features && drafts > 0 ? `${features} (${count(b.drafts, 'draft', 'drafts')})` : features,
     count(b.questions, 'open question', 'open questions'),
     count(b.proposed_adrs, 'ADR to ratify', 'ADRs to ratify'),
     count(b.claims, 'work claim', 'work claims'),
@@ -39,8 +39,11 @@ export function bandText(b: Brief): string | null {
   return parts.filter(Boolean).join(' - ')
 }
 
-function snapshot($: EngineInterface, args: string[]) {
+// cwd: the directory the script resolves its repo root from; absent, the
+// session's working directory.
+function snapshot($: EngineInterface, args: string[], cwd?: string) {
   return $.process.run(['sh', `${$.plugin.root}/scripts/workspace-snapshot.sh`, ...args], {
+    cwd,
     env: { CLAUDE_PLUGIN_ROOT: $.plugin.root },
     timeoutMs: 10_000,
   })
@@ -48,9 +51,16 @@ function snapshot($: EngineInterface, args: string[]) {
 
 let line: string | null = null
 
-async function refresh($: EngineInterface) {
-  const run = await snapshot($, ['--brief'])
-  const fresh = run.exitCode === 0 ? bandText(parseBrief(run.stdout)) : null
+// A snapshot that fails or cannot start hides the band; it never rejects, so
+// the fire-and-forget callers below leave no unhandled rejection.
+async function refresh($: EngineInterface, cwd?: string) {
+  let fresh: string | null = null
+  try {
+    const run = await snapshot($, ['--brief'], cwd)
+    fresh = run.exitCode === 0 ? bandText(parseBrief(run.stdout)) : null
+  } catch {
+    fresh = null
+  }
   if (fresh !== line) {
     line = fresh
     $.ui.invalidate('ui.render')
@@ -59,7 +69,7 @@ async function refresh($: EngineInterface) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    void refresh($)
+    void refresh($, e.cwd)
     await $.command.register({
       name: 'steer-snapshot',
       description: 'Print the steer workspace snapshot now, without a Claude turn',
@@ -73,9 +83,21 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // /cd or a worktree move: re-read the new directory's repo now, not at the
+  // end of the next turn. CwdChanged also runs steer's shell hook, so a
+  // failure here passes the event on untouched.
+  on('classic.CwdChanged', async ($, e, next) => {
+    void refresh($, e.new_cwd)
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   on('command.run', { command: 'steer-snapshot' }, async $ => {
-    const run = await snapshot($, [])
-    return { text: run.exitCode === 0 ? run.stdout : `steer snapshot failed: ${run.stderr}` }
+    try {
+      const run = await snapshot($, [])
+      return { text: run.exitCode === 0 ? run.stdout : `steer snapshot failed: ${run.stderr}` }
+    } catch (err) {
+      return { text: `steer snapshot failed: ${err instanceof Error ? err.message : String(err)}` }
+    }
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {

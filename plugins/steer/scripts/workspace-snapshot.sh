@@ -23,7 +23,7 @@
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" [--brief] [repo-root]
 #   (defaults to resolving the work-tree root from the current directory)
 #   --brief prints counts only, one `key=value` per line, for the status band
-#   in hooks/register.ts - a machine format, so keep its keys stable.
+#   in hooks/register.tsx - a machine format, so keep its keys stable.
 #
 # CONSTRAINTS (per repo CLAUDE.md): POSIX sh, no jq.
 

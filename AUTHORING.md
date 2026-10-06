@@ -410,7 +410,10 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   still run. Data it shows comes from an `sh` script, never from logic in the
   module. Keep it to read-only `$` calls, run `claude plugin validate
   plugins/steer` (it lists what the module hooks and calls), and cover changes in
-  `register.test.tsx` (`mise run modtests`).
+  `hooks/tests/register.test.tsx` (`mise run modtests`). For editor types and
+  `tsc -p plugins/steer`, load the plugin once with `claude --plugin-dir
+  plugins/steer`: Claude Code writes the declarations `tsconfig.json` extends
+  into `.claude-plugin/types/` (git-ignored).
 
 ## CHANGELOG & versioning
 

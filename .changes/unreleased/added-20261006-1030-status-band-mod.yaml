@@ -5,8 +5,8 @@ body: |-
     managed repo now shows one dim line above the prompt: delivery mode, branch,
     feature and draft counts, open questions, ADRs awaiting ratification, work
     claims, and unfiled steer faults (pointing at `/steer:report`). It refreshes
-    at session start and after each turn, and stays hidden in a repo with no
-    spec spine. `/steer-snapshot` prints the full workspace snapshot at once,
+    at session start, after each turn and when the working directory changes,
+    and stays hidden in a repo with no spec spine. `/steer-snapshot` prints the full workspace snapshot at once,
     with no Claude turn, even while Claude is working. Both are a read-only mod
     (`hooks/register.tsx`) over `scripts/workspace-snapshot.sh`, whose new
     `--brief` mode prints the band's counts. They enforce nothing: every gate
