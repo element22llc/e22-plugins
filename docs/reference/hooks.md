@@ -174,7 +174,7 @@ stays a shell hook, because a mod does not run everywhere they do.
 
 | Hook | Role |
 | --- | --- |
-| `session.start`, `turn.complete`, `classic.CwdChanged` | Runs `scripts/workspace-snapshot.sh --brief` in the session's directory (the new one after a change) and keeps one summary line: delivery mode, branch, feature and draft counts, open questions, Proposed ADRs, work claims, unfiled steer faults. Empty where the spine is `unmanaged` or `foreign`. |
+| `session.start`, `turn.complete`, `classic.CwdChanged` | Runs `scripts/workspace-snapshot.sh --brief` in the session's directory (the new one after a change) and keeps one summary line: delivery mode, feature and draft counts, open questions, Proposed ADRs, work claims, unfiled steer faults - steer state only, nothing the status line already shows (branch, cwd, model, context). Empty where the spine is `unmanaged` or `foreign`. |
 | `ui.render` on `AbovePrompt` | Draws that line, dim, above the prompt. Steps aside while a survey shows. |
 | `command.run` on `steer_snapshot` | `/steer_snapshot` prints the full workspace snapshot at once, with no Claude turn, even mid-turn. |
 

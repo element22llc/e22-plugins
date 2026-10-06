@@ -23,7 +23,8 @@
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" [--brief] [repo-root]
 #   (defaults to resolving the work-tree root from the current directory)
 #   --brief prints counts only, one `key=value` per line, for the status band
-#   in hooks/register.tsx - a machine format, so keep its keys stable.
+#   in hooks/register.tsx - a machine format, so keep its keys stable. It
+#   carries no branch: Claude Code's status line already shows it.
 #
 # CONSTRAINTS (per repo CLAUDE.md): POSIX sh, no jq.
 
@@ -51,7 +52,6 @@ fi
 }
 
 if [ "${BRIEF}" -eq 1 ]; then
-	_branch="$(git -C "${ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'none')"
 	_features=0
 	_drafts=0
 	for _intent in "${ROOT}"/spec/features/*/intent.md; do
@@ -79,7 +79,6 @@ if [ "${BRIEF}" -eq 1 ]; then
 		[ -e "${_wm}" ] && _claims=$((_claims + 1))
 	done
 	_faults="$(grep -c '' "$(steer_faults_file "${ROOT}")" 2>/dev/null || :)"
-	printf 'branch=%s\n' "${_branch}"
 	printf 'delivery=%s\n' "$(steer_delivery_mode "${ROOT}")"
 	printf 'spine=%s\n' "$(steer_spine_state "${ROOT}")"
 	printf 'features=%s\n' "${_features}"

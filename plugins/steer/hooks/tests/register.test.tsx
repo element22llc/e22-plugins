@@ -13,7 +13,6 @@ const ABOVE_PROMPT = {
 } as const
 
 const MANAGED = [
-  'branch=issue/42-checkout',
   'delivery=pr-flow',
   'spine=managed',
   'features=2',
@@ -27,8 +26,12 @@ const MANAGED = [
 describe('bandText', () => {
   test('summarises a managed repo, leaving zero counts out', async () => {
     expect(bandText(parseBrief(MANAGED))).toBe(
-      'steer - pr-flow - issue/42-checkout - 2 features (1 draft) - 3 open questions - 1 ADR to ratify',
+      'steer - pr-flow - 2 features (1 draft) - 3 open questions - 1 ADR to ratify',
     )
+  })
+
+  test('leaves out what the status line already shows', async () => {
+    expect(bandText(parseBrief(`${MANAGED}\nbranch=issue/42-checkout\ncwd=/repo`))).not.toContain('issue/42')
   })
 
   test('stays quiet where steer does not manage the repo', async () => {

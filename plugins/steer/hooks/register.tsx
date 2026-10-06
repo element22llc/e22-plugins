@@ -1,6 +1,8 @@
 // steer mod - read-only status band above the prompt + /steer_snapshot. Every
 // count comes from scripts/workspace-snapshot.sh; this module only draws. It
 // enforces nothing: gates stay in the sh hooks, which run where mods do not.
+// The band shows only steer state - nothing the status line or prompt hint
+// already carries (cwd, branch, model, context, PR).
 import type { EngineInterface, Register } from 'claude-code'
 
 export type Brief = Record<string, string>
@@ -28,7 +30,6 @@ export function bandText(b: Brief): string | null {
   const parts = [
     'steer',
     b.delivery,
-    b.branch,
     b.spine === 'managed' ? null : `spine: ${b.spine}`,
     features && drafts > 0 ? `${features} (${count(b.drafts, 'draft', 'drafts')})` : features,
     count(b.questions, 'open question', 'open questions'),
