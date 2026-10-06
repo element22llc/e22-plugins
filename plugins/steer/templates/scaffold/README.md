@@ -210,8 +210,8 @@ auto-merge could land it. Security updates ignore the cooldown and arrive at onc
 
 This waives only the human *review*, never the tests: the workflow approves the
 bump and arms GitHub's native **auto-merge**, so it lands only once branch
-protection's **required** checks pass - a required check that fails or is skipped
-blocks it. Each check in the workflow's `GATING_CHECKS` list (`ci` by default -
+protection's **required** checks pass - a required check that fails blocks it
+(GitHub counts a *skipped* job as passing, so keep `ci` unconditional). Each check in the workflow's `GATING_CHECKS` list (`ci` by default -
 add your e2e or integration jobs, and require them in
 [`policy/branch-protection.yml`](policy/branch-protection.yml)) must be required,
 or the workflow refuses to arm the merge. Nothing waits on a billed runner. A bump

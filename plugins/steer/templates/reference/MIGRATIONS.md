@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `dependabot-auto-merge.yml` arms native auto-merge instead of polling
+### v7.3.0 - `dependabot-auto-merge.yml` arms native auto-merge instead of polling
 
 - **What & why:** the merge step looped `gh pr checks` + `sleep 30` on a hosted
   runner for up to 60 minutes, so every Dependabot PR paid for CI's whole
@@ -121,7 +121,7 @@ Name the file and say what to carry forward.
   "Allow auto-merge" and requires those checks, the step fails instead of merging.
   **No history entry is earned.**
 
-### [Unreleased] - `ci.yml`'s advisory checks share one `advisory` job
+### v7.3.0 - `ci.yml`'s advisory checks share one `advisory` job
 
 - **What & why:** `design-lint`, `spec-drift` and `ai-slop` each ran as their own
   job on their own runner. GitHub bills every job rounded **up** to a whole minute,

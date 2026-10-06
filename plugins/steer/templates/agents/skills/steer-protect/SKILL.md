@@ -269,7 +269,7 @@ confirmation.
   say so plainly instead of recommending a plan the org cannot buy into.
 - **Dependabot auto-merge exception.** The policy documents a deliberate carve-out
   to the required human review: Dependabot **patch/minor** PRs (majors excluded)
-  are auto-approved and auto-merged once every check is green - CI, not a human,
+  are auto-approved and auto-merged once the required checks pass - CI, not a human,
   guarantees the bump is safe. protect enables Dependabot alerts + security
   updates and, with the workflow installed, Actions PR approval and
   `allow_auto_merge` (the button on every PR, no PR's protection loosened).
