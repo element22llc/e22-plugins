@@ -43,9 +43,10 @@ flowchart TD
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
     IMPL --> PROGRESS[Update progress on the issue]
     PROGRESS --> FINISH["/steer:work finish #123"]
-    FINISH --> PR[Open PR]
+    FINISH --> GATES[Run local gates until green]
+    GATES --> PR[Open PR]
     PR --> WATCH[Watch CI to conclusion]
-    WATCH -->|red| FIX[Fix · re-push · re-watch]
+    WATCH -->|red| FIX[Reproduce + fix locally · push once · re-watch]
     FIX --> WATCH
     WATCH -->|green| STATE[Transition to validate · hand reviewer a green PR]
 ```
@@ -80,7 +81,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
-| `finish` | Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). |
+| `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. A red build is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). |
 
 ## Learnings - enforcement first
 
