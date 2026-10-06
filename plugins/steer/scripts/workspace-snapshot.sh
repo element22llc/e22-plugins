@@ -20,8 +20,11 @@
 #   /steer:next's rule that silence must never read as "nothing there".
 #
 # USAGE
-#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" [repo-root]
+#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" [--brief] [repo-root]
 #   (defaults to resolving the work-tree root from the current directory)
+#   --brief prints counts only, one `key=value` per line, for the status band
+#   in hooks/register.tsx - a machine format, so keep its keys stable. It
+#   carries no branch: Claude Code's status line already shows it.
 #
 # CONSTRAINTS (per repo CLAUDE.md): POSIX sh, no jq.
 
@@ -31,7 +34,14 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(CDPATH='' cd -- "$(dirname -- "$0")/.." && 
 . "${PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${PLUGIN_ROOT}/hooks/lib/spine.sh"
 . "${PLUGIN_ROOT}/hooks/lib/scope.sh"
+. "${PLUGIN_ROOT}/hooks/lib/questions.sh"
+. "${PLUGIN_ROOT}/hooks/lib/report-fault.sh"
 
+BRIEF=0
+if [ "${1:-}" = "--brief" ]; then
+	BRIEF=1
+	shift
+fi
 ROOT="${1:-}"
 if [ -z "${ROOT}" ]; then
 	ROOT="$(steer_repo_root ".")" || ROOT="."
@@ -40,6 +50,45 @@ fi
 	printf 'workspace-snapshot: not a directory: %s\n' "${ROOT}" >&2
 	exit 1
 }
+
+if [ "${BRIEF}" -eq 1 ]; then
+	_features=0
+	_drafts=0
+	for _intent in "${ROOT}"/spec/features/*/intent.md; do
+		[ -f "${_intent}" ] || continue
+		_features=$((_features + 1))
+		sed -n 's/^> *Status: *//p' "${_intent}" | head -1 | grep -qi '^draft' &&
+			_drafts=$((_drafts + 1))
+	done
+	_questions=0
+	for _qf in "${ROOT}"/spec/vision.md "${ROOT}"/spec/features/*/intent.md; do
+		[ -f "${_qf}" ] || continue
+		_n="$(steer_questions_parse "${_qf}" |
+			awk -F '\t' '$1 == "Q" && ($4 == "open" || $4 == "investigating")' | grep -c '' || :)"
+		_questions=$((_questions + _n))
+	done
+	steer_decisions_dir "${ROOT}"
+	_proposed=0
+	for _adr in "${STEER_DECISIONS_DIR}"/[0-9]*.md; do
+		[ -f "${_adr}" ] || continue
+		sed -n -e 's/^- \*\*Status:\*\* *//p' -e 's/^> *Status: *//p' "${_adr}" | head -1 |
+			grep -qi '^proposed[^|]*$' && _proposed=$((_proposed + 1))
+	done
+	_claims=0
+	for _wm in "${ROOT}"/spec/.work/*; do
+		[ -e "${_wm}" ] && _claims=$((_claims + 1))
+	done
+	_faults="$(grep -c '' "$(steer_faults_file "${ROOT}")" 2>/dev/null || :)"
+	printf 'delivery=%s\n' "$(steer_delivery_mode "${ROOT}")"
+	printf 'spine=%s\n' "$(steer_spine_state "${ROOT}")"
+	printf 'features=%s\n' "${_features}"
+	printf 'drafts=%s\n' "${_drafts}"
+	printf 'questions=%s\n' "${_questions}"
+	printf 'proposed_adrs=%s\n' "${_proposed}"
+	printf 'claims=%s\n' "${_claims}"
+	printf 'faults=%s\n' "${_faults:-0}"
+	exit 0
+fi
 
 printf '## Workspace snapshot (local state only - live PR/CI and tracker state fetched separately)\n\n'
 printf -- '- root: %s\n' "${ROOT}"

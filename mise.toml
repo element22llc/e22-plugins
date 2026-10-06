@@ -22,7 +22,7 @@ lockfile = true
 # so `claude plugin validate` is reproducible and the authoritative result can't
 # drift without a repo change. Bump deliberately after reviewing a new release.
 # A separate, non-blocking CI job runs `latest` for an early compatibility signal.
-STEER_CLAUDE_CODE_VERSION = "2.1.251"
+STEER_CLAUDE_CODE_VERSION = "2.1.291"
 
 # Pin the precompiled CPython flavor for every `mise install` in this env,
 # mirroring the CI workflows (.github/workflows/plugin-quality.yml,
@@ -184,6 +184,10 @@ run = [
 description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = ["sh plugins/steer/hooks/tests/run.sh"]
 
+[tasks.modtests]
+description = "Run the steer mod's *.test.tsx files against the pinned Claude Code engine"
+run = ["claude plugin test plugins/steer"]
+
 [tasks."changelog:new"]
 description = "Record a changelog entry as a fragment (KIND=Fixed SLUG=... BODY=...)"
 run = """
@@ -262,6 +266,7 @@ depends = [
   "fixtures",
   "test",
   "hooktests",
+  "modtests",
   "version-scan",
   "delivery-gates",
 ]
