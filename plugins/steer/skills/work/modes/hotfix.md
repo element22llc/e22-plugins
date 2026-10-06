@@ -49,6 +49,9 @@ What changes versus the normal flow:
 - **Single-reviewer, expedited.** One reviewer approval is sufficient (it relaxes
   the high-risk scoping ceremony of rules 60 and 80) - it does **not**
   remove the PR/merge human gate. No self-merge.
+- **Local gates, no draft.** Run the local gates before the push as `finish`
+  does - a red CI round-trip is slower than a local run - but open the PR ready
+  for review rather than as a draft.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under rule 62 +
   Deployment (validate in non-prod where feasible) - but, exactly as everywhere
   else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening

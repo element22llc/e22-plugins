@@ -1,8 +1,10 @@
 name: Dependabot auto-merge
 
-# The documented exception to the human-review gate: auto-approves and merges Dependabot
-# patch/minor bumps once every check is green; majors stay with a human. Needs the repo
-# setting "Allow GitHub Actions to create and approve pull requests" (/steer:setup protect).
+# The documented exception to the human-review gate: auto-approves Dependabot patch/minor
+# bumps and arms GitHub's native auto-merge, so branch protection's required checks decide
+# the merge and no billed runner waits on them; majors stay with a human. Needs the repo
+# settings "Allow auto-merge" and "Allow GitHub Actions to create and approve pull requests"
+# (/steer:setup protect).
 # Rationale: README.md#branch-protection -> "Dependabot - and the auto-merge exception".
 
 on: pull_request
@@ -19,8 +21,8 @@ permissions:
 jobs:
   dependabot-auto-merge:
     name: dependabot-auto-merge
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
     # `github.actor` is the LAST actor to touch the context, not the one that opened the
     # PR - an attacker can land a HEAD commit that makes it read `dependabot[bot]` while the
     # rest of the branch is theirs. `pull_request.user.login` is the PR's author and cannot be
@@ -33,7 +35,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wait for every check, approve, merge (patch/minor)
+      - name: Approve and arm native auto-merge (patch/minor)
         if: >-
           ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
               steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
@@ -45,49 +47,38 @@ jobs:
           # `run:` block is substituted before the shell sees it, so a value carrying shell
           # metacharacters would execute rather than print.
           UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
-          # Checks that must report `pass`; skipped counts as a failure. Add e2e/integration here.
+          # Checks branch protection must require - they, not this job, gate the merge. Add
+          # e2e/integration here and to policy/branch-protection.yml's `contexts`.
           GATING_CHECKS: ci
         run: |
           head_now() { gh pr view "$PR_URL" --json headRefOid --jq .headRefOid; }
-          # Every check but this job must finish: `--required` alone let a bump merge while a
-          # non-required e2e job was still running, and `gh pr checks` reads skipped as green.
-          while :; do
-            checks="$(gh pr checks "$PR_URL" --json name,bucket \
-              --jq '.[] | select(.name != "dependabot-auto-merge") | "\(.bucket) \(.name)"')" || true
-            if printf '%s\n' "$checks" | grep -E '^(fail|cancel) '; then
-              echo "::error::A check failed or was cancelled - not merging."
-              exit 1
-            fi
-            waiting=0
-            printf '%s\n' "$checks" | grep -q '^pending ' && waiting=1
+          # On a branch that requires nothing, `--auto` merges at once with no check run. A
+          # sibling workflow's checks can register a few seconds after this run starts.
+          for attempt in 1 2 3 4 5 6; do
+            required="$(gh pr checks "$PR_URL" --required --json name --jq '.[].name')" || true
+            missing=""
             for gate in $GATING_CHECKS; do
-              if printf '%s\n' "$checks" | grep -qFx "skipping $gate"; then
-                echo "::error::Gating check '$gate' was skipped - not merging."
-                exit 1
-              fi
-              printf '%s\n' "$checks" | grep -qFx "pass $gate" || waiting=1
+              printf '%s\n' "$required" | grep -qFx "$gate" || missing="$missing $gate"
             done
-            [ "$waiting" -eq 1 ] || break
-            sleep 30
+            [ -n "$missing" ] && [ "$attempt" -lt 6 ] || break
+            sleep 10
           done
-          if [ "$(head_now)" != "$HEAD_SHA" ]; then
-            echo "::notice::The PR head moved; the run for the new head merges it."
-            exit 0
+          if [ -n "$missing" ]; then
+            echo "::error::Not a required check:$missing - auto-merge would not wait for it. Require it on the default branch (policy/branch-protection.yml, /steer:setup protect) - not merging."
+            exit 1
           fi
           gh pr review --approve "$PR_URL" \
-            --body "Auto-approved by steer: ${UPDATE_TYPE} dependency update. CI is the hard gate (see .github/workflows/dependabot-auto-merge.yml)." || {
+            --body "Auto-approved by steer: ${UPDATE_TYPE} dependency update. Branch protection's required checks gate the merge (see .github/workflows/dependabot-auto-merge.yml)." || {
             echo "::error::Approval refused. Enable Settings -> Actions -> General -> \"Allow GitHub Actions to create and approve pull requests\" (/steer:setup protect checks it)."
             exit 1
           }
-          # Direct merge, no repo-wide allow_auto_merge; pinned to the verified head.
-          if ! gh pr merge --squash --delete-branch --match-head-commit "$HEAD_SHA" "$PR_URL"; then
-            # Strict protection refuses an out-of-date branch: update it for a later run. Never on
-            # a moved head - a foreign commit makes Dependabot stop rebasing its own PR.
-            if [ "$(head_now)" = "$HEAD_SHA" ]; then
-              gh pr update-branch "$PR_URL"
-            else
-              echo "::notice::The PR head moved; the run for the new head merges it."
+          if ! gh pr merge --auto --squash --delete-branch --match-head-commit "$HEAD_SHA" "$PR_URL"; then
+            if [ "$(head_now)" != "$HEAD_SHA" ]; then
+              echo "::notice::The PR head moved; the run for the new head arms the merge."
+              exit 0
             fi
+            echo "::error::Auto-merge refused. Enable Settings -> General -> \"Allow auto-merge\" (/steer:setup protect checks it)."
+            exit 1
           fi
 
       - name: Note major update left for human review

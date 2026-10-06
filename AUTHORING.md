@@ -26,7 +26,7 @@ regardless - this matrix is for tight iteration on a single failure.
 | `plugins/steer/skills/**` | `plugin-check` (incl. `check_agent_skills.py`) | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
 | `plugins/steer/rules/**` | `plugin-check` (incl. `check_copilot_instructions.py`) | `uv run python scripts/check_plugin.py` |
 | `rules/**`, `skills/**`, `agents/**`, or `.mcp.json` -> stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_*`, all in `mise run check`) | `mise run gen:copilot` - regenerates the whole non-Claude agent surface (instructions, the `.agents/skills/` tree, agents, `vscode/mcp.json`, manifest versions); commit the regenerated files with the source change |
-| `plugins/steer/hooks/**` | `hooktests` + `shell` | `sh plugins/steer/hooks/tests/run.sh`. There is one hook manifest: `hooks.json`. Hook enforcement is guaranteed on Claude Code only - Copilot Chat in VS Code runs `hooks.json` directly and gets it incidentally, with no parity promise, so a hook needs no Copilot counterpart |
+| `plugins/steer/hooks/**` | `hooktests` + `shell` (+ `modtests` for `register.tsx`) | `sh plugins/steer/hooks/tests/run.sh` (`mise run modtests` for the mod). There is one hook manifest: `hooks.json`. Hook enforcement is guaranteed on Claude Code only - Copilot Chat in VS Code runs `hooks.json` directly and gets it incidentally, with no parity promise, so a hook needs no Copilot counterpart |
 | `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` - regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/templates/reference/MIGRATIONS.md` | `plugin-check` (`check_migrations.py` for entry structure + the `[Unreleased]` deep pass; `check_plugin.py`'s `check_migration_versions` for the version key) | `uv run python scripts/check_migrations.py` |
@@ -403,6 +403,17 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - Add a fixture case to `plugins/steer/hooks/tests/run.sh` for any new behaviour,
   then run `mise run hooktests` (deterministic, no network). `mise run shell`
   (shellcheck hard gate, shfmt advisory) must also pass.
+- **The one non-`sh` exception is the mod, `hooks/register.tsx`** (named under
+  `modules` in `hooks.json`). It only draws and answers commands: it never
+  gates, denies or rewrites, because a mod is skipped on older Claude Code,
+  off-terminal surfaces and under `allowManagedModsOnly`, where the shell hooks
+  still run. Data it shows comes from an `sh` script, never from logic in the
+  module. Keep it to read-only `$` calls, run `claude plugin validate
+  plugins/steer` (it lists what the module hooks and calls), and cover changes in
+  `hooks/tests/register.test.tsx` (`mise run modtests`). For editor types and
+  `tsc -p plugins/steer`, load the plugin once with `claude --plugin-dir
+  plugins/steer`: Claude Code writes the declarations `tsconfig.json` extends
+  into `.claude-plugin/types/` (git-ignored).
 
 ## CHANGELOG & versioning
 

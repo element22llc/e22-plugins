@@ -148,11 +148,11 @@ description** and the flag blocks merge until the reviewer explicitly resolves i
 Periodic sweeps with [`/steer:audit`](../reference/skills.md) catch what slips
 past the per-PR flag.
 
-The shipped CI scaffold also carries an **advisory `spec-drift` job** as a machine
+The shipped CI scaffold also carries an **advisory `spec-drift` check** as a machine
 backstop for the *undocumented behavior change* class: pure shell + git (no stack,
 no Python), it *warns* - never blocks - when a change touches application behavior
 (`apps/`, `packages/`, `src/`, ...) without updating the owning feature
-`contract.md` / `intent.md`. (A dated `spec/history/` entry also clears the job's
+`contract.md` / `intent.md`. (A dated `spec/history/` entry also clears the check's
 filter, and `spec/HISTORY.md` still does so for a repo mid-migration - but
 updating the owning `contract.md` / `intent.md` is the routine path for a behavior
 change, and an ordinary change writes no history entry at all.) It runs on PRs and on push to `main`, so it is

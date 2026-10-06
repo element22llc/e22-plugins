@@ -530,7 +530,9 @@ pr-flow rather than defining it; `/steer:setup protect` moves a repo between the
   **fragment** (`mise run changelog:new`), and `CHANGELOG.md` is generated from
   those, never hand-edited.
 - **After pushing, watch CI to conclusion and fix a red build before the work
-  counts as complete** - don't hand the dev a running or red PR and stop.
+  counts as complete** - don't hand the dev a running or red PR and stop. Get
+  the local gates green before each push: CI confirms, it is not the loop you
+  iterate in.
   (**Merge and deploy stay human-gated in every mode** - never `gh pr merge`,
   never deploy, never push to a protected `prod` branch.)
 
@@ -610,7 +612,7 @@ behavior change · security-sensitive · compliance-impacting · operational
 (deploy/CI/infra) · local setup or deployment changed · app docs invalidated ·
 architecture/stack drift (`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer resolves it - you may not waive your own flag. The advisory
-`spec-drift` CI job warns when behavior changes without its `contract.md`; a
+`spec-drift` CI check warns when behavior changes without its `contract.md`; a
 warning is a prompt, not a substitute for the flag. Sweeps: `/steer:audit`.
 
 The workflow is **aligned with** SOC 2 / ISO 27001 delivery expectations - say

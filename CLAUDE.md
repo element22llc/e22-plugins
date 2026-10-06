@@ -38,6 +38,7 @@ plugins/steer/
 │                                   #   PreToolUse/PostToolUse/Stop gates;
 │                                   #   CwdChanged/SessionEnd/WorktreeRemove lifecycle hooks
 │                                   #   (worktree trust + Docker teardown);
+│                                   #   register.tsx - read-only status-band mod
 ├── policy/                         # org policy data (branch-protection.yml, versions.yml)
 ├── scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} -
 │                                   #   mostly POSIX sh (e.g. template-reconcile.sh - read-only
@@ -151,7 +152,8 @@ capture. Read it before your first PR here. The essentials, condensed:
 - Hook commands in `hooks.json` invoke their scripts via an explicit `sh` prefix,
   so the executable bit doesn't matter (marketplace install does not chmod) -
   keep that prefix when adding hooks. All hook scripts are POSIX `sh`, no `jq`
-  dependency.
+  dependency - except the read-only mod `hooks/register.tsx`, which never gates
+  (`AUTHORING.md` -> "Hook authoring").
 - Never put first-run-only content (placeholder resolution) into `rules/` - it
   would re-fire every session. That lives in the `init` skill.
 
@@ -173,7 +175,7 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   `shell` task's globs covering every `*.sh` that pre-commit's `types: [shell]`
   matches.
 - **Before push / PR - full gate:** `mise run ci` - exactly what CI runs (adds
-  `fixtures`, `test`, `hooktests`, `version-scan`, and `delivery-gates` on top
+  `fixtures`, `test`, `hooktests`, `modtests`, `version-scan`, and `delivery-gates` on top
   of `check`, which already carries `shell` and `docs:check`). `delivery-gates` runs the two PR-only
   branch-diff checks (`check_changelog.py --base` and `check_docs_impact.py
   --base`) against `origin/main`, so a missing fragment or docs update is caught

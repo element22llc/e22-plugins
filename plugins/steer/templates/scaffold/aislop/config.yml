@@ -1,4 +1,4 @@
-# aislop config for the advisory `ai-slop` CI job: keep the `ai-slop/*` rules on, turn off
+# aislop config for the advisory `ai-slop` CI check: keep the `ai-slop/*` rules on, turn off
 # what the `ci` job already gates. Delete this file to run every rule at its default.
 
 rules:

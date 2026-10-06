@@ -22,7 +22,7 @@ lockfile = true
 # so `claude plugin validate` is reproducible and the authoritative result can't
 # drift without a repo change. Bump deliberately after reviewing a new release.
 # A separate, non-blocking CI job runs `latest` for an early compatibility signal.
-STEER_CLAUDE_CODE_VERSION = "2.1.251"
+STEER_CLAUDE_CODE_VERSION = "2.1.291"
 
 # Pin the precompiled CPython flavor for every `mise install` in this env,
 # mirroring the CI workflows (.github/workflows/plugin-quality.yml,
@@ -136,12 +136,13 @@ run = [
   "actionlint",
   # The shipped scaffold workflow lives outside .github/, so actionlint never
   # sees it by default - lint it explicitly (also shellchecks its run: blocks).
-  "actionlint plugins/steer/templates/github/workflows/ci.yml",
+  # Each runs under the shipped actionlint.yaml, as a consumer repo would.
+  "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/ci.yml",
   # The on-demand autonomous-loop workflow (instantiated by /steer:loop) also
   # ships outside .github/ - lint it explicitly for the same reason.
-  "actionlint plugins/steer/templates/github/workflows/steer-loop.yml",
+  "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/steer-loop.yml",
   # The Copilot coding-agent setup workflow ships outside .github/ too.
-  "actionlint plugins/steer/templates/github/workflows/copilot-setup-steps.yml",
+  "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/copilot-setup-steps.yml",
 ]
 
 [tasks.check-ascii]
@@ -183,6 +184,10 @@ run = [
 [tasks.hooktests]
 description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = ["sh plugins/steer/hooks/tests/run.sh"]
+
+[tasks.modtests]
+description = "Run the steer mod's *.test.tsx files against the pinned Claude Code engine"
+run = ["claude plugin test plugins/steer"]
 
 [tasks."changelog:new"]
 description = "Record a changelog entry as a fragment (KIND=Fixed SLUG=... BODY=...)"
@@ -262,6 +267,7 @@ depends = [
   "fixtures",
   "test",
   "hooktests",
+  "modtests",
   "version-scan",
   "delivery-gates",
 ]

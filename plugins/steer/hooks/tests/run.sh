@@ -3122,12 +3122,54 @@ assert_has "snapshot: tracker system declared, live state deferred" "${out}" "sy
 assert_has "snapshot: tracker defers to tracker-sync" "${out}" "/steer:tracker-sync"
 printf '%s' "${out}" | grep -q 'Q-999' && bad "snapshot: placeholder question must be excluded (got Q-999)" || ok
 
+# (a2) --brief: the status band's key=value counts over the same repo.
+mkdir -p "${WS1}/.claude"
+printf '7.2.1|hook|sig\n' >"${WS1}/.claude/steer-faults.log"
+run_sh "${SNAP}" --brief "${WS1}"
+assert_rc "snapshot --brief: exits 0" "${rc}" 0
+assert_has "snapshot --brief: delivery mode" "${out}" "delivery=pr-flow"
+assert_has "snapshot --brief: spine state" "${out}" "spine=managed"
+assert_has "snapshot --brief: feature count" "${out}" "features=1"
+assert_has "snapshot --brief: draft count" "${out}" "drafts=1"
+assert_has "snapshot --brief: open questions exclude placeholders" "${out}" "questions=1"
+assert_has "snapshot --brief: only real Proposed ADRs counted" "${out}" "proposed_adrs=1"
+assert_has "snapshot --brief: claim count" "${out}" "claims=1"
+assert_has "snapshot --brief: unfiled fault count" "${out}" "faults=1"
+printf '%s' "${out}" | grep -q '^##' && bad "snapshot --brief: must not print the Markdown report" || ok
+rm -rf "${WS1}/.claude"
+
+# (a3) --items: the records behind those counts, for the mod's pane.
+_tab="$(printf '\t')"
+run_sh "${SNAP}" --items "${WS1}"
+assert_rc "snapshot --items: exits 0" "${rc}" 0
+assert_has "snapshot --items: feature record" "${out}" "^F${_tab}checkout${_tab}draft$"
+assert_has "snapshot --items: open question record" "${out}" \
+	"^Q${_tab}checkout${_tab}Q-001${_tab}open${_tab}blocking${_tab}intent-approval${_tab}Which payment provider?$"
+assert_has "snapshot --items: Proposed ADR by number" "${out}" "^A${_tab}1${_tab}"
+assert_has "snapshot --items: claim record" "${out}" "^C${_tab}42${_tab}issue/42-checkout$"
+printf '%s' "${out}" | grep -q 'Q-999' && bad "snapshot --items: placeholder question must be excluded" || ok
+printf '%s' "${out}" | grep -q "^A${_tab}[23]${_tab}" && bad "snapshot --items: only Proposed ADRs listed" || ok
+printf '%s' "${out}" | grep -q '=' && bad "snapshot --items: must not print the brief counts" || ok
+# Legacy marker shapes: no list dash, a `#` ref, no branch line (title, then file name).
+printf 'issue: #715\nbranch: issue/715-bot\n' >"${WS1}/spec/.work/issue_715-bot.md"
+printf 'issue: 29\ntitle: docs: fold PR 6\n' >"${WS1}/spec/.work/issue_29-fold"
+printf -- '- session\n' >"${WS1}/spec/.work/issue_31-bare.md"
+run_sh "${SNAP}" --items "${WS1}"
+assert_has "snapshot --items: undashed #ref claim" "${out}" "^C${_tab}715${_tab}issue/715-bot$"
+assert_has "snapshot --items: claim without branch shows its title" "${out}" "^C${_tab}29${_tab}docs: fold PR 6$"
+assert_has "snapshot --items: bare claim falls back to its file name" "${out}" "^C${_tab}31${_tab}issue_31-bare$"
+rm -f "${WS1}/spec/.work/issue_715-bot.md" "${WS1}/spec/.work/issue_29-fold" "${WS1}/spec/.work/issue_31-bare.md"
+
 # (b) empty unmanaged repo: dimensions print explicit "none", never silence.
 WS2="$(new_repo wsEmpty)"
 run_sh "${SNAP}" "${WS2}"
 assert_rc "snapshot: empty repo exits 0" "${rc}" 0
 assert_has "snapshot: empty features say none" "${out}" "none"
 printf '%s' "${out}" | grep -q 'state: managed' && bad "snapshot: empty repo must not read managed" || ok
+run_sh "${SNAP}" --brief "${WS2}"
+assert_rc "snapshot --brief: empty repo exits 0" "${rc}" 0
+assert_has "snapshot --brief: empty repo zero features" "${out}" "features=0"
+assert_has "snapshot --brief: empty repo zero faults" "${out}" "faults=0"
 
 # (c) read-only: a snapshot run creates nothing in the target repo.
 _before="$(find "${WS1}" | LC_ALL=C sort)"

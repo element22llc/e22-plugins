@@ -94,6 +94,84 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - bundled workflows run on `ubuntu-26.04`, not `ubuntu-latest`
+
+- **What & why:** GitHub moves `ubuntu-latest` to Ubuntu 26.04 between October 19
+  and November 19, 2026 (actions/runner-images#14748), and warns on every run
+  until then. The bundled workflows now name `ubuntu-26.04` explicitly, so the
+  image is a reviewed choice rather than one that shifts under CI. actionlint's
+  built-in runner list predates the label, so the scaffold also ships
+  `.github/actionlint.yaml` declaring it - without that, `ci:hygiene` fails.
+- **Precondition:** a bundled workflow still runs on `ubuntu-latest` - this fires:
+
+  ```sh
+  grep -l 'runs-on: ubuntu-latest' .github/workflows/ci.yml .github/workflows/claude.yml .github/workflows/copilot-setup-steps.yml .github/workflows/dependabot-auto-merge.yml .github/workflows/steer-loop.yml 2>/dev/null
+  ```
+
+  No output => already migrated, the files are absent, or the repo chose another
+  runner => no-op.
+- **Action:** an **in-file token rewrite** in each matched file: replace
+  `runs-on: ubuntu-latest` with `runs-on: ubuntu-26.04`, nothing else. Workflows
+  the product added are untouched. Copy
+  `${CLAUDE_PLUGIN_ROOT}/templates/github/actionlint.yaml` to
+  `.github/actionlint.yaml` if absent; if one exists, add `ubuntu-26.04` to its
+  `self-hosted-runner.labels` list. Show the diff. A repo that depends on Ubuntu
+  24.04-specific packages may pin `ubuntu-24.04` instead - say so, don't choose
+  for it. **No history entry is earned.**
+
+### v7.3.0 - `dependabot-auto-merge.yml` arms native auto-merge instead of polling
+
+- **What & why:** the merge step looped `gh pr checks` + `sleep 30` on a hosted
+  runner for up to 60 minutes, so every Dependabot PR paid for CI's whole
+  wall-clock a second time in idle billed minutes. It now approves and arms
+  GitHub's native auto-merge, so branch protection's required checks gate the
+  merge, and it refuses to arm unless each `GATING_CHECKS` entry is required.
+  Tracked as issue #687.
+- **Precondition:** the workflow still carries the polling step - this fires:
+
+  ```sh
+  grep -l 'Wait for every check, approve, merge' .github/workflows/dependabot-auto-merge.yml 2>/dev/null
+  ```
+
+  No output => already migrated, the file is absent, or the repo rewrote the step
+  => no-op.
+- **Action:** a **section re-take**. Replace the step from its `- name: Wait for
+  every check, approve, merge (patch/minor)` line up to the next `- name:` with the
+  step from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
+  and set the job's `timeout-minutes` to that file's `5`. Carry the repo's
+  `GATING_CHECKS` value forward. Add `allow_auto_merge: true` to
+  `policy/branch-protection.yml` if absent, and add each `GATING_CHECKS` entry to
+  the default branch's `required_status_checks.contexts` if missing. Show the
+  diff. Then name `/steer:setup protect` as the follow-up: until it enables
+  "Allow auto-merge" and requires those checks, the step fails instead of merging.
+  **No history entry is earned.**
+
+### v7.3.0 - `ci.yml`'s advisory checks share one `advisory` job
+
+- **What & why:** `design-lint`, `spec-drift` and `ai-slop` each ran as their own
+  job on their own runner. GitHub bills every job rounded **up** to a whole minute,
+  so three checks that take seconds cost three billed minutes per push - enough, on
+  an agent-driven repo, to help exhaust the Actions budget. They are now steps of
+  one `advisory` job with one checkout; each step still continues on error and
+  writes its own summary and annotations, and spec-drift still runs on push to
+  `main`. Tracked as issue #688.
+- **Precondition:** any of the three old jobs is still present - this fires:
+
+  ```sh
+  grep -nE '^  (design-lint|spec-drift|ai-slop):' .github/workflows/ci.yml 2>/dev/null
+  ```
+
+  No output => already migrated, or the repo removed them => no-op.
+- **Action:** a **section re-take**. Replace the region from the `# Advisory -`
+  comment above `design-lint:` to the end of the `ai-slop` job with the `advisory`
+  job from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci.yml`. Everything
+  outside it - the `on:` triggers, the `ci` job, any job the product added - is
+  untouched. **Carry forward:** a check the repo made blocking (its
+  `continue-on-error` dropped) stays a separate job or moves into `ci`, never into
+  the advisory one; an edit to a check's own script carries into its step. If
+  branch protection names one of the old job names as a required check, say so -
+  that context no longer reports. Show the diff. **No history entry is earned.**
+
 ### v7.2.1 - `changelog:new` and `convert:doc` run under `cmd.exe` on Windows
 
 - **What & why:** mise runs an inline task through `cmd.exe` on Windows. The
@@ -648,9 +726,10 @@ Name the file and say what to carry forward.
      rather than overwriting a task the team wrote).
   3. **Re-take the `ci` job's steps.** The bounded region runs from the
      `- name: Setup mise` step to the end of the `ci` job (the line before the first
-     advisory job, `design-lint`). Replace it with the current template's version.
-     Everything outside that region is untouched - the `on:` triggers, the three
-     advisory jobs, and any job the product added.
+     advisory job - `design-lint`, or `advisory` once that migration ran). Replace it
+     with the current template's version. Everything outside that region is
+     untouched - the `on:` triggers, the advisory checks, and any job the product
+     added.
 
      **Carry forward:** any product-specific step inside the region that is not one
      of the replaced stock steps (a deploy preflight, an extra linter, a secret

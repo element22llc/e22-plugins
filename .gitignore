@@ -46,6 +46,11 @@ Desktop.ini
 .orca/worktrees/
 **/.orca/worktrees/
 
+# Mod type declarations. Claude Code writes them into the plugin's
+# .claude-plugin/types/ each time it loads the steer mod (--plugin-dir or hot
+# reload); plugins/steer/tsconfig.json extends the tsconfig.json they include.
+plugins/steer/.claude-plugin/types/
+
 # Cowork mount artifacts - Cowork sometimes leaves an empty folder named
 # after the connected workspace inside the workspace itself. Ignore any
 # top-level "Element 22 *" directory that isn't real content.

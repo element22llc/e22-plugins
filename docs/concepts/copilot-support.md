@@ -31,6 +31,7 @@ truth and how to install and refresh the Copilot side.
 | MCP servers | plugin `.mcp.json` | **not declared** - the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
 | Cloud coding agent | - (Claude `@claude` workflow) | - | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | **none** - the CLI hook variant retired | `hooks/hooks.json` as-is, incidentally - VS Code runs the Claude-format hooks (hard `deny` on version pins), with no parity promise |
+| Status band and `/steer_snapshot` | the read-only mod `hooks/register.tsx` (`modules` in `hooks.json`; terminal and Desktop Code tab, v2.1.287+) | **none** - Copilot loads no mods; the CLI ignores the `modules` key | **none** - no mods; use `/steer-next` for the workspace state |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
 Every one of those artifacts - instructions, the cross-tool `.agents/skills/` tree, custom agents, the
@@ -396,6 +397,12 @@ the standards in `.github/copilot-instructions.md`.
   nothing, though it grants without restricting in Claude Code either. Both limits
   port as instructions only. (The `steer-reviewer` subagent does port as a
   [custom agent](#custom-agents-on-copilot).)
+- **No status band or `/steer_snapshot` off Claude Code.** Both come from a
+  Claude Code mod, which no Copilot surface loads. The Copilot CLI reads past
+  the `modules` key in `hooks.json` and runs the shell hooks as before. The
+  command's underscore keeps it out of the `/steer-<skill>` names Copilot
+  shows, so it is never mistaken for a missing skill; `/steer-next` reports the
+  same workspace state there.
 - **No hook guarantee off Claude Code.** The CLI runs no steer hooks at all; VS
   Code runs `hooks/hooks.json` incidentally, so it gets Claude's hard `deny` on
   version pins rather than anything tuned for it. The advisory nudges live in the

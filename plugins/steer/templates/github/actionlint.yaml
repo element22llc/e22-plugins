@@ -1,0 +1,5 @@
+# actionlint config. ubuntu-26.04 is GitHub-hosted but newer than actionlint's
+# built-in label list (v1.7.12); drop this entry once a release knows it.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04

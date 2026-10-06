@@ -40,7 +40,9 @@ pr-flow rather than defining it; `/steer:setup protect` moves a repo between the
   **fragment** (`mise run changelog:new`), and `CHANGELOG.md` is generated from
   those, never hand-edited.
 - **After pushing, watch CI to conclusion and fix a red build before the work
-  counts as complete** - don't hand the dev a running or red PR and stop.
+  counts as complete** - don't hand the dev a running or red PR and stop. Get
+  the local gates green before each push: CI confirms, it is not the loop you
+  iterate in.
   (**Merge and deploy stay human-gated in every mode** - never `gh pr merge`,
   never deploy, never push to a protected `prod` branch.)
 

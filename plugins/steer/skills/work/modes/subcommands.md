@@ -43,7 +43,14 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   state.
 - **`status #N`** - **read-only**: report state, claimant, branch, PR, blockers,
   spec readiness, and outstanding validation. Mutates nothing.
-- **`finish #N`** - run the required validation; **capture what was learned** -
+- **`finish #N`** - run the required validation **locally, before any push**:
+  the fullest gate `mise tasks` lists (`mise run ci`, else `mise run check`,
+  else the repo's lint, typecheck and test tasks), fixed until green. **CI is
+  the confirming run, not the iteration loop** - every push to a ready PR re-runs
+  the whole pipeline on billed runner minutes, so a fix you could have found
+  locally costs a full CI run. A push made before local gates are green (a WIP
+  checkpoint, a backup) goes to a **draft** PR (`gh pr create --draft`), which
+  the shipped `ci.yml` does not run. **Capture what was learned** -
   if the work turned on reasoning that is non-obvious and absent from the final
   code, tests and docs, put it on the first rung of the enforcement ladder that
   can carry it: regression test -> lint rule or hook -> `contract.md` rule ->
@@ -70,7 +77,11 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   Closing ref if the tracker lives elsewhere) and watch
   CI on the trunk push** (`gh run watch`) the same way - the closed issue, not a
   merged PR, is the terminal evidence. On a red build,
-  diagnose and fix it as part of the same unit of work - re-push and re-watch -
+  diagnose and fix it as part of the same unit of work: reproduce the failure
+  locally with the task CI ran, fix everything that run reported, re-run the
+  local gates green, then push **once** and re-watch - batch the fixes, never a
+  push per attempt. A failure that only reproduces in CI (runner environment,
+  secrets, services) is the exception that earns an exploratory push. Repeat
   until checks are green or a remaining failure is
   legitimately non-blocking (and said so). Only transition to `validate` once CI is
   green; hand the reviewer a green PR, not a running or red one. A PR-scoped failure

@@ -13,7 +13,7 @@ on:
 # Supersede a PR's own in-flight run when it is pushed again - the biggest saver of
 # Actions minutes on an agent-driven branch, which pushes often. Never on `main`:
 # every trunk commit gets its own conclusive run.
-# Least privilege for every job: all four only read the tree and write annotations /
+# Least privilege for every job: both only read the tree and write annotations /
 # the step summary, neither of which needs a token scope. A job that later needs more
 # (a PR comment, a SARIF upload) declares it on that job, never here.
 permissions:
@@ -40,7 +40,7 @@ jobs:
     # Do NOT reach for `paths-ignore` to save more - a workflow that never fires leaves the
     # required check ABSENT, which is not the same as skipped and blocks the PR forever.
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -106,11 +106,14 @@ jobs:
       # - name: Build
       #   run: pnpm run build
 
-  # Advisory - remove `continue-on-error` to make it block.
-  design-lint:
-    name: design.md lint (advisory)
+  # Advisory checks share ONE runner: GitHub bills each job rounded UP to a whole minute, so
+  # seconds-long checks as separate jobs cost a minute each per push. Each step continues on error
+  # so one check never hides the next; the last step re-raises (`steps.*` lists only steps with an
+  # `id`). To make a check block, move it into the `ci` job.
+  advisory:
+    name: advisory
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -120,6 +123,7 @@ jobs:
 
       - name: Find changed DESIGN.md files
         id: changed
+        continue-on-error: true
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
@@ -131,8 +135,10 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Lint changed DESIGN.md files
+      - name: design.md lint
+        id: design-lint
         if: steps.changed.outputs.files != ''
+        continue-on-error: true
         env:
           CHANGED_FILES: ${{ steps.changed.outputs.files }}
         run: |
@@ -142,20 +148,11 @@ jobs:
             npx --yes @google/design.md@0.3.0 lint "$f"
           done <<< "$CHANGED_FILES"
 
-  # Rule 55's machine surface, advisory; on push it is solo-trunk's only enforcer.
-  # To block: drop `continue-on-error`, turn ::warning:: into ::error:: + exit 1.
-  spec-drift:
-    name: spec-drift (advisory)
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Detect undocumented behavior change
+      # Rule 55's machine surface; on push it is solo-trunk's only enforcer.
+      # To block: turn ::warning:: into ::error:: + exit 1, and move it into `ci`.
+      - name: spec-drift
+        id: spec-drift
+        continue-on-error: true
         env:
           EVENT: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -201,34 +198,31 @@ jobs:
             done
           fi
 
-  # Advisory; .aislop/config.yml turns down rules that duplicate ruff/Biome. Make it blocking by dropping
-  # `continue-on-error` and the `|| true` below - `scan` already exits 1 on findings or score < ci.failBelow.
-  # Findings land as PR annotations + a step summary, which cost nothing; code scanning is a paid feature on
-  # private repos. On a repo with GitHub Code Security, `--sarif` + `github/codeql-action/upload-sarif` works too.
-  ai-slop:
-    name: ai-slop (advisory)
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
+      # .aislop/config.yml turns down rules that duplicate ruff/Biome. To block: drop the `|| true`
+      # below - `scan` already exits 1 on findings or score < ci.failBelow. Findings land as PR
+      # annotations + a step summary, which cost nothing; code scanning is a paid feature on private
+      # repos. On a repo with GitHub Code Security, `--sarif` + `github/codeql-action/upload-sarif` works too.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        id: node
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
         with:
           node-version: 24
 
-      - name: Scan for AI slop
+      - name: ai-slop scan
+        id: aislop
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
         # Exit 1 means findings or score < ci.failBelow - that is the report, not a failure. A crashed
         # scan exits 1 too but writes no report, which is what the jq probe separates.
         run: |
           npx --yes aislop@0.14.0 scan . --json > aislop.json || true
           jq -e .schemaVersion aislop.json > /dev/null
 
-      - name: Report findings
+      - name: ai-slop report
+        id: aislop-report
+        if: steps.aislop.outcome == 'success'
+        continue-on-error: true
         run: |
           jq -r '
             def cell: gsub("\\|"; "\\|") | gsub("\n"; " ");
@@ -267,3 +261,9 @@ jobs:
             | [.diagnostics[] | select(level == $level)] | spread | .[:10][]
             | "::\($level) file=\(.filePath | prop),line=\(.line | pos),col=\(.column | pos),title=\(.severity | prop) · \(.rule | prop)::\(.message | esc)"
           ' aislop.json
+
+      - name: Re-raise a failed advisory check
+        if: contains(steps.*.outcome, 'failure')
+        run: |
+          echo "::error::An advisory check failed - see the steps above. Advisory: this does not block the merge."
+          exit 1

@@ -306,10 +306,11 @@ and **Repair**.
 - **Repair:** create either missing file from `templates/github/`. When restoring
   `dependabot.yml`, uncomment the ecosystem block(s) matching the detected stack
   (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. The repo
-  settings the exception relies on (Dependabot alerts + security updates, and
-  Actions being allowed to approve PRs) are **`/steer:setup protect`**'s job - name it as the follow-up; sync writes the files, it
-  does not configure GitHub. The workflow scopes auto-merge to Dependabot itself;
-  no repo-wide `allow_auto_merge` setting is used.
+  settings the exception relies on (Dependabot alerts + security updates,
+  Actions being allowed to approve PRs, `allow_auto_merge`, and each
+  `GATING_CHECKS` entry being a required check) are **`/steer:setup protect`**'s
+  job - name it as the follow-up; sync writes the files, it does not configure
+  GitHub.
 - **Verbatim:** no (ecosystems are adapted per stack)
 - **Why it matters:** dependencies stay patched without manual chasing; the
   documented review-gate exception lets low-risk bumps auto-merge while CI

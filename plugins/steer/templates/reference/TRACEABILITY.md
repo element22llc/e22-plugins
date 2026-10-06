@@ -284,9 +284,9 @@ Mechanics:
   vs tracker spec), `/steer:audit` (code vs standards), `/steer:spec questions` (open
   questions rotting).
 
-### The advisory `spec-drift` CI job
+### The advisory `spec-drift` CI check
 
-The bundled CI scaffold carries a machine backstop for the *undocumented behavior
+The bundled CI scaffold's `advisory` job carries a machine backstop for the *undocumented behavior
 change* class - pure shell and git, no stack and no Python, so it runs anywhere:
 
 - It **warns, never blocks.** The warning is a prompt to update the spec or to

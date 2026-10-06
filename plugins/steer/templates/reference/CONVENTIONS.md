@@ -114,7 +114,7 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
   `mise lock --platform linux-x64,macos-arm64`** in each directory with a
   `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for any other
   platform the team develops on - `linux-x64` is mandatory because CI runs on
-  `ubuntu-latest`). `mise install` only records asset URLs + checksums for the
+  `ubuntu-26.04`). `mise install` only records asset URLs + checksums for the
   **host** platform, so a lock pinned on macOS has no `linux-x64` entries and CI's
   `mise install --locked` (mise-action enables locked mode whenever a lock exists)
   fails with *"No lockfile URL found ... on platform linux-x64"*. **Verify** each
@@ -718,11 +718,14 @@ follows it; only a gate *weaker* than this default needs an ADR.
   - **Policy precedence.** A repo's own `policy/branch-protection.yml` overrides
     the plugin default, consumer-first, exactly like `policy/versions.yml`.
     Tighten freely; a *weaker* per-repo policy needs an ADR.
-  - **Repo-wide `allow_auto_merge` stays off.** It would expose the auto-merge
-    button on every PR. Dependabot auto-merge is scoped by its workflow instead:
-    it waits for every check (each `GATING_CHECKS` entry must pass) and covers
-    patch and minor bumps only - majors stay human-reviewed because they may
-    need a `policy/versions.yml` floor decision. The bot's approval satisfies only a *count-based* required
+  - **Dependabot auto-merge rides the required checks.** Its workflow approves
+    patch and minor bumps and arms GitHub's native auto-merge, so the merge
+    waits on branch protection's required checks rather than a billed runner
+    polling them - each `GATING_CHECKS` entry must be required, or it refuses to
+    arm. That needs repo-wide `allow_auto_merge`, which offers the button on
+    every PR without loosening any PR's protection. Majors stay human-reviewed
+    because they may need a `policy/versions.yml` floor decision. The bot's
+    approval satisfies only a *count-based* required
     review; a CODEOWNERS-required review, if a repo adds one, still needs a
     human - by design.
 - **Observable by default** - a deployed environment ships logs, metrics with
