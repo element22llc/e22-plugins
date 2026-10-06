@@ -82,16 +82,15 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
 > **Pre-approved shell scope.** The `allowed-tools` frontmatter above
-> pre-approves read-only git inspection, branch create/switch, the
-> Rule-45-autonomous `git add` / `git commit`, the delivery moves `git push` /
-> `gh pr create` / `gh pr edit`, and read-only CI status, so the post-push CI
-> watch runs without a prompt per poll. It deliberately does **not** pre-approve
-> `gh pr merge`, `gh api`, `gh workflow run`, or destructive git (`push
-> --force`, `reset --hard`, `clean -fdx`, `branch -D`) - merge stays with the
-> human, and tracker I/O still routes through `/steer-tracker-sync`. In an
-> ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
-> session's first `git push` for confirmation while graduation signals stand and
-> no waiver is recorded (rule 45).
+> pre-approves read-only git and PR inspection, `git fetch`, branch
+> create/switch, the Rule-45-autonomous `git add` / `git commit`, the delivery
+> moves `git push` / `gh pr create` / `gh pr edit`, and read-only CI status, so
+> the post-push CI watch runs without a prompt per poll. It deliberately does
+> **not** pre-approve `gh pr merge`, `gh api`, `gh workflow run`, or destructive
+> git (`push --force`, `reset --hard`, `clean -fdx`, `branch -D`) - merge stays
+> with the human, and tracker I/O still routes through `/steer-tracker-sync`.
+> Two hooks can still ask (rule 45): the trunk-push gate in an ungraduated
+> solo-trunk repo, and the stacked-PR gate.
 
 ## Delivery mode
 

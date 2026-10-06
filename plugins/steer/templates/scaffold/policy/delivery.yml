@@ -22,6 +22,10 @@ production_gate: prod-branch-pr
 # mechanism is product-specific - record the choice in an ADR.
 review_apps: true
 
+# How many of your own open PRs may await review before /steer:work stops
+# starting new issues - reviewers set the pace, not agents. `0` turns it off.
+review_queue_limit: 10
+
 # What a deployed environment reports to a human. An empty list is allowed and
 # means "not wired yet": steer then flags unobservable as a gap to close, not a
 # failure to fix now.

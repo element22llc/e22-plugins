@@ -65,6 +65,24 @@
 #   already carries `steer:` markers - that is the contract being applied
 #   (the /steer:tracker-sync path), not a bypass.
 #
+# CHECK 3 - STACKED-PR GATE (Bash only)
+#   rule 45 (Commit autonomy): branch off the default branch, stack only on a
+#   PR whose unmerged code the change needs. An agent that cuts each issue
+#   branch from the previous one and opens each PR against it builds a chain
+#   that merges only bottom-up and needs every layer approved - one product repo
+#   reached 64 unrelated fixes deep that way. This check makes the stacking
+#   decision visible at the one command that records it: a `gh pr create` /
+#   `gh pr edit` whose `--base`/`-B` is a work branch, or a `gh stack submit`.
+#   Then it emits permissionDecision "ask" - a real dependency is approved in
+#   one keystroke, and an unattended run (headless, nobody to answer) stops
+#   instead of growing the chain. Asks on EVERY such command, unlike the
+#   session-once sibling gates: each stacked PR is its own dependency claim.
+#   Not stacked, so silent: a base that is the default branch (origin/HEAD,
+#   else `main`), a long-lived integration or environment branch (prod,
+#   production, staging, develop, release/*), and a `--head` that is the
+#   default branch (the /steer:work promote PR into prod). Silent outside a git
+#   work tree - fail-open.
+#
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq required, fail-open on any ambiguity - never break a
 #   session. Non-matching commands must exit fast: the command-shape checks
@@ -134,6 +152,49 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			REASON="Trunk-push graduation gate - this repo declares solo-trunk delivery but has outgrown pre-MVP:${SAFE_SIGNALS}. While these signals stand, direct-to-main pushes need a human yes. Graduate now instead: run /steer:setup protect (verify, then apply on the dev's confirmation) to raise the branch-protection wall - that flips the repo to pr-flow, where branch pushes and PRs are autonomous and the merge review is the only gate (a one-person repo graduates with /steer:setup protect apply --solo, which requires the PR and CI but no approval, so the dev can still merge alone). Or, if this repo deliberately stays single-dev on trunk and these signals are expected, run /steer:setup protect waive to record that decision - it silences this gate for good. Approving this prompt pushes anyway; the gate clears once the repo graduates or the waiver is recorded."
 
 			# "ask", never a hard deny: this gate is a surfaced human decision.
+			printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"
+			exit 0
+		fi
+	fi
+fi
+
+# ---------------------------------------------------------------------------
+# Check 3 - stacked-PR gate. Emits an ask and exits when it matches; falls
+# through to check 2 otherwise (a PR command is never an issue create).
+# ---------------------------------------------------------------------------
+if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
+	printf '%s' "${CMD}" |
+	grep -Eq '(^|[;&|[:space:]])gh[[:space:]]+(pr[[:space:]]+(create|edit)|stack[[:space:]]+submit)([[:space:]]|$)'; then
+
+	CWD="$(steer_field cwd)"
+	[ -n "${CWD}" ] || CWD="."
+	if ROOT="$(steer_repo_root "${CWD}")"; then
+		DEFAULT="$(git -C "${ROOT}" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"
+		DEFAULT="${DEFAULT#origin/}"
+		[ -n "${DEFAULT}" ] || DEFAULT="main"
+		# Last occurrence wins, matching how gh resolves a repeated flag.
+		_flag() {
+			printf '%s' "${CMD}" |
+				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1
+		}
+		STACK_BASE=""
+		if printf '%s' "${CMD}" | grep -Eq 'gh[[:space:]]+stack[[:space:]]+submit'; then
+			STACK_BASE="(gh stack)"
+		else
+			_base="$(_flag '--base|-B')"
+			_head="$(_flag '--head|-H')"
+			case "${_base}" in
+			"" | "${DEFAULT}" | prod | production | staging | develop | release/* | releases/*) ;;
+			*) [ "${_head}" = "${DEFAULT}" ] || STACK_BASE="${_base}" ;;
+			esac
+		fi
+		if [ -n "${STACK_BASE}" ]; then
+			if [ "${STACK_BASE}" = "(gh stack)" ]; then
+				WHAT="gh stack submit opens PRs that each target the branch below them"
+			else
+				WHAT="this PR targets ${STACK_BASE}, not ${DEFAULT}"
+			fi
+			REASON="$(steer_json_safe "Stacked-PR gate (rule 45): ${WHAT}. A stacked PR cannot merge until every PR below it is approved and merged, so an independent change riding a stack waits on all of them - and a long stack becomes a review queue nobody can clear. Stack only when this change needs that branch's unmerged code, and say so in the PR description. Otherwise rebase onto ${DEFAULT} (git rebase --onto origin/${DEFAULT} <old-base>) and open the PR against ${DEFAULT}. Approving this prompt opens the stacked PR anyway.")"
 			printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"
 			exit 0
 		fi

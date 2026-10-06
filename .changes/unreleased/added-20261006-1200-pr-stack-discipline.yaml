@@ -1,0 +1,22 @@
+kind: Added
+time: 2026-10-06T12:00:00.000000000-04:00
+custom:
+  Slug: pr-stack-discipline
+body: |-
+  - **Added: steer keeps independent work off PR stacks and stops opening PRs
+    faster than they are reviewed.** An agent that cut each issue branch from
+    the previous one and opened each PR against it built a 64-PR chain of
+    unrelated fixes: a stack merges only bottom-up, with every layer approved,
+    so none of them could land alone. `/steer:work start` now cuts a new
+    branch from the freshly fetched default branch, and stacks on another work
+    branch only when the issue needs that PR's unmerged code, saying so in the
+    PR. A new PreToolUse check asks the human before any `gh pr create` or
+    `gh pr edit` whose `--base` is a work branch, and before `gh stack submit`;
+    the default branch, `prod`/`staging`/`develop`/`release/*` and the
+    promotion PR stay silent. An unattended loop cannot answer the ask, so it
+    stops instead of growing the chain. `/steer:work start` also checks the
+    review queue: at `review_queue_limit` of your own open PRs (new
+    `policy/delivery.yml` key, default 10, `0` turns it off) it starts nothing
+    new and lists the PRs waiting for review. Rule 45 and rule 53 state both
+    limits. An existing `policy/delivery.yml` gets the default 10 without
+    edits.

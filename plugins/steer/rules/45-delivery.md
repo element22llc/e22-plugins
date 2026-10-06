@@ -16,6 +16,12 @@ pr-flow rather than defining it; `/steer:setup protect` moves a repo between the
   branch first, then commit. When the work is **complete**, **push the branch
   and open the PR without asking**. **Merging the PR is the one step that waits
   for the dev; everything before it does not.**
+- **Branch off the default branch, never off the last work branch.** A stack
+  merges bottom-up and needs every layer approved, so an independent fix riding
+  one waits on everything below it. Stack only on a PR whose unmerged code you
+  need, keep it to a few layers, and say why in the PR. **Don't outrun review**:
+  at `review_queue_limit` of your PRs open (`policy/delivery.yml`, default 10),
+  start nothing new - point the dev at the queue.
 - **Solo trunk mode (declared, pre-MVP).** Commit **directly to `main` and push
   without asking**. CI still runs; the spine, tests and Definition of Done are
   **unchanged**, and the issue is still closed from the trunk commit where

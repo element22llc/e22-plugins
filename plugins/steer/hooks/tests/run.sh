@@ -2945,6 +2945,45 @@ mkdir -p "${TP_NOREPO}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" tp11 'git push')")"
 assert_empty "trunk-push: no repo silent" "${out}"
 
+# --- stacked-PR gate of check-bash-actions.sh (PreToolUse, Bash) ---
+# Asks when a PR targets a work branch; silent on the default branch, a
+# long-lived integration branch, and the promotion PR (head = default).
+SP="$(new_repo sp_repo)"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp1 'gh pr create --base issue/910-x --title t --body b')")"
+assert_ask "stacked-pr: --base work branch asks" "${out}"
+assert_has "stacked-pr: ask names the base" "${out}" "issue/910-x"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp1 'gh pr create -B feat/a --fill')")"
+assert_ask "stacked-pr: -B work branch asks every time" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp2 'gh pr create --base=feat/a --fill')")"
+assert_ask "stacked-pr: --base= form asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp3 'mise run check && gh pr create --base "fix/b" --fill')")"
+assert_ask "stacked-pr: compound + quoted base asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp4 'gh pr edit 12 --base feat/a')")"
+assert_ask "stacked-pr: retarget onto work branch asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp5 'gh stack submit')")"
+assert_ask "stacked-pr: gh stack submit asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp6 'gh pr create --base main --fill')")"
+assert_empty "stacked-pr: --base default silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp7 'gh pr create --fill')")"
+assert_empty "stacked-pr: no --base silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp8 'gh pr create --base prod --head main --title promote')")"
+assert_empty "stacked-pr: promotion PR silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp9 'gh pr create --base release/2.0 --fill')")"
+assert_empty "stacked-pr: release branch silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp10 'gh pr edit 12 --add-label bug')")"
+assert_empty "stacked-pr: edit without --base silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp11 'gh pr list --base feat/a')")"
+assert_empty "stacked-pr: read-only pr command silent" "${out}"
+# The default branch comes from origin/HEAD when the clone records one.
+SP_TRUNK="$(git_repo sp_trunk trunk)"
+git -C "${SP_TRUNK}" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP_TRUNK}" sp12 'gh pr create --base trunk --fill')")"
+assert_empty "stacked-pr: origin/HEAD default silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP_TRUNK}" sp13 'gh pr create --base main --fill')")"
+assert_ask "stacked-pr: main is a work branch when origin/HEAD says trunk" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" sp14 'gh pr create --base feat/a')")"
+assert_empty "stacked-pr: no repo silent" "${out}"
+
 # ---------------------------------------------------------------------------
 # check-template-drift.sh - root-anchored spec/template drift detector
 # (SessionStart; emits plain markdown wrapped as additionalContext by the harness.
