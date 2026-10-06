@@ -164,6 +164,9 @@ fixtures:
   - ask: "organize these stray design exports into their right home"
     skill: work
     signals: ["organize", "diagrams"]
+  - ask: "I have twenty PRs waiting on me - help me review and approve them fast"
+    skill: work
+    signals: ["review queue", "review my PRs"]
   - ask: "steer itself just crashed - file that bug upstream"
     skill: report
     signals: ["steer plugin itself", "upstream"]

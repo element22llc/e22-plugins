@@ -288,7 +288,9 @@ raises a prompt. Be honest about the tiers:
   session raises a permission prompt (approving it pushes anyway; the gate clears
   by graduating via `/steer:setup protect`). The same script also carries an advisory
   issue-create guard. Once-per-session-and-repo - later pushes downgrade to a
-  note.
+  note. Its stacked-PR gate is also an `ask`, on every PR command whose base is a
+  work branch; it reads `--base` from the command line, so a base set any other
+  way (a `gh` config default, the web UI) is not seen.
 - **`PostToolUse` -> `format-on-write.sh`** formats a file after it is written.
   Cosmetic and non-blocking; it never rejects or reverts the write.
 - **`PostToolUse` -> `check-comment-density.sh`** notes a source or config file

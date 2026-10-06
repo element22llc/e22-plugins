@@ -22,7 +22,7 @@ without redefining the subcommands above:
 | PR open but still a **draft** | Blocking now (next transition) | `gh pr ready` first - the shipped `ci.yml` skips every job on a draft, and a skipped check reads as green |
 | PR open, CI running | Blocking now (next transition) | Watch to conclusion - `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | PR open, CI red | Blocking now | Reproduce and fix locally until the local gates are green, then push once and re-watch |
-| PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
+| PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR - several waiting: `/steer-work review` |
 | PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed - a merged PR is necessary, not sufficient (`/steer-work resume #N`) |
 | Issue `done` | Complete | Optional: start another ready issue - `/steer-work start #N`, else `No action is currently required.` |
 

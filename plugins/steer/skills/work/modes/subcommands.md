@@ -11,7 +11,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
   **claim** it (`claim` - self-assign the invoking GitHub user + set
   `steer:claimed-by` - then `update-state` -> `in-progress`);
-  **(pr-flow)** create or reuse the branch and **write the local work marker**
+  **(pr-flow)** create or reuse the branch - a new one **from the freshly
+  fetched default branch** (`git fetch origin <default>`, then
+  `git switch -c <branch> origin/<default>`), never from whatever is checked
+  out: a branch cut from another work branch silently stacks on it. Base it on
+  another work branch only when this issue needs that PR's unmerged code; then
+  open the PR with `--base <that branch>` and name the dependency in its
+  description. When the dev batches fixes into one merge, branch from the
+  default branch as usual and open the PR with `--base batch/<slug>` - a
+  sibling, not a stack - and **write the local work marker**
   `spec/.work/<branch>.md` (slashes -> underscores) in the format `WORK-MARKER.md`
   defines (§ Marker format), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as

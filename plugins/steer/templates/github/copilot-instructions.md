@@ -506,6 +506,13 @@ pr-flow rather than defining it; `/steer:setup protect` moves a repo between the
   branch first, then commit. When the work is **complete**, **push the branch
   and open the PR without asking**. **Merging the PR is the one step that waits
   for the dev; everything before it does not.**
+- **Branch off the default branch, never off the last work branch.** A stack
+  merges bottom-up and needs every layer approved, so an independent fix riding
+  one waits on everything below it. Stack only on a PR whose unmerged code you
+  need, keep it to a few layers, and say why in the PR. **To ship many fixes as
+  one merge**, cut a `batch/<slug>` branch off the default branch and open each
+  fix's PR against it: siblings review and merge in any order, and one
+  `batch/*` -> default PR lands them together.
 - **Solo trunk mode (declared, pre-MVP).** Commit **directly to `main` and push
   without asking**. CI still runs; the spine, tests and Definition of Done are
   **unchanged**, and the issue is still closed from the trunk commit where
@@ -644,7 +651,8 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   explicit ask (Issue-first), ADR ratification (High-risk), and merge / deploy
   / push to `main` or any protected branch / real secrets. Loop-opened PRs are
   **drafts by convention** - the deliberate signal that nobody attended the
-  run; a reviewer flips one to ready.
+  run; a reviewer flips one to ready. A loop **never stacks** a draft on
+  another work branch.
 - **A loop presupposes PR flow.** Protect `main` first (`/steer:setup protect`);
   never point a loop at a solo-trunk repo - unattended direct-to-`main`
   delivery has no gate at all.

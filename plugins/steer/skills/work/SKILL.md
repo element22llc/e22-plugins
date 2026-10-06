@@ -1,6 +1,6 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR and takes no issue; tidy sweeps the repo root into /spec and takes none. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code."
+description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR, tidy sweeps the repo root into /spec, review batches the PR review queue - none takes an issue. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code."
 when_to_use: >-
   Use when asked to work, start, resume, or finish a specific issue ("work on
   #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue
@@ -9,14 +9,16 @@ when_to_use: >-
   incident ("prod is down") - never for ordinary urgent work. Use promote to
   ship what is already on the default branch to production ("promote to prod").
   Use tidy when the repo root is cluttered with loose documents, diagrams or
-  exports ("clean up the repo", "organize the strays"). Use issues for backlog
+  exports ("clean up the repo", "organize the strays"). Use review to clear a
+  PR review queue fast ("review my PRs"). Use issues for backlog
   management with no implementation this turn.
-argument-hint: "[start | resume | status | finish | promote | tidy | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
+argument-hint: "[start | resume | status | finish | promote | tidy | review | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
   - Bash(git switch *)
   - Bash(git checkout -b *)
+  - Bash(git fetch *)
   - Bash(git diff *)
   - Bash(git log *)
   - Bash(git show *)
@@ -29,12 +31,13 @@ allowed-tools:
   - Bash(gh pr create *)
   - Bash(gh pr edit *)
   - Bash(gh pr ready *)
+  - Bash(gh pr list *)
   - Bash(gh repo view *)
   - Bash(gh pr checks *)
   - Bash(gh run view *)
   - Bash(gh run watch *)
 ---
-<!-- steer:modes start,resume,status,finish,promote,tidy,issues -->
+<!-- steer:modes start,resume,status,finish,promote,tidy,review,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the
@@ -68,14 +71,10 @@ These hold for the whole run, in every mode.
    **there**. A missing local `intent.md` means the workspace has not been read
    yet, never that the feature is unspecified - **never** author product-level
    spec files here to fill the gap.
-0b. **`promote` is exempt from steps 1 and 3.** It is not issue-scoped - the
-   thing being delivered is everything already merged to the default branch - so
-   it reads no tracker and finds-or-creates no issue. Its only GitHub dependency
-   is the remote, the same reason `/steer:setup protect` does not gate on the tracker
-   either. Read `modes/promote.md` and start at its Step 1.
-0c. **`tidy` is exempt from steps 1 and 3 as well.** It changes where files live,
-   never what the product does - a Trivial-class sweep, so there is no issue to
-   find and no tracker to read. Go straight to the `tidy` row below.
+0b. **`promote`, `tidy` and `review` skip steps 1 and 3** - none is
+   issue-scoped (`promote` ships what is merged, `tidy` moves files, `review`
+   works the PR queue), so none reads the tracker or finds-or-creates an issue.
+   Read `modes/promote.md` / `modes/review.md` from Step 1; `tidy` -> its row.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
@@ -104,16 +103,16 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
 > **Pre-approved shell scope.** The `allowed-tools` frontmatter above
-> pre-approves read-only git inspection, branch create/switch, the
-> Rule-45-autonomous `git add` / `git commit`, the delivery moves `git push` /
-> `gh pr create` / `gh pr edit`, and read-only CI status, so the post-push CI
-> watch runs without a prompt per poll. It deliberately does **not** pre-approve
-> `gh pr merge`, `gh api`, `gh workflow run`, or destructive git (`push
-> --force`, `reset --hard`, `clean -fdx`, `branch -D`) - merge stays with the
-> human, and tracker I/O still routes through `/steer:tracker-sync`. In an
-> ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
-> session's first `git push` for confirmation while graduation signals stand and
-> no waiver is recorded (rule 45).
+> pre-approves read-only git and PR inspection, `git fetch`, branch
+> create/switch, the Rule-45-autonomous `git add` / `git commit`, the delivery
+> moves `git push` / `gh pr create` / `gh pr edit`, and read-only CI status, so
+> the post-push CI watch runs without a prompt per poll. It deliberately does
+> **not** pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
+> run`, or destructive git (`push --force`, `reset --hard`, `clean -fdx`,
+> `branch -D`) - merge and approval stay human; tracker I/O routes through
+> `/steer:tracker-sync`.
+> Two hooks can still ask (rule 45): the trunk-push gate in an ungraduated
+> solo-trunk repo, and the stacked-PR gate.
 
 ## Delivery mode
 
@@ -144,6 +143,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
+| **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
 | **`issues <mode>`** | **Not issue-scoped** - the backlog layer, which never edits code: `capture`, `triage`, `brainstorm`, `materialize`, `decompose`, `epic`, `status`, `board`, `reconcile`, the `publish-*` family, `bootstrap-labels`. Its mode map names the one procedure file each mode needs. |
 
@@ -155,12 +155,10 @@ because both change the repo's **work state**, which is what it owns - the issue
 captured today is the one `start` claims tomorrow. A recommendation you hand
 back to a user names `/steer:work <mode>`, never the owning skill.
 
-**`status #N` and `issues status` are different views.** `status #N` is the
-execution view of one claimed issue - claimant, branch, PR, CI, outstanding
-validation. `issues status [#N | <feature-id>]` joins the issue to the spine:
-intent status, contract readiness, sub-issue progress, or an epic's child
-rollup. "How is my PR doing?" is the first; "is this feature ready?" the
-second.
+**`status #N` and `issues status` are different views.** `status #N` is one
+claimed issue's execution - claimant, branch, PR, CI, validation. `issues status
+[#N | <feature-id>]` joins the issue to the spine - intent, contract readiness,
+sub-issues, an epic's rollup. "How is my PR doing?" vs "is this feature ready?".
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a

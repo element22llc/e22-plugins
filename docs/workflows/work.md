@@ -7,7 +7,7 @@ while the subcommands below read an issue and deliver it.
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish | promote | tidy | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | promote | tidy | review | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "`--reviewed` - the review-gated path"
     Add `--reviewed` to wrap execution in the review loop formerly carried by the
@@ -38,7 +38,7 @@ while the subcommands below read an issue and deliver it.
 flowchart TD
     START["/steer:work start #123"] --> VALIDATE[Read + validate the issue]
     VALIDATE --> CLAIM[Claim it · self-assign · set in-progress]
-    CLAIM --> BRANCH[Create or reuse issue/* branch + work marker]
+    CLAIM --> BRANCH[Create or reuse issue/* branch<br/>from the default branch + work marker]
     BRANCH --> SPEC[Load linked /spec]
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
     IMPL --> PROGRESS[Update progress on the issue]
@@ -78,10 +78,36 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 
 | Mode | What it does |
 | --- | --- |
-| `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
+| `start` | Validate, claim (self-assigns the invoking GitHub user), branch from the freshly fetched default branch - never the checked-out work branch; stacking on another PR only when the issue needs its unmerged code, and targeting a `batch/*` branch when the dev lands many fixes as one merge - + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
 | `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. A red build is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). |
+| `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
+
+## Batch review - `/steer:work review`
+
+`review` drains a review queue in one pass. It reads every PR awaiting your review (`review-requested:@me`, or the numbers
+given) and does the reviewer's legwork in parallel:
+
+1. **Triage from metadata** in one `gh pr list` call - draft, red CI and
+   conflicting PRs go straight to *Blocked* without a review.
+2. **One read-only reviewer subagent per remaining PR**, all at once, each
+   returning an eight-line card: what it does, change class, tests and contract
+   coverage, drift flags, findings with `path:line`, a suggested verdict.
+3. **Four buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
+   never batch-approved) and *Blocked*.
+4. **One question, one command.** You reply with the *Ready* PRs to approve
+   (or `ready` for all of them); the approvals post in a single command, and a
+   PR pushed to since its card was built is skipped. Findings on the *Changes*
+   PRs you name post as change requests.
+
+The approval is yours: nothing is pre-selected, an ambient "ok" approves
+nothing, and an unattended loop never approves. **It never merges.**
+
+`review --mine` is the author's side - your own queued PRs, which GitHub will
+not let you approve. It marks finished drafts ready, routes red or conflicting
+ones to `resume`, retargets an independent stacked PR onto the default branch,
+and asks you who should review an unassigned one.
 
 ## Learnings - enforcement first
 
