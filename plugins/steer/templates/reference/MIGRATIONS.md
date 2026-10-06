@@ -94,6 +94,31 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - bundled workflows run on `ubuntu-26.04`, not `ubuntu-latest`
+
+- **What & why:** GitHub moves `ubuntu-latest` to Ubuntu 26.04 between October 19
+  and November 19, 2026 (actions/runner-images#14748), and warns on every run
+  until then. The bundled workflows now name `ubuntu-26.04` explicitly, so the
+  image is a reviewed choice rather than one that shifts under CI. actionlint's
+  built-in runner list predates the label, so the scaffold also ships
+  `.github/actionlint.yaml` declaring it - without that, `ci:hygiene` fails.
+- **Precondition:** a bundled workflow still runs on `ubuntu-latest` - this fires:
+
+  ```sh
+  grep -l 'runs-on: ubuntu-latest' .github/workflows/ci.yml .github/workflows/claude.yml .github/workflows/copilot-setup-steps.yml .github/workflows/dependabot-auto-merge.yml .github/workflows/steer-loop.yml 2>/dev/null
+  ```
+
+  No output => already migrated, the files are absent, or the repo chose another
+  runner => no-op.
+- **Action:** an **in-file token rewrite** in each matched file: replace
+  `runs-on: ubuntu-latest` with `runs-on: ubuntu-26.04`, nothing else. Workflows
+  the product added are untouched. Copy
+  `${CLAUDE_PLUGIN_ROOT}/templates/github/actionlint.yaml` to
+  `.github/actionlint.yaml` if absent; if one exists, add `ubuntu-26.04` to its
+  `self-hosted-runner.labels` list. Show the diff. A repo that depends on Ubuntu
+  24.04-specific packages may pin `ubuntu-24.04` instead - say so, don't choose
+  for it. **No history entry is earned.**
+
 ### v7.3.0 - `dependabot-auto-merge.yml` arms native auto-merge instead of polling
 
 - **What & why:** the merge step looped `gh pr checks` + `sleep 30` on a hosted
