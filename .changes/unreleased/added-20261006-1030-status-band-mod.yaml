@@ -12,9 +12,11 @@ body: |-
     working. Both are a read-only mod (`hooks/register.tsx`) over
     `scripts/workspace-snapshot.sh`, whose new `--brief` mode prints the band's
     counts. They enforce nothing: every gate stays in the shell hooks. Both are
-    Claude Code only: GitHub Copilot (CLI and VS Code) loads no mods. Older
-    Claude Code versions, other surfaces, and organizations that allow only
-    managed mods skip the mod and keep every existing hook.
+    Claude Code only: GitHub Copilot (CLI and VS Code) loads no mods. Other
+    Claude Code surfaces (the VS Code panel, `claude -p`, cloud sessions) run
+    the mod's refresh but draw no band; older Claude Code versions and
+    organizations that allow only managed mods skip the mod and keep every
+    existing hook.
 time: 2026-10-06T10:30:00.000000000-04:00
 custom:
   Slug: status-band-mod

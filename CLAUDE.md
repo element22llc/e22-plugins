@@ -175,7 +175,7 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   `shell` task's globs covering every `*.sh` that pre-commit's `types: [shell]`
   matches.
 - **Before push / PR - full gate:** `mise run ci` - exactly what CI runs (adds
-  `fixtures`, `test`, `hooktests`, `version-scan`, and `delivery-gates` on top
+  `fixtures`, `test`, `hooktests`, `modtests`, `version-scan`, and `delivery-gates` on top
   of `check`, which already carries `shell` and `docs:check`). `delivery-gates` runs the two PR-only
   branch-diff checks (`check_changelog.py --base` and `check_docs_impact.py
   --base`) against `origin/main`, so a missing fragment or docs update is caught
