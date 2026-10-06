@@ -114,7 +114,7 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
   `mise lock --platform linux-x64,macos-arm64`** in each directory with a
   `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for any other
   platform the team develops on - `linux-x64` is mandatory because CI runs on
-  `ubuntu-latest`). `mise install` only records asset URLs + checksums for the
+  `ubuntu-24.04`). `mise install` only records asset URLs + checksums for the
   **host** platform, so a lock pinned on macOS has no `linux-x64` entries and CI's
   `mise install --locked` (mise-action enables locked mode whenever a lock exists)
   fails with *"No lockfile URL found ... on platform linux-x64"*. **Verify** each

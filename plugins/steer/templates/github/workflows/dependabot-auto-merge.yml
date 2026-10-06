@@ -21,7 +21,7 @@ permissions:
 jobs:
   dependabot-auto-merge:
     name: dependabot-auto-merge
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     # `github.actor` is the LAST actor to touch the context, not the one that opened the
     # PR - an attacker can land a HEAD commit that makes it read `dependabot[bot]` while the

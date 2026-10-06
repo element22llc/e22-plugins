@@ -1,0 +1,5 @@
+kind: Changed
+body: '- **Changed: the bundled GitHub workflows run on `ubuntu-24.04` instead of `ubuntu-latest`.** GitHub moves `ubuntu-latest` to Ubuntu 26.04 from October 19, 2026 and warns on every run until then. Pinning the label silences the warning and keeps CI on the image it already uses, so the move to 26.04 lands as a reviewed template bump instead of shifting under running CI (actionlint does not yet know the `ubuntu-26.04` label). Applies to `ci.yml`, `claude.yml`, `copilot-setup-steps.yml`, `dependabot-auto-merge.yml` and `steer-loop.yml`; existing repos pick it up with `/steer:setup sync`.'
+time: 2026-10-06T14:00:00.000000-04:00
+custom:
+    Slug: pin-ubuntu-runner
