@@ -1,0 +1,14 @@
+kind: Fixed
+time: 2026-10-06T15:00:00.000000000-04:00
+custom:
+  Slug: auto-memory-routing
+body: |-
+  - **Fixed: steer's memory rule now matches Claude Code's auto memory.** The
+    router said "never to private session memory", which contradicted Claude
+    Code's own instruction to save personal preferences there and left a
+    "remember to always use pnpm" in one developer's machine-local memory. The
+    rule is now scoped to project facts: a team convention routes to the
+    product `CLAUDE.md`, a project "remember X" is a disk write, auto memory
+    keeps only personal role and preferences, and where a recalled memory
+    contradicts the repo the repo wins. `/steer:reference context-hygiene`
+    carries the full routing.

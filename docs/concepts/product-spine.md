@@ -74,7 +74,7 @@ single-source-of-truth break the always-on `30-spec` § Durable decisions rule e
 prevent.
 
 The same logic applies to **everything a working session surfaces**, not just
-formal decisions. Claude Code's private session memory survives compaction, but
+formal decisions. Claude Code's auto memory survives compaction, but
 it is invisible to the repo, the PR, and every teammate - so steer does not offer
 to "remember" a finding there. The router keeps that one line always-on, and
 the context-hygiene standard (`/steer:reference context-hygiene`) routes
@@ -82,8 +82,11 @@ each fact to its canonical on-disk home **by type**: a **bug fix** -> a
 regression test; an **operational or behavioral fact** -> the app guide or
 a `/spec/history/` entry; an **unresolved bug or follow-up** -> a
 [linked tracker issue](../workflows/issues.md); a **durable design decision** ->
-the spine. Each fact lands in exactly one home, and that capture is surfaced as
-part of the work rather than offered as an optional "want me to remember this?".
+the spine; a **team convention** -> the product `CLAUDE.md`. Each fact lands in
+exactly one home, and that capture is surfaced as part of the work rather than
+offered as an optional "want me to remember this?". Auto memory keeps only what
+is personal to one developer - their role and working preferences - and where a
+recalled memory contradicts the repo, the repo wins.
 
 ## One product, several repos
 
