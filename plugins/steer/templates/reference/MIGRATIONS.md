@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - bundled workflows run on `ubuntu-26.04`, not `ubuntu-latest`
+### v7.4.0 - bundled workflows run on `ubuntu-26.04`, not `ubuntu-latest`
 
 - **What & why:** GitHub moves `ubuntu-latest` to Ubuntu 26.04 between October 19
   and November 19, 2026 (actions/runner-images#14748), and warns on every run
