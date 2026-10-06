@@ -3097,6 +3097,19 @@ assert_has "snapshot --brief: unfiled fault count" "${out}" "faults=1"
 printf '%s' "${out}" | grep -q '^##' && bad "snapshot --brief: must not print the Markdown report" || ok
 rm -rf "${WS1}/.claude"
 
+# (a3) --items: the records behind those counts, for the mod's pane.
+_tab="$(printf '\t')"
+run_sh "${SNAP}" --items "${WS1}"
+assert_rc "snapshot --items: exits 0" "${rc}" 0
+assert_has "snapshot --items: feature record" "${out}" "^F${_tab}checkout${_tab}draft$"
+assert_has "snapshot --items: open question record" "${out}" \
+	"^Q${_tab}checkout${_tab}Q-001${_tab}open${_tab}blocking${_tab}intent-approval${_tab}Which payment provider?$"
+assert_has "snapshot --items: Proposed ADR by number" "${out}" "^A${_tab}1${_tab}"
+assert_has "snapshot --items: claim record" "${out}" "^C${_tab}42${_tab}issue/42-checkout$"
+printf '%s' "${out}" | grep -q 'Q-999' && bad "snapshot --items: placeholder question must be excluded" || ok
+printf '%s' "${out}" | grep -q "^A${_tab}[23]${_tab}" && bad "snapshot --items: only Proposed ADRs listed" || ok
+printf '%s' "${out}" | grep -q '=' && bad "snapshot --items: must not print the brief counts" || ok
+
 # (b) empty unmanaged repo: dimensions print explicit "none", never silence.
 WS2="$(new_repo wsEmpty)"
 run_sh "${SNAP}" "${WS2}"

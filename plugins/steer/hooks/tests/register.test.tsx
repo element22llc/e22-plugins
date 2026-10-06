@@ -1,6 +1,7 @@
+import type { On } from 'claude-code'
 import { describe, expect, test } from 'claude-code/testing'
 
-import { bandText, parseBrief } from '../register'
+import { bandText, parseBrief, parseItems } from '../register'
 
 const ran = (stdout: string) => ({
   value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
@@ -11,6 +12,17 @@ const ABOVE_PROMPT = {
   component: 'AbovePrompt',
   props: { hasSurvey: false, isWorking: false, maxRows: 4, bodyColumns: 120, scroll: { offset: 0, bodyRows: 4 }, view: {} },
 } as const
+
+const PANE = { plugin: 'steer', component: 'Pane', requestId: 'steer' } as const
+
+const ITEMS = [
+  'F\tcheckout\tdraft',
+  'F\tlogin\tapproved',
+  'Q\tvision\tQ-003\tinvestigating\tnon-blocking\t-\tWho is the buyer?',
+  'Q\tcheckout\tQ-001\topen\tblocking\tintent-approval\tWhich payment provider?',
+  'A\t7\t7. Use Better Auth',
+  'C\t42\tissue/42-checkout',
+].join('\n')
 
 const MANAGED = [
   'delivery=pr-flow',
@@ -58,7 +70,7 @@ test('the band draws the snapshot on every surface that draws', async ($, on) =>
   await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({ ...ABOVE_PROMPT, surface })
-    expect(await ui.find({ type: 'Text', text: /3 open questions/ })).toBeDefined()
+    expect((await ui.find({ key: 'band-questions' }))?.props.label).toBe('3 open questions')
     await ui.unmount()
   }
 })
@@ -109,4 +121,93 @@ test('/steer_snapshot answers with the full report', async ($, on) => {
     presentation: { isFullscreen: false, columns: 120 },
   })
   expect(out.text).toContain('## Workspace snapshot')
+})
+
+describe('parseItems', () => {
+  test('reads each record kind and ranks blocking questions first', async () => {
+    const items = parseItems(ITEMS)
+    expect(items.features).toEqual([
+      { id: 'checkout', status: 'draft' },
+      { id: 'login', status: 'approved' },
+    ])
+    expect(items.questions.map(q => q.id)).toEqual(['Q-001', 'Q-003'])
+    expect(items.questions[1]?.before).toBe('')
+    expect(items.adrs).toEqual([{ n: '7', title: '7. Use Better Auth' }])
+    expect(items.claims).toEqual([{ issue: '42', branch: 'issue/42-checkout' }])
+  })
+})
+
+// The engine beneath the mod: the brief or the items per argv, one pane, one prompt box.
+function engine(on: On) {
+  const filled: string[] = []
+  const open = new Set<string>()
+  on('process.run', async ($, e) => ran(e.argv.includes('--items') ? ITEMS : MANAGED))
+  on('command.register', async ($, e) => ({ value: { command: e.name } }))
+  on('session.start', async ($, e) => ({ cwd: e.cwd }))
+  on('ui.open', async ($, e) => {
+    open.add(e.id)
+    return { value: { isPlaced: true } }
+  })
+  on('ui.close', async ($, e) => {
+    open.delete(e.id)
+    return { value: undefined }
+  })
+  on('ui.panes', async () => ({
+    value: [...open].map(id => ({ id, title: id, isShown: true, isFocused: true, isPlaced: true })),
+  }))
+  on('prompt.fill', async ($, e) => {
+    filled.push(e.text)
+    return { isFilled: true, box: { text: e.text, cursor: e.text.length } }
+  })
+  return { filled, open }
+}
+
+const PANE_PROPS = {
+  title: 'steer',
+  isFocused: true,
+  bodyColumns: 100,
+  placement: 'dock',
+  scroll: { offset: 0, bodyRows: 20 },
+  view: {},
+} as const
+
+test('a band count opens the pane on its items, and a row fills the prompt', async ($, on) => {
+  const { filled, open } = engine(on)
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const band = await $.ui.mount({ ...ABOVE_PROMPT, surface })
+    await band.press({ key: 'band-adrs' })
+    expect(open.has('steer')).toBe(true)
+    await band.unmount()
+    const pane = await $.ui.mount({ ...PANE, surface, props: PANE_PROPS })
+    expect(await pane.find({ type: 'Text', text: /Use Better Auth/ })).toBeDefined()
+    await pane.press({ key: 'do-a-0' })
+    expect(filled.at(-1)).toBe('/steer:spec adr accept 7')
+    expect(open.has('steer')).toBe(false)
+    await pane.unmount()
+  }
+})
+
+test('the pane tabs between sections and routes each row to its owning skill', async ($, on) => {
+  const { filled } = engine(on)
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  const band = await $.ui.mount({ ...ABOVE_PROMPT, surface: 'terminal' })
+  await band.press({ key: 'band-questions' })
+  await band.unmount()
+  const pane = await $.ui.mount({ ...PANE, surface: 'terminal', props: PANE_PROPS })
+  await pane.press({ key: 'do-q-0' })
+  expect(filled.at(-1)).toBe('/steer:spec checkout')
+  await pane.press({ key: 'do-q-1' })
+  expect(filled.at(-1)).toBe('/steer:spec questions')
+  await pane.press({ key: 'bundle' })
+  expect(filled.at(-1)).toBe('/steer:spec questions bundle')
+  await pane.press({ key: 'tab-features' })
+  await pane.press({ key: 'do-f-0' })
+  expect(filled.at(-1)).toBe('/steer:spec checkout')
+  await pane.press({ key: 'do-f-1' })
+  expect(filled.at(-1)).toBe('/steer:status feature login')
+  await pane.press({ key: 'tab-claims' })
+  await pane.press({ key: 'do-c-0' })
+  expect(filled.at(-1)).toBe('/steer:work resume #42')
+  await pane.unmount()
 })
