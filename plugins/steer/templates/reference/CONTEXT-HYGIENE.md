@@ -82,16 +82,27 @@ What survives compaction (and a brand-new session) is what lives on disk:
 includes `compact`), auto-memory, and the `/spec/**` artifacts. Conversation prose
 does **not** survive.
 
-Surviving is not the same as belonging. Private auto-memory persists, but it is
-local to one developer's machine - invisible to the repo, the PR, and every
-teammate - so it is working notes, **never the team's record**. Don't offer to save
-a finding to session memory as a substitute for capturing it on disk. Route each
-durable fact to its canonical home **by type** instead: a **bug fix** -> a regression
-test (Testing / Definition of done); an **operational or behavioral fact** -> the app
-guide or a `/spec/history/` entry (Living docs); an **unresolved bug or follow-up** -> a
-linked tracker issue (Issue-first); a **durable design decision** -> the spine
-(Decision capture). Each fact lands in exactly one home, and that capture is
+Surviving is not the same as belonging. Auto memory
+(`~/.claude/projects/<project>/memory/`) persists across sessions and worktrees,
+but it is local to one developer's machine - invisible to the repo, the PR, and
+every teammate - so it is working notes, **never the team's record**. Don't offer
+to save a finding to auto memory as a substitute for capturing it on disk. Route
+each durable project fact to its canonical home **by type** instead: a **bug fix**
+-> a regression test (Testing / Definition of done); an **operational or behavioral
+fact** -> the app guide or a `/spec/history/` entry (Living docs); an **unresolved
+bug or follow-up** -> a linked tracker issue (Issue-first); a **durable design
+decision** -> the spine (Decision capture); a **team convention** ("always use
+pnpm", "the API tests need Redis") -> the product `CLAUDE.md`, which holds
+team-learned patterns. Each fact lands in exactly one home, and that capture is
 surfaced rather than offered as an optional "want me to remember this?".
+
+Auto memory keeps what is **personal**: one developer's role, expertise and
+working preferences ("terse answers", "explain the SQL"). Those have no repo home
+and steer leaves them where Claude Code puts them. When a user says "remember X"
+and X is about the project, it is one of the routes above, not a memory write -
+say where it landed. A recalled memory is a hint, not truth: where it contradicts
+the spec, `CLAUDE.md` or the code, the repo wins, and the stale memory is fixed or
+deleted.
 
 So **run-state and task-specific constraints belong in a file the work re-reads**,
 never only in the chat:

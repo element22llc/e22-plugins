@@ -63,8 +63,12 @@ claude.ai web), run `/steer:standards`.
 full prose: `/steer:reference <topic>` is yours to load, never a user's to
 type. Two context lines hold regardless: delegate a heavy sweep to a
 subagent and bring back the result, not the sweep; and route every durable
-fact to its home on disk - a test, the spec, the app guide, an issue - never to
-private session memory, which the repo, the PR and every teammate cannot see.
+project fact to its home on disk - a test, the spec, the app guide, an issue, a
+team convention to the product `CLAUDE.md` - never to Claude Code's auto memory,
+which is machine-local and invisible to the repo, the PR and every teammate.
+Auto memory keeps only the personal: one developer's role and preferences. A
+"remember X" about the project is a disk write; where a recalled memory
+contradicts the repo, the repo wins.
 
 ### You are not the gate - the dev is
 

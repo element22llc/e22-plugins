@@ -79,7 +79,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `/steer:reference` loader, which Claude reaches by topic.
     The router names them so a session routes there rather than improvising, and
     keeps the two context lines that bind no particular skill (delegate a heavy
-    sweep; route a durable fact to disk, never to private session memory).
+    sweep; route a durable project fact to disk, never to auto memory, which
+    keeps only personal preferences).
 
     The 6.6 rule diet applied the same principle *inside* the surviving rules:
     the greenfield and adopt walkthrough, the living-documentation routing
