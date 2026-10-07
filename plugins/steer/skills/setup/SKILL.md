@@ -1,26 +1,24 @@
 ---
 name: setup
-description: "One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of the spec spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing vibe-coded repo) or `sync` (apply migrations and reconcile drift after a plugin release); `doctor` fixes the local prerequisites first, `protect` raises the branch-protection wall last, `worktrees` checks parallel-worktree handling."
+description: "One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing repo, vibe-coded or not) or `sync` (migrations and drift after a plugin release); `doctor` fixes local prerequisites, `protect` raises branch protection, `worktrees` checks parallel worktrees, `advisory` uses the standards without adopting the repo."
 when_to_use: >-
   Use when asked to set up, onboard, bootstrap or adopt a repo, sync to the
   latest plugin, get a machine ready, or protect main - the single entry point
-  whenever you would otherwise guess which path fits. `init` covers a brand-new
-  repo and a template fork with bracketed fill-in placeholders left; `adopt`
-  covers an existing repo whose code has no spec spine; `sync` brings a managed
-  or openspec repo up to date after a plugin release, with `sync --check` the
-  read-only drift report; `doctor` diagnoses missing prerequisites (git, mise,
-  Docker - "command not found", a shadowed runtime); `protect` verifies or
-  applies branch protection and merge rules, graduates solo trunk to PR flow, or
-  waives it; `worktrees` checks worktrees another tool (Orca, Conductor, git)
-  manages and sweeps stacks deleted ones left.
-argument-hint: "[init | adopt | sync | doctor | protect | worktrees] [--check]"
+  whenever you would otherwise guess which path fits. `sync` brings a managed
+  or openspec repo up to date, `sync --check` is the read-only drift report;
+  `doctor` diagnoses missing prerequisites ("command not found", a shadowed
+  runtime); `protect` applies branch protection and merge rules, graduates solo
+  trunk or waives it; `worktrees` checks worktrees another tool manages;
+  `advisory` (`off` to leave) is for an external review or someone else's code
+  steer should not bootstrap.
+argument-hint: "[init | adopt | sync | doctor | protect | worktrees | advisory] [--check]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
   - Bash(git rev-parse *)
   - Bash(gh auth status *)
 ---
-<!-- steer:modes init,adopt,sync,doctor,protect,worktrees -->
+<!-- steer:modes init,adopt,sync,doctor,protect,worktrees,advisory -->
 
 # Set up a repo on the standards
 
@@ -43,8 +41,9 @@ entry and follow it; never restate its steps here.
 | `doctor` | Local prerequisites: git, mise and the runtimes it manages, Docker - flags a shadowed runtime, installs mise + runtimes on confirmation | `/steer:doctor` |
 | `protect` | Branch protection: diff `policy/branch-protection.yml` against live settings and apply the gaps, graduate solo trunk to PR flow, or `waive` | `/steer:protect` |
 | `worktrees` | Parallel worktrees made by any tool (Claude Code, Orca, Conductor, git): trust, Compose isolation, env files, the tool's teardown hook, orphaned stacks | `/steer:worktrees` |
+| `advisory` | Standards without adoption: declare (or `off`, leave) advisory mode for this repo | this skill - "Advisory mode" below |
 
-All six are `user-invocable: false` - a user reaches them **only** through this
+The six with an owning skill are `user-invocable: false` - a user reaches them **only** through this
 door, so a recommendation you hand back names `/steer:setup <mode>`, never the
 owning skill.
 
@@ -145,14 +144,36 @@ offer after a long scoping pass. Honor that:
 (A non-technical owner's idea routes to `/steer:build` instead - bootstrap-inclusive, with its own
 prototype-ceremony handling. This section governs the developer path that lands here.)
 
+## Advisory mode
+
+For a repo steer should **not** bootstrap - an external review, planning against
+someone else's code. The standards still load as a review lens; bootstrap
+nudges, the `spec/` spine, scaffold and steer's delivery rules stay out. It is
+declared, never inferred, and runs at any spine state without detection.
+
+1. **Write the declaration** in the repo root's `.claude/settings.local.json`:
+   merge `"env": { "STEER_MODE": "advisory" }` into the file, keeping every
+   other key; create the file if absent. `off` removes the `STEER_MODE` key
+   (and an `env` left empty) instead.
+2. **Keep it out of the guest repo's history:** if `git check-ignore -q
+   .claude/settings.local.json` fails, append that path to `.git/info/exclude`
+   (local, never committed) - never edit their `.gitignore`.
+3. **Say when it applies:** the status band switches now; the injected rules
+   switch at the next session start - `/clear` or a new session.
+
+Write nothing else - no `spec/`, no `policy/`, no scaffold. In a managed repo
+(`managed` / `openspec`), say advisory mode is meant for repos steer does not
+manage and confirm before writing.
+
 ## Explicit override
 
 Power users can skip detection by naming the mode: `setup init`, `setup adopt`,
 `setup sync` (`setup sync --check` for the read-only report), `setup doctor`, or
-`setup protect` (with `verify` / `apply [--solo | --team]` / `waive`), or `setup worktrees`. Honor the explicit
+`setup protect` (with `verify` / `apply [--solo | --team]` / `waive`), `setup worktrees`, or
+`setup advisory` (`setup advisory off` to leave). Honor the explicit
 mode, but if it clearly contradicts the detected state (e.g. `setup init` on a repo
 that's already `managed`), say what you detected and confirm before proceeding.
-`doctor`, `protect` and `worktrees` contradict nothing - they run at any spine state.
+`doctor`, `protect`, `worktrees` and `advisory` contradict nothing - they run at any spine state.
 
 ## Why this exists
 

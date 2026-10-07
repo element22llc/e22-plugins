@@ -38,6 +38,7 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # Resolve the work-tree root from the payload cwd (which may be a SUBDIRECTORY
 # of the repo). Not a git work tree -> not a project we manage.
@@ -51,6 +52,9 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # repo - never nag the plugin's own tree. (A product repo has .claude/ for
 # settings, never the .claude-plugin/ authoring directory.)
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
+
+# A declared guest (advisory mode) asked not to be bootstrapped.
+[ "$(steer_declared_mode "${ROOT}")" = "advisory" ] && exit 0
 
 # A bare, foreign, or half-migrated spec/ must NOT silence the bootstrap nudge -
 # only a complete, version-stamped spine (spec/.version + spine files) does.

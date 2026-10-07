@@ -346,11 +346,30 @@ steer_inject_when_one() {
 	# so by the time this arm runs we are in code mode -> always inject. (The `*)`
 	# default below would also inject; the explicit arm documents the token.)
 	code-project) return 0 ;;
+	# advisory - false here: only the inject loop's advisory branch admits it, so
+	# in code mode `code-project|advisory` rests on its code-project arm.
+	advisory) return 1 ;;
 	*) return 0 ;;
 	esac
 }
 
-# steer_work_mode <cwd> - prints 'code' or 'knowledge'.
+# steer_declared_mode <cwd> - prints the STEER_MODE the project declared in
+# `.claude/settings.local.json` (`env.STEER_MODE`), or nothing. The file is read
+# directly, never the STEER_MODE env var: Claude Code fixes a hook's env at
+# launch, so leaving advisory mode would not take effect until a restart.
+steer_declared_mode() {
+	_dm_root="$(steer_repo_root "${1:-.}" 2>/dev/null)" || _dm_root="${1:-.}"
+	sed -n 's/.*"STEER_MODE"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+		"${_dm_root}/.claude/settings.local.json" 2>/dev/null | head -1
+}
+
+# steer_work_mode <cwd> - prints 'advisory', 'code' or 'knowledge'.
+#
+# 'advisory' is never inferred: it is emitted only when the project declares
+# STEER_MODE=advisory (steer_declared_mode) - the guest case, a repo steer does
+# not manage (an external review, planning against someone else's code). It
+# injects the knowledge-mode ruleset plus a guest banner, and the bootstrap
+# nudges stay silent. Declaring it is `/steer:setup advisory`.
 #
 # 'knowledge' is emitted ONLY when we are confident this is a non-code
 # knowledge-work folder - the typical Claude Cowork case where a product owner
@@ -376,6 +395,10 @@ steer_inject_when_one() {
 # marker - a knowledge folder is exactly where a /spec spine may live.
 steer_work_mode() {
 	_cwd="${1:-.}"
+	[ "$(steer_declared_mode "${_cwd}")" = "advisory" ] && {
+		printf 'advisory'
+		return 0
+	}
 	# A git work tree at cwd or above -> treat as a code project.
 	steer_repo_root "${_cwd}" >/dev/null 2>&1 && {
 		printf 'code'

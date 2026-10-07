@@ -152,6 +152,10 @@ UNQUALIFIED_TOKENS: dict[str, str] = {
         "installed into code repos by the bootstrap skills, and qualifying 20 rules "
         "with it would be noise"
     ),
+    "code-project|advisory": (
+        "the code-project baseline above, also carried into advisory mode - a "
+        "Claude Code work mode Copilot has no equivalent of"
+    ),
 }
 
 

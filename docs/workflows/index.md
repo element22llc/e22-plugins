@@ -92,6 +92,7 @@ below give the detail.
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
 | Run parallel worktrees from Orca, Conductor or `git worktree`, or clean up stacks deleted worktrees left running | `/steer:setup worktrees` |
+| Review or plan against a repo steer should not adopt (external review, someone else's code) | `/steer:setup advisory` |
 | steer itself is misbehaving | Say so - Claude files the plugin bug upstream (`/steer:report`) |
 | Answer accumulated open questions | `/steer:spec questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:spec adr` |

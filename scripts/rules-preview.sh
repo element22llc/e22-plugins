@@ -32,6 +32,7 @@ RULES_DIR="${PLUGIN}/rules"
 TARGET="."
 FULL=0
 KNOWLEDGE=0
+ADVISORY=0
 
 usage() {
 	cat <<'EOF'
@@ -41,6 +42,8 @@ Usage: sh scripts/rules-preview.sh [options]
   --knowledge     Preview a knowledge-work folder: runs against an empty temp
                   dir, which the real classifier reads as a non-code folder.
                   Mutually exclusive with --repo.
+  --advisory      Preview advisory mode: runs against a temp git repo that
+                  declares STEER_MODE=advisory. Mutually exclusive with --repo.
   --full          Also print the complete injected text to stdout.
   -h, --help      Show this help.
 EOF
@@ -58,6 +61,10 @@ while [ $# -gt 0 ]; do
 		;;
 	--knowledge)
 		KNOWLEDGE=1
+		shift
+		;;
+	--advisory)
+		ADVISORY=1
 		shift
 		;;
 	--full)
@@ -85,6 +92,12 @@ if [ "${KNOWLEDGE}" -eq 1 ]; then
 	# a folder that genuinely is one.
 	TARGET="${WORK}/knowledge-folder"
 	mkdir -p "${TARGET}"
+fi
+if [ "${ADVISORY}" -eq 1 ]; then
+	TARGET="${WORK}/advisory-repo"
+	mkdir -p "${TARGET}/.claude"
+	printf '' >"${TARGET}/.git"
+	printf '{"env": {"STEER_MODE": "advisory"}}\n' >"${TARGET}/.claude/settings.local.json"
 fi
 
 [ -d "${TARGET}" ] || {
@@ -176,6 +189,9 @@ printf 'repo:      %s\n' "${TARGET}"
 if [ "${MODE}" = knowledge ]; then
 	printf 'work mode: knowledge (every marked rule is skipped)\n'
 	printf 'git root:  <none - a knowledge folder is not a git repo>\n\n'
+elif [ "${MODE}" = advisory ]; then
+	printf 'work mode: advisory (only rules marked advisory, of the marked ones)\n'
+	printf 'git root:  %s\n\n' "${CONSUMER_ROOT}"
 else
 	printf 'work mode: code (full ruleset, subject to per-rule scope)\n'
 	printf 'git root:  %s\n\n' \
@@ -211,6 +227,12 @@ for f in "${RULES_DIR}"/*.md; do
 		if [ "${MODE}" = knowledge ]; then
 			status="skip"
 			scope="${token} (knowledge mode)"
+		elif [ "${MODE}" = advisory ]; then
+			case "|${token}|" in
+			*'|advisory|'*) status="inject" ;;
+			*) status="skip" ;;
+			esac
+			scope="${token} (advisory mode)"
 		elif steer_inject_when_ok "${token}" "${CONSUMER_ROOT}"; then
 			status="inject"
 			scope="${token}"
