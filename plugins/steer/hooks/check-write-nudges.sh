@@ -81,6 +81,9 @@ CWD="$(steer_field cwd)"
 ROOT="$(steer_action_root "${CWD}" "${FILE}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
+# A declared guest (advisory mode): both nudges re-assert rules advisory omits.
+[ "$(steer_declared_mode "${ROOT}")" = "advisory" ] && exit 0
+
 # Need a target file (Bash calls have none -> nothing to nudge on).
 [ -n "${FILE}" ] || exit 0
 

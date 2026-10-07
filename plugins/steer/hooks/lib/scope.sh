@@ -368,8 +368,9 @@ steer_declared_mode() {
 # 'advisory' is never inferred: it is emitted only when the project declares
 # STEER_MODE=advisory (steer_declared_mode) - the guest case, a repo steer does
 # not manage (an external review, planning against someone else's code). It
-# injects the knowledge-mode ruleset plus a guest banner, and the bootstrap
-# nudges stay silent. Declaring it is `/steer:setup advisory`.
+# injects the unmarked core plus the rules marked `advisory`, under a guest
+# banner, and the bootstrap and issue-first nudges stay silent. Declaring it is
+# `/steer:setup advisory`.
 #
 # 'knowledge' is emitted ONLY when we are confident this is a non-code
 # knowledge-work folder - the typical Claude Cowork case where a product owner
