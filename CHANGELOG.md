@@ -3,6 +3,31 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.5.0
+
+- **Fixed: steer's memory rule now matches Claude Code's auto memory.** The
+  router said "never to private session memory", which contradicted Claude
+  Code's own instruction to save personal preferences there and left a
+  "remember to always use pnpm" in one developer's machine-local memory. The
+  rule is now scoped to project facts: a team convention routes to the
+  product `CLAUDE.md`, a project "remember X" is a disk write, auto memory
+  keeps only personal role and preferences, and where a recalled memory
+  contradicts the repo the repo wins. `/steer:reference context-hygiene`
+  carries the full routing.
+- **Added: advisory mode - the standards without adopting the repo.** For an
+  external review or planning against someone else's code, `/steer:setup
+  advisory` declares `STEER_MODE=advisory` in the repo's untracked
+  `.claude/settings.local.json` (`advisory off` leaves). The session then
+  gets the lean always-on core plus testing, change classification and
+  practices as a review lens, under a banner that rules out bootstrap, spec
+  files in the repo and unasked delivery; the org stack, delivery, tracker
+  and Definition of Done rules and the bootstrap nudge stay out. The status
+  band offers the switch on a repo steer does not manage and shows a way out
+  while it is on. The write-path nudges hold off too: no `/steer:setup` or
+  issue-first push on a code write, and `/steer:spec` lite mode hands the
+  intent back in chat instead of writing `spec/features/`. `mise run
+  rules:preview -- --advisory` shows the payload.
+
 ## 7.4.0
 
 - **Added: steer keeps independent work off PR stacks.** An agent that cut
