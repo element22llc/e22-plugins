@@ -2367,6 +2367,45 @@ out="$(run_hook orient-session.sh "$(session_json "${KWC}" kw_pkg)")"
 printf '%s' "${out}" | grep -q 'knowledge-work folder' &&
 	bad "orient(kw-pkg): code-mode folder must not emit knowledge confirmation" || ok
 
+# ----- advisory mode: declared in .claude/settings.local.json, never inferred -----
+# A git repo with code that declares STEER_MODE=advisory gets the knowledge core
+# plus the rules marked `advisory`, under the guest banner; the repo-trait rules
+# (stack, delivery, Definition of Done) and the bootstrap nudge stay out.
+ADV="$(new_repo adv)"
+mkdir -p "${ADV}/.claude" "${ADV}/src"
+printf '{}\n' >"${ADV}/package.json"
+printf '{\n  "env": {\n    "STEER_MODE": "advisory"\n  }\n}\n' >"${ADV}/.claude/settings.local.json"
+out="$(run_inject "$(session_json "${ADV}" adv)")"
+oq_grep "inject(adv): guest banner present" 'steer advisory mode' "${out}"
+oq_grep "inject(adv): router still present" 'You are the router' "${out}"
+oq_grep "inject(adv): testing rule carried as a review lens" '## Testing' "${out}"
+oq_grep "inject(adv): practices rule carried" 'Patterns we follow' "${out}"
+printf '%s' "${out}" | grep -q '## Stack' &&
+	bad "inject(adv): org stack rule must be omitted in advisory mode" || ok
+printf '%s' "${out}" | grep -q '## Commit autonomy' &&
+	bad "inject(adv): delivery rule must be omitted in advisory mode" || ok
+printf '%s' "${out}" | grep -q 'A change is done when' &&
+	bad "inject(adv): Definition of Done must be omitted in advisory mode" || ok
+printf '%s' "${out}" | grep -q 'steer:inject-when' &&
+	bad "inject(adv): no inject-when marker may leak in advisory mode" || ok
+out="$(run_hook check-unmanaged-repo.sh "$(session_json "${ADV}" adv)")"
+assert_eq "unmanaged(adv): bootstrap nudge silent for a declared guest" "${out}" ""
+
+# Leaving the mode is read from the file, not the launch env, so it applies at
+# the next session start without a restart - and code mode carries the
+# `code-project|advisory` rules on their code-project arm.
+printf '{ "env": { "STEER_MODE": "advisory" } }\n' >"${ADV}/.claude/settings.local.json"
+out="$(STEER_MODE=advisory run_inject "$(session_json "${ADV}" adv)")"
+oq_grep "inject(adv): single-line settings file still declares the mode" 'steer advisory mode' "${out}"
+printf '{ "env": {} }\n' >"${ADV}/.claude/settings.local.json"
+out="$(STEER_MODE=advisory run_inject "$(session_json "${ADV}" adv)")"
+printf '%s' "${out}" | grep -q 'steer advisory mode' &&
+	bad "inject(adv): a launch-time STEER_MODE must not outlive the file declaration" || ok
+oq_grep "inject(adv-off): code mode restores the stack rule" '## Stack' "${out}"
+oq_grep "inject(adv-off): code-project|advisory rule still injects in code mode" '## Testing' "${out}"
+out="$(run_hook check-unmanaged-repo.sh "$(session_json "${ADV}" adv)")"
+oq_grep "unmanaged(adv-off): bootstrap nudge returns" 'not set up on the org standards' "${out}"
+
 # ----- scope.sh: trait predicates + repo-root.sh: profile reader -----
 . "${HOOKS}/lib/scope.sh"
 . "${HOOKS}/lib/repo-root.sh"
@@ -3135,6 +3174,10 @@ assert_has "snapshot --brief: open questions exclude placeholders" "${out}" "que
 assert_has "snapshot --brief: only real Proposed ADRs counted" "${out}" "proposed_adrs=1"
 assert_has "snapshot --brief: claim count" "${out}" "claims=1"
 assert_has "snapshot --brief: unfiled fault count" "${out}" "faults=1"
+assert_has "snapshot --brief: no declared mode" "${out}" "^mode=$"
+printf '{"env":{"STEER_MODE":"advisory"}}\n' >"${WS1}/.claude/settings.local.json"
+run_sh "${SNAP}" --brief "${WS1}"
+assert_has "snapshot --brief: declared advisory mode" "${out}" "^mode=advisory$"
 printf '%s' "${out}" | grep -q '^##' && bad "snapshot --brief: must not print the Markdown report" || ok
 rm -rf "${WS1}/.claude"
 

@@ -1,4 +1,4 @@
-<!-- steer:inject-when=code-project -->
+<!-- steer:inject-when=code-project|advisory -->
 ## Patterns we follow (baseline)
 
 Org baseline stated as **principles**, so they hold on any stack; where an org

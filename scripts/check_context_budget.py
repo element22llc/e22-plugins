@@ -126,6 +126,13 @@ def _fixture_knowledge(_d: Path) -> None:
     """A non-code folder: no git, no manifests. steer_work_mode -> 'knowledge'."""
 
 
+def _fixture_advisory(d: Path) -> None:
+    """A guest repo: a git work tree that declares STEER_MODE=advisory."""
+    _git_init(d)
+    (d / ".claude").mkdir()
+    (d / ".claude" / "settings.local.json").write_text('{"env": {"STEER_MODE": "advisory"}}\n')
+
+
 def _fixture_code(d: Path) -> None:
     """A plain code repo: git work tree, no IaC, no apps/, no GitHub tracker."""
     _git_init(d)
@@ -260,6 +267,12 @@ INJECTED_PROFILES: dict[str, dict] = {
         "builder": _fixture_knowledge,
         "gated": True,
         "blurb": "non-code folder (Cowork PO lane)",
+    },
+    # The guest lane: a repo steer does not manage, declared advisory.
+    "advisory": {
+        "builder": _fixture_advisory,
+        "gated": True,
+        "blurb": "declared advisory (guest) repo",
     },
     # The number to quote for a typical consumer.
     "code": {

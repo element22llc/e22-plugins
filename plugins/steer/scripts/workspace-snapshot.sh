@@ -112,6 +112,7 @@ if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 	_faults="$(grep -c '' "$(steer_faults_file "${ROOT}")" 2>/dev/null || :)"
 	printf 'delivery=%s\n' "$(steer_delivery_mode "${ROOT}")"
 	printf 'spine=%s\n' "$(steer_spine_state "${ROOT}")"
+	printf 'mode=%s\n' "$(steer_declared_mode "${ROOT}")"
 	printf 'features=%s\n' "${_features}"
 	printf 'drafts=%s\n' "${_drafts}"
 	printf 'questions=%s\n' "${_questions}"

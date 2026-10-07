@@ -149,6 +149,12 @@ part_header() {
 		fi
 		if [ "${WORK_MODE}" = "knowledge" ]; then
 			printf '\n<!-- steer: knowledge-work mode - this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The router, spec, roles, output, high-risk and gates rules still apply. -->\n'
+		elif [ "${WORK_MODE}" = "advisory" ]; then
+			printf '\n**steer advisory mode** - this repo declared `STEER_MODE=advisory`: you are a guest in a repo steer does not manage (an external review, planning against code that is not ours). Apply these standards as a **review and planning lens**, and override the rules below where they conflict:\n\n'
+			printf -- '- **Never bootstrap.** No `/steer:setup` init/adopt/sync, no `spec/` spine, no scaffold, no `policy/` files - the bootstrap precedence and "create the artifact when the trigger fires" lines do not apply.\n'
+			printf -- '- **Findings and plans go to the user**, in chat or an artifact, never as spec files in this repo. `/steer:audit` and `/steer:spec` (lite) still run; their output stays out of the tree.\n'
+			printf -- '- **Delivery is the user'"'"'s call.** Branch, commit, push or open a PR only when asked, following this repo'"'"'s own conventions, not steer'"'"'s.\n'
+			printf -- '- The org stack, delivery, tracker and Definition of Done rules are intentionally omitted (not missing). `/steer:setup advisory off` leaves the mode.\n'
 		fi
 	else
 		printf '<!-- Engineering standards - steer plugin v%s, part %s/%s (continued; parts arrive in any order). -->\n' "${VERSION}" "$1" "${PARTS}"
@@ -160,7 +166,9 @@ part_header() {
 # folder of specs/docs, no git repo) -> inject only the lean, always-on
 # PO-relevant set and skip every code/infra/tracker-scoped rule. Anything else,
 # or any doubt, -> 'code' = the full ruleset (fail-safe; never silently drops a
-# rule). See steer_work_mode in lib/scope.sh.
+# rule). 'advisory' is declared, never inferred: the knowledge set plus the
+# rules marked `advisory`, under a guest banner. See steer_work_mode in
+# lib/scope.sh.
 WORK_MODE="$(steer_work_mode "${CWD}")"
 
 if [ ! -d "${RULES_DIR}" ]; then
@@ -229,7 +237,18 @@ for _srow in ${_sizes}; do
 		fi
 		_token="${_first#<!-- steer:inject-when=}"
 		_token="${_token% -->}"
-		if ! steer_inject_when_ok "${_token}" "${CONSUMER_ROOT}"; then
+		# Advisory admits only the rules that name it - the review lens - and
+		# none of the repo-trait ones: the guest repo's own stack, tracker and
+		# delivery are not steer's to impose.
+		if [ "${WORK_MODE}" = "advisory" ]; then
+			case "|${_token}|" in
+			*'|advisory|'*) ;;
+			*)
+				IFS="${NL}"
+				continue
+				;;
+			esac
+		elif ! steer_inject_when_ok "${_token}" "${CONSUMER_ROOT}"; then
 			IFS="${NL}"
 			continue
 		fi

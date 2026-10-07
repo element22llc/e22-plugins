@@ -44,7 +44,10 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     non-code folder, e.g. a Claude Cowork product-owner workspace). So is every
     *other* marked rule: knowledge mode skips a rule for carrying **any**
     `inject-when` marker, before the predicate is even evaluated, so the org
-    pack goes too. `12-stack-infra`,
+    pack goes too. `40-testing`, `80-change-class` and `85-practices` are marked
+    `code-project|advisory`: the same in code mode, and the only marked rules a
+    declared [advisory](known-limitations.md#advisory-mode-standards-without-adoption)
+    repo receives. `12-stack-infra`,
     `33-spec-workflow-openspec`, `36-issue-first` and
     `53-autonomous-loops` are likewise
     scoped - respectively to

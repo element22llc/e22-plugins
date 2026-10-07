@@ -46,10 +46,14 @@ describe('bandText', () => {
     expect(bandText(parseBrief(`${MANAGED}\nbranch=issue/42-checkout\ncwd=/repo`))).not.toContain('issue/42')
   })
 
-  test('stays quiet where steer does not manage the repo', async () => {
-    expect(bandText(parseBrief('spine=unmanaged\nfeatures=0'))).toBeNull()
-    expect(bandText(parseBrief('spine=foreign'))).toBeNull()
+  test('offers only advisory mode where steer does not manage the repo', async () => {
+    expect(bandText(parseBrief('spine=unmanaged\nfeatures=0'))).toBe('steer - advisory mode')
+    expect(bandText(parseBrief('spine=foreign\nquestions=4'))).toBe('steer - advisory mode')
     expect(bandText(parseBrief(''))).toBeNull()
+  })
+
+  test('advisory mode replaces the spine counts with a way out', async () => {
+    expect(bandText(parseBrief(`${MANAGED}\nmode=advisory`))).toBe('steer - advisory - leave advisory')
   })
 
   test('pluralises drafts', async () => {
@@ -210,4 +214,30 @@ test('the pane tabs between sections and routes each row to its owning skill', a
   await pane.press({ key: 'do-c-0' })
   expect(filled.at(-1)).toBe('/steer:work resume #42')
   await pane.unmount()
+})
+
+test('the advisory switch fills the setup mode and never submits', async ($, on) => {
+  const filled: string[] = []
+  let brief = 'spine=unmanaged\nmode='
+  on('process.run', async () => ran(brief))
+  on('command.register', async ($, e) => ({ value: { command: e.name } }))
+  on('session.start', async ($, e) => ({ cwd: e.cwd }))
+  on('classic.CwdChanged', async () => ({}))
+  on('ui.close', async () => ({ value: undefined }))
+  on('ui.panes', async () => ({ value: [] }))
+  on('prompt.fill', async ($, e) => {
+    filled.push(e.text)
+    return { isFilled: true, box: { text: e.text, cursor: e.text.length } }
+  })
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  let band = await $.ui.mount({ ...ABOVE_PROMPT, surface: 'terminal' })
+  await band.press({ key: 'band-advisory' })
+  expect(filled.at(-1)).toBe('/steer:setup advisory')
+  await band.unmount()
+  brief = 'spine=unmanaged\nmode=advisory'
+  await $.classic.CwdChanged({ old_cwd: '/repo', new_cwd: '/repo' })
+  band = await $.ui.mount({ ...ABOVE_PROMPT, surface: 'terminal' })
+  await band.press({ key: 'band-advisory' })
+  expect(filled.at(-1)).toBe('/steer:setup advisory off')
+  await band.unmount()
 })

@@ -64,6 +64,30 @@ in a non-git folder steer cannot detect a code project that carries no on-disk
 markers, so a marker-less code checkout opened without git would get the lean set -
 add a `mise.toml`/`package.json` (or open it as a git repo) to get full rules.
 
+## Advisory mode (standards without adoption)
+
+Some sessions want the standards but not the adoption: an external review, or
+planning against code that is not ours. **Advisory mode** is the third work mode,
+and unlike knowledge mode it is **declared, never inferred**: `/steer:setup
+advisory` writes `"env": { "STEER_MODE": "advisory" }` into the repo's
+`.claude/settings.local.json` (git-ignored, or excluded via `.git/info/exclude`,
+so nothing lands in the guest repo's history), and `/steer:setup advisory off`
+removes it. The hooks read the file itself, not the `STEER_MODE` env var, so the
+switch takes effect at the next session start (`/clear` or a new session) without
+restarting Claude Code; the status band switches at once.
+
+In advisory mode `inject-standards.sh` injects the six unmarked rules plus the
+rules whose marker names `advisory` - `40-testing`, `80-change-class` and
+`85-practices` (`code-project|advisory`), the review lens - under a banner that
+rules out bootstrap, spec files in the repo, and branching, committing or
+pushing unless asked. The org pack, delivery, tracker, issue-first and Definition
+of Done rules stay out: the guest repo's own conventions govern. The
+`check-unmanaged-repo` bootstrap card is silent, and on a repo steer does not
+manage the status band offers an **advisory mode** button (it fills
+`/steer:setup advisory`; a press never submits) and, while the mode is on,
+**leave advisory**. Run `mise run rules:preview -- --advisory` for the
+inject/skip table.
+
 ## Claude Cowork's sandbox: no installs, connector-only GitHub
 
 Claude Cowork runs in an **Anthropic-managed, sandboxed Linux VM** (OS-level

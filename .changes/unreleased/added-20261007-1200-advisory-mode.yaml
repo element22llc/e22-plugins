@@ -1,0 +1,15 @@
+kind: Added
+time: 2026-10-07T12:00:00.000000000-04:00
+custom:
+  Slug: advisory-mode
+body: |-
+  - **Added: advisory mode - the standards without adopting the repo.** For an
+    external review or planning against someone else's code, `/steer:setup
+    advisory` declares `STEER_MODE=advisory` in the repo's untracked
+    `.claude/settings.local.json` (`advisory off` leaves). The session then
+    gets the lean always-on core plus testing, change classification and
+    practices as a review lens, under a banner that rules out bootstrap, spec
+    files in the repo and unasked delivery; the org stack, delivery, tracker
+    and Definition of Done rules and the bootstrap nudge stay out. The status
+    band offers the switch on a repo steer does not manage and shows a way out
+    while it is on. `mise run rules:preview -- --advisory` shows the payload.

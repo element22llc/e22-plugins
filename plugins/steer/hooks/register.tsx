@@ -8,7 +8,7 @@ import type { EngineInterface, Register } from 'claude-code'
 
 export type Brief = Record<string, string>
 export type Section = 'features' | 'questions' | 'adrs' | 'claims'
-export type BandPart = { text: string; section?: Section; command?: string }
+export type BandPart = { text: string; section?: Section; command?: string; key?: string }
 export type Items = {
   features: { id: string; status: string }[]
   questions: { scope: string; id: string; status: string; impact: string; before: string; title: string }[]
@@ -56,7 +56,15 @@ function count(n: string | undefined, one: string, many: string): string | null 
 }
 
 export function bandParts(b: Brief): BandPart[] | null {
-  if (!b.spine || QUIET_SPINES.has(b.spine)) return null
+  if (b.mode === 'advisory')
+    return [
+      { text: 'steer' },
+      { text: 'advisory' },
+      { text: 'leave advisory', command: '/steer:setup advisory off', key: 'advisory' },
+    ]
+  if (!b.spine) return null
+  if (QUIET_SPINES.has(b.spine))
+    return [{ text: 'steer' }, { text: 'advisory mode', command: '/steer:setup advisory', key: 'advisory' }]
   const drafts = Number(b.drafts ?? 0)
   const features = count(b.features, 'feature', 'features')
   const parts: (BandPart | null)[] = [
@@ -72,6 +80,7 @@ export function bandParts(b: Brief): BandPart[] | null {
     // report is model-only (user-invocable: false), so the fill is an ask Claude routes, not a slash command.
     part(count(b.faults, 'steer fault -> report it', 'steer faults -> report them'), {
       command: 'Report the unfiled steer fault upstream.',
+      key: 'report',
     }),
   ]
   return parts.filter((p): p is BandPart => p !== null)
@@ -193,7 +202,7 @@ export const register: Register = on => {
       <Box flexDirection="row" flexWrap="wrap">
         {parts.flatMap((p, i) => {
           const sep = i > 0 ? [<Text dimColor> - </Text>] : []
-          const { section, command } = p
+          const { section, command, key } = p
           if (section)
             return [
               ...sep,
@@ -208,7 +217,7 @@ export const register: Register = on => {
           if (command)
             return [
               ...sep,
-              <Button key="band-report" label={p.text} plain dimColor onPress={() => suggest($, command)} />,
+              <Button key={`band-${key}`} label={p.text} plain dimColor onPress={() => suggest($, command)} />,
             ]
           return [...sep, <Text dimColor>{p.text}</Text>]
         })}

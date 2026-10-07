@@ -1,4 +1,4 @@
-<!-- steer:inject-when=code-project -->
+<!-- steer:inject-when=code-project|advisory -->
 ## Change classification
 
 Three classes set per-change ceremony, and **Issue-first takes its threshold

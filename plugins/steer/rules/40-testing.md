@@ -1,4 +1,4 @@
-<!-- steer:inject-when=code-project -->
+<!-- steer:inject-when=code-project|advisory -->
 ## Testing
 
 - Every feature change **includes or updates automated tests** in the same PR - never "later."
