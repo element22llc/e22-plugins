@@ -40,17 +40,17 @@ its **feature-scoped key**, `[<feature-id>] Q-NNN`:
 Fill in each **Answer** block below, then send this file back.
 Do not change the "[feature] Q-NNN" heading lines - they map your answers to the spec.
 
-## [accounts] Q-017 - Should deleted accounts be purged or retained? [BLOCKING]
-<!-- steer:q feature=accounts id=Q-017 source=spec/features/accounts/intent.md -->
-> Context: the intent leaves the retention window for deleted accounts open.
-
-**Answer:**
-_(type your answer here)_
-
 ## [product] Q-004 - Who should be granted read access to the production logs? [ACCESS]
 <!-- steer:q feature=product id=Q-004 kind=access source=spec/vision.md -->
 > Context: policy/delivery.yml declares a prod environment; no one outside the client can read its logs yet.
 > Do not paste passwords, keys or tokens here. Name who should get access, or where an existing secret is stored - never the secret itself.
+
+**Answer:**
+_(type your answer here)_
+
+## [accounts] Q-017 - Should deleted accounts be purged or retained? [BLOCKING]
+<!-- steer:q feature=accounts id=Q-017 source=spec/features/accounts/intent.md -->
+> Context: the intent leaves the retention window for deleted accounts open.
 
 **Answer:**
 _(type your answer here)_
