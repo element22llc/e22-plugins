@@ -1,7 +1,7 @@
 ---
 name: steer-questions
-description: Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
-argument-hint: '[bundle [<feature-id>]]'
+description: Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `needs` raises what the client owes before a wave; `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
+argument-hint: '[needs [--milestone <m>] | bundle [<feature-id>]]'
 user-invocable: false
 ---
 
@@ -13,7 +13,7 @@ user-invocable: false
 
 **When to use.** Reached via /steer-spec questions - not a direct entry point.
 
-<!-- steer:modes default,bundle -->
+<!-- steer:modes default,needs,bundle -->
 
 # Resolve open questions (`/steer-spec questions`)
 
@@ -29,11 +29,17 @@ decision; an unanswerable one stays open rather than being guessed.
 ## Modes
 
 `default` (no argument): the **resolve** workflow - the steps below; a
-**write** path. `bundle` (`bundle [<feature-id>]`): the **outbound** path -
-render the PO-answerable open questions as a shareable, fillable questionnaire
-for a Product Owner to answer offline; see [Bundle mode](#bundle-mode-bundle).
+**write** path. `needs` (`needs [--milestone <m>]`): the **pre-wave** sweep
+of what the client owes (access, tooling, decisions), written only on the
+dev's yes - read [`NEEDS.md`](NEEDS.md)
+when running it. `bundle`
+(`bundle [<feature-id>]`): the
+**outbound** path - render the PO-answerable open questions as a shareable,
+fillable questionnaire for a Product Owner to answer offline; see
+[Bundle mode](#bundle-mode-bundle).
 
-> **Dispatch `bundle` first - before step 1.** A `bundle` invocation renders
+> **Dispatch `needs` and `bundle` first - before step 1.** `needs` runs its
+> own procedure and stops. A `bundle` invocation renders
 > and **stops** - it must **not** fall through into the default resolve flow,
 > whose step-1 unconditional legacy delete would violate the read-only
 > guarantee. Route on the argument at the very top; the **Read-only - a hard
@@ -268,12 +274,10 @@ busywork the block must not invent (`NEXT-ACTIONS.md` §3).
 
 ## Bundle mode (`bundle`)
 
-Renders every PO-answerable open question across the spine as one fillable
-questionnaire (a Claude Artifact, Markdown fallback) so a Product Owner can
-answer them offline in a single pass. Bundle itself **changes nothing in the
-spec** - the filled return leg comes back through
-`/steer-spec intake clarify <filled-doc>`, which maps each answer to its `Q-NNN`.
-Read the procedure only when running this mode:
+One fillable questionnaire (Artifact, Markdown fallback) of every
+PO-answerable open question, grouped by `kind:`. It **changes nothing in the
+spec**; the filled copy returns through `/steer-spec intake clarify
+<filled-doc>`. Procedure, read only for this mode:
 [`BUNDLE.md`](BUNDLE.md).
 
 ## Coupling rules

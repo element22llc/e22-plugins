@@ -75,6 +75,9 @@ fixtures:
   - ask: "prepare a questionnaire the PO can fill in offline"
     skill: spec
     signals: ["questionnaire", "fillable"]
+  - ask: "before the next wave, list everything the client still owes us - access, accounts, decisions"
+    skill: spec
+    signals: ["client still owes", "before a wave"]
 
   # --- backlog / delivery -------------------------------------------------------
   - ask: "capture this idea in the backlog for later"

@@ -293,6 +293,71 @@ def check_repo_fixtures(errors: list[str]) -> None:
             errors.append(f"{drift}: invalid Expected category '{category}'")
 
 
+# The no-secrets line every `access` field carries (CLARIFICATION-LOOP.md).
+NO_SECRETS_NOTICE = "Do not paste passwords, keys or tokens here."
+_Q_BLOCK_RE = re.compile(r"^### (Q-\d{3})\b(.*?)(?=^### |\Z)", re.M | re.S)
+_BUNDLE_UNIT_RE = re.compile(r"^## \[([a-z0-9-]+)\] (Q-\d{3})\b(.*?)(?=^## |^---|\Z)", re.M | re.S)
+
+
+def _field(block: str, key: str) -> str:
+    m = re.search(rf"^- {key}:[ \t]*([^#\n]*)", block, re.M)
+    return m.group(1).strip() if m else ""
+
+
+def check_client_needs_round_trip(errors: list[str]) -> None:
+    """``/steer:spec questions needs`` -> ``bundle`` -> filled export -> ``intake
+    clarify`` -> fold, pinned as three golden artifacts: every question the sweep
+    wrote reaches the bundle under its ``[feature] Q-NNN`` key with its kind tag,
+    every ``access`` unit carries the no-secrets notice, and every key comes back
+    folded as ``resolved`` - for every kind, not just ``clarification``."""
+    base = REPO_FIXTURES / "client-needs-sweep"
+    paths = {
+        n: base / f
+        for n, f in (
+            ("swept", "swept-vision.md"),
+            ("bundle", "bundle-export.md"),
+            ("folded", "folded-vision.md"),
+        )
+    }
+    for path in paths.values():
+        if not path.is_file():
+            errors.append(f"{path}: expected fixture file is missing")
+    if not all(p.is_file() for p in paths.values()):
+        return
+    kinds = set(_REG.get("question_kind", []))
+    swept = {qid: body for qid, body in _Q_BLOCK_RE.findall(_read(paths["swept"]))}
+    folded = {qid: body for qid, body in _Q_BLOCK_RE.findall(_read(paths["folded"]))}
+    units = {
+        qid: (feat, body) for feat, qid, body in _BUNDLE_UNIT_RE.findall(_read(paths["bundle"]))
+    }
+    seen: set[str] = set()
+    for qid, block in swept.items():
+        kind = _field(block, "kind") or "clarification"
+        if kind not in kinds:
+            errors.append(f"{paths['swept']}: {qid} kind '{kind}' not in registry")
+            continue
+        seen.add(kind)
+        if qid not in units:
+            errors.append(f"{paths['bundle']}: {qid} ({kind}) never reached the bundle")
+            continue
+        feat, unit = units[qid]
+        if feat != "product":
+            errors.append(
+                f"{paths['bundle']}: {qid} is from vision.md, so its key is [product], not [{feat}]"
+            )
+        tag = f"[{kind.upper()}]"
+        if kind != "clarification" and tag not in unit.splitlines()[0]:
+            errors.append(f"{paths['bundle']}: {qid} heading lacks its {tag} tag")
+        if kind == "access" and NO_SECRETS_NOTICE not in unit:
+            errors.append(f"{paths['bundle']}: access question {qid} lacks the no-secrets notice")
+        if _field(folded.get(qid, ""), "status") != "resolved":
+            errors.append(f"{paths['folded']}: {qid} ({kind}) did not fold to status: resolved")
+    for kind in sorted(kinds - seen):
+        errors.append(
+            f"{paths['swept']}: no '{kind}' question - the round trip must cover every kind"
+        )
+
+
 def check_workflow_authority(errors: list[str]) -> None:
     """Lock the workflow-authority and lifecycle-transition contracts.
 
@@ -393,6 +458,7 @@ def run_checks() -> list[str]:
     check_adr_default_proposed(errors)
     check_repo_fixtures(errors)
     check_workflow_authority(errors)
+    check_client_needs_round_trip(errors)
     return errors
 
 

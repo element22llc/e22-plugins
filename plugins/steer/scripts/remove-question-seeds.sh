@@ -87,7 +87,7 @@ seed_file() {
     cur {
       l = $0
       if (l ~ /^[[:space:]]*$/) { inres = 0; next }
-      if (l ~ /^- (created|status|impact|owner|required_before|tracker):/) next
+      if (l ~ /^- (created|status|impact|owner|kind|required_before|tracker):/) next
       # The `_Resolution:_` sentence, however an older template wrapped it.
       if (l ~ /^_Resolution:_/) { inres = 1; next }
       if (inres) next

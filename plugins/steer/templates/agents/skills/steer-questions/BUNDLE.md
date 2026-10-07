@@ -38,7 +38,7 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
    step-2 sweep (`SKILL.md` -> "Steps") identifies** - using the read-only `Grep`/`Read`
    tools only (step 2's `grep` commands are an illustration; reproduce their
    result without running shell). Read each `### Q-NNN` block's **structured
-   fields** - `status`, `impact`, `owner` - not just its heading, and honour the
+   fields** - `status`, `impact`, `owner`, `kind` - not just its heading, and honour the
    same scope: `status: open|investigating`, no `steer:placeholder` seeds, and
    legacy `- [ ]` items only where they sit **inside** `## Open questions`. A legacy
    `spec/SPEC-QUESTIONS.md` (step 1) is included **read-only**, never silently
@@ -48,6 +48,10 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
 
 3. **Filter to what the PO can answer.** A bundle carries the questions a
    **Product Owner** can decide - not pure dev/technical work:
+   - **Kind first.** Any question whose `kind:` is **`access`**, **`tooling`**
+     or **`decision`** is a client ask by definition - include it **whatever
+     its `owner:`**. The audience rule below applies only to `clarification`
+     (an absent `kind:` is `clarification`).
    - **Audience.** Include what the PO owns or co-owns: `owner:` **`product`**
      and **`shared`** (the PO owns a half), plus **`design`** / **`security`**
      questions that are product / policy / scope / UX calls. **Exclude**
@@ -71,10 +75,14 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
    **copy-out floor** a fillable page must uphold and its
    progressive-enhancement copy/download controls - do not restate them here.
    The temp path is `<tempdir>/steer-questions-bundle[-<feature-id>].html`.
-   The page carries one labelled **`<textarea>` per question**, grouped
-   **product-level first, then per feature**, blocking questions visibly
-   flagged; each carries its **feature-scoped key `[<feature-id>] Q-NNN`** and
-   the question's context, verbatim from the spec.
+   The page carries one labelled **`<textarea>` per question**, grouped **by
+   `kind:`** - `access`, `tooling`, `decision`, then `clarification` - and
+   within each group **product-level first, then per feature**; blocking
+   questions visibly flagged. Each carries its **feature-scoped key
+   `[<feature-id>] Q-NNN`** and the question's context, verbatim from the
+   spec. With a single kind present, skip the group headings. **Every
+   `access` field carries the no-secrets line** of the return-document
+   contract - shown beside the field, and emitted in the export.
 
 5. **Markdown fallback.** Where the Artifact tool is unavailable, print the
    **same fillable return-document Markdown inline** - never to a file under

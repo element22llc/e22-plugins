@@ -11,8 +11,10 @@
 # fields as "-" (IFS-tab `read` and awk both mishandle empty tab fields):
 #   S \t <feature-status>      once, before any Q record (lowercased; "-" when
 #                              the header has no Status line, e.g. vision.md)
-#   Q \t id \t line \t status \t impact \t required_before \t owner \t created \t tracker \t title
-#                              one per `### Q-NNN` block under "## Open questions"
+#   Q \t id \t line \t status \t impact \t required_before \t owner \t created \t tracker \t title \t kind
+#                              one per `### Q-NNN` block under "## Open questions";
+#                              kind is last so positional readers predating it
+#                              keep their columns ("-" = absent = clarification)
 #   P \t line \t id            an unfilled `<!-- steer:placeholder -->` seed block
 #   L \t line \t text          a legacy `- [ ]` item: inside "## Open questions"
 #                              and outside any `### ` block (a bullet inside a
@@ -33,9 +35,9 @@ steer_questions_parse() {
     function endblock() {
       if (inblk) {
         if (skip) printf "P\t%d\t%s\n", q_line, dash(q_id)
-        else printf "Q\t%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", dash(q_id), q_line, dash(q_status), dash(q_impact), dash(q_rb), dash(q_owner), dash(q_created), dash(q_tracker), dash(q_title)
+        else printf "Q\t%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", dash(q_id), q_line, dash(q_status), dash(q_impact), dash(q_rb), dash(q_owner), dash(q_created), dash(q_tracker), dash(q_title), dash(q_kind)
       }
-      inblk = 0; skip = 0; q_id = ""; q_line = 0; q_status = ""; q_impact = ""; q_rb = ""; q_owner = ""; q_created = ""; q_tracker = ""; q_title = ""
+      inblk = 0; skip = 0; q_id = ""; q_line = 0; q_status = ""; q_impact = ""; q_rb = ""; q_owner = ""; q_created = ""; q_tracker = ""; q_title = ""; q_kind = ""
     }
     # Feature Status comes from the header only - the first Status line before
     # any "## Open questions", so the status bullet of a question never reads
@@ -70,6 +72,7 @@ steer_questions_parse() {
       else if (line ~ /^impact:/)          q_impact  = tolower(val(line, "impact"))
       else if (line ~ /^required_before:/) q_rb      = val(line, "required_before")
       else if (line ~ /^owner:/)           q_owner   = tolower(val(line, "owner"))
+      else if (line ~ /^kind:/)            q_kind    = tolower(val(line, "kind"))
       else if (line ~ /^created:/)         q_created = val(line, "created")
       else if (line ~ /^tracker:/)         q_tracker = val(line, "tracker")
     }

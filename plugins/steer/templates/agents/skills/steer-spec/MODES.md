@@ -61,6 +61,8 @@ Flag each of these, citing the `Q-NNN` and file:
   `question-id`) with no `tracker:` ref back;
 - ✗ a `created:` field present but not a well-formed `YYYY-MM-DD` date (the
   staleness clock can't read it);
+- ✗ a `kind:` field present but not `clarification` / `decision` / `access` /
+  `tooling` (absent is fine - it reads as `clarification`);
 - ⚠ an open question past its staleness threshold with no `tracker:` ref - not
   yet promoted: 14 days from `created:` for a `blocking` one, 60 for a
   `non-blocking` one (14 when the feature is `live`). This **warns**, it does

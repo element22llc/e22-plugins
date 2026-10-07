@@ -165,7 +165,9 @@ classify_file() {
       if (status != "open" && status != "investigating") next
       if (impact == "") { attn++; next }
       if (owner == "") unowned++
-      else if (owner == "product") product++
+      # The client answers a PO question, and any access/tooling/decision ask
+      # whoever owns it - the same audience `questions bundle` solicits.
+      if (owner == "product" || ($11 != "" && $11 != "-" && $11 != "clarification")) product++
       if (impact == "blocking") {
         r = (rb in rank) ? rank[rb] : 0
         if (r == 0 || r <= cleared + 1) { now++; kind = "now" } else { trans++; kind = "later" }

@@ -73,12 +73,21 @@ is in sync. Write them under `## Open questions` like this:
 - status: open            # open | investigating | resolved | deferred | cancelled
 - impact: blocking        # blocking | non-blocking
 - owner: product          # product | development | design | security | shared
+- kind: clarification     # clarification | decision | access | tooling (optional; absent = clarification)
 - required_before: intent-approval   # intent-approval | contract-approval | implementation | non-prod-validation | production-release
 - tracker:                # issue ref once promoted (e.g. #142), else empty
 
 _Resolution:_ recorded here when answered, then folded into the normative
 section of the spec above.
 ```
+
+`kind:` is **optional** and orthogonal to `owner:` - `owner` is the role that
+decides, `kind` is what is being asked (`ENUMS.md` -> `question_kind`). Absent,
+it reads as `clarification`, exactly as before the field existed. An `access`
+question asks for a **grant or confirmation** (a role, an invite, a store
+path), **never a secret value** - the answer is committed under
+`spec/sources/`. `/steer:spec questions needs` raises `access` / `tooling` /
+`decision` questions from repo signals before a wave of work.
 
 IDs are stable per feature (`Q-001`, `Q-002`, ...) and never reused. When a
 question is promoted to an issue, the issue carries the same ID via
@@ -120,6 +129,8 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `tracker:` ref back;
 - a `resolved` question with no recorded resolution folded into the spec;
 - a `created:` field present but not a well-formed `YYYY-MM-DD` date (**fails**);
+- a `kind:` field present but not a `question_kind` value (**fails**; absent is
+  fine - it reads as `clarification`);
 - a `blocking` question stale past `STEER_QUESTION_STALE_DAYS` (14), or a
   `non-blocking` one past `STEER_QUESTION_STALE_NONBLOCKING_DAYS` (60; 14 in a
   `live` feature), with no `tracker:` ref - not yet promoted (**warns**,

@@ -49,6 +49,24 @@ a gate; `resolved` means the answer is folded into the spec's normative prose;
 A `blocking` question whose `required_before` gate is reached, and whose status is
 still unresolved, blocks that gate.
 
+## `question_kind` - what a question asks of whoever answers it
+
+`clarification · decision · access · tooling`
+
+**Optional**; an absent `kind:` reads as `clarification`, so every question
+written before the field existed behaves exactly as it did. Orthogonal to
+`owner:` - `owner` is *who* decides, `kind` is *what* is being asked:
+
+- `clarification` - an ambiguity in the spec the answer resolves.
+- `decision` - a call someone must make (scope, policy, a trade-off).
+- `access` - a grant or confirmation the team needs to proceed (a role, an
+  account invite, a store path). Asks for the *grant*, **never a secret value**.
+- `tooling` - an account, service or tool someone must provision.
+
+`/steer:spec questions needs` raises the last three from concrete repo signals;
+`/steer:spec questions bundle` groups by kind and always solicits a
+non-`clarification` kind, whatever its `owner`.
+
 ## `created` - when a question was raised (not an enum)
 
 A `created:` field, when present, is a **date** in `YYYY-MM-DD` form - not an
