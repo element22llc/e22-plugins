@@ -103,6 +103,12 @@ unchanged. At close, surface **one** follow-up: `/steer-setup` graduates the
 repo (spine, scaffold, toolchain) when the team is ready to build - a next
 step, never a precondition for the spec work itself.
 
+**Advisory mode** (the session banner says so, or the repo's
+`.claude/settings.local.json` declares `STEER_MODE=advisory`) narrows lite mode
+further: the repo is a guest's, so skip `/steer-spec-scaffold`, write the
+intent (and contract) to the user in chat or an artifact, never under the repo,
+and surface no `/steer-setup` follow-up.
+
 **Lite mode does not extend to every mode.** The brainstorm loop, `clarify`,
 `approve` and `validate` all work on the one feature directory
 `/steer-spec-scaffold` creates, so they run. `questions` sweeps a spine that

@@ -110,6 +110,7 @@ below give the detail.
 | `/steer:setup doctor` | The local toolchain is missing or a runtime is shadowed - this runs before any of the others can. |
 | `/steer:setup protect` | Raise the branch-protection wall, or graduate off solo trunk - the step each bootstrap path ends on. |
 | `/steer:setup worktrees` | Worktrees made by another tool (Orca, Conductor, git) need that tool's teardown hook - this checks and installs it, and sweeps orphaned stacks. |
+| `/steer:setup advisory` | A repo steer should review or plan against but not adopt (external review, someone else's code) - loads the standards as a lens, writes no spine or scaffold. `advisory off` leaves. |
 
 ## Build loop
 

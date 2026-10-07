@@ -451,6 +451,20 @@ R7="$(new_repo repoSpace)"
 out="$(run_hook check-write-nudges.sh "$(json_write "${R7}" sSp 'src/my file.ts' 'x')")"
 assert_ctx "spec-before-code: path with spaces" "${out}"
 
+# A declared guest (advisory mode) gets neither nudge: both re-assert rules
+# advisory omits (bootstrap, issue-first), so a code write stays silent.
+R7a="$(new_repo repoAdv)"
+mkdir -p "${R7a}/.claude"
+printf '{ "env": { "STEER_MODE": "advisory" } }\n' >"${R7a}/.claude/settings.local.json"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R7a}" sAdv src/app.ts 'x')")"
+assert_empty "write-nudges(adv): unmanaged guest repo gets no bootstrap nudge" "${out}"
+R7b="$(new_repo repoAdvGH)"
+bootstrapped_repo "${R7b}"
+mkdir -p "${R7b}/.claude"
+printf '{ "env": { "STEER_MODE": "advisory" } }\n' >"${R7b}/.claude/settings.local.json"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R7b}" sAdvGH src/app.ts 'x')")"
+assert_empty "write-nudges(adv): github-tracker guest repo gets no issue-first nudge" "${out}"
+
 # --- issue-first dimension of check-write-nudges.sh (GitHub tracker).
 #     Fixtures are bootstrapped (bootstrapped_repo) so the spec/scaffold dimension
 #     stays silent and these cases isolate issue-first. ---

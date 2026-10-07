@@ -1,0 +1,10 @@
+kind: Fixed
+body: |-
+  **Fixed: advisory mode now stays out of the guest repo at write time too.**
+  The write-path nudges no longer push `/steer:setup` or issue-first on a code
+  write in a repo that declared advisory mode, and `/steer:spec` lite mode hands
+  the intent back in chat instead of writing `spec/features/` or offering
+  bootstrap there.
+time: 2026-10-07T16:00:00.000000000-04:00
+custom:
+  Slug: advisory-mode-gaps
