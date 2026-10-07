@@ -50,6 +50,7 @@ when you fill in a real question.
 - status: open            # open | investigating | resolved | deferred | cancelled
 - impact: blocking        # blocking | non-blocking
 - owner: product          # product | development | design | security | shared
+- kind: clarification     # clarification | decision | access | tooling (optional; absent = clarification)
 - required_before: intent-approval   # intent-approval | contract-approval | implementation | non-prod-validation | production-release
 - tracker:                # issue ref once promoted (e.g. #142), else empty
 

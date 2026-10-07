@@ -7,7 +7,7 @@
 #   - an unfilled `<!-- steer:placeholder -->` seed in a feature past `draft`,
 #     or beside real questions,
 #   - a question missing `status:`/`impact:`, or with an unknown
-#     `required_before:` or a malformed `created:`,
+#     `required_before:`/`kind:` or a malformed `created:`,
 #   - a blocking question still open at a gate its feature has already passed.
 # The first two are what `/steer:setup sync` converts and removes.
 set -eu
@@ -26,6 +26,8 @@ HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 # implemented/validated are retired statuses, ranked only for un-migrated specs.
 STEER_SPEC_RB_ORDER='intent-approval contract-approval implementation non-prod-validation production-release'
 STEER_SPEC_CLEARED='approved=intent-approval live=production-release implemented=implementation validated=non-prod-validation'
+# The optional `kind:` vocabulary - enums.registry `question_kind`, CI-checked the same way.
+STEER_SPEC_KINDS='clarification decision access tooling'
 
 if [ ! -f spec/.version ]; then
 	steer_ci_notice 'No spec/.version - this repo has no steer spec spine, so there is no open-question contract to check.'
@@ -38,10 +40,11 @@ for f in spec/vision.md spec/features/*/intent.md spec/PRODUCTIONIZATION.md; do
 	[ -f "${f}" ] || continue
 	checked=$((checked + 1))
 	problems="$(steer_questions_parse "${f}" | awk -F '\t' -v f="${f}" \
-		-v rborder="${STEER_SPEC_RB_ORDER}" -v clearmap="${STEER_SPEC_CLEARED}" '
+		-v rborder="${STEER_SPEC_RB_ORDER}" -v clearmap="${STEER_SPEC_CLEARED}" -v kinds="${STEER_SPEC_KINDS}" '
     BEGIN {
       n = split(rborder, a, " "); for (i = 1; i <= n; i++) rank[a[i]] = i
       n = split(clearmap, a, " "); for (i = 1; i <= n; i++) { split(a[i], kv, "="); crank[kv[1]] = rank[kv[2]] }
+      n = split(kinds, a, " "); for (i = 1; i <= n; i++) kind[a[i]] = 1
     }
     function err(line, msg) { printf "%s:%s: %s\n", f, line, msg }
     $1 == "S" { st = $2; cleared = (st in crank) ? crank[st] : 0; next }
@@ -53,6 +56,7 @@ for f in spec/vision.md spec/features/*/intent.md spec/PRODUCTIONIZATION.md; do
       if ($4 == "-") { err($3, $2 " has no status:"); next }
       if (($4 == "open" || $4 == "investigating") && $5 == "-") err($3, $2 " has no impact:")
       if ($6 != "-" && !($6 in rank)) err($3, $2 " has unknown required_before: " $6)
+      if ($11 != "" && $11 != "-" && !($11 in kind)) err($3, $2 " has unknown kind: " $11)
       if ($8 != "-" && $8 !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) err($3, $2 " created: is not YYYY-MM-DD")
       if (($4 == "open" || $4 == "investigating") && $5 == "blocking" && ($6 in rank) && rank[$6] <= cleared)
         err($3, $2 " is a blocking question still " $4 " at required_before: " $6 ", a gate this " st " feature has already passed - resolve it, or reclassify its impact with the owner")

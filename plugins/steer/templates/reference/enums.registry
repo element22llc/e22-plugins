@@ -19,6 +19,7 @@
 feature_status=draft|approved|live
 question_status=open|investigating|resolved|deferred|cancelled
 question_impact=blocking|non-blocking
+question_kind=clarification|decision|access|tooling
 required_before=intent-approval|contract-approval|implementation|non-prod-validation|production-release
 issue_kind=epic|feature|bug|task|finding|spec-question|spec-drift|audit-run
 issue_state=inbox|exploring|ready-for-spec|ready-for-dev|in-progress|validate|blocked|done|cancelled

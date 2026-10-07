@@ -153,6 +153,15 @@ front-end **verbatim** - step 1 (a clarification is its own `source-id`),
 step 2 (version, convert, commit, with the step-2.2 binary-hash guard), and
 step 6 (record) - replacing the git-diff (steps 3-4) with:
 
+0. **Secret check - before step 2 commits anything.** A clarification
+   document is committed under `spec/sources/`, so read the extraction for a
+   pasted credential first - most likely under an `[ACCESS]` heading: a
+   private-key block, a cloud access-key id, a bearer/API token, a
+   `password:` / connection string with an inline password. On a hit, **stop
+   and commit nothing**: name the heading (never echo the value), and hand it
+   back - the client rotates it, re-sends without it, or the dev redacts it
+   locally before re-running clarify. Rule `60-high-risk` (Secrets handling).
+
 1. **Segment** the extraction into clarification units per the reference's
    segmentation rule - semantic by default; structural (one unit per
    `## [<feature-id>] Q-NNN` heading) for a recognized bundle return. An

@@ -1023,6 +1023,18 @@ assert_eq "open-questions: bounded list names exactly 3" "$(printf '%s\n' "${out
 assert_eq "open-questions: blocking-now ranks first" "$(printf '%s\n' "${out}" | grep '^- `Q-' | head -n 1 | cut -c1-9)" '- `Q-009`'
 assert_eq "open-questions: then oldest first" "$(printf '%s\n' "${out}" | grep '^- `Q-' | sed -n 2p | cut -c1-9)" '- `Q-001`'
 oq_grep "open-questions: PO-dominated backlog points at the bundle" 'questions bundle' "${out}"
+
+# An access/tooling/decision ask goes to the client whatever its owner, so a
+# backlog of dev-owned `kind: access` questions still points at the bundle.
+OQ18K="$(oq_repo oq18k f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	for _n in 1 2 3; do
+		printf '### Q-00%s - grant %s\n- created: 2026-06-0%s\n- status: open\n- impact: non-blocking\n- owner: development\n- kind: access\n- tracker:\n\n' "${_n}" "${_n}" "${_n}"
+	done
+} >"${OQ18K}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ18K}" oq18k)")"
+oq_grep "open-questions: client-facing kinds point at the bundle" 'questions bundle' "${out}"
 oq_ngrep "open-questions: no per-file listing" 'spec/features/f/intent.md` -' "${out}"
 
 # Unowned-dominated backlog points at triage.
@@ -1268,6 +1280,22 @@ cs_case "malformed created fails" 'draft
 - created: last week
 - status: open
 - impact: non-blocking' 1 'YYYY-MM-DD'
+cs_case "unknown kind fails" 'draft
+
+## Open questions
+
+### Q-001 - creds
+- status: open
+- impact: non-blocking
+- kind: password' 1 'unknown kind: password'
+cs_case "known kind passes" 'draft
+
+## Open questions
+
+### Q-001 - grant
+- status: open
+- impact: non-blocking
+- kind: access          # clarification | decision | access | tooling' 0 ''
 # Filling in the template's seed as it says (drop the marker, retitle) keeps the
 # field comments, so an empty `created:` must still read as empty.
 sed 's/ <!-- steer:placeholder -->//; s/\[Anything[^]]*\]/real question/' \

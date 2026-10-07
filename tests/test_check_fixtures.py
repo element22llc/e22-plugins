@@ -87,6 +87,49 @@ def test_accepted_adr_from_adoption_is_caught(tmp_path: Path, monkeypatch):
     assert any("Status: Accepted" in e for e in errors)
 
 
+# --- client-needs round trip ---------------------------------------------
+
+
+def _needs_tree(tmp_path: Path, monkeypatch, *, bundle_edit=None, folded_edit=None) -> list[str]:
+    src = REPO_ROOT / "tests/fixtures/client-needs-sweep"
+    dst = tmp_path / "client-needs-sweep"
+    dst.mkdir(parents=True)
+    for name in ("swept-vision.md", "bundle-export.md", "folded-vision.md"):
+        text = (src / name).read_text(encoding="utf-8")
+        if name == "bundle-export.md" and bundle_edit:
+            text = bundle_edit(text)
+        if name == "folded-vision.md" and folded_edit:
+            text = folded_edit(text)
+        (dst / name).write_text(text, encoding="utf-8")
+    monkeypatch.setattr(check_fixtures, "REPO_FIXTURES", tmp_path)
+    errors: list[str] = []
+    check_fixtures.check_client_needs_round_trip(errors)
+    return errors
+
+
+def test_access_question_without_no_secrets_notice_is_caught(tmp_path: Path, monkeypatch):
+    errors = _needs_tree(
+        tmp_path,
+        monkeypatch,
+        bundle_edit=lambda t: t.replace(check_fixtures.NO_SECRETS_NOTICE, ""),
+    )
+    assert any("lacks the no-secrets notice" in e for e in errors)
+
+
+def test_kind_dropped_from_bundle_is_caught(tmp_path: Path, monkeypatch):
+    errors = _needs_tree(tmp_path, monkeypatch, bundle_edit=lambda t: t.replace(" [TOOLING]", ""))
+    assert any("lacks its [TOOLING] tag" in e for e in errors)
+
+
+def test_unfolded_kind_is_caught(tmp_path: Path, monkeypatch):
+    def reopen_decision(text: str) -> str:
+        head, _, tail = text.partition("### Q-002")
+        return head + "### Q-002" + tail.replace("- status: resolved", "- status: open", 1)
+
+    errors = _needs_tree(tmp_path, monkeypatch, folded_edit=reopen_decision)
+    assert any("Q-002 (decision) did not fold" in e for e in errors)
+
+
 # --- ADR template default ------------------------------------------------
 
 

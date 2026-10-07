@@ -13,6 +13,7 @@ review.
 | `adopted-existing-app/` | `/steer:adopt` must record inferred decisions as **Proposed** ADRs, never `Accepted`. |
 | `production-app-with-open-issues/` | A production handoff block does not misuse "Required before production" for optional work; lifecycle state + hidden markers stay valid. |
 | `spec-drift-repo/` | `/steer:audit spec` output ends in a valid handoff block with a valid category. |
+| `client-needs-sweep/` | `/steer:spec questions needs` -> `bundle` -> `intake clarify` round trip: every `kind:` reaches the bundle under its `[feature] Q-NNN` key and kind tag, every `access` field carries the no-secrets notice, and every key folds back to `resolved`. |
 
 The authoritative contract definitions live in
 [`../../plugins/steer/templates/reference/NEXT-ACTIONS.md`](../../plugins/steer/templates/reference/NEXT-ACTIONS.md)

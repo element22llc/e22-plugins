@@ -422,6 +422,7 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
     adrstat = set(reg.get("adr_status", []))
     qstat = set(reg.get("question_status", []))
     qimp = set(reg.get("question_impact", []))
+    qkind = set(reg.get("question_kind", []))
     rbef = set(reg.get("required_before", []))
     istate = set(reg.get("issue_state", []))
     isrc = set(reg.get("issue_source", []))
@@ -462,6 +463,11 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
                 for t in tokens(m.group(1)):
                     if t not in qimp:
                         errors.append(f"{loc}: question impact token '{t}' not in registry")
+            m = re.match(r"^\s*-\s*kind:\s*(.+)$", line)
+            if m:
+                for t in tokens(m.group(1)):
+                    if t not in qkind:
+                        errors.append(f"{loc}: question kind token '{t}' not in registry")
             m = re.match(r"^\s*-\s*required_before:\s*(.+)$", line)
             if m:
                 for t in tokens(m.group(1)):
@@ -1063,6 +1069,14 @@ def check_ci_spec_gate_order(errors: list[str], reg: dict[str, list[str]]) -> No
         errors.append(
             f"{_CI_SPEC}: STEER_SPEC_RB_ORDER is {got} but enums.registry "
             f"required_before is {want} - keep them equal"
+        )
+    m = re.search(r"^STEER_SPEC_KINDS='([^']*)'$", path.read_text(encoding="utf-8"), re.M)
+    want = reg.get("question_kind", [])
+    got = m.group(1).split() if m else None
+    if got != want:
+        errors.append(
+            f"{_CI_SPEC}: STEER_SPEC_KINDS is {got} but enums.registry "
+            f"question_kind is {want} - keep them equal"
         )
 
 

@@ -47,6 +47,14 @@ Do not change the "[feature] Q-NNN" heading lines - they map your answers to the
 **Answer:**
 _(type your answer here)_
 
+## [product] Q-004 - Who should be granted read access to the production logs? [ACCESS]
+<!-- steer:q feature=product id=Q-004 kind=access source=spec/vision.md -->
+> Context: policy/delivery.yml declares a prod environment; no one outside the client can read its logs yet.
+> Do not paste passwords, keys or tokens here. Name who should get access, or where an existing secret is stored - never the secret itself.
+
+**Answer:**
+_(type your answer here)_
+
 ---
 ````
 
@@ -64,6 +72,18 @@ _(type your answer here)_
   unlike an HTML comment. The `<!-- steer:q feature= id= source= -->` comment
   restates the key plus the source path as machine-readable provenance - a
   best-effort aid, not the authority; the visible heading is.
+- **Grouped by kind, keyed the same.** Questions run in `kind:` groups
+  (`ENUMS.md` -> `question_kind`) - `access`, `tooling`, `decision`, then
+  `clarification` - and a non-`clarification` heading carries its kind as a
+  trailing tag (`[ACCESS]`, `[TOOLING]`, `[DECISION]`) beside `[BLOCKING]`; the
+  `steer:q` comment restates it as `kind=`. The tag is a label, not part of
+  the key: the unit boundary is still the `## [<feature-id>] Q-NNN` heading,
+  so segmentation and key matching are unchanged.
+- **Never a secret value.** Every `access` question carries the fixed
+  *Do not paste passwords, keys or tokens here* line above its answer, because
+  the returned document is committed under `spec/sources/`. If a returned
+  answer contains a credential anyway, `/steer:intake clarify` stops before
+  committing it (the clarify pipeline in its `PIPELINES.md`).
 - **Nothing volatile is embedded** (no git SHA), so two downloads of the same
   answers stay byte-identical for intake's binary-hash idempotency guard.
 
