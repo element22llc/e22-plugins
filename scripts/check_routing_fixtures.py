@@ -36,7 +36,7 @@ Checks enforced:
 
 This is a deterministic lexical proxy, not a model eval: it cannot prove an
 ask routes correctly, but it proves the vocabulary that routing depends on is
-still present. The e2e tier (``mise run e2e``) remains the behavioral check.
+still present. The routing evals (``mise run evals``) are the behavioral check.
 
 Run from the repo root::
 

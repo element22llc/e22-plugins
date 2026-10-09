@@ -28,11 +28,7 @@ STEER_CLAUDE_CODE_VERSION = "2.1.291"
 # mirroring the CI workflows (.github/workflows/plugin-quality.yml,
 # docs-deploy.yml) which set it at job level. Without it, mise resolves
 # python="latest" to the *free-threaded* 3.14 build, whose source-build /
-# abi3-wheel path is slow and flaky (see PR #107). This matters most for the
-# E2E suite: `/steer:init` runs `mise install` inside a throwaway scaffold repo
-# (python="latest"), and this var is inherited by that subprocess - so local
-# `mise run e2e` / `e2e:local` gets CI's fast, deterministic install instead of
-# an intermittent multi-minute build that pushed the init scenario past the cap.
+# abi3-wheel path is slow and flaky (see PR #107).
 MISE_PYTHON_PRECOMPILED_FLAVOR = "install_only_stripped"
 
 [tasks.lint]
@@ -272,9 +268,9 @@ depends = [
   "delivery-gates",
 ]
 
-# Model-graded routing evals (`claude plugin eval`). Like the E2E suite below this
-# spends real tokens (~$1.00-1.30 per case per run across both ablation arms), so
-# it is deliberately NOT in `ci`'s depends and stays off the PR path - run it on
+# Model-graded routing evals (`claude plugin eval`). This spends real tokens
+# (~$1.00-1.30 per case per run across both ablation arms), so it is
+# deliberately NOT in `ci`'s depends and stays off the PR path - run it on
 # the release path or when the routing surface changes. The task runs the whole
 # suite at the health settings; every flag below is load-bearing, and a bare
 # `claude plugin eval` does not exercise this suite.
@@ -320,10 +316,11 @@ depends = [
 # Projected, not measured - re-measure on the first sweep and when case count or
 # max_turns changes.
 #
-# check_eval_env.py runs first and refuses the sweep when ANTHROPIC_BASE_URL is
-# set in the shell or in the user settings `env` (which `env -u` cannot clear): a
-# compressing proxy corrupts what every run reads. STEER_EVALS_ALLOW_BASE_URL=1
-# lets a pass-through gateway through.
+# The sweep calls the API directly, never through a local proxy: a compressing
+# one corrupts what every run reads. Claude Code applies the user settings `env`
+# block on top of the process env, so `env -u ANTHROPIC_BASE_URL` alone cannot
+# clear a value set there - `--setting-sources project,local` skips that source
+# too. STEER_EVALS_ALLOW_BASE_URL=1 keeps both for a pass-through gateway.
 #
 # --no-publish keeps the HTML report local. Publishing it to claude.ai is the CLI
 # default wherever the account supports it, and a task run on every routing change
@@ -342,8 +339,12 @@ depends = [
 [tasks."evals"]
 description = "Run the model-graded routing evals against the plugin (slow, ~$45-55)"
 run = """
-uv run python scripts/check_eval_env.py && \
-claude plugin eval plugins/steer \
+if [ "${STEER_EVALS_ALLOW_BASE_URL:-}" = 1 ]; then
+  claude=claude
+else
+  claude="env -u ANTHROPIC_BASE_URL claude --setting-sources project,local"
+fi
+$claude plugin eval plugins/steer \
   --scaffold \
   --ablation with-without \
   --allow-tools mcp__github__issue_read mcp__github__list_issues mcp__github__search_issues \
@@ -354,30 +355,3 @@ claude plugin eval plugins/steer \
   --max-cost-usd 90 \
   --no-publish
 """
-
-# Headless end-to-end skill suite - drives the real `claude` CLI against a
-# throwaway repo and asserts on the files a skill produces. SLOW and spends
-# tokens, so it is deliberately NOT in `ci`'s depends (stays off the PR path)
-# and no longer runs in CI at all - it is a local-only tier now, run on demand
-# via `mise run e2e` / `e2e:local`. Skips unless ANTHROPIC_API_KEY /
-# CLAUDE_CODE_OAUTH_TOKEN is set (or STEER_E2E_LOCAL=1 for the seat variant).
-[tasks."e2e"]
-description = "Run the headless end-to-end skill suite (slow, costs tokens; needs ANTHROPIC_API_KEY)"
-# -rP surfaces each scenario's captured turns/cost line even when the test passes
-# (pytest otherwise swallows stdout on green).
-run = ["uv run pytest -m e2e -rP"]
-
-# Local variant: run the suite on your interactive `claude` login (subscription
-# seat) instead of API tokens - run `claude /login` once first. `env -u
-# ANTHROPIC_API_KEY` drops the key for this run so Claude Code bills the seat (it
-# prefers the key when present); STEER_E2E_LOCAL=1 flips the skip-guard on. No
-# --max-budget-usd is sent (no API dollar cost on a seat); the per-scenario
-# wall-clock timeout still bounds a runaway.
-#
-# Run a single scenario (one ~3-min skill run instead of all) by forwarding -k:
-#   mise run e2e:local -- -k init        # init scenarios only
-#   mise run e2e:local -- -k adopt       # the adopt scenario
-#   mise run e2e:local -- -k test_sync_is_noop_when_current
-[tasks."e2e:local"]
-description = "Run the E2E suite on your local Claude seat, no API charge (run `claude /login` first)"
-run = ["env -u ANTHROPIC_API_KEY STEER_E2E_LOCAL=1 uv run pytest -m e2e -rP"]
