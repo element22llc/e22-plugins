@@ -90,14 +90,46 @@ def assert_branch_protection_policy(repo: Path) -> None:
 
 
 def assert_drift_gate(repo: Path) -> None:
-    """capability ``drift-gate``: CI hygiene job + advisory spec-drift check + PR template."""
-    assert_contains(repo, ".github/workflows/ci.yml", "scan-version-pins.sh")
+    """capability ``drift-gate``: CI hygiene job + advisory spec-drift check + PR template.
+
+    ``ci.yml`` delegates every stage to a ``mise run ci:*`` task, so the wiring is
+    the step -> task -> stage-script chain, not a script name inside the workflow."""
+    assert_contains(repo, ".github/workflows/ci.yml", "mise run ci:hygiene")
+    assert_contains(repo, "mise.toml", '[tasks."ci:hygiene"]')
+    assert_matches(repo, "mise.toml", r"(?m)^\[tasks\.check\]")
+    assert_matches(repo, "mise.toml", r"(?m)^\[tasks\.ci\]")
+    assert_file(repo, "scripts/ci-lib.sh")
+    assert_contains(repo, "scripts/ci-hygiene.sh", "scan-version-pins.sh")
     # Advisory spec-drift gate shipped to product repos (#243).
     assert_contains(repo, ".github/workflows/ci.yml", "spec-drift")
-    # Solo-trunk Definition-of-Done floor: the coverage gate self-gates on the
+    # Solo-trunk Definition-of-Done floor: the coverage stage self-gates on the
     # delivery-mode marker on push to main (#242).
-    assert_contains(repo, ".github/workflows/ci.yml", "steer:delivery-mode=solo-trunk")
+    assert_contains(repo, "scripts/ci-coverage.sh", "steer:delivery-mode=solo-trunk")
     assert_file(repo, ".github/pull_request_template.md")
+
+
+def assert_question_gate(repo: Path) -> None:
+    """capability ``question-gate``: the open-question contract runs in CI."""
+    assert_contains(repo, ".github/workflows/ci.yml", "mise run ci:spec")
+    assert_contains(repo, "mise.toml", '[tasks."ci:spec"]')
+    assert_file(repo, "scripts/ci-spec.sh")
+    assert_file(repo, "scripts/spec-questions.sh")
+
+
+def assert_delivery_mode_declared(repo: Path) -> None:
+    """capability ``delivery-mode-declared``: CLAUDE.md names the delivery mode."""
+    assert_matches(repo, "CLAUDE.md", r"steer:delivery-mode=(pr-flow|solo-trunk)")
+
+
+def assert_changelog_fragments(repo: Path) -> None:
+    """capability ``changelog-fragments``: changie config + pending-entry dir."""
+    assert_file(repo, ".changie.yaml")
+    assert (repo / ".changes" / "unreleased").is_dir(), "expected dir missing: .changes/unreleased/"
+
+
+def assert_line_ending_normalization(repo: Path) -> None:
+    """capability ``line-ending-normalization``: ``.gitattributes`` present."""
+    assert_file(repo, ".gitattributes")
 
 
 def assert_in_ci_plugin_loading(repo: Path) -> None:

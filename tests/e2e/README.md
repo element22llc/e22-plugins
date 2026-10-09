@@ -35,6 +35,15 @@ key so Claude Code bills the **seat** (it prefers the key when present), and
 `STEER_E2E_LOCAL=1` flips the skip-guard on (a seat login sets no env var, so the
 gate needs the opt-in).
 
+Both tasks call the API directly, never through a local proxy: `run_steer.py`
+drops `ANTHROPIC_BASE_URL` and passes `--setting-sources project,local`, because
+Claude Code applies the user settings' `env` block on top of the process env - so
+`env -u` alone cannot clear a base URL set there. A compressing proxy (headroom,
+say) rewrites what the skill reads and fails runs for reasons that are not the
+plugin's. Skipping the user source also keeps your personal plugins - including a
+marketplace-installed steer - out of the run. Set `STEER_E2E_ALLOW_BASE_URL=1` to
+keep both for a gateway that passes requests through unmodified.
+
 ### Not in CI
 
 This tier does **not** run in CI - it is local-only, run on demand via
@@ -71,7 +80,7 @@ The real fail-fast guard is the per-scenario wall-clock timeout, not the dollar 
 
 - `run_steer.py` - subprocess wrapper around `claude -p`. Loads the working-tree
   plugin with `--plugin-dir` (no marketplace download), `bypassPermissions`, JSON
-  output. `claude_available()` / `have_credentials()` gate the tests;
+  output, and no user settings or proxy (see above). `claude_available()` / `have_credentials()` gate the tests;
   `summarize_run()` reports turns/cost.
 - `prompts.py` - shared skill prompts (so a re-run uses the exact same prompt as
   its primary scenario). Each carries the "no commit/push/PR, non-interactive"

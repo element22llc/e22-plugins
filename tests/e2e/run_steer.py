@@ -142,9 +142,21 @@ def run_skill(
         cmd += ["--max-budget-usd", str(budget_usd or DEFAULT_BUDGET_USD)]
     if chosen_model:
         cmd += ["--model", chosen_model]
+    env = os.environ.copy()
+    if not os.environ.get("STEER_E2E_ALLOW_BASE_URL"):
+        # Go straight to the API, never through a local proxy: a compressing one
+        # (headroom, say) rewrites what the skill reads and fails runs for reasons
+        # that are not the plugin's. The user settings' `env` block is applied on
+        # top of the process env, so dropping the shell var alone is not enough -
+        # skip the user source too. That also keeps a marketplace-installed steer
+        # from loading beside --plugin-dir. STEER_E2E_ALLOW_BASE_URL=1 keeps both
+        # for a gateway that passes requests through unmodified.
+        env.pop("ANTHROPIC_BASE_URL", None)
+        cmd += ["--setting-sources", "project,local"]
     proc = subprocess.run(
         cmd,
         cwd=str(repo),
+        env=env,
         capture_output=True,
         text=True,
         timeout=timeout_s or DEFAULT_TIMEOUT_S,
