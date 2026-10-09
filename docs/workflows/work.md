@@ -98,8 +98,10 @@ given) and does the reviewer's legwork in parallel:
    never batch-approved) and *Blocked*.
 4. **One question, one command.** You reply with the *Ready* PRs to approve
    (or `ready` for all of them); the approvals post in a single command, and a
-   PR pushed to since its card was built is skipped. Findings on the *Changes*
-   PRs you name post as change requests.
+   PR pushed to since its card was built is skipped. The command runs the same
+   in sh, bash and zsh, and names each PR it could not look up or approve
+   rather than reporting it as changed. Findings on the *Changes* PRs you name
+   post as change requests.
 
 The approval is yours: nothing is pre-selected, an ambient "ok" approves
 nothing, and an unattended loop never approves. **It never merges.**
