@@ -93,13 +93,18 @@ Run the approvals as **one** command, so the harness asks once for the whole
 batch, and skip any PR pushed to since its card was built:
 
 ```sh
-for pr in "12 <sha12>" "15 <sha15>"; do
-  set -- $pr
-  [ "$(gh pr view "$1" --json headRefOid -q .headRefOid)" = "$2" ] \
-    && gh pr review "$1" --approve --body "Approved in a /steer-work review batch." \
-    || echo "#$1 changed since review - skipped"
+printf '%s %s\n' 12 "<sha12>" 15 "<sha15>" | while read -r n sha; do
+  head=$(gh pr view "$n" --json headRefOid -q .headRefOid) \
+    || { echo "#$n lookup failed - skipped"; continue; }
+  [ "$head" = "$sha" ] || { echo "#$n changed since review - skipped"; continue; }
+  gh pr review "$n" --approve --body "Approved in a /steer-work review batch." \
+    || echo "#$n approve failed"
 done
 ```
+
+Feed the pairs through `read`, never `set -- $pr`: zsh - the macOS default
+shell - does not word-split an unquoted parameter, so `$2` comes back empty and
+every PR is reported as changed, approving nothing.
 
 Selected `Changes` PRs get `gh pr review <n> --request-changes --body-file
 <card>` the same way, the body being the card's findings with paths.
