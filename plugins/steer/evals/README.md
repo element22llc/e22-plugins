@@ -404,10 +404,11 @@ Three things that cost real runs while these cases were authored:
   survives `env -u` in the shell. Every sweep through 2026-10-05 went through a
   compressing proxy that way: runs reported skill output "garbled" or a
   "compressed stub", rebuilt it by hand, and failed the `answer` grader for
-  dropping the attribution. `mise run evals` now refuses to start while the
-  variable is set in the shell or in the user settings; remove it for the
-  sweep, or set `STEER_EVALS_ALLOW_BASE_URL=1` for a gateway that passes
-  requests through unmodified.
+  dropping the attribution. `mise run evals` now drops the variable and runs
+  with `--setting-sources project,local`, so neither the shell nor the user
+  settings can route the sweep through a proxy; set
+  `STEER_EVALS_ALLOW_BASE_URL=1` to keep it for a gateway that passes requests
+  through unmodified.
 
 - **`--case` takes one glob, not a list.** A second `--case` silently *replaces*
   the first (the CLI keeps the last occurrence of an option), so three of them
@@ -443,9 +444,8 @@ an option - which is what the `--` forms above rely on.
 is the same payload `--json <path>` writes, so there is no need to pass `--json`.
 `--threshold` is a floor on the worst case, not the health number.
 
-Deliberately **not** in `mise run ci` - the suite spends real tokens, the same
-reason the `e2e` suite sits off the PR path. On the default model the 12-case
-suite measured roughly **$1.00-1.30 per case per run** across both arms (at
+Deliberately **not** in `mise run ci` - the suite spends real tokens. On the
+default model the 12-case suite measured roughly **$1.00-1.30 per case per run** across both arms (at
 `max_turns: 12`; the with-plugin arm costs ~3× the baseline, which has no rules
 to read). The pinned Sonnet executor is half that model's price, so the 29-case
 suite projects to ~$17-20 at `runs: 1` and ~$50-61 at the task's `runs: 3`, and

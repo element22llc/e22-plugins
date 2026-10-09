@@ -324,10 +324,8 @@ re-gate result.
   merge (`docs-deploy.yml`) - watch that run go green so the live site at
   `https://ai.element-22.com` actually reflects the release; a red deploy leaves
   the published docs stale (and the next preflight will flag it).
-- The **e2e suite** is a local-only tier (`mise run e2e`) - run it before a
-  substantive cut if you want the skill-level signal. The **routing evals** are
-  local-only too, but they are no longer optional on a minor or major cut: they
-  belong to Phase A above, before the PR, not to this list.
+- The **routing evals** are local-only, but they are not optional on a minor or
+  major cut: they belong to Phase A above, before the PR, not to this list.
 - The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
   `release-publish.yml`, which fires on the merge commit that changed
   `plugin.json` and asserts afterwards that the tag resolves to that commit.

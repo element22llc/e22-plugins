@@ -107,12 +107,11 @@ gh workflow run release-publish.yml -f version=X.Y.Z
 Re-publishing an **older** version this way tags the commit that introduced that
 version on `main`, not today's head, and does not take the "Latest" badge.
 
-Two other post-merge runs are worth watching: `docs-deploy.yml` publishes the
-documentation site from `main` (a red run leaves the live site stale), and the
-e2e suite is **local-only** - run `mise run e2e` before a substantive cut if you
-want the skill-level signal. The model-graded routing evals are local-only for the
-same reason: `mise run evals` is deliberately outside `ci` and off the PR path, and
-the release path is where it is meant to run.
+One other post-merge run is worth watching: `docs-deploy.yml` publishes the
+documentation site from `main` (a red run leaves the live site stale). The
+model-graded routing evals are **local-only**: `mise run evals` is deliberately
+outside `ci` and off the PR path, and the release path is where it is meant to
+run.
 
 Because the tag is created here, `git describe --tags` stays an accurate anchor
 for the next release's diff - nothing about tagging is manual.
