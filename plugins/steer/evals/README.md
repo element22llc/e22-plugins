@@ -255,9 +255,9 @@ that hands off to it, the same rule as the front-door cases above.
 
 | Mode | Case |
 |---|---|
-| `doctor` · `protect` | `routes-missing-mise-to-doctor` · `routes-protect-main-to-protect` |
+| `doctor` · `protect` · `worktrees` | `routes-missing-mise-to-doctor` · `routes-protect-main-to-protect` · `routes-orca-worktrees-to-worktrees` |
 | `adr` · `intake` · `questions` · `roadmap` | `routes-postgres-decision-to-adr` · `routes-requirements-resent-to-intake` · `routes-open-questions-to-questions` · `routes-release-timeline-to-roadmap` |
-| `work --hotfix` · `tidy` | `routes-production-down-to-work` · `routes-loose-documents-to-tidy` |
+| `work --hotfix` · `promote` · `review` · `tidy` | `routes-production-down-to-work` · `routes-promote-merged-to-work` · `routes-pr-queue-to-work` · `routes-loose-documents-to-tidy` |
 | `explain` · `help` | `routes-stakeholder-page-to-explain` · `routes-what-can-steer-do-to-help` |
 | `standards` · `report` · `reference` · `loop` | `routes-web-chat-to-standards` · `routes-steer-crashed-to-report` · `routes-load-conventions-to-reference` · `routes-nightly-loop-to-loop` |
 
@@ -265,6 +265,10 @@ Two of these assert a *correct decline*, not a happy path: the managed repo has
 nothing deployed, so the hotfix lane's objective condition fails and the skill
 says so, and its spine has no open questions, so the sweep reports none. The
 `answer` grader for each says that checking and declining is the skill's work.
+`review`, `promote` and `worktrees` read their state through `gh`, `git` or a
+bundled script, none of which the read-only framing grants, so their graders
+pass a run that names the lane and says what it would read and decide - the
+case measures the route, not the queue.
 
 The last row is the point of the negatives. Rule `00-router` tells the model to
 map a plain-language goal to the owning skill and **invoke it without being
@@ -443,8 +447,8 @@ Deliberately **not** in `mise run ci` - the suite spends real tokens, the same
 reason the `e2e` suite sits off the PR path. On the default model the 12-case
 suite measured roughly **$1.00-1.30 per case per run** across both arms (at
 `max_turns: 12`; the with-plugin arm costs ~3× the baseline, which has no rules
-to read). The pinned Sonnet executor is half that model's price, so the 26-case
-suite projects to ~$15-18 at `runs: 1` and ~$45-55 at the task's `runs: 3`, and
+to read). The pinned Sonnet executor is half that model's price, so the 29-case
+suite projects to ~$17-20 at `runs: 1` and ~$50-61 at the task's `runs: 3`, and
 the task's `--max-cost-usd 90` sits clear of it. **That is a projection, not a
 measurement**: re-measure on the first sweep, and whenever case count or a
 `max_turns` changes. The per-mode cases still carry the managed default
