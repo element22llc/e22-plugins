@@ -314,8 +314,8 @@ depends = [
 # results JSON for the actual health signal; this is a floor, not the number.
 #
 # --max-cost-usd 90 is a runaway guard, not a budget: the ceiling has to sit clear
-# of a healthy sweep or it aborts one (exit 2, partial results). 26 cases at
-# --runs 3 on a Sonnet executor project to ~$45-55 (the 12-case suite measured
+# of a healthy sweep or it aborts one (exit 2, partial results). 29 cases at
+# --runs 3 on a Sonnet executor project to ~$50-61 (the 12-case suite measured
 # ~$1.00-1.30 per case per run on the default model; Sonnet is half its price).
 # Projected, not measured - re-measure on the first sweep and when case count or
 # max_turns changes.

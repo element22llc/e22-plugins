@@ -101,6 +101,9 @@ fixtures:
   - ask: "production is down - ship an emergency hotfix"
     skill: work
     signals: ["hotfix", "production incident"]
+  - ask: "promote what is merged on main to production"
+    skill: work
+    signals: ["promote"]
   - ask: "audit the overall health of this repo"
     skill: audit
     signals: ["read-only", "highest-leverage"]
@@ -161,6 +164,9 @@ fixtures:
   - ask: "check the merge rules on this GitHub repo"
     skill: setup
     signals: ["merge rules"]
+  - ask: "we run parallel agents in Orca worktrees - make sure each one gets its own ports and is cleaned up"
+    skill: setup
+    signals: ["worktrees"]
   - ask: "the repo root is full of loose spreadsheets and PDFs - clean it up"
     skill: work
     signals: ["repo root", "clean up"]
