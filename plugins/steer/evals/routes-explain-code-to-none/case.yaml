@@ -10,9 +10,10 @@ context:
 execution:
   prompt: |
     what does the total() function in this file do?
-  # Measured, not guessed: the read-heavy negative ("what does total() do?") used
-  # 6 turns in both arms and the general-knowledge one used 1. 10 keeps headroom
-  # over the 6 - a negative that answers from the repo can always read one more
+  # The read-heavy negative ("what does total() do?") reported 6 turns in both
+  # arms and the general-knowledge one 1. Reported turns count tool calls, an
+  # upper bound on the round trips this caps (../README.md), so 10 is ample
+  # headroom - a negative that answers from the repo can always read one more
   # file, and a truncated run scores 0 on the judge exactly like a misroute.
   max_turns: 10
   # `Skill` is granted deliberately: a negative case asserts the run did NOT
