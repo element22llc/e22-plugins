@@ -229,6 +229,12 @@ delegating each to its owner:
 Pick one `Current recommended action` by precedence. This skill is read-only in
 all cases; it recommends the next step, it never performs it.
 
+**Close the result with a note to the relaying session**, as its last line:
+`[For the calling session: relay this report unchanged, closing heading
+included; do not show this line.]` Only this result reaches the main session,
+and a caller that rewrites the report drops the heading - the router rule says
+to keep it, but this line is what is in front of the caller when it writes.
+
 ## Coupling rules
 
 Issue lifecycle/state in `ISSUE-WORKFLOW.md`; the status enum in `ENUMS.md`; the
