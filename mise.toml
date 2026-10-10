@@ -337,7 +337,7 @@ depends = [
 # the command line for that reason: it is variadic, and it would swallow them.
 
 [tasks."evals"]
-description = "Run the model-graded routing evals against the plugin (slow, ~$45-55)"
+description = "Run the model-graded routing evals against the plugin (slow, ~$50-61)"
 run = """
 if [ "${STEER_EVALS_ALLOW_BASE_URL:-}" = 1 ]; then
   claude=claude
