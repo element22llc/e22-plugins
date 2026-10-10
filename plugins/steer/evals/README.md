@@ -483,3 +483,12 @@ its budget 3 runs out of 3 and `issues` once, so those two are higher (20 and
 but check first whether the *skill* is the thing spending the turns: the adopt
 overrun was a real plugin defect (template reads before the survey), not a
 too-small budget.
+
+**The report's `turns` is not what `max_turns` caps.** `turns` (the trace's
+`num_turns`) counts every assistant message and tool call, while `max_turns`
+caps model round trips: a batch of parallel reads is one round trip but adds one
+to `turns` per call. `routes-web-chat-to-standards` reports 23 turns against a
+cap of 12 and never errors - its trace (2026-10-10, `--keep-temp`) shows 4 round
+trips, 18 rule reads issued in one. So a `turns` figure says nothing about
+headroom and nothing about whether a skill batches; size a cap from its errors,
+and read a skill's round trips from a kept trace's assistant message ids.
