@@ -184,8 +184,9 @@ precondition the others don't: it is GitHub-only, and says so and stops when
      `/steer-issues` first); PO-driven builds go through
      `/steer-build` (which itself delegates to `work` once
      governed). Don't hand off to a "just implement it" path that skips the issue.
-8. **Recommend the next action.** Close with a `## Recommended next actions` block
-   per `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the
+8. **Recommend the next action.** Close with a `## Recommended next actions -
+   /steer-spec` block per
+   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the
    **locality rule**, consider only *this* feature's intent, open questions,
    contract, tracker state, and directly relevant ADRs - not the wider workspace.
 

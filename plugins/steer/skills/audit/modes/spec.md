@@ -182,8 +182,9 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
    guess - run `/steer:spec questions` to drive them to answers.
-5. **Recommend the next action.** Close with a `## Recommended next actions` block
-   per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to this
+5. **Recommend the next action.** Close with a `## Recommended next actions -
+   /steer:audit spec` block per
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to this
    drift run's findings (locality rule).
 
    | Observed state | Category | Action / suggested command |

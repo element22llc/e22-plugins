@@ -192,7 +192,8 @@ These hold for the whole build, at every step.
 
 ## Recommend the next action
 
-After the build step, emit a `## Recommended next actions` block per
+After the build step, emit a `## Recommended next actions - /steer-build` block
+per
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from
 `/spec/BUILD-STATUS.md` and this build's state. Keep it in the PO's plain
 language.

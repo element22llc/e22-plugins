@@ -138,7 +138,8 @@ you are running; do not read the others.**
 
 ## Recommend the next action
 
-After any mode, emit a `## Recommended next actions` block per
+After any mode, emit a `## Recommended next actions - /steer:work issues <mode>`
+block (the mode that ran) per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. As an orchestrator,
 recommend the **next valid lifecycle transition** for the issue(s) just touched
 (locality rule), delegating the action to its owning skill.

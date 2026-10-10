@@ -172,7 +172,7 @@ let the scan say so. A tool still `missing`/`down`/`unmanaged` is not resolved.
 
 ## Recommend the next action
 
-Close with a `## Recommended next actions` block per
+Close with a `## Recommended next actions - /steer:setup doctor` block per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from the
 final scan.
 

@@ -217,7 +217,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
 ## Recommend the next action
 
-Whichever path ran, close with a `## Recommended next actions` block per
+Whichever path ran, close with a `## Recommended next actions - /steer-setup
+init` block per
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
 bootstrapped repo's state.
 

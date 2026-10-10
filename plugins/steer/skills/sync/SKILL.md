@@ -261,7 +261,8 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
    Run the end-of-session checklist.
 
-9. **Recommend the next action.** Emit a `## Recommended next actions` block per
+9. **Recommend the next action.** Emit a `## Recommended next actions -
+   /steer:setup sync` block per
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from the
    sync's state.
 

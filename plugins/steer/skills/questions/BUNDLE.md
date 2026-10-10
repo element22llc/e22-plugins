@@ -97,8 +97,8 @@ return-document contract in
 
 ### Recommended next action
 
-Close with a `## Recommended next actions` block: the one best step is to
-**send the questionnaire to the PO** and, when the filled document returns,
-**absorb it with `/steer:spec intake clarify <filled-doc>`**, which maps each answer
-back to its `Q-NNN` and routes it here to fold in. Bundle itself changes
+Close with a `## Recommended next actions - /steer:spec questions bundle`
+block: the one best step is to **send the questionnaire to the PO** and, when
+the filled document returns, **absorb it with `/steer:spec intake clarify
+<filled-doc>`**, which maps each answer back to its `Q-NNN` and routes it here to fold in. Bundle itself changes
 nothing in the spec.

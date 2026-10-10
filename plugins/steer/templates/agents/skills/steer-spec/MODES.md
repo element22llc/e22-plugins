@@ -201,7 +201,7 @@ you may not record their approval for them.
    (`/steer-issues decompose`, then execute each via
    `/steer-work`) or, for a PO-driven build,
    `/steer-build` (which delegates to `work` once governed) - per
-   the `## Recommended next actions` block.
+   the `## Recommended next actions - /steer-spec approve <id>` block.
 
 `approve` writes only under `/spec/**` (the intent header, PO-acceptance block,
 and the history entry); it stays as code-free as the rest of this skill.

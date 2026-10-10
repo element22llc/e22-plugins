@@ -26,9 +26,11 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   routing only when two skills are candidates. A question inside one skill's
   scope ("which feature?", "which issue?") is the skill's to ask, after entry.
 - **Name it again when it finishes** - the handoff heading reads `## Recommended
-  next actions - /steer:<skill>`, so the reader can tell what ran and report a
-  misroute. A skill that **pauses** on its own question names itself in that
-  message too.
+  next actions - /steer:<door> [mode]` (`/steer:spec adr`, never the bare door),
+  so the reader can tell what ran and report a misroute. A skill that **pauses**
+  on its own question names itself in that message too. **Relaying a forked
+  skill's result** (`status`, `explain`), keep its heading - and write it
+  yourself when the fork returned none.
 - **Auto-continue, bounded** - when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
