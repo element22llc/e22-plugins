@@ -69,6 +69,8 @@ specialized skills below as needed, so you rarely reach past this set.
     your session, so the router rule has the session keep the page's
     `## Recommended next actions - /steer:status ...` heading when it relays the
     page, and write that heading itself when the fork dropped it.
+    `/steer:status` also ends its result with a one-line note asking the
+    session to relay the report unchanged.
 
     Both also set **`background: false`**, so the turn waits for the fork instead
     of continuing while it runs. A *backgrounded* fork is given the narrower
