@@ -8,7 +8,8 @@ authorization boundary and completion semantics stay in `SKILL.md`.
 
 ## Recommend the next action
 
-End every invocation with a `## Recommended next actions` block per
+End every invocation with a `## Recommended next actions - /steer:work` block
+(with the mode where one ran - `/steer:work promote`) per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Per the **locality
 rule**, consider only this issue, its branch, PR, criteria, validation, and any
 blocker directly hit - not the wider workspace. Map execution state to actions

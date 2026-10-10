@@ -215,7 +215,7 @@ session needs anyway, since steer does not store it (see the "Updating a previou
 
 ## Recommend the next action
 
-After rendering, emit a `## Recommended next actions` block per
+After rendering, emit a `## Recommended next actions - /steer-status` block per
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this run,
 delegating each to its owner:
 

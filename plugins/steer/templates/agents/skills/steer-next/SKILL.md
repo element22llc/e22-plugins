@@ -243,10 +243,10 @@ keep the technical detail for devs. Emit, in order:
 1. **State reconstruction summary** - a short, dimension-by-dimension readout of
    what you found (this is the navigator's value: it shows the basis for the
    recommendation). Mark clean / not-applicable dimensions explicitly.
-2. **`## Recommended next actions`** - the standard block per NEXT-ACTIONS.md §5:
-   the `###` category sections (omit empties), then `### Current recommended action`
-   naming the single arbitrated action, with a `Suggested command:` line **only**
-   when a real command performs it. A human gate still gets **no command for the
+2. **`## Recommended next actions - /steer-next`** - the standard block per
+   NEXT-ACTIONS.md §5: the `###` category sections (omit empties), then
+   `### Current recommended action` naming the single arbitrated action, with a
+   `Suggested command:` line **only** when a real command performs it. A human gate still gets **no command for the
    decision itself** - but where the decision is answerable in-session (ADR
    ratification, PO intent approval; rule `61-gates`) the line names the
    skill that *collects and records* the answer - `/steer-spec adr`, `/steer-spec` -

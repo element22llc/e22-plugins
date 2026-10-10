@@ -233,7 +233,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
 ## Recommend the next action
 
-Whichever path ran, close with a `## Recommended next actions` block per
+Whichever path ran, close with a `## Recommended next actions - /steer:setup
+init` block per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from the
 bootstrapped repo's state.
 

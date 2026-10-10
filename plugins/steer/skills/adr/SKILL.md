@@ -131,7 +131,8 @@ existing ADR; supersede it with a new one instead.
 
 ## Recommend the next action
 
-After drafting the ADR, emit a `## Recommended next actions` block per
+After drafting the ADR, emit a `## Recommended next actions - /steer:spec adr`
+block per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. A freshly written ADR
 is `Proposed`, so the next step is a human decision - but it is now an
 **answerable** one, so the row names how to answer it.

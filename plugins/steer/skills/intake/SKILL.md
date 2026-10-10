@@ -136,7 +136,8 @@ point, not before.
 
 ## Recommended next actions
 
-Close with a `## Recommended next actions` block scoped to the run, naming the
+Close with a `## Recommended next actions - /steer:spec intake` block scoped to
+the run, naming the
 one best step (see `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`):
 
 | Observed state | Category | Action / suggested command |

@@ -65,7 +65,10 @@ specialized skills below as needed, so you rarely reach past this set.
     output is a page - so nothing is lost by cutting them off from the
     conversation, while the spine and tracker reads behind the page stay out of
     your session's context. That is the point: you asked for the report, not for
-    the dozen files it was derived from.
+    the dozen files it was derived from. Only the fork's final result reaches
+    your session, so the router rule has the session keep the page's
+    `## Recommended next actions - /steer:status ...` heading when it relays the
+    page, and write that heading itself when the fork dropped it.
 
     Both also set **`background: false`**, so the turn waits for the fork instead
     of continuing while it runs. A *backgrounded* fork is given the narrower

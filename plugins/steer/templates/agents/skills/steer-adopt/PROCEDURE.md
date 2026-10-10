@@ -403,7 +403,8 @@ checklist.
 
 ## Phase 13 - Recommend the next action
 
-As the final output, emit a `## Recommended next actions` block per the shared
+As the final output, emit a `## Recommended next actions - /steer-setup adopt`
+block per the shared
 contract at `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`
 (categories, two-level precedence, output format, read-only + locality rules -
 adoption is repo-wide *by purpose*, so a whole-repo sweep is in scope here).

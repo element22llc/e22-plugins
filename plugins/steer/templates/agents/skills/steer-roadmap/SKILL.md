@@ -189,7 +189,8 @@ shape as an inline table (milestone -> issues -> dates).
 
 ## Recommended next actions
 
-After any mode, emit a `## Recommended next actions` block per
+After any mode, emit a `## Recommended next actions - /steer-spec roadmap` block
+per
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this run
 (locality rule), recommending the next valid step and delegating it to its owner.
 

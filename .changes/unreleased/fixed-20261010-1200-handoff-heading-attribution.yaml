@@ -1,0 +1,14 @@
+kind: Fixed
+body: |-
+  - **Fixed: a finished skill now names itself in its closing heading, door
+    and mode included.** Each skill's handoff step spells out its exact
+    `## Recommended next actions - /steer:<door> <mode>` heading
+    (`/steer:spec adr`, `/steer:setup doctor`, `/steer:audit code`), where it
+    used to say only "emit a `## Recommended next actions` block" and runs
+    closed on the bare door. The router rule now also says to keep a forked
+    skill's heading when relaying its result, and to write it when the fork
+    returned none: `/steer:status` reports came back with no attribution in 4
+    of 6 eval runs.
+time: 2026-10-10T12:00:00.000000000-04:00
+custom:
+  Slug: handoff-heading-attribution
