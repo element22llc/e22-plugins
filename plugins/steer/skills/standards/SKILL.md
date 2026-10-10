@@ -24,7 +24,9 @@ Do this now:
    `${CLAUDE_PLUGIN_ROOT}/rules/`
 
    The files concatenate, in that order, to form the full operating manual.
-   Read them even when the hook already injected rules this session: an
+   List the directory once, then issue every `Read` - plus `plugin.json` for
+   step 3 - in **one parallel batch**; one file per turn takes ~20 turns for a
+   load that needs two. Read them even when the hook already injected rules this session: an
    injection can skip `inject-when`-scoped files, and a matching version is not
    a reason to read nothing.
 
