@@ -170,7 +170,9 @@ is visible rather than silent.
      **version-pin scripts** (move product-specific pins to `policy/versions.yml`)
      and the **generated agent surface** (`agent-surface-current` -
      `.github/copilot-instructions.md`, `.agents/skills/`, `.github/agents/`,
-     `.github/instructions/`; repo-specific Copilot guidance lives in a *separate*
+     `.github/instructions/`, and steer's marked block in `AGENTS.md` - replaced
+     in place, never the team's content around it; repo-specific Copilot guidance
+     lives in a *separate*
      `*.instructions.md` the consumer owns, which the re-copy never touches). This
      re-copy is the whole refresh path for that surface after a
      plugin update - those tools read the installed tree rather than the plugin,

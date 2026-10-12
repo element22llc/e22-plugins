@@ -37,7 +37,9 @@ the opt-in `copilot-setup-steps.yml` is **not** auto-installed), copy
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/agents/skills/` to `.agents/skills/`
 **verbatim** (the cross-tool skill surface - the real skill bodies Copilot,
 Cursor, Gemini CLI and Codex read natively as `/steer-<skill>`; steer-managed,
-overwrite on refresh, never hand-edit), and instantiate the
+overwrite on refresh, never hand-edit), add the
+`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/agents/agents-pointer.md` block to `AGENTS.md`
+(create it if absent; never touch content outside the block), and instantiate the
 spec spine from
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/`:
 `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts -

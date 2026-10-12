@@ -1654,7 +1654,15 @@ cp -R "${PLUGIN}/templates/github/agents" "${CRP}/.github/agents"
 cp -R "${PLUGIN}/templates/github/instructions" "${CRP}/.github/instructions"
 cp -R "${PLUGIN}/templates/agents/skills" "${CRP}/.agents/skills"
 capscan "${CRP}"
-assert_eq "cap: agent surface byte-identical -> present-wired" \
+assert_eq "cap: AGENTS.md pointer missing -> mis-wired" \
+	"$(capstatus "${out}" agent-surface-current)" "mis-wired"
+{
+	printf '# Team notes\n\nOurs.\n\n'
+	cat "${PLUGIN}/templates/agents/agents-pointer.md"
+	printf '\nMore of ours.\n'
+} >"${CRP}/AGENTS.md"
+capscan "${CRP}"
+assert_eq "cap: agent surface byte-identical, team AGENTS.md content kept -> present-wired" \
 	"$(capstatus "${out}" agent-surface-current)" "present-wired"
 mkdir -p "${CRP}/.github/prompts"
 printf 'ours\n' >"${CRP}/.github/prompts/our-own.prompt.md"
@@ -1664,6 +1672,11 @@ assert_eq "cap: team-authored prompt file is NOT drift" \
 printf 'retired\n' >"${CRP}/.github/prompts/steer-work.prompt.md"
 capscan "${CRP}"
 assert_eq "cap: lingering steer-*.prompt.md IS drift" \
+	"$(capstatus "${out}" agent-surface-current)" "mis-wired"
+rm "${CRP}/.github/prompts/steer-work.prompt.md"
+sed 's/Before starting work/Before you start/' "${PLUGIN}/templates/agents/agents-pointer.md" >"${CRP}/AGENTS.md"
+capscan "${CRP}"
+assert_eq "cap: stale AGENTS.md pointer block IS drift" \
 	"$(capstatus "${out}" agent-surface-current)" "mis-wired"
 
 # version-pin-enforcement: policy + byte-identical scripts -> wired; drift -> mis-wired.
