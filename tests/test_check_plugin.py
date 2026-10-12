@@ -221,7 +221,16 @@ def test_copilot_manifest_version_drift_fails(tmp_path: Path):
     root = _make_plugin(tmp_path)  # source-of-truth version is 0.1.0
     _add_copilot_plugin_manifest(root, "0.0.9")
     errors = check_plugin.run_checks(root)
-    assert any("Copilot manifest drifted" in e for e in errors)
+    assert any(".github/plugin/plugin.json" in e and "manifest drifted" in e for e in errors)
+
+
+def test_codex_manifest_version_drift_fails(tmp_path: Path):
+    root = _make_plugin(tmp_path)  # source-of-truth version is 0.1.0
+    manifest = root / ".codex-plugin" / "plugin.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(json.dumps({"name": "demo", "version": "0.0.9"}), encoding="utf-8")
+    errors = check_plugin.run_checks(root)
+    assert any(".codex-plugin/plugin.json" in e and "manifest drifted" in e for e in errors)
 
 
 # --- integration: the real plugin is clean -------------------------------

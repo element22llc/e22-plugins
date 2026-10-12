@@ -66,6 +66,9 @@ replacements:
   - path: plugins/steer/.github/plugin/plugin.json
     find: '^  "version": ".*",$'
     replace: '  "version": "{{.VersionNoPrefix}}",'
+  - path: plugins/steer/.codex-plugin/plugin.json
+    find: '^  "version": ".*",$'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
   # Six-space indent + trailing comma matches the steer ENTRY only. The
   # marketplace's own `metadata.version` sits at four spaces with no comma and
   # must never move with a plugin release.

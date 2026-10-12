@@ -1,0 +1,13 @@
+{
+  "name": "steer",
+  "version": "7.6.1",
+  "description": "Engineering standards for OpenAI Codex, best-effort. A SessionStart hook injects the always-on rules; the skills load from skills/. No gates run on Codex - enforcement is guaranteed on Claude Code only.",
+  "author": {
+    "name": "Element 22 Platform"
+  },
+  "homepage": "https://github.com/element22llc/e22-plugins",
+  "repository": "https://github.com/element22llc/e22-plugins",
+  "license": "Apache-2.0",
+  "skills": "./skills/",
+  "hooks": "./hooks/codex-hooks.json"
+}
