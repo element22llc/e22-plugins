@@ -45,6 +45,13 @@ never let a decision survive only there. Record each with its ratifier and date.
 **No spine yet? Bootstrap before you commit the decision, not after** - the
 dialogue is expected; the durable capture is what waits.
 
+Every other durable project fact gets a home on disk too - a test, the spec,
+the app guide, an issue, a team convention to the product `CLAUDE.md` - never
+Claude Code's auto memory, which is machine-local and invisible to the repo, the
+PR and every teammate. Auto memory keeps only the personal: one developer's role
+and preferences. A "remember X" about the project is a disk write; where a
+recalled memory contradicts the repo, the repo wins.
+
 ### Living documentation - document in parallel, not after
 
 The PO/dev speaks plainly; **you** translate it into durable artifacts *as the

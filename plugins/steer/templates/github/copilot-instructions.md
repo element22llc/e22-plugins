@@ -58,23 +58,15 @@ Issue-first requires one. Backlog work with no implementation this turn is
 the changelog, opens the PR, and stops at the merge); a production incident is
 `/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`.
 
-**Front doors** detect context and hand off (`setup` -> `init` / `adopt` /
-`sync` / `doctor` / `protect` / `worktrees`; `spec` -> `questions` / `adr` /
-`intake` / `roadmap`; `work` -> `issues` / `tidy`), so you rarely route to a
-specialized skill directly; `/steer:tracker-sync` and `/steer:spec-scaffold` are
-internal gateways, not front doors. Where nothing is auto-injected (Desktop chat,
-claude.ai web), run `/steer:standards`.
+**Front doors** detect context and hand off, so you rarely route to a
+specialized skill directly - each internal skill's description names the door
+that reaches it. Where nothing is auto-injected (Desktop chat, claude.ai web),
+run `/steer:standards`.
 
 **Deliberately not in this payload** - Artifact rendering, design sources, the
 full prose: `/steer:reference <topic>` is yours to load, never a user's to
-type. Two context lines hold regardless: delegate a heavy sweep to a
-subagent and bring back the result, not the sweep; and route every durable
-project fact to its home on disk - a test, the spec, the app guide, an issue, a
-team convention to the product `CLAUDE.md` - never to Claude Code's auto memory,
-which is machine-local and invisible to the repo, the PR and every teammate.
-Auto memory keeps only the personal: one developer's role and preferences. A
-"remember X" about the project is a disk write; where a recalled memory
-contradicts the repo, the repo wins.
+type. Delegate a heavy sweep to a subagent and bring back the result, not the
+sweep.
 
 ### You are not the gate - the dev is
 
@@ -319,6 +311,13 @@ Scoping conversation, chat summaries and **assistant memory** are working notes;
 never let a decision survive only there. Record each with its ratifier and date.
 **No spine yet? Bootstrap before you commit the decision, not after** - the
 dialogue is expected; the durable capture is what waits.
+
+Every other durable project fact gets a home on disk too - a test, the spec,
+the app guide, an issue, a team convention to the product `CLAUDE.md` - never
+Claude Code's auto memory, which is machine-local and invisible to the repo, the
+PR and every teammate. Auto memory keeps only the personal: one developer's role
+and preferences. A "remember X" about the project is a disk write; where a
+recalled memory contradicts the repo, the repo wins.
 
 ### Living documentation - document in parallel, not after
 
