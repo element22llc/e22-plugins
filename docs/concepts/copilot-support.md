@@ -105,6 +105,22 @@ does not read `AGENTS.md`) would ignore it entirely.
 at the repo root with `CLAUDE.md`. That keeps each surface reading exactly one
 copy of the standards.
 
+### Codex, Cursor and Gemini CLI: a pointer in `AGENTS.md`
+
+These agents read `AGENTS.md`, not `.github/copilot-instructions.md`. So the
+bootstrap adds a short **pointer block** to `AGENTS.md`, never the ruleset. The
+block tells the agent to read `.github/copilot-instructions.md` and `CLAUDE.md`,
+and explains how to invoke the `.agents/skills/` tree (`$steer-<skill>` in Codex).
+A copy of the rules would hit two problems: Codex truncates `AGENTS.md` at 32 KiB,
+and Copilot would load the rules twice. A pointer of a few lines avoids both.
+
+Steer owns only the text between its `steer-agents-pointer` markers. If the repo
+already has an `AGENTS.md`, the block is appended and the team's content is left
+alone. `/steer:setup sync` refreshes the block in place.
+
+**Best-effort, like Copilot.** The agent has to follow the pointer: nothing
+injects the rules and no hook enforces a gate.
+
 ## Using it as a Copilot teammate
 
 The standards file and the skill tree are installed by `/steer:setup init` (new repos)

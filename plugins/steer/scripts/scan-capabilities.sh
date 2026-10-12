@@ -206,14 +206,14 @@ else
 fi
 
 # --- agent-surface-current - non-Claude agents read the CURRENT standards ---
-# Generated artifacts, contractually byte-identical to the plugin source. Two
-# families: the Copilot-only files under .github/, and the cross-tool
-# .agents/skills/ tree (Agent Skills format - Copilot, Cursor, Gemini CLI and
-# Codex all discover it). Support is opt-in at bootstrap, so a repo that never
-# installed it is n/a - never "absent", or sync would install a surface nobody
-# asked for.
+# Generated artifacts, contractually byte-identical to the plugin source. Three
+# families: the Copilot-only files under .github/, the cross-tool .agents/skills/
+# tree (Agent Skills format - Copilot, Cursor, Gemini CLI and Codex all discover
+# it), and the AGENTS.md block pointing Codex & co. at the standards. Support is
+# opt-in at bootstrap, so a repo that never installed it is n/a - never
+# "absent", or sync would install a surface nobody asked for.
 CPI=".github/copilot-instructions.md"
-cp_files="$CPI,.agents/skills,.github/agents,.github/instructions"
+cp_files="$CPI,.agents/skills,.github/agents,.github/instructions,AGENTS.md"
 if ! exists "$CPI"; then
 	emit "agent-surface-current" "n/a" "$cp_files"
 elif ! exists ".agents/skills"; then
@@ -257,6 +257,11 @@ else
 		_cp_drift=true
 		break
 	done
+	# AGENTS.md may be the team's own file, so only steer's marked block is compared,
+	# never the whole file.
+	awk '/^<!-- steer-agents-pointer:start/{p=1} p{print} /^<!-- steer-agents-pointer:end -->/{p=0}' \
+		"$ROOT/AGENTS.md" 2>/dev/null |
+		cmp -s - "$PLUGIN/templates/agents/agents-pointer.md" || _cp_drift=true
 	if $_cp_drift; then
 		emit "agent-surface-current" "mis-wired" "$cp_files"
 	else
