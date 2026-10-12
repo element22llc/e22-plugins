@@ -141,18 +141,22 @@ def check_copilot_version_sync(root: Path, errors: list[str]) -> None:
     if not src_version:
         return  # check_plugin_json already reports the missing version.
 
-    # Copilot plugin manifest (lives under the plugin root).
-    copilot_plugin = root / ".github" / "plugin" / "plugin.json"
-    if copilot_plugin.is_file():
+    # The Copilot and Codex plugin manifests (both live under the plugin root).
+    for manifest in (
+        root / ".github" / "plugin" / "plugin.json",
+        root / ".codex-plugin" / "plugin.json",
+    ):
+        if not manifest.is_file():
+            continue
         try:
-            version = json.loads(copilot_plugin.read_text(encoding="utf-8")).get("version")
+            version = json.loads(manifest.read_text(encoding="utf-8")).get("version")
             if version != src_version:
                 errors.append(
-                    f"{copilot_plugin}: version '{version}' != plugin version "
-                    f"'{src_version}' (Copilot manifest drifted - keep them in sync at release)"
+                    f"{manifest}: version '{version}' != plugin version "
+                    f"'{src_version}' (manifest drifted - keep them in sync at release)"
                 )
         except json.JSONDecodeError as exc:
-            errors.append(f"{copilot_plugin}: invalid JSON ({exc})")
+            errors.append(f"{manifest}: invalid JSON ({exc})")
 
     # Copilot marketplace manifest (lives at the repo root, two levels above the
     # plugin root - absent in unit tests with a temp root, in which case skip).

@@ -33,6 +33,7 @@ from pathlib import Path
 
 SOURCE = Path("plugins/steer/.claude-plugin/plugin.json")
 COPILOT_PLUGIN = Path("plugins/steer/.github/plugin/plugin.json")
+CODEX_PLUGIN = Path("plugins/steer/.codex-plugin/plugin.json")
 COPILOT_MARKETPLACE = Path(".github/plugin/marketplace.json")
 
 # The lone ``version`` field in the Copilot CLI plugin manifest.
@@ -78,6 +79,7 @@ def main(argv: list[str] | None = None) -> int:
 
     targets = [
         (COPILOT_PLUGIN, _PLUGIN_VERSION),
+        (CODEX_PLUGIN, _PLUGIN_VERSION),
         (COPILOT_MARKETPLACE, _MARKETPLACE_STEER_VERSION),
     ]
 

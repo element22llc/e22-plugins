@@ -4446,5 +4446,32 @@ printf '%s' "${SA_MANIFEST}" | grep -q '\^steer:steer-reviewer\$' && ok ||
 printf '%s' "${SA_MANIFEST}" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/inject-subagent-digest.sh"' && ok ||
 	bad "hooks.json: inject-subagent-digest.sh must be registered with the sh prefix"
 
+# Codex: codex-hooks.json carries only the rule injection, with the same part
+# count as hooks.json, and every part survives a host that sets PLUGIN_ROOT alone.
+CX_MANIFEST="$(tr -d '\\' <"${HOOKS}/codex-hooks.json")"
+CX_PARTS="$(printf '%s' "${CX_MANIFEST}" | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"')"
+CC_PARTS="$(tr -d '\\' <"${HOOKS}/hooks.json" | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"')"
+assert_eq "codex-hooks.json: same rule-part count as hooks.json" "${CX_PARTS}" "${CC_PARTS}"
+assert_eq "codex-hooks.json: every part lifts Codex's context cap" \
+	"$(printf '%s' "${CX_MANIFEST}" | grep -c '"additionalContextLimit": 0')" "${CC_PARTS}"
+printf '%s' "${CX_MANIFEST}" | grep -q '"PreToolUse"\|"PostToolUse"\|"Stop"' &&
+	bad "codex-hooks.json: gates read Claude tool payloads and must not be registered on Codex" || ok
+CX_DIR="$(mktemp -d)"
+git -C "${CX_DIR}" init -q
+CX_OUT="$(
+	cd "${CX_DIR}" || exit 1
+	_k=1
+	while [ "${_k}" -le "${CX_PARTS}" ]; do
+		_cmd="$(printf '%s' "${CX_MANIFEST}" | grep -o "CLAUDE_PLUGIN_ROOT=[^,]*inject-standards\.sh\" ${_k} ${CX_PARTS}" | head -n 1)"
+		printf '{"hook_event_name":"SessionStart","model":"gpt-5.5","source":"startup","cwd":"%s"}' "${CX_DIR}" |
+			env -u CLAUDE_PLUGIN_ROOT PLUGIN_ROOT="${PLUGIN}" sh -c "${_cmd}" 2>/dev/null
+		_k=$((_k + 1))
+	done
+)"
+rm -rf "${CX_DIR}"
+assert_has "codex: PLUGIN_ROOT alone renders the first rule" "${CX_OUT}" "You are the router"
+assert_has "codex: PLUGIN_ROOT alone renders the Definition of Done" "${CX_OUT}" "## Definition of Done"
+assert_has "codex: PLUGIN_ROOT alone renders the Spec workflow" "${CX_OUT}" "## Spec workflow"
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

@@ -122,6 +122,22 @@ copilot plugin install steer@e22-plugins
 The CLI loads the skills via the Copilot plugin manifest and reads the standards
 from `.github/copilot-instructions.md` in the repo.
 
+### OpenAI Codex (CLI and app)
+
+```shell
+codex plugin marketplace add element22llc/e22-plugins
+codex plugin add steer@e22-plugins
+```
+
+Codex loads steer's skills (as `steer:<skill>`) and runs one SessionStart hook
+that injects the always-on rules, the same text Claude Code receives. Codex asks
+each user to trust plugin hooks first: open `/hooks` and trust steer's, and do
+so again after each steer update that changes the hook file. Until then the rules
+are not injected, and an admin's `allow_managed_hooks_only` turns them off.
+
+Best-effort, as on Copilot: no gate runs on Codex - only the rule injection is
+registered.
+
 ### Copilot in VS Code
 
 VS Code does **not** use the Copilot CLI plugin marketplace, so there is nothing
