@@ -160,7 +160,8 @@ and **Repair**.
 ### agent-surface-current - non-Claude agents read the *current* standards
 - **Files:** `.agents/skills/steer-*/**` (the cross-tool skill tree),
   `.github/copilot-instructions.md`, `.github/agents/*.agent.md`,
-  `.github/instructions/*.instructions.md`
+  `.github/instructions/*.instructions.md`, and the `AGENTS.md` block between the
+  `steer-agents-pointer` markers
 - **Conditional:** `.github/copilot-instructions.md` present. The non-Claude
   surface is opt-in at bootstrap, so a repo that never installed it is `n/a`, never
   `absent` - sync must not install a surface nobody asked for. Once the
@@ -169,7 +170,8 @@ and **Repair**.
   lands in until the `.github/prompts` migration runs).
 - **Wired-when:** every generated file is **byte-identical** to its plugin source
   under `${CLAUDE_PLUGIN_ROOT}/templates/` - `agents/skills/` for the skill tree,
-  `github/` for `copilot-instructions.md`, `agents/` and `instructions/` - **and**
+  `github/` for `copilot-instructions.md`, `agents/` and `instructions/`, and
+  `agents/agents-pointer.md` for the `AGENTS.md` block alone - **and**
   no retired `steer-*.prompt.md` remains under `.github/prompts/`. A prompt file
   the team wrote themselves may stay, and the directory with it. These are generated artifacts, so
   byte-equality is the only meaningful test - any difference means the consumer is
@@ -188,6 +190,8 @@ and **Repair**.
   Delete **only** steer's own artifacts: a prompt file the team wrote is theirs.
   Without this half, a repo carrying a leftover prompt file reports `mis-wired`
   after every repair, which is the unrepairable state this check exists to avoid.
+  `AGENTS.md` is the team's file too: replace only steer's marked block (append
+  it if missing, create the file if absent) and leave everything else as is.
 - **Verbatim:** yes - re-copy, the never-clobber exception.
 - **Why it matters:** no non-Claude agent has a context-injecting SessionStart
   hook, so this static set *is* their entire standards surface. The
