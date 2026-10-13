@@ -1362,7 +1362,7 @@ managed_spine "${OR1M}"
 printf 'workspace:\n' >"${OR1M}/spec/PRODUCT.md"
 out="$(run_hook orient-session.sh "$(session_json "${OR1M}" or1m)")"
 oq_grep "orient: member role announced" 'is a \*\*member\*\*' "${out}"
-oq_grep "orient: member warned off cross-repo Closes" 'Refs owner/repo#N' "${out}"
+oq_grep "orient: member told to qualify cross-repo Closes" 'Closes owner/repo#N' "${out}"
 oq_ngrep "orient: member note is not the workspace note" 'is the \*\*workspace\*\*' "${out}"
 oq_grep "orient: member note is additive" 'need to know skill names' "${out}"
 

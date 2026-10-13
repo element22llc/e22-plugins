@@ -269,8 +269,8 @@ It covers, in detail:
   gateway, else stop; absent local intent is never "no intent".
 - **Honest report scope** - naming covered members and flagging uncovered ones
   explicitly, so a fraction of the product is never presented as the whole.
-- **What crosses the repo edge** - sub-issues and Projects v2 do; milestones,
-  closing keywords, drift gates and CI do not.
+- **What crosses the repo edge** - sub-issues, Projects v2 and qualified closing
+  keywords (`Closes owner/repo#N`) do; milestones, drift gates and CI do not.
 
 There is deliberately **no always-on rule** for this topology - the ruleset is
 capped on its on-disk total, which every consumer pays even for a rule scoped to

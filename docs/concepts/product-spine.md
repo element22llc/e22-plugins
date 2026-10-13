@@ -123,11 +123,11 @@ Two consequences worth knowing before adopting the topology:
   of a product presented as the whole is worse than a smaller, honest answer.
   `/steer:setup protect` in particular names the sibling repos still unprotected, so a
   one-repo verdict never reads as product-wide.
-- **Some things do not cross the repo edge.** Sub-issues and Projects v2 do;
-  Milestones, closing keywords (`Closes #N`), and the merge-time drift gates do
-  not. `/steer:spec roadmap` moves the release axis onto a Project field for that
-  reason, and a member PR closes its workspace issue explicitly instead of
-  relying on GitHub.
+- **Some things do not cross the repo edge.** Sub-issues, Projects v2 and
+  qualified closing keywords (`Closes owner/repo#N`) do; milestones and the
+  merge-time drift gates do not. `/steer:spec roadmap` moves the release axis
+  onto a Project field for that reason, and a member PR closes its workspace
+  issue with the qualified keyword, never a bare `#N`.
 
 Members are cloned **inside** the workspace and git-ignored there - ordinary
 clones, not submodules, so nothing pins a SHA and a member commit never dirties

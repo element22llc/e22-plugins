@@ -156,13 +156,13 @@ is no less bounded by it.
   work, and opens a linked follow-up otherwise. A reopened issue is re-assessed
   before returning to `inbox`/`exploring`/`ready-for-dev`.
 
-  **GitHub arm - this is the only closure path when the tracker repo is not the
-  code repo.** GitHub honours closing keywords only within one repository, so a
-  merged PR carrying `Closes #N` cannot close an issue in a different repo - it
-  renders as a plain cross-reference and the issue silently stays open. Whenever
+  **GitHub arm - the fallback closure when the tracker repo is not the code
+  repo.** A bare `Closes #N` names an issue in the PR's own repo, so whenever
   `steer_tracker_repo` (`lib/scope.sh`) and `gh repo view --json nameWithOwner`
-  **prove** a mismatch, the PR must carry `Refs owner/repo#N` instead and the
-  caller must invoke this operation explicitly after the merge. Every write here
+  **prove** a mismatch, the PR must carry the qualified `Closes owner/repo#N`,
+  which GitHub honours across repositories on a merge into the default branch.
+  The caller reads the issue back after the merge and invokes this operation
+  only if it is still open. Every write here
   is already cross-repo-safe - the gateway addresses issues by
   `repository:` - so no other operation changes. Only positive proof diverts;
   any unreadable value keeps the ordinary `Closes #N` path untouched.

@@ -128,8 +128,8 @@ modes**; they differ only in the branch/PR ceremony.
   missing wall and recommend `/steer:setup protect`.
 - **solo-trunk** - substitute the trunk commit wherever a step says *branch*,
   *marker* or *PR*; still claim the issue, and close it from that commit
-  (`Closes #N`, or `Refs owner/repo#N` + an explicit close when the tracker repo
-  differs - see Closing ref). Everything else - validation, managed-block
+  (`Closes #N`, or `Closes owner/repo#N` when the tracker repo differs - see
+  Closing ref). Everything else - validation, managed-block
   progress, closure-reason semantics - is identical. While a graduation signal
   stands and no waiver is recorded, the trunk-push hook surfaces the session's
   first push for a human yes (rule 45).
@@ -184,9 +184,9 @@ gates exactly where they are.
 
 ## Closing ref - check the tracker repo first
 
-GitHub honours issue-closing keywords **only within one repository**, so a
-tracker declared in another repo leaves the issue silently open - and, because
-this skill treats the merged PR as transition evidence, unadvanced.
+A bare `Closes #N` names an issue in the PR's own repo; a tracker in another
+repo needs `Closes owner/repo#N`, or the issue silently stays open - and,
+because this skill treats the merged PR as transition evidence, unadvanced.
 
 - **No `repository:` declared in `/spec/tracker.md`, or the value is absent / a
   placeholder / unreadable** -> write `Closes #N`. Nothing further to do.
@@ -197,8 +197,9 @@ this skill treats the merged PR as transition evidence, unadvanced.
 Divert **only on positive proof of a mismatch**.
 
 In a **polyrepo member** the mismatch is structural, not incidental: the tracker
-is the workspace's, so a member PR can never auto-close its issue. Take the
-`Refs owner/repo#N` + explicit-close path every time, and land the spec update
+is the workspace's, so a member PR closes its issue only through the qualified
+`Closes owner/repo#N` - write it every time, confirm the close after merge, and
+land the spec update
 (the owning `contract.md`) as its own change in the **workspace** repo - those two
 PRs cannot be atomic (`/steer:reference polyrepo`).
 

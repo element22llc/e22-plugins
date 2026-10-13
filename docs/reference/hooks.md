@@ -396,7 +396,7 @@ Four helpers resolve polyrepo topology:
   made every product-level spec read as absent.
 - `steer_tracker_repo <root>` - the tracker's declared `repository:` value. In a
   member this is deliberately **never that member's own repo**, which is why
-  closing refs across repos need the cross-repo form.
+  closing refs across repos need the qualified `Closes owner/repo#N` form.
 
 A fifth helper, `steer_tracker_is_github`, is the behaviourally largest - it decides
 whether the issue-first rules and nudges apply. In a member there is no local

@@ -30,7 +30,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |
 | `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, CSP/inline mechanics, the styling contract (`DESIGN.md` tokens or the house default), the temp-path write invariant, the fillable-page return leg, and the Markdown fallback. |
 | `gates` | `GATES.md` | Ratifying an ADR, approving an intent, or signing off a plan **in-session**: the three-option prompt, what it must show, how the decision is recorded, and the gates no prompt can satisfy. |
-| `polyrepo` | `POLYREPO.md` | A product spanning several repos: the workspace/member split, where each spec artifact lives, resolving the spine from a member, honest report scope, and what crosses the repo edge (sub-issues yes, closing keywords no, drift gates no). |
+| `polyrepo` | `POLYREPO.md` | A product spanning several repos: the workspace/member split, where each spec artifact lives, resolving the spine from a member, honest report scope, and what crosses the repo edge (sub-issues and qualified closing keywords yes, drift gates no). |
 
 ## Load the file, don't answer from the table
 

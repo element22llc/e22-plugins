@@ -81,9 +81,9 @@ sequences those across the lifecycle.
    issue against the member's own repo to work around it. Two facts shape
    decomposition: **sub-issues do
    cross repositories** within an org (100 children per parent, 8 levels), so a
-   workspace epic can parent member issues unmodified; **closing keywords do
-   not**, so an issue in the workspace tracker never auto-closes from a member PR
-   and must be closed explicitly after merge.
+   workspace epic can parent member issues unmodified; **closing keywords cross
+   only when qualified**, so a member PR closes a workspace issue with
+   `Closes owner/repo#N`, never a bare `#N`.
 
 Read the references before acting: the lifecycle, state model, and authority
 table in `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md`; the issue

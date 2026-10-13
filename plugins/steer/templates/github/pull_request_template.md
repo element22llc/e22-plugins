@@ -9,11 +9,10 @@ conventions (`/spec/tracker.md`) - e.g. `Closes #123` (GitHub Issues),
 `PROJ-123` (Jira), `ENG-123` (Linear), `AB#123` (Azure DevOps). Write `none`
 only for work with no tracked item, and say why.
 
-**If `/spec/tracker.md` points at a different repository than this one**, a
-closing keyword will **not** close the issue - GitHub honours them only within
-one repo, so `Closes #123` renders as a plain cross-reference and the issue stays
-open with nothing warning you. Write `Refs owner/repo#123` instead and close the
-issue explicitly after merge - on GitHub, or by asking Claude to close it.
+**If `/spec/tracker.md` points at a different repository than this one**, a bare
+`Closes #123` names an issue in *this* repo and the tracker issue stays open with
+nothing warning you. Qualify it - `Closes owner/repo#123` - and GitHub closes the
+tracker issue when this PR merges into the default branch.
 
 Closes #
 
