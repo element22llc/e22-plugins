@@ -79,8 +79,8 @@ shell escaping. Detect capability **in this order, every run**:
    missing local file is never "no tracker", so do not fall to the manual floor
    on its absence and never create a local copy. Issues are filed against the
    tracker's declared `repository:`, which in a member is not this repo - so the
-   cross-repo closing-ref rule in `OPERATIONS.md` applies (`Refs owner/repo#N`
-   plus an explicit `close`). Resolve it by the ladder in
+   cross-repo closing-ref rule in `OPERATIONS.md` applies (the qualified
+   `Closes owner/repo#N`, with `close` as the fallback). Resolve it by the ladder in
    `/steer-reference polyrepo`.
 2. **Probe for GitHub MCP tools** (e.g. an issues list/get/create tool exposed by
    the github MCP server). If present -> **MCP path**.

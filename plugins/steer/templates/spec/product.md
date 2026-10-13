@@ -55,7 +55,7 @@ workspace rather than writing a second copy here.
 
 - `/steer:work` loads the linked feature's intent from the workspace before it
   touches code.
-- The tracker is the workspace's, so a PR here cannot auto-close its issue with
-  `Closes #N`. Use `Refs owner/repo#N` and close explicitly after merge.
+- The tracker is the workspace's, so a bare `Closes #N` here names the wrong
+  issue. Write `Closes owner/repo#N` - it closes the workspace issue on merge.
 - A contract change here can invalidate a sibling member's assumption. Flag the
   drift class and name the sibling - no gate catches it across the repo edge.

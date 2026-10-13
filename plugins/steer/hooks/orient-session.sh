@@ -103,10 +103,10 @@ if [ -n "${POLY_ROLE}" ]; then
 		printf 'design** - product-level artifacts and every feature `intent.md` live in '
 		printf 'the workspace, so a missing local intent means you have not read the '
 		printf 'workspace yet, never that the feature is unspecified. Do not create '
-		printf 'product-level spec files here to fill a gap. A PR here cannot auto-close a '
-		printf 'workspace issue with `Closes #N` (GitHub honours closing keywords only '
-		printf 'within one repo) - `Refs owner/repo#N`, then close it explicitly after '
-		printf 'merge. Load `/steer:reference polyrepo` before acting on the topology.\n'
+		printf 'product-level spec files here to fill a gap. A bare `Closes #N` here '
+		printf 'names an issue in this repo - close a workspace issue with the qualified '
+		printf '`Closes owner/repo#N`. Load `/steer:reference polyrepo` before acting on '
+		printf 'the topology.\n'
 	fi
 	printf '\n'
 fi

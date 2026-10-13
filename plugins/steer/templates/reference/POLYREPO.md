@@ -132,10 +132,10 @@ never read as "nothing there".
 - **Projects v2 is already cross-repo**, so a roadmap spans a polyrepo for free.
 - **Milestones are per-repo.** Release grouping must move to a Project
   iteration or single-select field; a milestone cannot span members.
-- **Closing keywords do not cross repos.** A PR in a member cannot auto-close an
-  issue in the workspace's tracker - GitHub honours `Closes #N` only within one
-  repository, and a cross-repo form renders as a plain reference. Write
-  `Refs owner/repo#N` and close the issue explicitly after merge.
+- **Closing keywords cross repos only when qualified.** A bare `Closes #N` in a
+  member PR names an issue in the member. Write `Closes owner/repo#N`: GitHub
+  closes the workspace issue when the PR merges into the member's default
+  branch. Confirm it closed; close it explicitly if it did not.
 
 ## Drift crosses the repo edge; the gates do not
 

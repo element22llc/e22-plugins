@@ -5,12 +5,11 @@ solo-trunk) **only if** `/spec/tracker.md` declares a `repository:`. When it
 does not, or the value is absent/placeholder/unreadable, the answer is plain
 `Closes #N` - the overwhelmingly common path - and there is nothing to check.
 
-GitHub honours issue-closing keywords **only within one repository**. When
-`/spec/tracker.md` declares a `repository:` that is not the repo the code lives
-in, a `Closes #N` - or even a fully-qualified `Closes owner/repo#N` - renders as
-a plain cross-reference and **the issue silently stays open**. Nothing warns, and
-because this skill treats the merged PR as lifecycle-transition evidence, the
-issue never advances state either.
+A bare `#N` always means an issue in the repo the PR is in. When
+`/spec/tracker.md` declares a different repository, `Closes #N` points at the
+wrong issue - or at none - and the tracker issue silently stays open. The
+fully-qualified form crosses repositories: `Closes owner/repo#N` closes the
+tracker issue when the PR merges into the code repo's default branch.
 
 Resolve both sides before writing any closing ref:
 
@@ -28,7 +27,11 @@ Compare them **case-insensitively** (GitHub owner/repo names are), then:
 | | Closing ref | Closure |
 | --- | --- | --- |
 | Same repo (or either value unreadable) | `Closes #N` - unchanged | GitHub auto-closes on merge |
-| **Proven different** | `Refs owner/repo#N` | **You** close it: `/steer-tracker-sync close` after the merge |
+| **Proven different** | `Closes owner/repo#N` | GitHub auto-closes on merge; **you** confirm it did |
+
+After a cross-repo merge, read the issue back. Still open - the PR merged into a
+non-default branch, or GitHub did not act on the keyword - close it with
+`/steer-tracker-sync close` rather than leaving it to rot.
 
 Divert **only on positive proof of a mismatch**. An absent tracker file, an
 unresolved `[owner/repository]` placeholder, an empty value, or a failed
@@ -39,6 +42,6 @@ remote not named `origin` each defeat that, and every such failure would silentl
 restore the bug.
 
 In **solo-trunk** the same rule applies to the trunk commit trailer: `Closes #N`
-when the tracker is local, otherwise `Refs owner/repo#N` and an explicit close -
-and there the closed issue *is* the terminal evidence, so skipping the explicit
-close leaves the work with no completion record at all.
+when the tracker is local, otherwise `Closes owner/repo#N` - and there the closed
+issue *is* the terminal evidence, so confirm it closed and close it explicitly
+if it did not.

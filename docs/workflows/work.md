@@ -127,13 +127,14 @@ stale ones. Full prose: `/steer:reference traceability`.
 
 ## Closing refs across repositories
 
-GitHub honours issue-closing keywords **only within one repository**. If
+A bare `Closes #N` names an issue in the PR's own repository. If
 `/spec/tracker.md` declares a `repository:` other than the repo the code lives in -
 a team centralizing issues in a dedicated tracker repo, or a polyrepo member
-whose spine lives in the workspace - then `Closes #N` renders as a plain
-cross-reference and **the issue silently stays open**. Nothing warns, and because
-`finish` reads the merged PR as its lifecycle-transition evidence, the issue never
-advances state either.
+whose spine lives in the workspace - then `Closes #N` misses the tracker issue and
+**it silently stays open**. Nothing warns, and because `finish` reads the merged
+PR as its lifecycle-transition evidence, the issue never advances state either.
+The qualified `Closes owner/repo#N` does cross repositories: GitHub closes the
+tracker issue when the PR merges into the default branch.
 
 `finish` therefore resolves both sides before writing any closing ref: the
 declared tracker (`steer_tracker_repo`, `lib/scope.sh`) against the actual repo
@@ -141,7 +142,7 @@ declared tracker (`steer_tracker_repo`, `lib/scope.sh`) against the actual repo
 
 In a [polyrepo member](../concepts/product-spine.md#one-product-several-repos)
 the mismatch is structural rather than incidental - the tracker is always the
-workspace's - so the explicit-close path is taken every time. `start` also
+workspace's - so the qualified form is written every time. `start` also
 resolves the spine from `spec/PRODUCT.md` before reading the tracker or a
 feature's specs: a member carries neither `spec/tracker.md` nor
 `spec/features/**`, and a missing local `intent.md` means the workspace has not
@@ -151,7 +152,7 @@ behavior change requires lands as its own change in the workspace repo.
 | | Closing ref | Who closes the issue |
 | --- | --- | --- |
 | Same repo, **or** either value unreadable | `Closes #N` - unchanged | GitHub, on merge |
-| **Proven** mismatch | `Refs owner/repo#N` | `/steer:tracker-sync close`, after the merge |
+| **Proven** mismatch | `Closes owner/repo#N` | GitHub, on merge - `finish` confirms, and falls back to `/steer:tracker-sync close` |
 
 Only a demonstrated mismatch diverts. An absent tracker file, an unresolved
 `[owner/repository]` placeholder, an empty value, or a failed `gh` call all keep

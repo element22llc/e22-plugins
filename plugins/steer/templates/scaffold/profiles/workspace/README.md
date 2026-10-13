@@ -71,9 +71,8 @@ Details: `/steer:reference polyrepo`.
   silently dropped.
 - `/steer:work issues` decomposition works across repos: GitHub sub-issues may
   span repositories within an org (100 sub-issues per parent, 8 levels of nesting).
-- A PR in a member repo **cannot** auto-close an issue here - GitHub honours
-  closing keywords only within one repo. Use `Refs owner/repo#N` and close the
-  issue explicitly after merge.
+- A PR in a member repo closes an issue here only with the qualified form -
+  `Closes owner/repo#N`; a bare `#N` names an issue in the member.
 
 ## What this does not buy
 
