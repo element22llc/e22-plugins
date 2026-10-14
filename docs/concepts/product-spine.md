@@ -76,8 +76,9 @@ prevent.
 The same logic applies to **everything a working session surfaces**, not just
 formal decisions. Claude Code's auto memory survives compaction, but
 it is invisible to the repo, the PR, and every teammate - so steer does not offer
-to "remember" a finding there. The router keeps that one line always-on, and
-the context-hygiene standard (`/steer:reference context-hygiene`) routes
+to "remember" a finding there. The spec rule keeps that one line always-on,
+beside durable decisions, and the context-hygiene standard
+(`/steer:reference context-hygiene`) routes
 each fact to its canonical on-disk home **by type**: a **bug fix** -> a
 regression test; an **operational or behavioral fact** -> the app guide or
 a `/spec/history/` entry; an **unresolved bug or follow-up** -> a
