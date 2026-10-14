@@ -40,7 +40,7 @@ the product repo, from the bundled template.
    existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
 3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
 4. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/adr.md` -> `spec/decisions/000N-[slug].md`.
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/adr.md` -> `spec/decisions/000N-[slug].md`.
 5. Fill in Context, Decision, Alternatives considered (with rejection reasons),
    and Consequences (positive / negative / neutral). Set Status to `Proposed`
    until accepted; set Deciders. Leave the `> Ratified ...` fields as-is -
@@ -129,7 +129,7 @@ force you to redo, it is not an ADR yet.
 
 When superseding an ADR, mark the old one `Superseded by [link]` and link the new
 one - do not delete or renumber it. Full guidance:
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`.
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`.
 
 ADRs are **exempt from template reconciliation** - they are immutable,
 point-in-time records. Never retrofit a newer `adr.md` template's sections into an
@@ -139,7 +139,7 @@ existing ADR; supersede it with a new one instead.
 
 After drafting the ADR, emit a `## Recommended next actions - /steer-spec adr`
 block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. A freshly written ADR
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. A freshly written ADR
 is `Proposed`, so the next step is a human decision - but it is now an
 **answerable** one, so the row names how to answer it.
 

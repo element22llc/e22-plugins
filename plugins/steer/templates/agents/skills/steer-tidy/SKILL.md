@@ -16,7 +16,7 @@ user-invocable: false
 
 Read the full sweep procedure bundled with this plugin:
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/HOUSEKEEPING.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/HOUSEKEEPING.md`
 
 Key points (read the file for the full detail):
 

@@ -106,7 +106,7 @@ durable question, aged, tracked and closed like any other.
 ## Recommended next action
 
 Close with a `## Recommended next actions - /steer-spec questions needs` block
-per `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`: after a write,
+per `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`: after a write,
 **render the questionnaire with `/steer-spec questions bundle`** (Recommended);
 when nothing was proposed or confirmed, `No action is currently required.`
 (Complete).

@@ -86,7 +86,7 @@ sequences those across the lifecycle.
    `Closes owner/repo#N`, never a bare `#N`.
 
 Read the references before acting: the lifecycle, state model, and authority
-table in `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md`; the issue
+table in `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md`; the issue
 format (markers, headings, **managed blocks**, idempotency) in
 `ISSUE-SCHEMA.md`; the open-question contract in `SPEC-FRAMEWORK.md`.
 
@@ -137,7 +137,7 @@ you are running; do not read the others.**
 
 After any mode, emit a `## Recommended next actions - /steer-work issues <mode>`
 block (the mode that ran) per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. As an orchestrator,
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. As an orchestrator,
 recommend the **next valid lifecycle transition** for the issue(s) just touched
 (locality rule), delegating the action to its owning skill.
 

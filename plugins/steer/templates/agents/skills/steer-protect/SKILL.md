@@ -110,7 +110,7 @@ Read the policy, **consumer-first then plugin default** (same precedence as
 `policy/versions.yml`):
 
 1. `${repo}/policy/branch-protection.yml` if present, else
-2. `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/policy/branch-protection.yml` (bundled default).
+2. `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/policy/branch-protection.yml` (bundled default).
 
 - `branch: default` resolves to the repo's actual default branch
   (`gh repo view --json defaultBranchRef`).

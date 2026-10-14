@@ -12,6 +12,13 @@ argument-hint: '[init | adopt | sync | doctor | protect | worktrees | advisory] 
 
 **When to use.** Use when asked to set up, onboard, bootstrap or adopt a repo, sync to the latest plugin, get a machine ready, or protect main - the single entry point whenever you would otherwise guess which path fits. `sync` brings a managed or openspec repo up to date, `sync --check` is the read-only drift report; `doctor` diagnoses missing prerequisites ("command not found", a shadowed runtime); `protect` applies branch protection and merge rules, graduates solo trunk or waives it; `worktrees` checks worktrees another tool manages; `advisory` (`off` to leave) is for an external review or someone else's code steer should not bootstrap.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 <!-- steer:modes init,adopt,sync,doctor,protect,worktrees,advisory -->
 
 # Set up a repo on the standards
@@ -54,7 +61,7 @@ left running after a worktree was deleted needs no bootstrap either.
 Compute the spine state with the bundled helper rather than inventing detection:
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-spine-state.sh"
+sh "${STEER_PLUGIN_ROOT}/scripts/scan-spine-state.sh"
 ```
 
 One read-only call; it prints the repo root, the spine state, the polyrepo role,

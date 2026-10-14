@@ -56,7 +56,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   can carry it: regression test -> lint rule or hook -> `contract.md` rule ->
   product `CLAUDE.md` pattern -> `/steer-report` for a steer defect -> only then
   `spec/learnings/<slug>.md` from
-  `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/learning.md`, updating a matching
+  `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/learning.md`, updating a matching
   learning over adding one (`/steer-reference traceability` section 3). Writing
   nothing is the normal outcome; whatever is written ships in this delivery.
   Then update progress (`update-state` on the managed block + `comment`);

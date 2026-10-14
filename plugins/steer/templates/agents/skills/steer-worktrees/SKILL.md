@@ -12,6 +12,13 @@ user-invocable: false
 
 **When to use.** Reached via /steer-setup worktrees - not a direct entry point.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Worktree handling (`/steer-setup worktrees`)
 
 Rule `45-delivery` § Parallel worktrees assumes every worktree inherits trust,
@@ -25,7 +32,7 @@ what its worktree tool needs, and sweeps what a deleted worktree left behind.
 ## 1. Scan
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-worktrees.sh" .
+sh "${STEER_PLUGIN_ROOT}/scripts/scan-worktrees.sh" .
 ```
 
 Read-only; its header documents every line. Works from the primary checkout or
@@ -46,7 +53,7 @@ destroys data (orphans).
 | `env-copy missing <wt>: <files>` | The worktree predates the include. Offer to copy those files from the primary; never overwrite one that exists. Local only, nothing to commit. |
 | `worktree-dir unignored <dir>` | Add `<dir>/` to `.gitignore`. |
 | `teardown hooked` | Nothing - steer's `WorktreeRemove` hook runs `docker:clean`. |
-| `teardown absent orca` | Install `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/worktrees/orca.yaml` at the repo root. |
+| `teardown absent orca` | Install `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/worktrees/orca.yaml` at the repo root. |
 | `teardown merge orca` | Keep the repo's `orca.yaml`; add the template's archive line to its `scripts.archive`. |
 | `teardown manual conductor` | No bundled hook: add `mise run docker:clean \|\| true` to the archive script in Conductor's repository settings. |
 | `teardown manual git` | Nothing to install: say `mise run docker:clean` runs **before** `git worktree remove`; the orphan sweep is the backstop. |

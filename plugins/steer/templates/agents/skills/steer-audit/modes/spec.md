@@ -170,7 +170,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    *actual* drift - Diverged, Done-but-Missing, and genuine conflicts - **not**
    expected-Missing backlog (those are unbuilt roadmap, not a decision to track).
    Each issue uses the **decision-checklist** body
-   (`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/github/issue-bodies/spec-drift.md`): *Spec
+   (`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/github/issue-bodies/spec-drift.md`): *Spec
    says* / *Implementation does* / *Evidence* / *Human decision required* (the
    checklist). The agent may propose a direction but **never resolves behavioural
    drift autonomously** - a PO or dev decides by ownership. On a GitHub tracker,
@@ -184,7 +184,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    guess - run `/steer-spec questions` to drive them to answers.
 5. **Recommend the next action.** Close with a `## Recommended next actions -
    /steer-audit spec` block per
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this
    drift run's findings (locality rule).
 
    | Observed state | Category | Action / suggested command |

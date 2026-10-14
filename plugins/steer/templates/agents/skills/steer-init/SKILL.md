@@ -12,6 +12,13 @@ user-invocable: false
 
 **When to use.** Reached via /steer-setup init - not a direct entry point.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # First-run setup for a new repo (`/steer-setup init`)
 
 Run this once when a repo is first brought under the standards. Detect
@@ -32,7 +39,7 @@ the per-step notes call out the trunk-mode variant.
 present. The fork already ships a `/spec` skeleton and scaffolding; resolve the
 placeholders, swap the starter app, and back-fill the newer scaffold artifacts
 by following the full procedure in
-[`LEGACY-TEMPLATE-FORK.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/LEGACY-TEMPLATE-FORK.md).
+[`LEGACY-TEMPLATE-FORK.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/LEGACY-TEMPLATE-FORK.md).
 (New repos no longer start from that template - the plugin's bundled scaffold
 is the bootstrap source; this path exists only for forks that predate it.)
 
@@ -68,7 +75,7 @@ solo trunk mode - see step 1).
 ## Path A - legacy template fork
 
 Detected by the placeholders above. Follow the full procedure in
-[`LEGACY-TEMPLATE-FORK.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/LEGACY-TEMPLATE-FORK.md):
+[`LEGACY-TEMPLATE-FORK.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/LEGACY-TEMPLATE-FORK.md):
 scan + one-round interview -> batch the edits for confirmation -> pin the
 toolchain (the canonical procedure in `/steer-reference conventions`) -> replace
 or remove the starter app -> adapt the standard `mise` tasks -> back-fill the
@@ -193,7 +200,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    rule `30-spec` § Living documentation.
    **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` - never from memory) so a
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json` - never from memory) so a
    later `/steer-sync` knows which structural migrations this repo predates:
 
    ```
@@ -219,7 +226,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
 Whichever path ran, close with a `## Recommended next actions - /steer-setup
 init` block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
 bootstrapped repo's state.
 
 | Observed state | Category | Action / suggested command |

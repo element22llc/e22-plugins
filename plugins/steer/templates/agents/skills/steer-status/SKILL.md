@@ -29,6 +29,13 @@ argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
 > shaped this way, not as limits that apply to you - where a step says it cannot
 > ask, you may ask.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 <!-- steer:modes this-week,since,milestone,feature=explain -->
 
 # Status report - a shareable, plain-language progress update
@@ -102,7 +109,7 @@ the moment the spine or tracker changes; regenerate to refresh.
 
 The client cares about **what got done**, in their language. Source "shipped" from
 **closed issues + milestone completion**, grouped by feature - the work/decision
-layer, per `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md`. Do **not**
+layer, per `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md`. Do **not**
 source it from `git log` or merged PRs: commit/PR detail is dev-facing noise for
 this audience, and no mutating `git` verb is pre-approved here in any case. If a repo tracks work
 outside issues, say the report covers tracked issues only - don't guess at the rest.
@@ -120,7 +127,7 @@ outside issues, say the report covers tracked issues only - don't guess at the r
 3. **Detect capability via `/steer-tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took.
 4. **Determine report scope** from `- polyrepo role:` in
-   `sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-spine-state.sh"`. A single-repo
+   `sh "${STEER_PLUGIN_ROOT}/scripts/scan-spine-state.sh"`. A single-repo
    product covers itself - nothing to say. In a **polyrepo** this report goes to
    a client, so apply `/steer-reference polyrepo` § "Reporting across members"
    in full, with the uncovered ones under a **Not covered** heading. From a
@@ -154,7 +161,7 @@ Ask `/steer-tracker-sync` for the tracker reads; read `/spec` directly for the r
 - **In progress** - open issues whose **`steer:state` marker** reads `in-progress` or
   `validate`, grouped by feature. The marker is the lifecycle source of truth - read it
   from the issue body, **never** a label: per
-  `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/LABELS.md`, state is "never a label" and the
+  `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/LABELS.md`, state is "never a label" and the
   canonical set contains no lifecycle label, so a label filter here silently matches
   nothing. An assignee may corroborate, never substitute. A `validate` issue is what the
   next-actions block below reports as awaiting PO acceptance - the issue marker is the
@@ -167,7 +174,7 @@ Ask `/steer-tracker-sync` for the tracker reads; read `/spec` directly for the r
 - **What's next** - the next milestone's issues / the unshipped `approved` features,
   described as outcomes, not tasks.
 - **Feature pipeline** - each feature's `Status:` (`draft -> approved -> live`, the
-  enum in `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ENUMS.md`) as an at-a-glance
+  enum in `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ENUMS.md`) as an at-a-glance
   pipeline. Tick only what the spec marks; never advance a state the spec leaves
   behind. **This spine is product state, not delivery progress** - pair it with the
   issue `steer:state` from *In progress* above when the client asks how far along
@@ -216,7 +223,7 @@ session needs anyway, since steer does not store it (see the "Updating a previou
 ## Recommend the next action
 
 After rendering, emit a `## Recommended next actions - /steer-status` block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this run,
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this run,
 delegating each to its owner:
 
 | Observed state | Category | Action / suggested command |

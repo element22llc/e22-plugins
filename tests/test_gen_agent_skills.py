@@ -9,6 +9,7 @@ paths (-> URLs into the public plugin repo), and ``/steer:`` invocations
 
 from __future__ import annotations
 
+import re
 import textwrap
 from pathlib import Path
 
@@ -60,6 +61,7 @@ def test_intra_skill_refs_go_relative_and_shared_refs_go_to_urls(tmp_path: Path)
         See [modes](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/hotfix.md).
         Deep prose: `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`.
         Another skill: ${CLAUDE_PLUGIN_ROOT}/skills/issues/modes/backlog.md
+        The rules: ${CLAUDE_PLUGIN_ROOT}/rules/
         """,
     )
     (d / "modes").mkdir()
@@ -70,8 +72,11 @@ def test_intra_skill_refs_go_relative_and_shared_refs_go_to_urls(tmp_path: Path)
     assert "[modes](modes/hotfix.md)" in out
     assert Path("steer-work/modes/hotfix.md") in gen_agent_skills.build(tmp_path)
     # 2. Shared bundle and other skills -> absolute URL on the public repo.
-    assert f"{gen_agent_skills.BLOB_BASE}/templates/reference/NEXT-ACTIONS.md" in out
-    assert f"{gen_agent_skills.BLOB_BASE}/skills/issues/modes/backlog.md" in out
+    assert f"{gen_agent_skills.RAW_BASE}/templates/reference/NEXT-ACTIONS.md" in out
+    assert f"{gen_agent_skills.RAW_BASE}/skills/issues/modes/backlog.md" in out
+    # A directory has no raw form - it links to the tree listing instead.
+    assert f"{gen_agent_skills.TREE_BASE}/rules/" in out
+    assert "/blob/" not in out
     # No unresolved plugin-root reference may survive anywhere.
     assert "CLAUDE_PLUGIN_ROOT" not in out
 
@@ -189,3 +194,36 @@ def test_real_plugin_tree_is_in_sync_and_fully_resolved():
         assert "CLAUDE_PLUGIN_ROOT" not in text, f"unresolved plugin-root path in {rel}"
         body = _after_banner(text)
         assert "/steer:" not in body, f"unrewritten /steer: invocation in {rel}"
+
+
+def test_helper_commands_run_from_a_local_copy_never_a_url(tmp_path: Path):
+    """#721: `sh "https://..."` is a missing file on every surface."""
+    _skill(
+        tmp_path,
+        "sync",
+        "name: sync\ndescription: Sync.",
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"`.',
+    )
+    d = _skill(tmp_path, "questions", "name: questions\ndescription: Q.", "See LEGACY.md.")
+    (d / "LEGACY.md").write_text(
+        'python3 "${CLAUDE_PLUGIN_ROOT}/scripts/x.py" --apply\n', encoding="utf-8"
+    )
+    _skill(
+        tmp_path,
+        "spec",
+        "name: spec\ndescription: S.",
+        "Read `${CLAUDE_PLUGIN_ROOT}/templates/spec/intent.md`.",
+    )
+    tree = gen_agent_skills.build(tmp_path)
+    sync = tree[Path("steer-sync/SKILL.md")]
+    assert 'sh "${STEER_PLUGIN_ROOT}/scripts/scan-spine-state.sh"' in sync
+    assert gen_agent_skills.HELPER_NOTE in sync
+    # A helper invoked only from a supporting file still puts the note in SKILL.md.
+    assert 'python3 "${STEER_PLUGIN_ROOT}/scripts/x.py"' in tree[Path("steer-questions/LEGACY.md")]
+    assert gen_agent_skills.HELPER_NOTE in tree[Path("steer-questions/SKILL.md")]
+    # A skill with no helper command gets no note, and a read stays a URL.
+    spec = tree[Path("steer-spec/SKILL.md")]
+    assert gen_agent_skills.HELPER_NOTE not in spec
+    assert f"{gen_agent_skills.RAW_BASE}/templates/spec/intent.md" in spec
+    for text in tree.values():
+        assert not re.search(r"\b(?:sh|python3) \"?https?://", text)

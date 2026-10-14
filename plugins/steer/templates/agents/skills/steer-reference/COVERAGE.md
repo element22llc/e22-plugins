@@ -3,14 +3,14 @@
 A per-topic contents listing, for picking the right doc when the one-line table
 in `SKILL.md` is not enough to choose. **This file is not the reference prose** -
 it is an index of it. Once you have picked a topic, open the actual file under
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/` and answer from there, never from
+`https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/reference/` and answer from there, never from
 this summary.
 
 ## `conventions`
 
 Read the full conventions prose bundled with this plugin:
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CONVENTIONS.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CONVENTIONS.md`
 
 It covers, in detail:
 
@@ -59,7 +59,7 @@ It covers, in detail:
 
 Read the full prose bundled with this plugin:
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/TRACEABILITY.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/TRACEABILITY.md`
 
 It covers, in detail:
 
@@ -95,7 +95,7 @@ how-to.
 
 Read the full design-sources walkthrough bundled with this plugin:
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/DESIGN-SOURCES.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/DESIGN-SOURCES.md`
 
 Key points (read the file for the full detail):
 
@@ -135,7 +135,7 @@ Key points (read the file for the full detail):
 
 Read the full context-hygiene reference bundled with this plugin:
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CONTEXT-HYGIENE.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CONTEXT-HYGIENE.md`
 
 It covers, in detail:
 
@@ -161,7 +161,7 @@ rides in the always-on payload, so load it whenever a run turns long.
 
 ## architecture-diagrams
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ARCHITECTURE-DIAGRAMS.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ARCHITECTURE-DIAGRAMS.md`
 
 It covers, in detail:
 
@@ -187,7 +187,7 @@ This backs the always-on living-docs rule `32` and the `spec/design/` layout.
 
 ## artifacts
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ARTIFACTS.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ARTIFACTS.md`
 
 It covers, in detail:
 
@@ -225,7 +225,7 @@ This file carries the Artifact standard in full; the rendering skills
 
 ## gates
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/GATES.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/GATES.md`
 
 It covers, in detail:
 
@@ -252,7 +252,7 @@ This backs the always-on rule `61-gates` and the gate-owning skills
 
 ## polyrepo
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/POLYREPO.md`
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/POLYREPO.md`
 
 It covers, in detail:
 

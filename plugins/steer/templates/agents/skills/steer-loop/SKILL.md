@@ -82,7 +82,7 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    loop pays nothing for the rule, and a repo running one has the boundary in
    front of every session.
 2. **Instantiate the workflow.** Copy
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/github/workflows/steer-loop.yml` to
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/github/workflows/steer-loop.yml` to
    `.github/workflows/steer-loop.yml`. This template is **on-demand** - it is not
    part of the bootstrap scaffold, so a repo only gets a loop when someone asks
    for one here.
@@ -115,7 +115,7 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    53 for the boundary and note the workflow can be triggered on demand from the
    Actions tab (`workflow_dispatch`) to test it before the first scheduled run.
 7. **Close with `## Recommended next actions - /steer-loop`** per
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` - from whichever
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` - from whichever
    step this stopped at: a failed precondition, the opt-in awaiting the dev's
    answer, or the PR opened.
 

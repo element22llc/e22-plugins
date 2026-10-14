@@ -13,6 +13,13 @@ user-invocable: false
 
 **When to use.** Invoked by /steer-spec, /steer-build, /steer-init, /steer-adopt, or /steer-intake with a resolved feature id - not a direct entry point.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Scaffold a feature spec
 
 Create `/spec/features/[id]/intent.md` and `contract.md` for a new user-facing
@@ -29,8 +36,8 @@ feature, using the canonical templates bundled with this plugin.
    the folder already exists**, this `[id]` was scaffolded before - do not
    clobber it; go to step 3's reconcile branch.
 3. Instantiate the two spec files from the bundled templates:
-   - `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/feature-intent.md` -> `spec/features/[id]/intent.md`
-   - `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/feature-contract.md` -> `spec/features/[id]/contract.md`
+   - `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/feature-intent.md` -> `spec/features/[id]/intent.md`
+   - `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/feature-contract.md` -> `spec/features/[id]/contract.md`
 
    For a **new** feature, copy them in. For an **existing** feature (a re-run, or a
    feature spec'd under an older plugin version), **reconcile instead of copy** -
@@ -38,8 +45,8 @@ feature, using the canonical templates bundled with this plugin.
    contract):
 
    ```sh
-   sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/template-reconcile.sh" \
-     spec/features/[id]/intent.md "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/feature-intent.md"
+   sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
+     spec/features/[id]/intent.md "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/feature-intent.md"
    # repeat with contract.md vs feature-contract.md
    ```
 
@@ -48,7 +55,7 @@ feature, using the canonical templates bundled with this plugin.
    intent/contract content or re-add a placeholder the dev replaced. Full rules -
    the plugin-wide **Template reconciliation** convention (over-reports handling,
    anchor matching, additive-only):
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
    reconciliation".
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
@@ -62,7 +69,7 @@ feature, using the canonical templates bundled with this plugin.
 
 The spec <-> code rules (drift resolution, behavior vs. implementation, PO
 acceptance, naming) are in the bundled reference at
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` - read it if you
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` - read it if you
 need the full rules. Key points: specs are organized by feature not code layout;
 spec and code change together in the same PR; resolve drift explicitly, never
 silently.

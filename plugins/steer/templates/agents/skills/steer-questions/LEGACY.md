@@ -11,7 +11,7 @@ standalone questions file. There is **no `SPEC-QUESTIONS.md`** in the current
 spine - questions live next to their context.
 
 Its heal is the **v1.25.0 migration entry** in
-[`MIGRATIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md), applied as a
+[`MIGRATIONS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/MIGRATIONS.md), applied as a
 **hard gate before gathering**: migrate the questions into the spine and
 **delete the file in the same step**. This is a move, not an answer - the
 deletion never waits on answers. Then sweep the migrated copies like any other
@@ -36,12 +36,12 @@ and they are **gates** - `/steer-spec approve` ticks them. Converting one into a
 `Q-NNN` block, or closing it as `resolved`, destroys the PO gate.
 
 Don't hand-convert: run the converter the **legacy-checkbox** entry in
-[`MIGRATIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md) names, which applies
+[`MIGRATIONS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/MIGRATIONS.md) names, which applies
 that scope mechanically and dates each question from its original line:
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/convert-legacy-questions.sh"          # proposed diff, writes nothing
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/convert-legacy-questions.sh" --apply  # after a yes
+sh "${STEER_PLUGIN_ROOT}/scripts/convert-legacy-questions.sh"          # proposed diff, writes nothing
+sh "${STEER_PLUGIN_ROOT}/scripts/convert-legacy-questions.sh" --apply  # after a yes
 ```
 
 Show the diff, apply it on a yes, then sweep the converted blocks like any other

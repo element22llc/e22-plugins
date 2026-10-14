@@ -33,7 +33,7 @@ handling & escape hatches · **6** testing · **7** toolchain & dependency healt
 consistency *(UI repos only)* · **9** DX & docs · **10** comment noise (the
 Code comments rule) · **11** learning upkeep *(needs `spec/learnings/`)*.
 Skip any dimension that doesn't apply to the repo and say so. The full catalogue - what each dimension looks for -
-is [`AUDIT-DIMENSIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/AUDIT-DIMENSIONS.md);
+is [`AUDIT-DIMENSIONS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/AUDIT-DIMENSIONS.md);
 load it before fanning out reviewers.
 
 ## Phase 0 - Recon
@@ -136,8 +136,8 @@ of dimension.
      selected in-session or via the dashboard's filled triage export - each
      carrying a **stable `finding-key`** so re-runs *reconcile* (update/close)
      rather than pile up duplicates (see Reconciliation below).
-     Bodies: `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/github/issue-bodies/audit-run.md`
-     (parent run issue) and `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/github/issue-bodies/finding.md` (child findings).
+     Bodies: `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/github/issue-bodies/audit-run.md`
+     (parent run issue) and `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/github/issue-bodies/finding.md` (child findings).
      Scope children to genuine, high-leverage findings - don't file one per nit.
    - **Architectural / cross-cutting calls** -> propose an ADR via `/steer-spec adr`.
    - **Spec coverage & conformance gaps** -> a proposed `## Open questions` entry
@@ -155,7 +155,7 @@ of dimension.
    step. Fixing anything is a separate, approved step on its own branch + PR.
 4. **Recommend the next action.** End with a `## Recommended next actions -
    /steer-audit code` block per
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` (categories,
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` (categories,
    precedence, output format, read-only rule - auditing is repo-wide *by
    purpose*). **Assert no severity beyond the audit's evidence**: route *potential*
    concerns to the specialist that confirms them; only a *confirmed* exposure is a
@@ -201,5 +201,5 @@ when deterministic; judgment calls need a human yes), false positives stay
 closed, and each run's `audit-run` parent is immutable history. The canonical
 full lifecycle - both identities, the per-finding transition rules, `audit-id`
 immutability - lives in
-[`ISSUE-WORKFLOW.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md) §"Audit &
+[`ISSUE-WORKFLOW.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md) §"Audit &
 drift"; `/steer-issues publish-audit` implements it (markers: `ISSUE-SCHEMA.md`).

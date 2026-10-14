@@ -56,13 +56,13 @@ Pick where the defect comes from:
 If there is no fault log and nothing concrete to report, say there's nothing to
 file and stop - never invent a defect.
 
-Read the **steer version** from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json`
+Read the **steer version** from `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json`
 (or the SessionStart banner). Read the consumer repo **slug** from
 `git remote get-url origin` -> keep only `owner/repo`; never the local path.
 
 ## 2. Build the report from the template
 
-Use `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/github/issue-bodies/steer-bug.md`. Fill
+Use `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/github/issue-bodies/steer-bug.md`. Fill
 every section. Set the two markers at the top:
 
 - `<!-- steer:self-report=1 -->` - keep verbatim.
@@ -137,6 +137,6 @@ gh issue create --repo element22llc/e22-plugins \
   this channel files into is the plugin's, and the fault log it clears here is
   git-ignored scratch state, never a tracked product file.
 - Close with `## Recommended next actions - /steer-report` per
-  `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` - on every exit:
+  `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` - on every exit:
   filed, deduped onto an existing issue, the manual-filing fallback, or §1's
   "nothing to file" stop, where the action is the detail the user must supply.

@@ -12,7 +12,7 @@ When rules are drifted or absent:
 0. **Profile selection** (`apply --solo` / `apply --team` only). Set `profile:` in
    the repo's **own** `policy/branch-protection.yml` to the requested value - the
    scaffold seeds that copy, so edit the existing line; if the repo has no copy,
-   create it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/policy/branch-protection.yml` first
+   create it from `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/policy/branch-protection.yml` first
    (verbatim, then set the line), because the plugin default is read-only and
    consumer-first resolution needs the choice to live in the repo. Then
    re-resolve the desired state with the profile overlaid (`SKILL.md` ->

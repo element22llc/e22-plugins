@@ -36,7 +36,7 @@ Do this now:
 
 1. Read every rule file, in lexical (numeric-prefix) order, from:
 
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/rules/`
+   `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/rules/`
 
    The files concatenate, in that order, to form the full operating manual.
    List the directory once, then issue every `Read` - plus `plugin.json` for
@@ -57,7 +57,7 @@ Do this now:
    contradiction.
 
 3. Give the user a one-line confirmation naming this skill and the plugin
-   version (read it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json`) -
+   version (read it from `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json`) -
    e.g. "`/steer-standards`: standards vX.Y.Z loaded." Where the hook had
    already injected them, say so in the same line rather than as a reason to
    skip the load. Do **not** dump the full ruleset back to the user; just

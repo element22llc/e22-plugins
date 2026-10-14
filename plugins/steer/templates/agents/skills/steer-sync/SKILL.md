@@ -13,6 +13,13 @@ user-invocable: false
 
 **When to use.** Reached via /steer-setup sync - not a direct entry point.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Sync a repo to the current plugin (`/steer-setup sync`)
 
 A repo materializes part of the plugin into itself at bootstrap time - the
@@ -96,7 +103,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    exists:
 
    ```sh
-   sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-spine-state.sh"
+   sh "${STEER_PLUGIN_ROOT}/scripts/scan-spine-state.sh"
    ```
 
    One read-only call; it prints the repo root, the spine state, the polyrepo
@@ -144,7 +151,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    only current if the plugin is. Tell the dev to run
    `/plugin update steer@e22-plugins` if they haven't this session, then
    resolve the **current plugin version** from
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` - never from memory. Call
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json` - never from memory. Call
    this `TARGET`.
 
 3. **Read the repo's stamp.** Read `/spec/.version` for the version the spine was
@@ -179,7 +186,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    steps 5-6 are in the same file.
 
 4. **Apply pending structural migrations.** Open the ledger at
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md`. Walk its entries
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/MIGRATIONS.md`. Walk its entries
    oldest->newest. For each entry whose introducing version is **greater than
    `FROM`**, check its **precondition** against the repo; apply the **action**
    only if the precondition holds (entries are idempotent and self-detecting, so
@@ -246,7 +253,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 9. **Recommend the next action.** Emit a `## Recommended next actions -
    /steer-setup sync` block per
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
    sync's state.
 
    | Observed state | Category | Action / suggested command |

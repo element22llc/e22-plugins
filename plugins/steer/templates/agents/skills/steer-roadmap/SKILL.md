@@ -29,7 +29,7 @@ the issue-workflow reference hold throughout:
 
 - **`/spec` is durable product truth; GitHub Issues is the work/decision layer; a
   Project is a derived view/overlay** (the compatibility boundary in
-  `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ISSUE-SCHEMA.md`).
+  `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ISSUE-SCHEMA.md`).
 - **All reads/writes go through `/steer-tracker-sync`** (MCP-first -> `gh` -> manual
   floor); this skill never calls the GitHub API directly.
 
@@ -191,7 +191,7 @@ shape as an inline table (milestone -> issues -> dates).
 
 After any mode, emit a `## Recommended next actions - /steer-spec roadmap` block
 per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this run
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to this run
 (locality rule), recommending the next valid step and delegating it to its owner.
 
 When the user is the PO - see rule 05 (Who you are working with) - render this
