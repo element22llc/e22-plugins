@@ -24,7 +24,8 @@ if steer_ci_has_node; then
 	steer_ci_group 'pnpm test'
 	# Per-package lcov.info only when @vitest/coverage is wired; the coverage gate is fail-open without it.
 	if git ls-files '*package.json' | xargs grep -lq '@vitest/coverage' 2>/dev/null; then
-		pnpm run test -- --coverage --coverage.reporter=lcov
+		# No `--`: pnpm forwards it literally, and vitest ignores every flag after it.
+		pnpm run test --coverage --coverage.reporter=lcov
 	else
 		pnpm run test
 	fi

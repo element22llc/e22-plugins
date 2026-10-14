@@ -85,3 +85,25 @@ def test_ci_coverage_step_skips_deps() -> None:
     assert "mise run --skip-deps ci:coverage" in ci, (
         "the Test step already ran ci:test; re-running it doubles CI"
     )
+
+
+def _ci_yml_tasks() -> set[str]:
+    ci = (
+        REPO_ROOT / "plugins" / "steer" / "templates" / "github" / "workflows" / "ci.yml"
+    ).read_text(encoding="utf-8")
+    return set(re.findall(r"^\s*run: mise run (?:--skip-deps )?([\w:-]+)\s*$", ci, re.M))
+
+
+# The workspace profile is excluded on purpose: it is an ancestor config of every
+# member, so unprefixed ci:* tasks there would shadow the members' own.
+@pytest.mark.parametrize("path", ["mise.toml", "profiles/infra/mise.toml"])
+def test_root_config_defines_every_task_ci_yml_runs(path: str) -> None:
+    tasks = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8")).get("tasks", {})
+    missing = sorted(_ci_yml_tasks() - tasks.keys())
+    assert not missing, f"{path}: ci.yml runs tasks it does not define: {missing}"
+
+
+def test_ci_test_passes_vitest_flags_without_a_separator() -> None:
+    """pnpm forwards a literal `--`; vitest then ignores --coverage and writes no lcov."""
+    script = (SCAFFOLD / "scripts" / "ci-test.sh").read_text(encoding="utf-8")
+    assert "pnpm run test -- " not in script
