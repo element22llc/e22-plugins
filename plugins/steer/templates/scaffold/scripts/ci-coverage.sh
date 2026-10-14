@@ -18,7 +18,6 @@ HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 . "${HERE}/ci-lib.sh"
 
 COVERAGE_DIFF_MIN="${COVERAGE_DIFF_MIN:-80}"
-ZERO=0000000000000000000000000000000000000000
 
 # The root fan-out writes PER-PACKAGE reports, so glob apps/* and packages/* alongside the root paths.
 reports=''
@@ -44,11 +43,10 @@ push)
 		steer_ci_notice 'push to main in pr-flow - the PR already gated coverage; skipping push-time floor.'
 		exit 0
 	fi
-	if [ -z "${STEER_CI_BEFORE:-}" ] || [ "${STEER_CI_BEFORE}" = "${ZERO}" ]; then
-		steer_ci_notice 'No prior commit to diff against (first push) - skipping changed-line coverage (fail-open).'
+	if ! base="$(steer_ci_base)"; then
+		steer_ci_notice 'No prior commit to diff against (first push or force-push) - skipping changed-line coverage (fail-open).'
 		exit 0
 	fi
-	base="${STEER_CI_BEFORE}"
 	;;
 *)
 	base="${STEER_CI_BASE:-origin/main}"

@@ -1226,6 +1226,12 @@ assert_eq "ci-changelog: PR base from the merge ref's first parent" "$?" "1"
 assert_eq "ci-changelog: wrong head SHA falls through to the base SHA" "$?" "1"
 (cd "${CC}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=main sh scripts/ci-changelog.sh >/dev/null 2>&1)
 assert_eq "ci-changelog: nothing resolvable still fails open" "$?" "0"
+# Promotion: the cut already consumed the fragments, so main -> prod adds none.
+(cd "${CC}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=prod STEER_CI_BASE_SHA="${base_sha}" sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: a promotion PR to prod needs no new fragment" "$?" "0"
+# A force-push leaves `before` unreachable: fail open, never exit 128.
+(cd "${CC}" && STEER_CI_EVENT=push STEER_CI_BEFORE=1111111111111111111111111111111111111111 sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: an unreachable push base fails open" "$?" "0"
 
 # changelog:new: argv reaches changie verbatim, no shell in between (#671).
 if command -v node >/dev/null 2>&1; then

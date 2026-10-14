@@ -9,7 +9,11 @@ body: |-
       resort; changed-line coverage uses the same resolver. The gate also accepted
       a `.md` or `.yml` file as the fragment, which `changie merge` drops without a
       word. It now counts only `*.yaml` and fails on any other file under
-      `.changes/unreleased/`, with or without a base. Reported in #707.
+      `.changes/unreleased/`, with or without a base. Two cases the
+  now-running gate would have broken are handled: a `main` -> `prod`
+  promotion PR needs no new fragment (the cut consumed them), and a push
+  whose prior commit is gone after a force-push skips both gates instead of
+  failing. Reported in #707.
 time: 2026-10-14T09:34:47.701923-04:00
 custom:
     Slug: ci-changelog-gate-fails-open

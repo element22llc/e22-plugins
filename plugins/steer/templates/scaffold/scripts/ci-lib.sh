@@ -74,6 +74,8 @@ steer_ci_base() {
 		case "${STEER_CI_BEFORE:-}" in
 		"" | 0000000000000000000000000000000000000000) return 1 ;;
 		esac
+		# A force-push leaves `before` in no fetched ref.
+		git cat-file -e "${STEER_CI_BEFORE}^{commit}" 2>/dev/null || return 1
 		printf '%s\n' "${STEER_CI_BEFORE}"
 		;;
 	*)

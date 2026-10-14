@@ -38,6 +38,13 @@ if [ -n "${strays}" ]; then
 	exit 1
 fi
 
+# Promotion carries changes already gated on their way into main, and the cut
+# before it consumed their fragments - there is nothing left to add.
+if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod ]; then
+	printf 'ci:changelog - promotion to prod; fragments were checked on main.\n'
+	exit 0
+fi
+
 if ! base="$(steer_ci_base)"; then
 	steer_ci_notice 'No base ref to diff against - skipping the changelog gate (fail-open).'
 	exit 0
