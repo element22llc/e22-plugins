@@ -1,0 +1,13 @@
+kind: Fixed
+body: |-
+    - **Fixed: the scaffold's CI works on an `infra` repo, and Vitest coverage
+      reaches the changed-line gate.** The `infra` profile's `mise.toml` replaced
+      the core one without its `ci:*` tasks, so every step of the shipped
+      `ci.yml` failed with "no task found". It now carries them verbatim, and a
+      test fails if `ci.yml` ever runs a task a root config does not define.
+      `ci-test.sh` passed `-- --coverage` to `pnpm run test`; pnpm forwards the
+      `--` literally, Vitest ignores every flag after it, no `lcov.info` was
+      written and the coverage gate skipped itself on every run.
+time: 2026-10-14T09:48:53.980353-04:00
+custom:
+    Slug: scaffold-ci-infra-vitest

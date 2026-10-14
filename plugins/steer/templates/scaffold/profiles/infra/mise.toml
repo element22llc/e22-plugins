@@ -64,6 +64,66 @@ run = "terragrunt run --all validate"
 description = "Plan changes across all units (read-only; never auto-applies)"
 run = "terragrunt run --all plan"
 
+# The `ci:*` stages are the core scaffold's, verbatim: `.github/workflows/ci.yml` runs
+# each by name, and each script no-ops for a stack it does not detect.
+[tasks."ci:hygiene"]
+description = "Stack-agnostic hygiene: mise task graph, actionlint, shellcheck, version-pin policy"
+run = "sh scripts/ci-hygiene.sh"
+
+[tasks."ci:deps"]
+description = "Install workspace dependencies (Node) for the checks that need them"
+run = "sh scripts/ci-deps.sh"
+# Skipped while these are unchanged since its last success - typecheck, test and coverage each pull it in.
+sources = ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "apps/*/package.json", "packages/*/package.json"]
+
+[tasks."ci:lint"]
+description = "Lint + format check every detected stack (Biome / Ruff)"
+run = "sh scripts/ci-lint.sh"
+
+[tasks."ci:typecheck"]
+description = "Static type check (Node/TS)"
+depends = ["ci:deps"]
+run = "sh scripts/ci-typecheck.sh"
+
+[tasks."ci:test"]
+description = "Run the test suite for every detected stack (a detected stack with no tests FAILS)"
+depends = ["ci:deps"]
+run = "sh scripts/ci-test.sh"
+
+[tasks."ci:iac"]
+description = "IaC checks: OpenTofu/Terraform fmt, Ansible lint"
+run = "sh scripts/ci-iac.sh"
+
+[tasks."ci:image"]
+description = "Build-only container image check (no push, no credentials)"
+run = "sh scripts/ci-image.sh"
+
+[tasks."ci:changelog"]
+description = "A change that ships must bring a changelog fragment (any push or PR; fail-open)"
+run = "sh scripts/ci-changelog.sh"
+
+[tasks."ci:spec"]
+description = "Open-question contract: no bare checkboxes, stale seeds, or blocking questions past their gate"
+run = "sh scripts/ci-spec.sh"
+
+[tasks."ci:coverage"]
+description = "Changed-line coverage gate (diff-cover) - needs ci:test's reports"
+depends = ["ci:test"]
+run = "sh scripts/ci-coverage.sh"
+
+[tasks.pre-commit]
+description = "Sub-second commit gate: hygiene + lint. Wired to .git/hooks/pre-commit by /steer:setup init."
+# Install per clone: `mise generate git-pre-commit --task=pre-commit --write`.
+depends = ["ci:hygiene", "ci:lint"]
+
+[tasks.check]
+description = "Fast gate: hygiene + lint + typecheck. Run before every commit."
+depends = ["ci:hygiene", "ci:lint", "ci:typecheck"]
+
+[tasks.ci]
+description = "Full gate: everything the required `ci` status check runs. Run before push / PR."
+depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage", "ci:changelog", "ci:spec"]
+
 # Ansible repo: uncomment this and delete the infra:* tasks above.
 # [tasks."ansible:lint"]
 # description = "Lint playbooks and roles (ansible-lint + yamllint)"
