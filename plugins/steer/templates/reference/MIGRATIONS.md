@@ -94,6 +94,49 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - scaffold `mise.toml` adopts `min_version`, `usage`, `sources` and `--skip-deps`
+
+- **What & why:** the CI workflow ran the test suite twice per PR - its Coverage
+  step called `mise run ci:coverage`, whose `depends` re-ran `ci:test`, because
+  mise dedupes dependencies only within one invocation. `ci:deps` likewise ran
+  `pnpm install` up to three times. The scaffold now also declares task arguments
+  with `usage` specs, and `ci:hygiene` validates the task graph.
+- **Precondition:** any of these fires -
+
+  ```sh
+  grep -n 'run: mise run ci:coverage' .github/workflows/ci.yml 2>/dev/null
+  grep -c '^min_version' mise.toml 2>/dev/null | grep -qx 0 && echo "mise.toml: no min_version"
+  grep -n "markitdown'\s*$" mise.toml 2>/dev/null
+  grep -L 'usage_' scripts/changelog-new.mjs 2>/dev/null
+  ```
+
+  No output => already migrated, or the repo rewrote these pieces => no-op for
+  those pieces.
+- **Action:** read-then-propose; show the diff, change only what is listed.
+  - `.github/workflows/ci.yml`: `run: mise run ci:coverage` ->
+    `run: mise run --skip-deps ci:coverage`. Only when the Test step
+    (`mise run ci:test`) precedes it in the same job; otherwise leave it.
+  - `mise.toml`: add `min_version = "2026.4.18"` as a top-level key above
+    `[settings]` (keep a higher existing value). Add `timeout = "5m"` to
+    `docker:up` (`ws:docker:up` in a workspace). Add the `sources` line from the
+    template to `ci:deps` when the repo keeps the scaffold's `apps/` /
+    `packages/` layout.
+  - `convert:doc`: add `usage = 'arg "<file>" help="The document to convert"'`
+    **and** append ` "{{usage.file}}"` to its `run` - **in the same edit**. A
+    `usage` spec without the `run` change silently drops the file argument and
+    breaks `/steer:spec intake`. A workspace's `convert:doc` must stay identical
+    to the core one.
+  - `changelog:new`: re-copy `scripts/changelog-new.mjs` from the scaffold
+    **first** (it reads the `usage_*` variables), then add the template's
+    `usage` block and description to the task. The `KIND` / `SLUG` / `BODY`
+    form keeps working either way.
+  - `scripts/ci-hygiene.sh`: splice the `mise tasks validate --errors-only`
+    group in before the actionlint group, if the repo still runs the scaffold's
+    stage script. Run `mise tasks validate` first and fix what it reports - a
+    dangling `depends` there now fails CI.
+
+  **No history entry is earned.**
+
 ### v7.4.0 - bundled workflows run on `ubuntu-26.04`, not `ubuntu-latest`
 
 - **What & why:** GitHub moves `ubuntu-latest` to Ubuntu 26.04 between October 19

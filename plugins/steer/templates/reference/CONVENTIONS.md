@@ -344,6 +344,77 @@ sources = ["schema/**/*.graphql"]
 outputs = ["src/generated/**/*.ts"]
 ```
 
+- **`sources` alone** is enough for a step with no meaningful output file: mise
+  records a marker after each **successful** run and skips while the sources are
+  unchanged. A failed run records nothing, so a failing step is never skipped.
+  The scaffold's `ci:deps` works this way - `ci:typecheck`, `ci:test` and
+  `ci:coverage` each depend on it, and the install runs once per lockfile change.
+- **Not on a gate.** Lint, typecheck and test read far more than any glob you
+  would write; a missed input turns a real failure into a silent skip. Cache
+  steps that produce something, never steps that judge something.
+- `mise run --force <task>` ignores freshness for one run.
+
+### One `mise run` per graph
+
+mise resolves `depends` **once per invocation**: inside one `mise run`, a shared
+dependency runs once; across two invocations it runs twice. That is why
+`mise run ci` locally is cheaper than calling each `ci:*` task in turn, and why
+the scaffold's CI workflow - one step per task, for readable logs - calls
+`mise run --skip-deps ci:coverage`: the Test step already produced the reports,
+and without the flag every PR would run the suite a second time. Use
+`--skip-deps` only where an earlier step in the same job provably ran the
+dependencies.
+
+### Task arguments (`usage`)
+
+A task that takes input declares it with a `usage` spec instead of an ad-hoc
+environment variable or a positional `$1`. mise then parses, validates and
+documents it - `mise run <task> --help` prints the spec:
+
+```toml
+[tasks."convert:doc"]
+usage = 'arg "<file>" help="The document to convert"'
+run = 'uvx --from "markitdown[all]" markitdown "{{usage.file}}"'
+```
+
+- **The trap:** once a task has a `usage` spec, mise **stops appending** CLI
+  arguments to `run`. Every declared arg must appear in `run` as
+  `{{usage.<name>}}`, or reach a script as the `usage_<name>` environment
+  variable - `tests/test_scaffold_mise_tasks.py` asserts it for the scaffold.
+- `flag "--kind <kind>" env="KIND"` accepts either the flag or the variable,
+  which keeps an established `KIND=... mise run` form working. The script sees
+  the flag as `usage_kind` and the variable as `KIND`; read both.
+- Quote a `{{usage.*}}` value with double quotes - the inline shell is
+  `cmd.exe` on Windows, where single quotes are not quoting.
+
+### Guard rails: `min_version`, `timeout`, `mise tasks validate`
+
+- **`min_version`** at the top of every scaffold `mise.toml` (above
+  `[settings]`) is the oldest mise that understands the file. An older binary
+  then fails with "upgrade mise" instead of `unknown field: deps`. Raise it in
+  the same change that adopts a newer mise feature.
+- **`timeout`** on a task that waits on something external (`docker:up`'s
+  `--wait` on a health check) turns a hang - which an agent cannot see as
+  one - into a failure with a message.
+- **`mise tasks validate --errors-only`** runs inside `ci:hygiene`: it fails on a
+  `depends` naming a task that no longer exists, a cycle, or a broken `usage`
+  spec - the breakage pruning `mise.toml` to the product's stack can leave.
+
+### Features steer deliberately does not use yet
+
+Leave these out of the scaffold until they leave experimental or prove portable;
+a product may adopt one with an ADR.
+
+- **Task output cache** (`cache = { enabled = true }`, `--task-cache`),
+  **`secrets`**, **`daemons`** and **`git::` / `oci::` task includes** - all
+  experimental in mise.
+- **Sandboxing** (`deny_net`, `deny_write`, ...) - unsupported on Windows.
+- **`confirm`** - an agent or a hook runs without a TTY, where a confirm prompt
+  fails the task; `docker:clean` must stay non-interactive.
+- **`mise fmt --check`** as a gate - it reorders every existing file's keys.
+- **`[monorepo]`** in an app repo - pnpm owns the Node workspace graph; the
+  workspace profile is the one place monorepo mode applies.
+
 ### File tasks vs `scripts/`
 
 mise can auto-discover **file tasks** - standalone executable scripts in a
@@ -415,10 +486,13 @@ hand - it does not even exist until the first cut. What you write is a
 **fragment**: one YAML file per change under `.changes/unreleased/`.
 
 ```sh
-KIND=Fixed SLUG=vendor-search-timeout \
-  BODY='- **Fixed: vendor search no longer times out on large tenants.** ...' \
-  mise run changelog:new
+mise run changelog:new --kind Fixed --slug vendor-search-timeout \
+  --body='- **Fixed: vendor search no longer times out on large tenants.** ...'
 ```
+
+`--body=` takes the `=` form because the value starts with `-`. The
+`KIND` / `SLUG` / `BODY` environment variables still work in place of the flags,
+and `mise run changelog:new --help` lists them.
 
 For an entry longer than a shell variable comfortably carries, write the file
 directly as `.changes/unreleased/<kind>-<YYYYMMDD>-<HHMM>-<slug>.yaml` with a

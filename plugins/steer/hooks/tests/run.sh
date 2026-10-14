@@ -1215,7 +1215,10 @@ if command -v node >/dev/null 2>&1; then
 	assert_eq "changelog:new: argv passed verbatim" "${out}" "[new][-k][Fixed][-m][Slug=a-b][-b][it's \"q\" & <x> | y]"
 	out="$(env -u KIND -u SLUG BODY=x node "${PLUGIN}/templates/scaffold/scripts/changelog-new.mjs" 2>&1)"
 	assert_eq "changelog:new: missing vars exit 1" "$?" "1"
-	case "${out}" in *"set KIND="*"set SLUG"*) ok ;; *) bad "changelog:new: one hint per missing var (got '${out}')" ;; esac
+	case "${out}" in *"pass --kind"*"pass --slug"*) ok ;; *) bad "changelog:new: one hint per missing var (got '${out}')" ;; esac
+	# --kind/--slug/--body reach the script as mise's usage_* vars and win over the env fallback.
+	out="$(PATH="${CN}/bin:${PATH}" KIND=Added usage_kind=Fixed usage_slug=c-d usage_body=z node "${PLUGIN}/templates/scaffold/scripts/changelog-new.mjs" 2>&1)"
+	assert_eq "changelog:new: usage flags passed through" "${out}" "[new][-k][Fixed][-m][Slug=c-d][-b][z]"
 fi
 
 ci_spec() { # <repo> -> out/rc of the scaffold gate, run from the repo root as CI does

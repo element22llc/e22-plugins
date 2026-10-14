@@ -38,3 +38,50 @@ def test_changelog_new_delegates_to_its_script() -> None:
     tasks = tomllib.loads((SCAFFOLD / "mise.toml").read_text(encoding="utf-8"))["tasks"]
     assert tasks["changelog:new"]["run"] == "node scripts/changelog-new.mjs"
     assert (SCAFFOLD / "scripts" / "changelog-new.mjs").is_file()
+
+
+_ROOT_CONFIGS = ["mise.toml", "profiles/infra/mise.toml", "profiles/workspace/mise.toml"]
+
+
+@pytest.mark.parametrize("path", _ROOT_CONFIGS)
+def test_root_config_declares_min_version(path: str) -> None:
+    config = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8"))
+    assert "min_version" in config, (
+        f"{path}: no top-level min_version - an old mise fails on [deps] instead"
+    )
+
+
+def _usage_tasks() -> list[tuple[str, str, dict]]:
+    out = []
+    for path in sorted(SCAFFOLD.rglob("mise.toml")):
+        tasks = tomllib.loads(path.read_text(encoding="utf-8")).get("tasks", {})
+        out += [
+            (str(path.relative_to(SCAFFOLD)), name, t) for name, t in tasks.items() if "usage" in t
+        ]
+    return out
+
+
+@pytest.mark.parametrize(("path", "task", "body"), _usage_tasks())
+def test_usage_args_reach_run(path: str, task: str, body: dict) -> None:
+    """With a ``usage`` spec mise stops appending CLI args to ``run``, so each must appear."""
+    run = body["run"] if isinstance(body["run"], str) else " ".join(body["run"])
+    for name in re.findall(r'\barg\s+"[<\[]([\w-]+)', body["usage"]):
+        assert "{{usage." + name.replace("-", "_") + "}}" in run, (
+            f"{path} [tasks.{task!r}] declares arg {name!r} but `run` never references it"
+        )
+
+
+def test_changelog_new_script_reads_usage_flags() -> None:
+    script = (SCAFFOLD / "scripts" / "changelog-new.mjs").read_text(encoding="utf-8")
+    assert "usage_" in script, (
+        "changelog:new declares --kind/--slug/--body; the script must read usage_* too"
+    )
+
+
+def test_ci_coverage_step_skips_deps() -> None:
+    ci = (
+        REPO_ROOT / "plugins" / "steer" / "templates" / "github" / "workflows" / "ci.yml"
+    ).read_text(encoding="utf-8")
+    assert "mise run --skip-deps ci:coverage" in ci, (
+        "the Test step already ran ci:test; re-running it doubles CI"
+    )
