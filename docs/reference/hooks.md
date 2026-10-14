@@ -229,7 +229,14 @@ instead, falling back to `cwd`'s root when there is none:
   (`check-write-nudges`, `check-version-pins`, `format-on-write`,
   `check-comment-density`);
 - the trunk-push gate passes the `-C <dir>` target of the git command
-  (`steer_git_c_target`, used by `check-bash-actions`).
+  (`steer_git_c_target`, used by `check-bash-actions`), unquoted - a quoted
+  `-C "my repo"` names the same directory as a bare one.
+
+Once the root is known, a hook that classifies the written file
+(`check-write-nudges`, `check-version-pins`) classifies its path **relative to
+that root**. An ancestor directory outside the repo never decides the class: a
+worktree under `.claude/worktrees/` is not `spec`, and a clone under some `docs/`
+is not documentation.
 
 A path that does not exist yet resolves via its nearest existing ancestor, so a
 `Write` creating a new file - or a new directory - is attributed to the repo that
