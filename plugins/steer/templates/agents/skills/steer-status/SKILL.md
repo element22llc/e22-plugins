@@ -29,8 +29,8 @@ argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
 > shaped this way, not as limits that apply to you - where a step says it cannot
 > ask, you may ask.
 
-> **Helper scripts run from a local steer copy.** Commands below that start
-> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
 > `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
 > (Codex, Copilot CLI), or `plugins/steer` in a checkout of
 > `element22llc/e22-plugins`. With no local copy, skip the step and say what it

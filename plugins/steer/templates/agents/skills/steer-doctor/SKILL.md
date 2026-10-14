@@ -21,8 +21,8 @@ user-invocable: false
 > unavailable for the whole run, and read any claim below that they "are
 > unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
-> **Helper scripts run from a local steer copy.** Commands below that start
-> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
 > `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
 > (Codex, Copilot CLI), or `plugins/steer` in a checkout of
 > `element22llc/e22-plugins`. With no local copy, skip the step and say what it
@@ -51,7 +51,7 @@ be delegated to a bundled script, because the fault it looks for is what stops
 bundled scripts from running at all:
 
 ```sh
-grep -rl "$(printf '\r')" "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/hooks" "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/scripts"
+grep -rl "$(printf '\r')" "${STEER_PLUGIN_ROOT}/hooks" "${STEER_PLUGIN_ROOT}/scripts"
 ```
 
 **Any output means the installed plugin has CRLF line endings** - the checkout
@@ -73,7 +73,7 @@ none of the checks below are meaningful until it is fixed. The repair:
 If reinstalling is not immediately possible, the in-place unblock is:
 
 ```sh
-find "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer" -type f \( -name '*.sh' -o -name '*.md' \) \
+find "${STEER_PLUGIN_ROOT}" -type f \( -name '*.sh' -o -name '*.md' \) \
   -exec sed -i 's/\r$//' {} +          # on macOS: sed -i ''
 ```
 

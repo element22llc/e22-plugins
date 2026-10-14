@@ -12,8 +12,8 @@ argument-hint: '[idea or product description]'
 
 **When to use.** Use when a non-developer wants to build or prototype an app idea, or to resume a PO build whose repo already has /spec/BUILD-STATUS.md.
 
-> **Helper scripts run from a local steer copy.** Commands below that start
-> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
 > `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
 > (Codex, Copilot CLI), or `plugins/steer` in a checkout of
 > `element22llc/e22-plugins`. With no local copy, skip the step and say what it
@@ -57,7 +57,7 @@ run the diff and act on its output:
 
 ```sh
 sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/BUILD-STATUS.md "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/build-status.md"
+  spec/BUILD-STATUS.md "${STEER_PLUGIN_ROOT}/templates/spec/build-status.md"
 ```
 
 Splice in only the genuinely-new `##` sections and checklist items it reports

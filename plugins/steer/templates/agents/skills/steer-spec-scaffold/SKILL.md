@@ -13,8 +13,8 @@ user-invocable: false
 
 **When to use.** Invoked by /steer-spec, /steer-build, /steer-init, /steer-adopt, or /steer-intake with a resolved feature id - not a direct entry point.
 
-> **Helper scripts run from a local steer copy.** Commands below that start
-> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
 > `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
 > (Codex, Copilot CLI), or `plugins/steer` in a checkout of
 > `element22llc/e22-plugins`. With no local copy, skip the step and say what it
@@ -46,7 +46,7 @@ feature, using the canonical templates bundled with this plugin.
 
    ```sh
    sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-     spec/features/[id]/intent.md "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/feature-intent.md"
+     spec/features/[id]/intent.md "${STEER_PLUGIN_ROOT}/templates/spec/feature-intent.md"
    # repeat with contract.md vs feature-contract.md
    ```
 
