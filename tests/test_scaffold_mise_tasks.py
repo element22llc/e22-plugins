@@ -103,6 +103,21 @@ def test_root_config_defines_every_task_ci_yml_runs(path: str) -> None:
     assert not missing, f"{path}: ci.yml runs tasks it does not define: {missing}"
 
 
+def _ci_script_hints() -> set[str]:
+    return {
+        task
+        for script in (SCAFFOLD / "scripts").glob("ci-*.sh")
+        for task in re.findall(r"mise run ([\w:-]+)", script.read_text(encoding="utf-8"))
+    }
+
+
+@pytest.mark.parametrize("path", ["mise.toml", "profiles/infra/mise.toml"])
+def test_root_config_defines_every_task_a_ci_script_names(path: str) -> None:
+    tasks = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8")).get("tasks", {})
+    missing = sorted(_ci_script_hints() - tasks.keys())
+    assert not missing, f"{path}: a ci-*.sh error tells the user to run undefined {missing}"
+
+
 def test_ci_test_passes_vitest_flags_without_a_separator() -> None:
     """pnpm forwards a literal `--`; vitest then ignores --coverage and writes no lcov."""
     script = (SCAFFOLD / "scripts" / "ci-test.sh").read_text(encoding="utf-8")

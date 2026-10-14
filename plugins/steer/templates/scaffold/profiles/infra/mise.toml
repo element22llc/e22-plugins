@@ -20,6 +20,8 @@ uv = "latest"
 github-cli = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
+# Pinned, unlike the rest: a silent upgrade would change released output.
+changie = "1.26.0"
 
 # IaC engine: keep what matches this repo (/steer:setup init enables the detected one).
 opentofu = "latest"
@@ -51,6 +53,19 @@ run = "docker compose down"
 [tasks."docker:clean"]
 description = "Tear down this worktree's services AND volumes (run before removing a worktree)"
 run = "docker compose down --volumes --remove-orphans"
+
+[tasks."changelog:new"]
+description = "Record a changelog fragment (--kind Fixed --slug short-name --body='- **Fixed: ...**', or KIND/SLUG/BODY env)"
+usage = '''
+flag "--kind <kind>" env="KIND" help="A kind from changie.yaml: Added, Changed, Fixed, Security, Docs"
+flag "--slug <slug>" env="SLUG" help="3-6 kebab-case words"
+flag "--body <body>" env="BODY" help="The entry text"
+'''
+run = "node scripts/changelog-new.mjs"
+
+[tasks."changelog:merge"]
+description = "Reassemble CHANGELOG.md from .changes/ (run after a release cut)"
+run = "changie merge"
 
 [tasks."infra:fmt"]
 description = "Check IaC formatting (tofu fmt + terragrunt hclfmt)"
