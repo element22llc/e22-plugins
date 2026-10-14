@@ -47,7 +47,7 @@ status and materialize modes do not - the delivery path is core-only.
 
 - **`set-milestone #N <title>`** - set or clear the issue's native GitHub
   **Milestone** (the field a Projects v2 release/roadmap view groups by) via
-  `gh issue edit #N --milestone "<title>"` (clear with `--remove-milestone`) or
+  `gh issue edit <N> --milestone "<title>"` (clear with `--remove-milestone`) or
   the MCP equivalent. The milestone **must already exist** in the repo; if it does
   not, **report it and stop** - never fabricate or silently create one. GitHub
   allows a single milestone per issue, so changing it replaces the prior value:

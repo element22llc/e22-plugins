@@ -97,7 +97,7 @@ that skill** when the action is unambiguous and non-gated: rule `00-router`'s bo
 auto-continue binds this skill like any other. Nothing inside `/steer:next`'s own
 run edits. But the tool removal above is **turn-scoped** - it clears only when you
 send your next message - so a skill continued into *within this same turn* still
-has no `Edit`/`Write`/`NotebookEdit`/`EnterWorktree`. Continuing into a **writing**
+has no `Edit`/`NotebookEdit`/`EnterWorktree`. Continuing into a **writing**
 skill therefore reaches its first writing step and stops: announce the handover
 there, and your next message is what puts the owning skill under its own tier and
 autonomy rules. Stop at a

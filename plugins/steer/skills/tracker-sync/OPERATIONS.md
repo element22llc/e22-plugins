@@ -129,7 +129,7 @@ is no less bounded by it.
   already-claimed issue is **reported, never auto-overridden**, and folding that
   into `update-state` would make every unrelated transition assert ownership.
   **Default subject is the invoking user** (self-assign): resolve it as `@me` on
-  the `gh` path (`gh issue edit #N --add-assignee @me`) or the authenticated
+  the `gh` path (`gh issue edit <N> --add-assignee @me`) or the authenticated
   user's login on the MCP path. A caller may name another subject instead -
   promoting an open question assigns the `owner:` role's login from
   `/spec/tracker.md` (`ISSUE-WORKFLOW.md`) - which sets assignment without

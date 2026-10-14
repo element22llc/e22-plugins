@@ -1,0 +1,13 @@
+kind: Fixed
+body: |-
+    - **Fixed: skill steps that pointed at nothing, or broke when followed.**
+      `roadmap` routed feature issues through `/steer:issues materialize`, which
+      writes an approved intent back to `draft`; it now names only
+      `/steer:tracker-sync find-or-create`. The `gh issue edit #N` examples in
+      `tracker-sync` turned the rest of the command into a shell comment. Dead
+      references are gone: "rule 62" and "rule 95" (hotfix, protect),
+      `/steer:setup protect --check` (promote), `apply solo` (waive). Next actions
+      shown to the user name `/steer:setup sync`, not the internal `/steer:sync`.
+time: 2026-10-14T09:50:54.409182-04:00
+custom:
+    Slug: skill-cross-refs

@@ -270,7 +270,7 @@ artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`.
 **Wire the commit gate** once `mise.toml` carries the `pre-commit` task: run
 `mise generate git-pre-commit --task=pre-commit --write`. It writes
 `.git/hooks/pre-commit`, which is **not** versioned - so it is per-clone, nothing
-to commit, and the team's other clones get it from `/steer:sync`. Say that when
+to commit, and the team's other clones get it from `/steer:setup sync`. Say that when
 you announce it. Linked worktrees share the primary checkout's hooks, so
 `claude --worktree` needs nothing further. Check the hook directory first
 (`git rev-parse --git-path hooks` - it honours `core.hooksPath` and resolves a
@@ -425,7 +425,7 @@ Derive it from the adoption state observed, mapping these states to categories:
 | Unresolved blocker on an already-live app, not an active incident | Required before next production release | Fix or explicitly accept it |
 | Selected findings not published | Recommended | `/steer:work issues publish-adoption` |
 | Findings published, not shaped | Recommended | `/steer:work issues triage` / `decompose` |
-| `/spec/.version` stale | Recommended | `/steer:sync` |
+| `/spec/.version` stale | Recommended | `/steer:setup sync` |
 | `main` not yet protected on GitHub (GitHub remote - the tracker system is irrelevant) | Recommended | Establish the PR gate - `/steer:setup protect` (advisory locally; sets the real server-side wall). **In solo trunk mode this row does not apply** - protection is deferred to graduation, and a recorded waiver (`/steer:setup protect waive`) means the dev has already decided; don't re-raise it. |
 | Nothing remaining | Complete | Optional: begin feature work - `/steer:spec` |
 
