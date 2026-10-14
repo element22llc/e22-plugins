@@ -50,6 +50,21 @@ steer_ci_endgroup() {
 steer_ci_base() {
 	case "${STEER_CI_EVENT:-local}" in
 	pull_request)
+		# Resolve locally first: the shipped checkout sets persist-credentials: false,
+		# so on a private repo the fetch below cannot authenticate (#707).
+		# The PR merge ref's first parent is the base it was computed against - trusted
+		# only when its second parent is the PR head, else HEAD^1 may be a merged-in main.
+		if [ -n "${STEER_CI_HEAD_SHA:-}" ] &&
+			[ "$(git rev-parse --verify --quiet 'HEAD^2' 2>/dev/null)" = "${STEER_CI_HEAD_SHA}" ]; then
+			git rev-parse --verify --quiet 'HEAD^1'
+			return 0
+		fi
+		# The event's base SHA can trail a base that moved on: a superset diff, never a miss.
+		if [ -n "${STEER_CI_BASE_SHA:-}" ] &&
+			git rev-parse --verify --quiet "${STEER_CI_BASE_SHA}^{commit}" >/dev/null 2>&1; then
+			printf '%s\n' "${STEER_CI_BASE_SHA}"
+			return 0
+		fi
 		[ -n "${STEER_CI_BASE_REF:-}" ] || return 1
 		git fetch --no-tags --quiet origin "${STEER_CI_BASE_REF}" 2>/dev/null || return 1
 		printf 'origin/%s\n' "${STEER_CI_BASE_REF}"

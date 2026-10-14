@@ -33,9 +33,8 @@ fi
 
 case "${STEER_CI_EVENT:-local}" in
 pull_request)
-	base="origin/${STEER_CI_BASE_REF}"
-	if ! git fetch --no-tags --quiet origin "${STEER_CI_BASE_REF}" 2>/dev/null; then
-		steer_ci_notice "Could not fetch base branch '${STEER_CI_BASE_REF}' - skipping changed-line coverage (fail-open)."
+	if ! base="$(steer_ci_base)"; then
+		steer_ci_notice "Could not resolve base branch '${STEER_CI_BASE_REF:-}' - skipping changed-line coverage (fail-open)."
 		exit 0
 	fi
 	;;
