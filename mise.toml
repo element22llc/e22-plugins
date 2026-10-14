@@ -1,3 +1,5 @@
+min_version = "2026.4.18" # matches the shipped scaffold; usage flags + `tasks validate` need it
+
 [tools]
 python = "3.14"
 uv = "0.11"
@@ -141,6 +143,10 @@ run = [
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/copilot-setup-steps.yml",
 ]
 
+[tasks.tasks-validate]
+description = "Validate the mise task graph (dangling depends, cycles, broken usage specs)"
+run = "mise tasks validate --errors-only"
+
 [tasks.check-ascii]
 description = "Fail on any typographic character in a tracked file (rule 85, ASCII everywhere)"
 # Reuses the shipped hook's character table, so this sweep and the write-time
@@ -186,12 +192,13 @@ description = "Run the steer mod's *.test.tsx files against the pinned Claude Co
 run = ["claude plugin test plugins/steer"]
 
 [tasks."changelog:new"]
-description = "Record a changelog entry as a fragment (KIND=Fixed SLUG=... BODY=...)"
-run = """
-changie new -k "${KIND:?set KIND=Added|Changed|Fixed|Security|Docs}" \
-  -m "Slug=${SLUG:?set SLUG to 3-6 kebab-case words}" \
-  -b "${BODY:?set BODY to the entry text, starting with '- **Kind: ...**'}"
-"""
+description = "Record a changelog entry as a fragment (--kind Fixed --slug ... --body='...', or KIND/SLUG/BODY env)"
+usage = '''
+flag "--kind <kind>" env="KIND" required=#true help="Added, Changed, Fixed, Security or Docs"
+flag "--slug <slug>" env="SLUG" required=#true help="3-6 kebab-case words"
+flag "--body <body>" env="BODY" required=#true help="The entry text, starting with '- **Kind: ...**' (use --body=)"
+'''
+run = 'changie new -k "$usage_kind" -m "Slug=$usage_slug" -b "$usage_body"'
 
 [tasks."changelog:merge"]
 description = "Reassemble CHANGELOG.md from .changes/ (also syncs plugin.json's version)"
@@ -248,7 +255,7 @@ description = "Run fast local checks (a superset of the pre-commit hygiene tier)
 # is never followed by a rejected `git commit`. `shell` covers the shellcheck +
 # shfmt hooks; `docs:check` covers the docs-sync hook (validate_docs.py, no docs
 # deps needed). When you add a pre-commit hook, add its task here too.
-depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check", "check-ascii"]
+depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check", "check-ascii", "tasks-validate"]
 
 [tasks.delivery-gates]
 description = "Run the PR-only branch-diff gates (changelog + docs impact) vs origin/main"
