@@ -35,7 +35,7 @@ it. Then:
   `/steer:setup protect`, which is what makes the merge an approval rather than a
   formality. Do not create it yourself - an unprotected `prod` is a gate that
   looks real and is not.
-- **`prod` is protected.** If `/steer:setup protect --check`-equivalent state shows no
+- **`prod` is protected.** If `/steer:setup protect verify` shows no
   required review on `prod`, say the promotion PR would merge without an
   approval, and recommend `/steer:setup protect` before continuing. Offer to continue
   anyway only if the dev says so; record that they did.

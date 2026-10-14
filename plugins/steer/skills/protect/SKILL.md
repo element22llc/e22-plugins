@@ -18,7 +18,7 @@ allowed-tools:
 # Make GitHub branch protection reliable (`/steer:setup protect`)
 
 steer is **advisory in the local session** - there is no local hard block on
-committing or pushing to `main` (rule 95, "You are not the gate - the DEV is";
+committing or pushing to `main` (`00-router`, "You are not the gate - the dev is";
 the issue-first Stop hook explicitly *reports, does not enforce*). The hard wall
 is **GitHub branch protection** on the default branch: a required PR, a required
 review, a green `ci` check, no admin bypass. That wall is only real if it is

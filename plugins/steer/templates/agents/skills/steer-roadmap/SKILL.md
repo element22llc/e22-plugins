@@ -78,7 +78,7 @@ already merged but unreleased is still in the work-set - check its tracker issue
 before planning it into a future milestone rather than re-planning shipped work.
 For each feature:
 
-- **Find-or-create a feature-level issue** via `/steer-issues materialize` /
+- **Find-or-create a feature-level issue** via
   `/steer-tracker-sync find-or-create` (idempotent on `feature-id`+`kind` - a match
   updates, never a second issue). Write the ref into the intent's `> Tracker:` line.
 - **Fan out implementation sub-issues only where allowed** - call
@@ -96,7 +96,7 @@ whose tracker status is Backlog/To-Do, the "unbuilt roadmap" bucket `/steer-audi
 already separates from **Done-but-Missing defects**. Do **not** put Done-but-Missing
 or Diverged findings on the roadmap - those are drift to resolve via
 `/steer-issues publish-drift`, not planned work. File the expected-unbuilt units the
-same way `from-features` does - **find-or-create** via `/steer-issues materialize` /
+same way `from-features` does - **find-or-create** via
 `/steer-tracker-sync find-or-create` (idempotent on `feature-id`+`kind`; a match
 updates, never a duplicate). These are planned **backlog**, so they are **not**
 the `spec-drift` **kind** - that kind is reserved for actual drift (Diverged /

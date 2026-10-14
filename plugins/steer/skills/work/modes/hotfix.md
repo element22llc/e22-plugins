@@ -52,8 +52,8 @@ What changes versus the normal flow:
 - **Local gates, no draft.** Run the local gates before the push as `finish`
   does - a red CI round-trip is slower than a local run - but open the PR ready
   for review rather than as a draft.
-- **Deploy on the fix.** Deploying the fix is *policy-permitted* under rule 62 +
-  Deployment (validate in non-prod where feasible) - but, exactly as everywhere
+- **Deploy on the fix.** Deploying the fix is *policy-permitted* under `45-delivery` ->
+  "Deployment & environments" (validate in non-prod where feasible) - but, exactly as everywhere
   else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening
   the PR are autonomous (Commit autonomy), while `gh pr merge` and any deploy
   stay human-gated (this skill does not pre-approve them).

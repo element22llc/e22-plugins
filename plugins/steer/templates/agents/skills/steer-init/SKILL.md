@@ -174,7 +174,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    Then **wire the commit gate**: `mise generate git-pre-commit
    --task=pre-commit --write`. `.git/hooks/` is not versioned, so this is
    per-clone, not a committed file - say so when you announce it, and point the
-   team's other clones at `/steer-sync`, which re-establishes it. Linked
+   team's other clones at `/steer-setup sync`, which re-establishes it. Linked
    worktrees share the primary checkout's hooks, so `claude --worktree` needs
    nothing further. Check the hook directory first (`git rev-parse --git-path
    hooks` - it honours `core.hooksPath` and resolves a linked worktree to the
