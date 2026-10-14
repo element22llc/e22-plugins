@@ -332,7 +332,7 @@ jobs:
             exit 0
             ;;
           esac
-          if ! gh pr merge --squash --delete-branch --match-head-commit "$HEAD_SHA" "$PR_URL"; then
+          if ! gh pr merge --squash --match-head-commit "$HEAD_SHA" "$PR_URL"; then
             if [ "$(gh pr view "$PR_URL" --json headRefOid --jq .headRefOid)" != "$HEAD_SHA" ]; then
               echo "::notice::The PR head moved; the run for the new head decides."
               exit 0
