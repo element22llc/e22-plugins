@@ -62,7 +62,9 @@ steer_policy_verdict() {
 			return
 		fi
 	done
-	if [ -n "${_min}" ] && [ "$(steer_ver_num "${_v}")" -lt "$(steer_ver_num "${_min}")" ] 2>/dev/null; then
+	# A major-only tag (python:3) floats the minor, so it is compared at major granularity.
+	case "${_v}" in *.*) _floor="${_min}" ;; *) _floor="${_min%%.*}" ;; esac
+	if [ -n "${_min}" ] && [ "$(steer_ver_num "${_v}")" -lt "$(steer_ver_num "${_floor}")" ] 2>/dev/null; then
 		printf 'deny %s:%s is below the minimum supported %s' "${_p}" "${_v}" "${_min}"
 		return
 	fi

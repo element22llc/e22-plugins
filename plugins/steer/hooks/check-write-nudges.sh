@@ -89,7 +89,9 @@ ROOT="$(steer_action_root "${CWD}" "${FILE}")" || exit 0
 
 # Shared classification -> shared exempt/nudge policy. spec/docs/generated/
 # lockfile are exempt; implementation/operations/unknown nudge.
-CLASS="$(steer_classify_path "${FILE}")"
+# Classify the repo-relative path: an ancestor dir (a worktree under .claude/, a
+# clone under docs/) must not decide the class.
+CLASS="$(steer_classify_path "${FILE#"${ROOT}/"}")"
 [ "$(steer_class_nudges "${CLASS}")" = "nudge" ] || exit 0
 
 # Per-repo marker key: a cheap hash of the resolved root (shared by both nudges;

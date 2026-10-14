@@ -173,9 +173,21 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 		DEFAULT="$(git -C "${ROOT}" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"
 		DEFAULT="${DEFAULT#origin/}"
 		[ -n "${DEFAULT}" ] || DEFAULT="main"
-		# Last occurrence wins, matching how gh resolves a repeated flag.
+		# Last occurrence wins, matching how gh resolves a repeated flag. A branch
+		# name holds no whitespace, so a quoted string that does (--title, --body)
+		# is blanked first - a body that mentions `-B scratch` is not the base.
+		_CMD_BARE="$(printf '%s' "${CMD}" | awk 'BEGIN { RS = "\001" } {
+			for (i = 1; i <= length($0); i++) {
+				c = substr($0, i, 1)
+				if (q == "") { if (c == "\"" || c == "\047") { q = c; b = "" } else o = o c; continue }
+				if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
+				if (c != q) { b = b c; continue }
+				o = o q (b ~ /[[:space:]]/ ? "" : b) q; q = ""
+			}
+			printf "%s", o
+		}')"
 		_flag() {
-			printf '%s' "${CMD}" |
+			printf '%s' "${_CMD_BARE}" |
 				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1
 		}
 		STACK_BASE=""
