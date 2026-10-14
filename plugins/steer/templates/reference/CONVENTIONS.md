@@ -389,8 +389,8 @@ run = 'uvx --from "markitdown[all]" markitdown "{{usage.file}}"'
 
 ### Guard rails: `min_version`, `timeout`, `mise tasks validate`
 
-- **`min_version`** at the top of every scaffold `mise.toml` (above
-  `[settings]`) is the oldest mise that understands the file. An older binary
+- **`min_version`** at the top of every root `mise.toml` - the scaffold's and
+  each profile's, above `[settings]` - is the oldest mise that understands the file. An older binary
   then fails with "upgrade mise" instead of `unknown field: deps`. Raise it in
   the same change that adopts a newer mise feature.
 - **`timeout`** on a task that waits on something external (`docker:up`'s
