@@ -13,9 +13,9 @@ on:
 # Supersede a PR's own in-flight run when it is pushed again - the biggest saver of
 # Actions minutes on an agent-driven branch, which pushes often. Never on `main`:
 # every trunk commit gets its own conclusive run.
-# Least privilege for every job: both only read the tree and write annotations /
-# the step summary, neither of which needs a token scope. A job that later needs more
-# (a PR comment, a SARIF upload) declares it on that job, never here.
+# Least privilege for every job: `ci` and `advisory` only read the tree and write annotations /
+# the step summary, neither of which needs a token scope. A job that needs more
+# (dependabot-auto-merge, a SARIF upload) declares it on that job, never here.
 permissions:
   contents: read
 
@@ -273,3 +273,79 @@ jobs:
         run: |
           echo "::error::An advisory check failed - see the steps above. Advisory: this does not block the merge."
           exit 1
+
+  # The documented exception to the human-review gate: a Dependabot patch/minor bump merges once
+  # `ci` passed on this exact head, in this run - no approval, no repo-wide grant, no polling.
+  # Majors, and every repo whose protection requires a review, stay with a human. A job gates
+  # the merge only if it is in `needs`. Rationale: README.md#branch-protection.
+  dependabot-auto-merge:
+    name: dependabot-auto-merge
+    needs: ci
+    # `pull_request.user.login` is the PR's author, `github.actor` whoever pushed this head; a
+    # writer can move either one alone, so both must be Dependabot and the merge step re-checks
+    # every commit. zizmor's bot-conditions flags `github.actor` as spoofable on its own; here it
+    # only narrows the author guard. This is `on: pull_request`, never `pull_request_target`.
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && github.actor == 'dependabot[bot]' # zizmor: ignore[bot-conditions]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    # A Dependabot-triggered run gets exactly these scopes. No checkout: no PR code runs here.
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge the tested head (patch/minor)
+        if: >-
+          ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+              steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Dependabot's own commits have exactly this shape; anything else on the branch means a
+          # writer touched it, and the exception does not extend to their code.
+          foreign="$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/commits" --jq '[.[]
+            | select(.author.login != "dependabot[bot]" or .committer.login != "web-flow"
+                or .commit.verification.verified != true) | .sha] | join(" ")')"
+          if [ -n "$foreign" ]; then
+            echo "::error::Not Dependabot's commits: ${foreign} - not merging."
+            exit 1
+          fi
+          # Empty when protection requires no review; GITHUB_TOKEN cannot read the rule itself.
+          decision="$(gh pr view "$PR_URL" --json reviewDecision --jq .reviewDecision)"
+          case "$decision" in
+          "" | APPROVED) ;;
+          REVIEW_REQUIRED)
+            echo "::notice::ci passed on ${HEAD_SHA} and every commit is Dependabot's, but branch protection requires a review - approve and merge it by hand."
+            exit 0
+            ;;
+          *)
+            echo "::notice::Review decision is ${decision} - leaving the merge to a human."
+            exit 0
+            ;;
+          esac
+          if ! gh pr merge --squash --delete-branch --match-head-commit "$HEAD_SHA" "$PR_URL"; then
+            if [ "$(gh pr view "$PR_URL" --json headRefOid --jq .headRefOid)" != "$HEAD_SHA" ]; then
+              echo "::notice::The PR head moved; the run for the new head decides."
+              exit 0
+            fi
+            echo "::error::Merge refused. A check required outside this workflow may still be pending - put it in this job's \`needs\`."
+            exit 1
+          fi
+
+      - name: Note major update left for human review
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-major' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_URL" \
+            --body "Major version update - **not** auto-merged. steer leaves majors for a human: they can carry breaking changes and may need a \`policy/versions.yml\` decision (\`/steer:spec adr\` if you raise a floor)."

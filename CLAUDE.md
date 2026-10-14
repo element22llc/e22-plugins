@@ -65,7 +65,7 @@ plugins/steer/
     ├── worktrees/                  # on-demand worktree-tool hooks (orca.yaml) - installed by
     │                               #   /steer:setup worktrees only where that tool is used
     ├── github/                     # GitHub templates - single source of truth (issue forms,
-    │                               #   workflows/ ci.yml + claude.yml + dependabot-auto-merge.yml + ...,
+    │                               #   workflows/ ci.yml + claude.yml + ...,
     │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
     │                               #   (copilot-instructions.md, agents/, instructions/ -
     │                               #    via `mise run gen:copilot`)

@@ -792,16 +792,14 @@ follows it; only a gate *weaker* than this default needs an ADR.
   - **Policy precedence.** A repo's own `policy/branch-protection.yml` overrides
     the plugin default, consumer-first, exactly like `policy/versions.yml`.
     Tighten freely; a *weaker* per-repo policy needs an ADR.
-  - **Dependabot auto-merge rides the required checks.** Its workflow approves
-    patch and minor bumps and arms GitHub's native auto-merge, so the merge
-    waits on branch protection's required checks rather than a billed runner
-    polling them - each `GATING_CHECKS` entry must be required, or it refuses to
-    arm. That needs repo-wide `allow_auto_merge`, which offers the button on
-    every PR without loosening any PR's protection. Majors stay human-reviewed
-    because they may need a `policy/versions.yml` floor decision. The bot's
-    approval satisfies only a *count-based* required
-    review; a CODEOWNERS-required review, if a repo adds one, still needs a
-    human - by design.
+  - **Dependabot auto-merge rides `ci` in the same run.** `ci.yml`'s
+    `dependabot-auto-merge` job (`needs: ci`) merges a patch or minor bump on
+    the exact head `ci` tested, and only when every commit on the PR is
+    Dependabot's. It never approves - no repo-wide Actions approval grant, no
+    native auto-merge - so it fires only where protection requires no review;
+    under `team` a human approves the bump like any PR. Majors stay
+    human-reviewed because they may need a `policy/versions.yml` floor
+    decision.
 - **Observable by default** - a deployed environment ships logs, metrics with
   alarms, error tracking (Sentry), per-app health checks, and alerting routed to a
   human. "Deployed but unobservable" is not done; capture the wiring in

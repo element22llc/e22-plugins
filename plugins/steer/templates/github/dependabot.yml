@@ -1,5 +1,5 @@
-# Dependabot config (installs to .github/dependabot.yml). Paired with dependabot-auto-merge.yml:
-# patch/minor bumps auto-merge once `ci` is green; majors stay with a human and are ignored for
+# Dependabot config (installs to .github/dependabot.yml). Paired with ci.yml's dependabot-auto-merge job:
+# patch/minor bumps merge once `ci` is green; majors stay with a human and are ignored for
 # policy-governed ecosystems. `cooldown` holds a version update until the release is 7 days old, so a
 # compromised publish is usually caught before auto-merge can land it; security updates are not delayed.
 # Rationale: README.md#branch-protection.

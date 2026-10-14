@@ -301,25 +301,26 @@ and **Repair**.
   this file; without it there is no declared gate to enforce.
 
 ### dependency-automation - Dependabot + the auto-merge exception
-- **Files:** `.github/dependabot.yml`, `.github/workflows/dependabot-auto-merge.yml`
+- **Files:** `.github/dependabot.yml`, the `dependabot-auto-merge` job in
+  `.github/workflows/ci.yml`
 - **Conditional:** always (GitHub-hosted repos)
-- **Wired-when:** both present; the auto-merge workflow guards on
-  `github.event.pull_request.user.login == 'dependabot[bot]'` (never
-  `github.actor`, which names the last actor - see MIGRATIONS) and gates on the
-  `update-type` (patch/minor approved, majors left for a human).
-- **Repair:** create either missing file from `templates/github/`. When restoring
-  `dependabot.yml`, uncomment the ecosystem block(s) matching the detected stack
-  (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. The repo
-  settings the exception relies on (Dependabot alerts + security updates,
-  Actions being allowed to approve PRs, `allow_auto_merge`, and each
-  `GATING_CHECKS` entry being a required check) are **`/steer:setup protect`**'s
-  job - name it as the follow-up; sync writes the files, it does not configure
-  GitHub.
+- **Wired-when:** `dependabot.yml` present; `ci.yml` carries the job, guarded on
+  `github.event.pull_request.user.login == 'dependabot[bot]'`, gated on the
+  `update-type` (patch/minor merged, majors left for a human), and merging with
+  `--match-head-commit`; and the retired standalone
+  `.github/workflows/dependabot-auto-merge.yml` is gone (MIGRATIONS removes it).
+- **Repair:** create a missing `dependabot.yml` from `templates/github/`,
+  uncommenting the ecosystem block(s) matching the detected stack
+  (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. Splice the
+  `dependabot-auto-merge` job from `templates/github/workflows/ci.yml` into
+  `ci.yml` - additively, never over a product's own jobs. Dependabot alerts +
+  security updates are **`/steer:setup protect`**'s job - name it as the
+  follow-up; sync writes the files, it does not configure GitHub.
 - **Verbatim:** no (ecosystems are adapted per stack)
 - **Why it matters:** dependencies stay patched without manual chasing; the
-  documented review-gate exception lets low-risk bumps auto-merge while CI
-  stays the hard gate. Without the workflow, Dependabot PRs pile up awaiting
-  a human even though they're safe once CI is green.
+  documented review-gate exception lets low-risk bumps merge while CI stays the
+  hard gate. Without the job, Dependabot PRs pile up awaiting a human even
+  though they're safe once CI is green.
 
 ### toolchain-pin - pinned dev toolchain
 - **Files:** `mise.toml` (required), `mise.lock` (created at pin time)

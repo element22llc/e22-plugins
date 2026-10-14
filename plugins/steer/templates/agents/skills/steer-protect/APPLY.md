@@ -52,25 +52,11 @@ When rules are drifted or absent:
      block;
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
-   - **Actions approving PRs** - only when verify diffed it. The auto-merge
-     workflow approves with `GITHUB_TOKEN`, so while this is off every
-     patch/minor bump fails at its approve step. Say what it costs in the
-     prompt: **any** workflow can then approve **any** PR, so a writer could
-     self-approve through a workflow on their own branch; the alternative is
-     deleting the workflow and reviewing bumps by hand. A `false` policy with
-     the workflow installed is that alternative half-done - recommend the
-     deletion rather than flipping the setting.
-     `echo '{"can_approve_pull_request_reviews":true}' | gh api -X PUT
-     "repos/${OWNER}/${REPO}/actions/permissions/workflow" --input -`. A `409`
-     means the **organization** forbids it - the repo cannot override that; name
-     the org setting and let an org admin decide.
-   - **Allow auto-merge** - only when verify diffed it. The workflow arms
-     native auto-merge, so while this is off every patch/minor bump fails at
-     its merge step. Say what it costs: every PR gets the auto-merge button,
-     though it merges only once that PR's protection is satisfied.
-     `gh api -X PATCH "repos/${OWNER}/${REPO}" -F allow_auto_merge=true`.
-   - **A `GATING_CHECKS` name missing from the required `contexts`** - add it
-     to the policy's `contexts`, then re-run the protection PUT above.
+   - **Actions approving PRs off** - only when verify diffed it. Say what it
+     closes: with it on, a writer can self-approve through a workflow on their
+     own branch.
+     `echo '{"can_approve_pull_request_reviews":false}' | gh api -X PUT
+     "repos/${OWNER}/${REPO}/actions/permissions/workflow" --input -`.
 4. After applying, re-run the verify diff and report the new state.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a
@@ -92,4 +78,5 @@ upgrade message). The two-state model still applies - the repo runs pr-flow on
 the honor system: same branch + PR + never-merge flow (rule 45), just without
 the server wall. Recommend recording that exception as an ADR (run
 `/steer-spec adr`) so the gap is a documented decision `verify` and `/steer-audit`
-keep visible, not an oversight.
+keep visible, not an oversight. Dependabot auto-merge still works there: its
+job needs no protection, only `ci` passing in the same run.

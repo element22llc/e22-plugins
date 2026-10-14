@@ -178,11 +178,12 @@ Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
-With `.github/workflows/dependabot-auto-merge.yml` installed (else skip), diff
-`actions_can_approve_pull_requests` (`true` if absent) against
-`can_approve_pull_request_reviews` from `.../actions/permissions/workflow`, and
-`allow_auto_merge` against the repo's. Each `GATING_CHECKS` name missing from
-the default branch's required `contexts` is drift: it would not gate the merge.
+Read `can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
+`true` is the grant steer's retired approve-based auto-merge asked for: it lets
+**any** workflow approve **any** PR, and nothing steer ships needs it now. Report
+it as drift (`true -> false`) unless the dev names a workflow of their own that
+approves PRs. Ignore `actions_can_approve_pull_requests` and `allow_auto_merge`
+in a v4/v5 policy - `/steer:setup sync` removes them.
 
 Produce a **per-rule diff table** - for each policy field: `compliant` /
 `drifted (actual -> desired)` / `absent`. With more than one branch in scope, give
@@ -268,11 +269,10 @@ confirmation.
   Enterprise**. On Free, the per-repo runs and the per-repo policy copies stand -
   say so plainly instead of recommending a plan the org cannot buy into.
 - **Dependabot auto-merge exception.** The policy documents a deliberate carve-out
-  to the required human review: Dependabot **patch/minor** PRs (majors excluded)
-  are auto-approved and auto-merged once the required checks pass - CI, not a human,
-  guarantees the bump is safe. protect enables Dependabot alerts + security
-  updates and, with the workflow installed, Actions PR approval and
-  `allow_auto_merge` (the button on every PR, no PR's protection loosened).
-  `.github/workflows/dependabot-auto-merge.yml` arms native auto-merge, so the
-  **required** checks gate it - **protect never merges.** If that workflow is
-  absent, say so: alerts are on but nothing auto-merges yet.
+  to the required human review: `ci.yml`'s `dependabot-auto-merge` job merges a
+  Dependabot **patch/minor** PR (majors excluded) once `ci` passed on that exact
+  head - CI, not a human, guarantees the bump is safe. It never approves, so it
+  fires only where protection requires no review (`solo`, or none at all); under
+  `team` the bump waits for a human. protect enables Dependabot alerts + security
+  updates and needs no other setting for it - **protect never merges.** If that
+  job is absent, say so: alerts are on but nothing auto-merges yet.
