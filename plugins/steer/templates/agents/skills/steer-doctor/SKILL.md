@@ -21,6 +21,13 @@ user-invocable: false
 > unavailable for the whole run, and read any claim below that they "are
 > unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Prerequisite doctor (`/steer-setup doctor`)
 
 Get a blank or half-set-up machine to the point where `/steer-init`,
@@ -44,7 +51,7 @@ be delegated to a bundled script, because the fault it looks for is what stops
 bundled scripts from running at all:
 
 ```sh
-grep -rl "$(printf '\r')" "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/hooks" "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts"
+grep -rl "$(printf '\r')" "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/hooks" "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/scripts"
 ```
 
 **Any output means the installed plugin has CRLF line endings** - the checkout
@@ -66,7 +73,7 @@ none of the checks below are meaningful until it is fixed. The repair:
 If reinstalling is not immediately possible, the in-place unblock is:
 
 ```sh
-find "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer" -type f \( -name '*.sh' -o -name '*.md' \) \
+find "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer" -type f \( -name '*.sh' -o -name '*.md' \) \
   -exec sed -i 's/\r$//' {} +          # on macOS: sed -i ''
 ```
 
@@ -83,7 +90,7 @@ Silence here is the pass - say nothing about it and move to §1.
 Run the read-only detector and act on its output (never guess what's installed):
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-prereqs.sh" .
+sh "${STEER_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .
 ```
 
 It prints an `os` fingerprint line, then one TAB line per tool -
@@ -176,7 +183,7 @@ let the scan say so. A tool still `missing`/`down`/`unmanaged` is not resolved.
 ## Recommend the next action
 
 Close with a `## Recommended next actions - /steer-setup doctor` block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from the
 final scan.
 
 | Observed state | Category | Action / suggested command |
@@ -199,5 +206,5 @@ commits.
 - Never install without explicit confirmation. GUI/host steps (Docker Desktop,
   WSL2, Claude Code, the marketplace) are always manual instructions.
 - Never edit repo files or commit from this skill; never touch secrets.
-- The detector is plugin-internal - invoke it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer`; it is
+- The detector is plugin-internal - invoke it from `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer`; it is
   not installed into the consumer repo.

@@ -3,14 +3,14 @@
 Read this file at the end of every `/steer-work` invocation, when you are ready
 to emit the handoff block. It carries only this skill's **domain mapping**; the
 shared categories, precedence and output format stay in
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, and the guardrails,
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, and the guardrails,
 authorization boundary and completion semantics stay in `SKILL.md`.
 
 ## Recommend the next action
 
 End every invocation with a `## Recommended next actions - /steer-work` block
 (with the mode where one ran - `/steer-work promote`) per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the **locality
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the **locality
 rule**, consider only this issue, its branch, PR, criteria, validation, and any
 blocker directly hit - not the wider workspace. Map execution state to actions
 without redefining the subcommands above:

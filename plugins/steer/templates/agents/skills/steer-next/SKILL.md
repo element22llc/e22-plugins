@@ -21,6 +21,13 @@ argument-hint: '[capabilities] [optional constraints, e.g. ''only feature-x'', '
 > unavailable for the whole run, and read any claim below that they "are
 > unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Navigate the workspace to the single best next action (read-only)
 
 <!-- steer:modes default,capabilities=help -->
@@ -73,7 +80,7 @@ Everything from **Phase 0** down is the `default` mode.
 ## The contract it reuses - do not restate it
 
 The categories, two-level precedence, derivation rule, and read-only/locality
-rules live in `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Read
+rules live in `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Read
 it first. This skill is the **cross-workflow arbitrator** that the locality rule
 defers to; it owns one thing the per-skill blocks intentionally do not: a
 workspace-wide reconstruction plus arbitration across *unrelated* state. It uses
@@ -134,7 +141,7 @@ questions, Proposed ADRs, work claims, build/adoption markers, the declared
 tracker system) in a single sectioned summary:
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/workspace-snapshot.sh"   # optional arg: repo root
+sh "${STEER_PLUGIN_ROOT}/scripts/workspace-snapshot.sh"   # optional arg: repo root
 ```
 
 Read its output once instead of re-deriving those dimensions call-by-call;
@@ -270,7 +277,7 @@ crowded out the recommendation in the v6.1.0 eval run.
 
 ## Golden fixtures
 
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/next-fixtures/` pins the intended
+`https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/reference/next-fixtures/` pins the intended
 **cross-workflow** arbitration as prose scenarios (not executable tests) - each
 gives a multi-workflow `## Given` state and the single `## Expected
 highest-priority action`. Walk the table above plus the shared safety precedence

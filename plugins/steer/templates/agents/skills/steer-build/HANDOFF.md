@@ -43,7 +43,7 @@ real secrets). Steps 5-6 (scaffold, build feature by feature) are in
     first write the durable brief to `/spec/PRODUCTIONIZATION.md` - the **same artifact `/steer-adopt`
     produces**, so a dev inheriting a PO-built v0 gets the same brief as one
     inheriting an adopted repo, instead of gaps that evaporate with the PR text.
-    Copy `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/productionization.md` if it doesn't
+    Copy `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/productionization.md` if it doesn't
     exist yet; if it already does (resumed handoff), reconcile it against the
     bundled template first (the plugin-wide *Template reconciliation* convention).
     Capture:

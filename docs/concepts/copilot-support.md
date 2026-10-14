@@ -245,7 +245,7 @@ Code (`gen_agent_skills.py`):
 | In the authored skill | In the portable copy | Why |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
-| `${CLAUDE_PLUGIN_ROOT}/templates/reference/...`, and relative `../../templates/...` links | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB - `MIGRATIONS.md` alone is the largest single file - into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** - see [Known limitations](#known-limitations). |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/...`, and relative `../../templates/...` links | a `raw.githubusercontent.com` URL on this repo (a `tree/` URL for a directory); a helper run as `sh`/`python3` becomes `${STEER_PLUGIN_ROOT}/...` instead | Shared by many skills; vendoring several hundred KB - `MIGRATIONS.md` alone is the largest single file - into every consumer repo is not worth it, and the repo is public. A URL is not a runnable path, so helpers need a local steer copy - see [Known limitations](#known-limitations). |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Three differences from Claude Code remain on the Copilot surfaces - the first two
@@ -414,14 +414,12 @@ the standards in `.github/copilot-instructions.md`.
 
 ## Known limitations
 
-- **The rewritten shared-file URLs are not fetchable.** The rewrite in the table
-  above points at GitHub's HTML `blob/` view rather than `raw.githubusercontent.com`,
-  and it is applied inside runnable command lines too, so those ship as
-  `sh "https://..."`. Because the rewrite is unconditional, any step that depends on
-  reading a shared file or running a shared script is affected - for some skills
-  that costs a link, for others the whole procedure. Detail, and what is
-  unaffected, in
-  [Known limitations](../reference/known-limitations.md#the-cross-tool-agentsskills-tree-shared-bundle-links-are-not-fetchable).
+- **Helper scripts need a local steer copy.** A skill step that runs a helper
+  (`sh "${STEER_PLUGIN_ROOT}/scripts/..."`) works only where `STEER_PLUGIN_ROOT`
+  points at an installed plugin or a checkout; elsewhere the agent skips it and
+  says so. Directory links go to a GitHub `tree/` page, which an agent cannot read
+  in one fetch. Detail in
+  [Known limitations](../reference/known-limitations.md#the-cross-tool-agentsskills-tree-helper-scripts-need-a-local-steer-copy).
 - **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot) -
   the bodies themselves port in full, but neither frontmatter tool field does
   anything here. `disallowed-tools` removes nothing from the pool, where Claude Code

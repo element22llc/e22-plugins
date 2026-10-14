@@ -12,6 +12,13 @@ user-invocable: false
 
 **When to use.** Reached via /steer-setup adopt - not a direct entry point.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Adopt an existing repo into the standards (`/steer-setup adopt`)
 
 Bring a repo that never went through bootstrap - a "vibe-coded" app with
@@ -33,8 +40,8 @@ runbook seems to conflict with one of these, the guardrail wins.
 
 - **Read the repo before the plugin.** Phases 1 and 3 are survey work and are
   answered from the repo alone - the stack, the profile, the entry points, the
-  features. Every `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/**` and
-  `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/**` file is read **at the phase that
+  features. Every `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/**` and
+  `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/scripts/**` file is read **at the phase that
   instantiates it**, never up front and never "so the artifacts match the
   bundled shapes": the scaffold `MANIFEST.md` at Phase 10, the spec templates at
   Phases 5 and 8, the migrations ledger only on a resume (Phase 2). Front-loading

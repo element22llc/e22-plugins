@@ -37,7 +37,7 @@ a separate turn.
 ## Single source of truth - render the skill listing, don't retype it
 
 The authoritative capability list is the set of skills shipped under
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/skills/*/SKILL.md` - the same files whose frontmatter the
+`https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/skills/*/SKILL.md` - the same files whose frontmatter the
 router routes from. Read their frontmatter now and build the menu from it.
 **Do not hardcode the list here** - if you transcribe it, the menu drifts the
 moment a skill is added or renamed. Every entry you show must come from a
@@ -54,7 +54,7 @@ don't enumerate those unless the user asks to zoom in.
 
 ## Phase 1 - Read the listing
 
-`Glob` `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/skills/*/SKILL.md` and, for each file, read only
+`Glob` `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/skills/*/SKILL.md` and, for each file, read only
 the frontmatter: `name`, `description`, `when_to_use`, `user-invocable`. The
 plain-language goal for an entry is the first clause of `description` (what it
 does), sharpened by the first quoted trigger phrase in `when_to_use` if there is

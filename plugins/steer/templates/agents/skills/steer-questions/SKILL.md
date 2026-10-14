@@ -13,6 +13,13 @@ user-invocable: false
 
 **When to use.** Reached via /steer-spec questions - not a direct entry point.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 <!-- steer:modes default,needs,bundle -->
 
 # Resolve open questions (`/steer-spec questions`)
@@ -53,7 +60,7 @@ There is **no `SPEC-QUESTIONS.md`** - questions live next to their context:
 - **Per feature** -> each `spec/features/*/intent.md` -> `## Open questions`
   (the structured `### Q-NNN` blocks - `status` / `impact` / `owner` /
   `required_before` / `created` / `tracker`; the canonical format is in
-  [`SPEC-FRAMEWORK.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md)).
+  [`SPEC-FRAMEWORK.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md)).
 - **Product-level** (anything not yet tied to one feature) -> `spec/vision.md`
   -> `## Open questions`.
 - If present, `spec/PRODUCTIONIZATION.md` -> `## Open questions` (dev-facing
@@ -184,7 +191,7 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    - **Answer sourced from an ingested clarification doc** - a `Q-NNN` may
      carry a **`pending /steer-questions fold`** annotation from
      `/steer-intake clarify` (proposed answer + source-ref + quoted span - see
-     [`CLARIFICATION-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md)).
+     [`CLARIFICATION-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md)).
      The sweep surfaces it like any other open question; treat it as **the
      human's answer** under the **same tier gate above** - no lighter gate for
      arriving as a document. Intake records the annotation; only this skill
@@ -254,7 +261,7 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
 ## Recommend the next action
 
 End with a `## Recommended next actions - /steer-spec questions` block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to the
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, scoped to the
 questions just swept (locality rule) - including when the sweep found none.
 
 | Observed state | Category | Action / suggested command |
@@ -284,5 +291,5 @@ spec**; the filled copy returns through `/steer-spec intake clarify
 
 The spec <-> code coupling rules - drift resolution (Rule 5), behavior vs.
 incidental implementation, PO acceptance - are canonical in
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`; that reference
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`; that reference
 governs how an answer this skill drives to a decision is folded into the spec.

@@ -28,20 +28,11 @@ deep reference prose (``templates/reference/*``), spec templates
 (``templates/spec/*``) and the two helper scripts live outside any one skill and
 are shared by many. Vendoring them would put several hundred KB - ``MIGRATIONS.md``
 alone is the largest single file - into every consumer repo, so they are rewritten
-to ``blob/main`` URLs on the public marketplace repo and fetched on demand.
+to ``main`` URLs on the public marketplace repo and fetched on demand.
 
-.. warning::
-
-   Two known defects in this rewrite are open, not fixed - recorded for consumers
-   in ``docs/reference/known-limitations.md`` under the cross-tool skill tree.
-   (a) ``BLOB_BASE`` points at GitHub's HTML ``blob/`` view, so a fetch returns a
-   rendered page rather than file content; ``raw.githubusercontent.com`` is the
-   form that returns bytes. (b) The rewrite is applied
-   unconditionally, including inside runnable command lines, so the generated tree
-   contains ``sh "https://..."`` invocations that cannot execute on any surface.
-   Fixing (b) is a design question - vendor the few helper scripts, fetch them to a
-   temp file first, or drop those command blocks from the portable copy - so it is
-   deliberately not patched here.
+A helper run as a command (``sh``/``python3``) is the exception: a URL is not a
+runnable path, so it becomes ``${STEER_PLUGIN_ROOT}/...`` and the skill gains
+``HELPER_NOTE`` (#721). Consumers: ``docs/reference/known-limitations.md``.
 
 *Why ``main`` and not the released tag:* pinning would rewrite all 26 skills on
 every version bump, adding a regeneration step to each release for prose that is
@@ -86,8 +77,11 @@ SKILLS_DIR = Path("plugins/steer/skills")
 OUT_DIR = Path("plugins/steer/templates/agents/skills")
 
 # Where a shared plugin asset is readable on the public marketplace repo. See the
-# module docstring for why this tracks `main` rather than the released tag.
-BLOB_BASE = "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer"
+# module docstring for why this tracks `main` rather than the released tag. A file
+# goes to `raw.` - the `blob/` view returns an HTML page, not the bytes - and a
+# directory, which has no raw form, to the `tree/` listing.
+RAW_BASE = "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer"
+TREE_BASE = "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer"
 
 # Skill directory names are prefixed so the cross-tool slash command is
 # `/steer-<name>`, matching what the retired VS Code prompt files exposed.
@@ -139,6 +133,19 @@ RESTRICTION_NOTE = (
 )
 
 _PLUGIN_ROOT = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}(/[A-Za-z0-9._/-]*)?")
+# A helper run as a command cannot be a URL - `sh https://...` is a missing file -
+# and it sources hooks/lib/, so fetching the one script would not run either. It
+# runs from a local plugin copy instead, which HELPER_NOTE tells the agent to find.
+_HELPER_CMD = re.compile(r"\b((?:sh|python3) \"?)\$\{CLAUDE_PLUGIN_ROOT\}(?=/)")
+HELPER_VAR = "${STEER_PLUGIN_ROOT}"
+HELPER_NOTE = (
+    "> **Helper scripts run from a local steer copy.** Commands below that start\n"
+    f'> with `sh "{HELPER_VAR}/...` or `python3 "{HELPER_VAR}/...` need\n'
+    "> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin\n"
+    "> (Codex, Copilot CLI), or `plugins/steer` in a checkout of\n"
+    "> `element22llc/e22-plugins`. With no local copy, skip the step and say what it\n"
+    "> would have reported. Never download a helper and run it from a URL."
+)
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
 # A relative link that climbs out of the skill directory into `templates/`
 # resolves in the authored tree and dangles in the portable one, which sits at a
@@ -156,6 +163,13 @@ def _split_frontmatter(text: str) -> tuple[dict, str]:
     return yaml.safe_load(text[4:end]) or {}, text[end + 5 :].lstrip("\n")
 
 
+def public_url(path: str) -> str:
+    """URL of a plugin-relative path on the public repo; extensionless means a directory."""
+    if "." in path.rstrip("/").rsplit("/", 1)[-1]:
+        return f"{RAW_BASE}/{path}"
+    return f"{TREE_BASE}/{path}" if path else TREE_BASE
+
+
 def rewrite_refs(text: str, skill: str) -> str:
     """Rewrite plugin-root paths and `/steer:` invocations for the portable tree."""
 
@@ -167,14 +181,15 @@ def rewrite_refs(text: str, skill: str) -> str:
             return path[len(own) :]
         # Anything else (shared bundle, another skill, or a bare root reference)
         # -> a URL into the public plugin repo.
-        return f"{BLOB_BASE}/{path}" if path else BLOB_BASE
+        return public_url(path)
 
+    text = _HELPER_CMD.sub(lambda m: m.group(1) + HELPER_VAR, text)
     text = _PLUGIN_ROOT.sub(plugin_root, text)
-    text = _REL_TEMPLATES.sub(rf"]({BLOB_BASE}/templates/\1)", text)
+    text = _REL_TEMPLATES.sub(lambda m: f"]({public_url('templates/' + m.group(1))})", text)
     return _STEER_REF.sub(rf"/{PREFIX}\1", text)
 
 
-def render(skill_dir: Path) -> str:
+def render(skill_dir: Path, *, helpers: bool = False) -> str:
     """Return the portable ``SKILL.md`` text for one authored skill."""
     skill = skill_dir.name
     meta, body = _split_frontmatter((skill_dir / "SKILL.md").read_text(encoding="utf-8"))
@@ -208,7 +223,11 @@ def render(skill_dir: Path) -> str:
         parts.append(RESTRICTION_NOTE.format(tools="`, `".join(t for t in blocked if t)))
     if str(meta.get("context", "")).strip() == "fork":
         parts.append(FORK_NOTE)
-    parts.append(rewrite_refs(body, skill).strip())
+    body = rewrite_refs(body, skill).strip()
+    # A helper invoked only from a supporting file still needs the note up front.
+    if helpers or HELPER_VAR in body:
+        parts.append(HELPER_NOTE)
+    parts.append(body)
     return "\n\n".join(parts) + "\n"
 
 
@@ -223,10 +242,13 @@ def build(skills_dir: Path = SKILLS_DIR) -> dict[Path, str]:
     for skill_dir in sorted(p for p in skills_dir.iterdir() if (p / "SKILL.md").is_file()):
         skill = skill_dir.name
         dest = Path(f"{PREFIX}{skill}")
-        tree[dest / "SKILL.md"] = render(skill_dir)
-        for src in supporting_files(skill_dir):
-            rel = src.relative_to(skill_dir)
-            tree[dest / rel] = rewrite_refs(src.read_text(encoding="utf-8"), skill)
+        support = {
+            dest / src.relative_to(skill_dir): rewrite_refs(src.read_text(encoding="utf-8"), skill)
+            for src in supporting_files(skill_dir)
+        }
+        helpers = any(HELPER_VAR in text for text in support.values())
+        tree[dest / "SKILL.md"] = render(skill_dir, helpers=helpers)
+        tree.update(support)
     return tree
 
 

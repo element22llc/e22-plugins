@@ -46,7 +46,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 ## Load the file, don't answer from the table
 
 Each topic maps to one file under
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/`:
+`https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/reference/`:
 
 | Topic | Open this file |
 |---|---|

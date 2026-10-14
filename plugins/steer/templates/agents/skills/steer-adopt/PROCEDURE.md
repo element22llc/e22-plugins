@@ -47,7 +47,7 @@ Everything below runs **only** when one of those two files exists.
 
 **Apply pending structural migrations before deciding anything else.** The
 non-additive transforms (renames/moves) live in the ledger at
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md` - that ledger is the
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/MIGRATIONS.md` - that ledger is the
 source of truth, not this skill. Walk it by precondition and apply each entry
 that still fires. The one that gates this step is the v1.22.0 rename: if
 `/spec/PRODUCTION-READINESS.md` is the name you found, run
@@ -63,8 +63,8 @@ trust your memory of the template, and don't skip because the file looks
 complete):
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/template-reconcile.sh" \
-  spec/PRODUCTIONIZATION.md "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/productionization.md"
+sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
+  spec/PRODUCTIONIZATION.md "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/productionization.md"
 ```
 
 It prints the `##` sections and checklist items the bundled template has that the
@@ -77,7 +77,7 @@ Empty output means the file is current as to headings and checklist items; the
 helper never emits **table rows**, so diff the `## Gap analysis` table by eye. Only then continue from the
 unchecked items. Full rules (anchor matching, over-reports handling) - the
 plugin-wide **Template reconciliation** convention:
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
 reconciliation".
 
 ## Phase 3 - Survey the codebase
@@ -190,7 +190,7 @@ anywhere) to `## Open questions` as `### Q-NNN` blocks - **never invent** visual
 
 ## Phase 8 - Triage productionization
 
-Copy `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/productionization.md` to
+Copy `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/productionization.md` to
 `/spec/PRODUCTIONIZATION.md` (only if it doesn't exist yet - on a resume it's
 already there and was reconciled against the current template in Phase 2) and fill
 the gap analysis against the standards - tests present? lockfiles committed and
@@ -253,7 +253,7 @@ adoption branch.
 none of it, and reading it up front is the front-loading the guardrails forbid.
 
 The plugin carries the full repo scaffold at
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/scaffold/` - read its `MANIFEST.md` and bring in
+`https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/scaffold/` - read its `MANIFEST.md` and bring in
 the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 `docker:up/down`, `db:migrate`, `db:seed`), `compose.yaml`, CI under
 `.github/workflows/`, the PR template (drift-gate + living-docs checklists),
@@ -261,11 +261,11 @@ the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 `.agents/skills/steer-*/**` (the generated cross-tool skill surface -
 both **overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmless
 if no one uses Copilot), the `AGENTS.md` pointer block from
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/agents/agents-pointer.md` (append it to an
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/agents/agents-pointer.md` (append it to an
 existing `AGENTS.md`, never touching content outside the block), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
 `steer` plugin via the marketplace (dotfiles are stored without their
 leading dot - rename per the MANIFEST map). Also instantiate the living-docs
-artifacts from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/`.
+artifacts from `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/spec/`.
 
 **Wire the commit gate** once `mise.toml` carries the `pre-commit` task: run
 `mise generate git-pre-commit --task=pre-commit --write`. It writes
@@ -279,7 +279,7 @@ linked worktree to the primary checkout): if the repo already has a
 alone** - a repo with its own commit gate is a decision, not a gap.
 
 **In a polyrepo member, install `spec/PRODUCT.md` (from
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/product.md`) and skip every product-level
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/product.md`) and skip every product-level
 artifact in this list** - `/spec/tracker.md` (and with it both tracker
 bootstraps below), `/spec/app/README.md`, `/spec/history/`. Those live once, in
 the workspace; record the adoption as a workspace `spec/history/` entry, else the PR
@@ -342,7 +342,7 @@ line-based `.gitignore`, `.gitattributes` and `.worktreeinclude`,
 and the JSON configs (`.claude/settings.json`, `biome.json`) -
 reconcile with the additive helper rather than by hand, which never overwrites an
 existing value or line (`check` first, show the delta, then `--apply`):
-`python3 "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scaffold_reconcile.py" auto <repo-file> <scaffold-template> [--apply]`. The
+`python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <repo-file> <scaffold-template> [--apply]`. The
 scaffold carries a `DESIGN.md` stub - **do not overwrite the `DESIGN.md` Phase 7
 already reverse-engineered**; only bring in the stub for a UI repo where Phase 7
 somehow produced nothing. Reverse-engineer the root `ARCHITECTURE.md` the same
@@ -371,7 +371,7 @@ review is the hard gate.
 ## Phase 12 - Hand off
 
 **Stamp the spine version:** write `/spec/.version` with the current plugin
-version (resolve it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` -
+version (resolve it from `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json` -
 never from memory), so a later `/steer-sync` knows which structural
 migrations this repo already carries:
 
@@ -407,7 +407,7 @@ checklist.
 
 As the final output, emit a `## Recommended next actions - /steer-setup adopt`
 block per the shared
-contract at `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`
+contract at `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`
 (categories, two-level precedence, output format, read-only + locality rules -
 adoption is repo-wide *by purpose*, so a whole-repo sweep is in scope here).
 Derive it from the adoption state observed, mapping these states to categories:

@@ -12,6 +12,13 @@ argument-hint: '[start | resume | status | finish | promote | tidy | review | is
 
 **When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("do this with review"). Add --hotfix only for a real production incident ("prod is down") - never for ordinary urgent work. Use promote to ship what is already on the default branch to production ("promote to prod"). Use tidy when the repo root is cluttered with loose documents, diagrams or exports ("clean up the repo", "organize the strays"). Use review to clear a PR review queue fast ("review my PRs"). Use issues for backlog management with no implementation this turn.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 <!-- steer:modes start,resume,status,finish,promote,tidy,review,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
@@ -252,7 +259,7 @@ the separate work only when the current issue requires it.
 ## Recommend the next action
 
 End every invocation with a `## Recommended next actions` block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, obeying its
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, obeying its
 **locality rule** - only this issue, its branch, PR, criteria, validation, and
 any blocker directly hit, never the wider workspace. This skill's execution
 state -> action mapping (and how it reads in solo-trunk) is in

@@ -12,6 +12,13 @@ argument-hint: '[idea or product description]'
 
 **When to use.** Use when a non-developer wants to build or prototype an app idea, or to resume a PO build whose repo already has /spec/BUILD-STATUS.md.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 # Build a working app from a PO's idea
 
 This is the PO-facing path through the standard Greenfield flow
@@ -39,7 +46,7 @@ stays pre-MVP until a dev reviews it at graduation (`/steer-setup protect`). The
 is identical either way.
 
 **Flow state lives in `/spec/BUILD-STATUS.md`, not in the conversation.** Copy
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/build-status.md` there when you first
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/build-status.md` there when you first
 create `/spec` (step 2), and update + commit it at **every step transition**:
 current step, per-feature progress, handoff gate. Sessions end; the file
 is how the next one picks up. **Resuming:** if `/spec/BUILD-STATUS.md` already
@@ -49,14 +56,14 @@ which may have gained sections under a later `/plugin update`. Don't eyeball it;
 run the diff and act on its output:
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/template-reconcile.sh" \
-  spec/BUILD-STATUS.md "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/build-status.md"
+sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
+  spec/BUILD-STATUS.md "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/build-status.md"
 ```
 
 Splice in only the genuinely-new `##` sections and checklist items it reports
 (unchecked), preserving everything already filled in; never re-add a placeholder the
 dev replaced. Full rules - the plugin-wide *Template reconciliation* convention:
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
 reconciliation". Then read the `intent.md` statuses and continue from the recorded
 step - don't restart the interview or re-ask settled questions. This makes new
 flow-state gates self-healing on the next `/steer-build` run.
@@ -122,7 +129,7 @@ These hold for the whole build, at every step.
      config, pinned in the lockfile"). The PO still installs Claude Code, `git` and Docker Desktop by
      hand (the manual floor doctor can only link or hand over, not script).
 2. **Interview -> product spec.** Follow Greenfield step 1 of the spec-framework
-   reference (`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`):
+   reference (`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`):
    ask plain-language questions to fill `spec/vision.md`,
    `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; product-level
    ambiguity goes to `vision.md` -> `## Open questions`. If the PO has a Claude
@@ -133,7 +140,7 @@ These hold for the whole build, at every step.
    **Stamp the spine version - this is what makes the repo `managed`.** Once
    `vision.md`, `users.md`, `glossary.md` and `tracker.md` are in place, write
    `/spec/.version` with the current plugin version (resolve it from
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` - never from memory), in the
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json` - never from memory), in the
    same two-line form `/steer-init` and `/steer-adopt` write:
 
    ```
@@ -194,7 +201,7 @@ These hold for the whole build, at every step.
 
 After the build step, emit a `## Recommended next actions - /steer-build` block
 per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, derived from
 `/spec/BUILD-STATUS.md` and this build's state. Keep it in the PO's plain
 language.
 

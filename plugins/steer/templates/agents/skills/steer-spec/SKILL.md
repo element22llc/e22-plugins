@@ -186,7 +186,7 @@ precondition the others don't: it is GitHub-only, and says so and stops when
      governed). Don't hand off to a "just implement it" path that skips the issue.
 8. **Recommend the next action.** Close with a `## Recommended next actions -
    /steer-spec` block per
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the
    **locality rule**, consider only *this* feature's intent, open questions,
    contract, tracker state, and directly relevant ADRs - not the wider workspace.
 
@@ -229,5 +229,5 @@ precondition the others don't: it is GitHub-only, and says so and stops when
 The canonical spec <-> code rules - feature-organized specs, spec and code
 changing together in the same PR, drift resolution (Rule 5), behavior vs.
 incidental implementation, PO acceptance - live in
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`. This skill stays
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`. This skill stays
 on the spec side of that boundary by design.

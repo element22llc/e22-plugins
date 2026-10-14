@@ -1,0 +1,13 @@
+kind: Fixed
+body: |-
+    - **Fixed: the cross-tool `.agents/skills/` tree no longer tells an agent to
+      run a URL.** Generated skills wrote helper commands as `sh "https://..."`,
+      which fails on every surface, and linked shared files to GitHub's HTML
+      `blob/` view, which returns a web page rather than the file. Helper commands
+      now read `sh "${STEER_PLUGIN_ROOT}/scripts/..."`, and each skill that has
+      one says to point `STEER_PLUGIN_ROOT` at a local steer copy, or skip the
+      step and say so. Shared files link to `raw.githubusercontent.com`; a
+      directory links to its `tree/` page. Reported in #721.
+time: 2026-10-14T09:39:37.950938-04:00
+custom:
+    Slug: agent-skills-helper-paths

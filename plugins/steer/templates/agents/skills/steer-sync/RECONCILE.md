@@ -62,7 +62,7 @@ is visible rather than silent.
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention
-   (`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   (`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
    reconciliation") across the copied-in files this repo has -
    `PRODUCTIONIZATION.md`, each feature's `intent.md` / `contract.md`,
    `tracker.md`, `app/README.md`, and the scaffold files
@@ -90,12 +90,12 @@ is visible rather than silent.
 
    ```
    # check (read-only): empty output = current; any output = additive delta
-   python3 "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scaffold_reconcile.py" \
-     auto .gitignore "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/scaffold/gitignore"
+   python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
+     auto .gitignore "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/scaffold/gitignore"
    # apply the additive merge once you've shown the delta
-   python3 "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scaffold_reconcile.py" \
+   python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
      auto .claude/settings.json \
-     "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/scaffold/claude/settings.json" --apply
+     "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/scaffold/claude/settings.json" --apply
    ```
 
    This is the **content**-level merge (permission lists, companion-plugin
@@ -127,7 +127,7 @@ is visible rather than silent.
    detector and walk the capability map:
 
    ```sh
-   sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-capabilities.sh" .
+   sh "${STEER_PLUGIN_ROOT}/scripts/scan-capabilities.sh" .
    ```
 
    It prints one `id<TAB>status<TAB>files` line per capability
@@ -135,7 +135,7 @@ is visible rather than silent.
    informational fingerprints, `stack` and `profile` - report both, repair
    neither - on stdout (gaps are **not** a nonzero exit). For each capability
    read its entry in
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CAPABILITIES.md` for the repair
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CAPABILITIES.md` for the repair
    semantics + conditionality, then:
 
    - **`present-wired` / `n/a` / `disabled`** -> nothing to do. `n/a` means the
@@ -223,7 +223,7 @@ is visible rather than silent.
    any later drift. Run the read-only detector:
 
    ```sh
-   sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-invocations.sh" .
+   sh "${STEER_PLUGIN_ROOT}/scripts/scan-invocations.sh" .
    ```
 
    It derives the *valid* invocation surface live from the plugin (skill names, the
@@ -231,7 +231,7 @@ is visible rather than silent.
    and prints one TAB line per problem occurrence,
    `<file>\t<lineno>\t<found>\t<class>\t<suggested-fix>` (clean repo = silent; findings
    are on stdout, never a nonzero exit). See
-   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/INVOCATION.md` -> "Drift detection &
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/INVOCATION.md` -> "Drift detection &
    auto-repair" for the class semantics. Then, read-then-propose on `feat/sync`:
 
    - **`legacy-e22`**, **`reference-mode`** and **`absorbed-mode`** -> **deterministic**:

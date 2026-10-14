@@ -14,7 +14,7 @@ tracker issue when the PR merges into the code repo's default branch.
 Resolve both sides before writing any closing ref:
 
 ```sh
-sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-spine-state.sh"   # `- tracker repo:` <- /spec/tracker.md
+sh "${STEER_PLUGIN_ROOT}/scripts/scan-spine-state.sh"   # `- tracker repo:` <- /spec/tracker.md
 gh repo view --json nameWithOwner -q .nameWithOwner      # the repo the code lives in
 ```
 

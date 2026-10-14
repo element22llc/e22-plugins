@@ -21,6 +21,13 @@ argument-hint: '[code | spec | all] [--since <ref>]'
 > unavailable for the whole run, and read any claim below that they "are
 > unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
+> **Helper scripts run from a local steer copy.** Commands below that start
+> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 <!-- steer:modes code,spec,all -->
 
 # Audit a repo - code health and spec conformance (read-only)
@@ -56,9 +63,9 @@ separate, approved step on its own branch + PR.
 
 The canonical spec <-> code rules - drift resolution (Rule 5), behavior vs.
 incidental implementation, PO vs. dev approval, naming - live in
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`; the full
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`; the full
 conventions and patterns behind the `code`-mode dimensions are in
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CONVENTIONS.md` (open via
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CONVENTIONS.md` (open via
 `/steer-reference conventions`). This skill *detects, ranks, and routes*; those references
 govern how each finding gets *resolved*.
 
@@ -112,7 +119,7 @@ again and again on a repo that already has one.
 ## Polyrepo scope - both modes
 
 Both modes sweep **one tree**. When
-`sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-spine-state.sh"` reports a
+`sh "${STEER_PLUGIN_ROOT}/scripts/scan-spine-state.sh"` reports a
 `- polyrepo role:` other than `none`, scope the report per
 `/steer-reference polyrepo` § "Reporting across members" - an audit silently
 scoped to one member reads as a clean bill of health for the product. Two limits
