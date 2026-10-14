@@ -88,6 +88,8 @@ jobs:
         env:
           STEER_CI_EVENT: ${{ github.event_name }}
           STEER_CI_BASE_REF: ${{ github.base_ref }}
+          STEER_CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          STEER_CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           STEER_CI_BEFORE: ${{ github.event.before }}
         run: mise run ci:changelog
 
@@ -101,6 +103,8 @@ jobs:
         env:
           STEER_CI_EVENT: ${{ github.event_name }}
           STEER_CI_BASE_REF: ${{ github.base_ref }}
+          STEER_CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          STEER_CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           STEER_CI_BEFORE: ${{ github.event.before }}
         run: mise run --skip-deps ci:coverage
 

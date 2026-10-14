@@ -30,6 +30,21 @@ is_exempt() {
 	return 1
 }
 
+# A property of the tree, not the diff, so it runs before the base fail-open:
+# changie loads only *.yaml, and drops anything else at merge without a word (#707).
+strays="$(find .changes/unreleased -type f ! -name '*.yaml' ! -name '.gitkeep' 2>/dev/null | sort | tr '\n' ' ')"
+if [ -n "${strays}" ]; then
+	steer_ci_error "Changelog fragment changie cannot read - it loads only *.yaml from .changes/unreleased/, so these would be dropped silently at merge. Recreate each with \`mise run changelog:new\`: ${strays}"
+	exit 1
+fi
+
+# Promotion carries changes already gated on their way into main, and the cut
+# before it consumed their fragments - there is nothing left to add.
+if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod ]; then
+	printf 'ci:changelog - promotion to prod; fragments were checked on main.\n'
+	exit 0
+fi
+
 if ! base="$(steer_ci_base)"; then
 	steer_ci_notice 'No base ref to diff against - skipping the changelog gate (fail-open).'
 	exit 0
@@ -56,8 +71,8 @@ if [ -z "${shipping}" ]; then
 	exit 0
 fi
 
-added="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- .changes/unreleased/ 2>/dev/null ||
-	git diff --diff-filter=A --name-only "${base}" HEAD -- .changes/unreleased/)"
+added="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- '.changes/unreleased/*.yaml' 2>/dev/null ||
+	git diff --diff-filter=A --name-only "${base}" HEAD -- '.changes/unreleased/*.yaml')"
 
 if [ -n "${added}" ]; then
 	printf 'ci:changelog - fragment present.\n'

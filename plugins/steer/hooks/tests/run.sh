@@ -1204,6 +1204,34 @@ ci_changelog src/foo.ts src/foo.test.ts
 assert_eq "ci-changelog: source beside its test still needs one" "${rc}" "1"
 ci_changelog api/openapi.spec.yaml
 assert_eq "ci-changelog: a non-test *.spec.* file still needs one" "${rc}" "1"
+# changie loads only *.yaml: anything else is dropped at merge, so it never counts (#707).
+ci_changelog src/foo.ts .changes/unreleased/fixed-a.yaml
+assert_eq "ci-changelog: a .yaml fragment satisfies it" "${rc}" "0"
+ci_changelog src/foo.ts .changes/unreleased/fixed-a.md
+assert_eq "ci-changelog: a .md 'fragment' fails" "${rc}" "1"
+ci_changelog src/foo.ts .changes/unreleased/fixed-a.yaml .changes/unreleased/fixed-b.yml
+assert_eq "ci-changelog: a stray .yml beside a real fragment fails" "${rc}" "1"
+(cd "${CC}" && STEER_CI_BASE=nope sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: a stray fails even with no base" "$?" "1"
+# PR base resolves locally, with no reachable origin: merge-ref parent, then base SHA (#707).
+(cd "${CC}" && git checkout -q -B pr "$(git rev-list --max-parents=0 HEAD)" && mkdir -p src && : >src/pr.ts &&
+	git add -A && git -c user.name=t -c user.email=t@t commit -qm pr &&
+	git checkout -q -B merge "$(git rev-list --max-parents=0 HEAD)" &&
+	git -c user.name=t -c user.email=t@t merge -q --no-ff --no-edit pr)
+head_sha="$(cd "${CC}" && git rev-parse pr)"
+base_sha="$(cd "${CC}" && git rev-list --max-parents=0 HEAD)"
+(cd "${CC}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=main STEER_CI_HEAD_SHA="${head_sha}" sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: PR base from the merge ref's first parent" "$?" "1"
+(cd "${CC}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=main STEER_CI_HEAD_SHA=deadbeef STEER_CI_BASE_SHA="${base_sha}" sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: wrong head SHA falls through to the base SHA" "$?" "1"
+(cd "${CC}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=main sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: nothing resolvable still fails open" "$?" "0"
+# Promotion: the cut already consumed the fragments, so main -> prod adds none.
+(cd "${CC}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=prod STEER_CI_BASE_SHA="${base_sha}" sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: a promotion PR to prod needs no new fragment" "$?" "0"
+# A force-push leaves `before` unreachable: fail open, never exit 128.
+(cd "${CC}" && STEER_CI_EVENT=push STEER_CI_BEFORE=1111111111111111111111111111111111111111 sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: an unreachable push base fails open" "$?" "0"
 
 # changelog:new: argv reaches changie verbatim, no shell in between (#671).
 if command -v node >/dev/null 2>&1; then

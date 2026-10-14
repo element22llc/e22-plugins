@@ -1,0 +1,19 @@
+kind: Fixed
+body: |-
+    - **Fixed: the scaffold's changelog gate actually runs on pull requests, and
+      counts only fragments changie can read.** On a private repo the gate never
+      ran: the shipped checkout drops its credential, so the fetch of the base
+      branch failed and the gate skipped itself on every PR. `ci-lib.sh` now
+      resolves the base locally first, from the PR merge commit's first parent or
+      the event's base SHA (`ci.yml` passes both), and fetches only as a last
+      resort; changed-line coverage uses the same resolver. The gate also accepted
+      a `.md` or `.yml` file as the fragment, which `changie merge` drops without a
+      word. It now counts only `*.yaml` and fails on any other file under
+      `.changes/unreleased/`, with or without a base. Two cases the running gate
+      would have broken are handled: a `main` -> `prod` promotion PR needs no
+      new fragment (the release cut consumed them), and a push whose prior
+      commit is gone after a force-push skips both gates instead of failing.
+      Reported in #707.
+time: 2026-10-14T09:34:47.701923-04:00
+custom:
+    Slug: ci-changelog-gate-fails-open
