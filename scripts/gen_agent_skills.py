@@ -25,14 +25,16 @@ copied in alongside ``SKILL.md``, which is exactly the spec's ``references/``/
 
 **2. Shared-bundle references become URLs into the public plugin repo.** The
 deep reference prose (``templates/reference/*``), spec templates
-(``templates/spec/*``) and the two helper scripts live outside any one skill and
-are shared by many. Vendoring them would put several hundred KB - ``MIGRATIONS.md``
-alone is the largest single file - into every consumer repo, so they are rewritten
-to ``main`` URLs on the public marketplace repo and fetched on demand.
+(``templates/spec/*``) and the helper scripts live outside any one skill and are
+shared by many. Vendoring them would put several hundred KB - ``MIGRATIONS.md``
+alone is the largest single file - into every consumer repo, so a path a reader
+follows is rewritten to a ``main`` URL on the public marketplace repo and fetched
+on demand.
 
-A helper run as a command (``sh``/``python3``) is the exception: a URL is not a
-runnable path, so it becomes ``${STEER_PLUGIN_ROOT}/...`` and the skill gains
-``HELPER_NOTE`` (#721). Consumers: ``docs/reference/known-limitations.md``.
+A path a command touches is the exception - a helper, its template argument, a
+plugin directory handed to ``grep``/``find``: a URL is not a local path, so it
+becomes ``${STEER_PLUGIN_ROOT}/...`` and the skill gains ``HELPER_NOTE`` (#721).
+Consumers: ``docs/reference/known-limitations.md``.
 
 *Why ``main`` and not the released tag:* pinning would rewrite all 26 skills on
 every version bump, adding a regeneration step to each release for prose that is
@@ -133,14 +135,16 @@ RESTRICTION_NOTE = (
 )
 
 _PLUGIN_ROOT = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}(/[A-Za-z0-9._/-]*)?")
-# A helper run as a command cannot be a URL - `sh https://...` is a missing file -
-# and it sources hooks/lib/, so fetching the one script would not run either. It
-# runs from a local plugin copy instead, which HELPER_NOTE tells the agent to find.
-_HELPER_CMD = re.compile(r"\b((?:sh|python3) \"?)\$\{CLAUDE_PLUGIN_ROOT\}(?=/)")
+# A path a command touches cannot be a URL - `sh https://...` is a missing file,
+# `grep`/`find` on one silently matches nothing, and a helper sources hooks/lib/
+# and reads its template argument from disk. It runs against a local plugin copy
+# instead, which HELPER_NOTE tells the agent to find. The authored skills quote
+# every shell argument and never a prose path, so a quote marks a command.
+_HELPER_CMD = re.compile(r"(\"|\b(?:sh|python3) )\$\{CLAUDE_PLUGIN_ROOT\}(?=[/\"])")
 HELPER_VAR = "${STEER_PLUGIN_ROOT}"
 HELPER_NOTE = (
-    "> **Helper scripts run from a local steer copy.** Commands below that start\n"
-    f'> with `sh "{HELPER_VAR}/...` or `python3 "{HELPER_VAR}/...` need\n'
+    "> **Helper scripts run from a local steer copy.** Commands below that use\n"
+    f'> `"{HELPER_VAR}/..."` (a helper, its template argument, a plugin directory) need\n'
     "> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin\n"
     "> (Codex, Copilot CLI), or `plugins/steer` in a checkout of\n"
     "> `element22llc/e22-plugins`. With no local copy, skip the step and say what it\n"

@@ -12,8 +12,8 @@ argument-hint: '[start | resume | status | finish | promote | tidy | review | is
 
 **When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("do this with review"). Add --hotfix only for a real production incident ("prod is down") - never for ordinary urgent work. Use promote to ship what is already on the default branch to production ("promote to prod"). Use tidy when the repo root is cluttered with loose documents, diagrams or exports ("clean up the repo", "organize the strays"). Use review to clear a PR review queue fast ("review my PRs"). Use issues for backlog management with no implementation this turn.
 
-> **Helper scripts run from a local steer copy.** Commands below that start
-> with `sh "${STEER_PLUGIN_ROOT}/...` or `python3 "${STEER_PLUGIN_ROOT}/...` need
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
 > `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
 > (Codex, Copilot CLI), or `plugins/steer` in a checkout of
 > `element22llc/e22-plugins`. With no local copy, skip the step and say what it

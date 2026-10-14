@@ -227,3 +227,29 @@ def test_helper_commands_run_from_a_local_copy_never_a_url(tmp_path: Path):
     assert f"{gen_agent_skills.RAW_BASE}/templates/spec/intent.md" in spec
     for text in tree.values():
         assert not re.search(r"\b(?:sh|python3) \"?https?://", text)
+
+
+def test_quoted_plugin_paths_in_commands_stay_local(tmp_path: Path):
+    """A helper's file argument, or a plugin dir handed to grep/find, is a path too."""
+    _skill(
+        tmp_path,
+        "build",
+        "name: build\ndescription: B.",
+        """\
+        ```sh
+        sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \\
+          spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
+        grep -rl x "${CLAUDE_PLUGIN_ROOT}/hooks"
+        find "${CLAUDE_PLUGIN_ROOT}" -type f
+        ```
+        Template: `${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md`.
+        """,
+    )
+    build = gen_agent_skills.build(tmp_path)[Path("steer-build/SKILL.md")]
+    assert '"${STEER_PLUGIN_ROOT}/templates/spec/build-status.md"' in build
+    assert 'grep -rl x "${STEER_PLUGIN_ROOT}/hooks"' in build
+    assert 'find "${STEER_PLUGIN_ROOT}" -type f' in build
+    assert gen_agent_skills.HELPER_NOTE in build
+    # Unquoted prose still links to the public repo.
+    assert f"`{gen_agent_skills.RAW_BASE}/templates/spec/build-status.md`" in build
+    assert not re.search(r"\"https?://", build)

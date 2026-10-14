@@ -64,7 +64,7 @@ complete):
 
 ```sh
 sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/PRODUCTIONIZATION.md "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/productionization.md"
+  spec/PRODUCTIONIZATION.md "${STEER_PLUGIN_ROOT}/templates/spec/productionization.md"
 ```
 
 It prints the `##` sections and checklist items the bundled template has that the

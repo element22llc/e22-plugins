@@ -91,11 +91,11 @@ is visible rather than silent.
    ```
    # check (read-only): empty output = current; any output = additive delta
    python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
-     auto .gitignore "https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/scaffold/gitignore"
+     auto .gitignore "${STEER_PLUGIN_ROOT}/templates/scaffold/gitignore"
    # apply the additive merge once you've shown the delta
    python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
      auto .claude/settings.json \
-     "https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/scaffold/claude/settings.json" --apply
+     "${STEER_PLUGIN_ROOT}/templates/scaffold/claude/settings.json" --apply
    ```
 
    This is the **content**-level merge (permission lists, companion-plugin

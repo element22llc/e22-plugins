@@ -366,7 +366,9 @@ which returns the bytes; a directory has no raw form, so it links to the GitHub
 
 **Helper scripts are the gap.** A helper invoked as a command (`sh ...`,
 `python3 ...`) cannot run from a URL, and most source `hooks/lib/` besides, so
-the generated tree writes them as `sh "${STEER_PLUGIN_ROOT}/scripts/..."` and the
+the generated tree writes every path a command touches - the helper, its
+template argument, a plugin directory handed to `grep` or `find` - as
+`"${STEER_PLUGIN_ROOT}/..."` and the
 skill tells the agent to point `STEER_PLUGIN_ROOT` at a local steer copy - the
 installed plugin, or `plugins/steer` in a checkout of this repo. With no local
 copy the agent skips the step and says what it would have reported. Skills
