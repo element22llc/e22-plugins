@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - scaffold `mise.toml` adopts `min_version`, `usage`, `sources` and `--skip-deps`
+### v7.8.0 - scaffold `mise.toml` adopts `min_version`, `usage`, `sources` and `--skip-deps`
 
 - **What & why:** the CI workflow ran the test suite twice per PR - its Coverage
   step called `mise run ci:coverage`, whose `depends` re-ran `ci:test`, because

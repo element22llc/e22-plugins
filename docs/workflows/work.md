@@ -152,7 +152,7 @@ behavior change requires lands as its own change in the workspace repo.
 | | Closing ref | Who closes the issue |
 | --- | --- | --- |
 | Same repo, **or** either value unreadable | `Closes #N` - unchanged | GitHub, on merge |
-| **Proven** mismatch | `Closes owner/repo#N` | GitHub, on merge - `finish` confirms, and falls back to `/steer:tracker-sync close` |
+| **Proven** mismatch | `Closes owner/repo#N` | GitHub, on merge - read it back after; still open, `/steer:tracker-sync close` |
 
 Only a demonstrated mismatch diverts. An absent tracker file, an unresolved
 `[owner/repository]` placeholder, an empty value, or a failed `gh` call all keep
