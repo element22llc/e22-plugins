@@ -1,6 +1,8 @@
 # Toolchain pins + dev-loop tasks. Rationale: /steer:reference conventions ->
 # "Toolchain", "Standard mise tasks". No mise.lock ships; /steer:setup init creates it.
 
+min_version = "2026.4.18" # first release with the [deps] table
+
 [settings]
 lockfile = true
 experimental = true # gates the [deps] providers below
@@ -40,6 +42,7 @@ depends = ["db:seed"]
 [tasks."docker:up"]
 description = "Start local backing services (compose.yaml) and wait until healthy"
 run = "docker compose up -d --wait"
+timeout = "5m"
 
 [tasks."docker:down"]
 description = "Stop this worktree's backing services (data volumes are kept)"
@@ -60,7 +63,12 @@ depends = ["db:migrate"]
 run = "pnpm --recursive --if-present run db:seed"
 
 [tasks."changelog:new"]
-description = "Record a changelog entry (KIND=Fixed SLUG=short-name BODY='- **Fixed: ...**')"
+description = "Record a changelog fragment (--kind Fixed --slug short-name --body='- **Fixed: ...**', or KIND/SLUG/BODY env)"
+usage = '''
+flag "--kind <kind>" env="KIND" help="A kind from changie.yaml: Added, Changed, Fixed, Security, Docs"
+flag "--slug <slug>" env="SLUG" help="3-6 kebab-case words"
+flag "--body <body>" env="BODY" help="The entry text"
+'''
 run = "node scripts/changelog-new.mjs"
 
 [tasks."changelog:merge"]
@@ -68,12 +76,14 @@ description = "Reassemble CHANGELOG.md from .changes/ (run after a release cut)"
 run = "changie merge"
 
 [tasks."ci:hygiene"]
-description = "Stack-agnostic hygiene: actionlint, shellcheck, version-pin policy"
+description = "Stack-agnostic hygiene: mise task graph, actionlint, shellcheck, version-pin policy"
 run = "sh scripts/ci-hygiene.sh"
 
 [tasks."ci:deps"]
 description = "Install workspace dependencies (Node) for the checks that need them"
 run = "sh scripts/ci-deps.sh"
+# Skipped while these are unchanged since its last success - typecheck, test and coverage each pull it in.
+sources = ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "apps/*/package.json", "packages/*/package.json"]
 
 [tasks."ci:lint"]
 description = "Lint + format check every detected stack (Biome / Ruff)"
@@ -124,9 +134,10 @@ description = "Full gate: everything the required `ci` status check runs. Run be
 depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage", "ci:changelog", "ci:spec"]
 
 [tasks."convert:doc"]
-description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake. Usage: mise run convert:doc <file>"
+description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake"
+usage = 'arg "<file>" help="The document to convert"'
 # `[all]` pulls the per-format extras; without it every format raises MissingDependency.
-run = 'uvx --from "markitdown[all]" markitdown'
+run = 'uvx --from "markitdown[all]" markitdown "{{usage.file}}"'
 
 # Opt-in diagram renderers (LikeC4 model, D2 topology) - see /steer:reference architecture-diagrams.
 # [tasks."diagrams:render"]

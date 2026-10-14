@@ -1,0 +1,15 @@
+kind: Changed
+body: |-
+  - **Changed: the scaffold's mise tasks use more of mise, and CI no longer runs
+    the test suite twice.** The CI Coverage step re-ran every test because each
+    workflow step is a separate `mise run`; it now passes `--skip-deps`, and
+    `ci:deps` skips `pnpm install` while the lockfile and manifests are
+    unchanged. `changelog:new` takes `--kind` / `--slug` / `--body` flags (the
+    `KIND` / `SLUG` / `BODY` variables still work) and `convert:doc` a declared
+    `<file>` argument, so `--help` documents both. Every scaffold `mise.toml`
+    declares `min_version`, `docker:up` times out after five minutes instead of
+    hanging, and `ci:hygiene` runs `mise tasks validate`. `/steer:setup sync`
+    carries existing repos forward.
+time: 2026-10-14T09:00:00.000000000-04:00
+custom:
+  Slug: scaffold-mise-task-features

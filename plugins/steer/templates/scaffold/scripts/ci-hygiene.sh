@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer - stack-agnostic CI hygiene: workflow lint, shell lint, version-pin policy.
+# steer - stack-agnostic CI hygiene: mise task graph, workflow lint, shell lint, version-pin policy.
 # Runs in every repo regardless of stack. Invoked by `mise run ci:hygiene`.
 set -eu
 
@@ -24,6 +24,11 @@ if [ -z "${stacks}" ]; then
 else
 	printf 'Detected stack:%s\n' "${stacks}"
 fi
+
+# A task pruned from mise.toml can leave another task's `depends` pointing at nothing.
+steer_ci_group 'mise tasks validate'
+mise tasks validate --errors-only
+steer_ci_endgroup
 
 if [ -d .github/workflows ]; then
 	steer_ci_group 'actionlint'

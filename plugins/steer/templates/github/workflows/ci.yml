@@ -95,12 +95,14 @@ jobs:
         run: mise run ci:spec
 
       # The workflow context the gate needs; locally the script falls back to origin/main.
+      # --skip-deps: the Test step above already produced the reports. mise dedupes `depends`
+      # only within one `mise run`, so without it every PR runs the whole suite twice.
       - name: Coverage (changed-line gate)
         env:
           STEER_CI_EVENT: ${{ github.event_name }}
           STEER_CI_BASE_REF: ${{ github.base_ref }}
           STEER_CI_BEFORE: ${{ github.event.before }}
-        run: mise run ci:coverage
+        run: mise run --skip-deps ci:coverage
 
       # Opt-in: a build step (add a `build` script per app; the root script fans out with --if-present).
       # - name: Build
