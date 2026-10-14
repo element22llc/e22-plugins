@@ -39,9 +39,7 @@ STEER_INPUT="$(cat)"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/version-policy.sh"
 
-# Docs legitimately mention old versions -> exempt.
 FILE="$(steer_field file_path)"
-[ -n "${FILE}" ] && [ "$(steer_classify_path "${FILE}")" = "documentation" ] && exit 0
 
 # F13: inspect only the introduced content (empty for Bash / unknown tools).
 CONTENT="$(steer_mutation_content)"
@@ -57,6 +55,9 @@ CWD="$(steer_field cwd)"
 # work tree. steer_policy_resolve then prefers that repo-local file, else the
 # plugin-bundled default - so enforcement works regardless.
 ROOT="$(steer_action_root "${CWD}" "$(steer_target_path)")" || ROOT="${CWD}"
+# Docs legitimately mention old versions -> exempt. Classified repo-relative, so a
+# clone that happens to sit under a `docs/` dir is still enforced.
+[ -n "${FILE}" ] && [ "$(steer_classify_path "${FILE#"${ROOT}/"}")" = "documentation" ] && exit 0
 POLICY="$(steer_policy_resolve "${ROOT}")"
 [ -n "${POLICY}" ] || exit 0 # no policy available -> cannot enforce, stay silent
 

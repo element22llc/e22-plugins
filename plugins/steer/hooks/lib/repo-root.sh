@@ -172,7 +172,13 @@ steer_git_c_target() {
 			_gc_rest="${_gc_rest#*" -C "}"
 			# Strip any further leading spaces, then cut at the next separator.
 			while [ "${_gc_rest#" "}" != "${_gc_rest}" ]; do _gc_rest="${_gc_rest#" "}"; done
-			_gc_tgt="${_gc_rest%%[[:space:];&|]*}"
+			# A quoted target ends at its closing quote and may hold spaces; left
+			# quoted it names no directory and the gate falls back to the cwd.
+			case "${_gc_rest}" in
+			\"*) _gc_rest="${_gc_rest#\"}" && _gc_tgt="${_gc_rest%%\"*}" ;;
+			\'*) _gc_rest="${_gc_rest#\'}" && _gc_tgt="${_gc_rest%%\'*}" ;;
+			*) _gc_tgt="${_gc_rest%%[[:space:];&|]*}" ;;
+			esac
 			[ -n "${_gc_tgt}" ] || return 1
 			printf '%s' "${_gc_tgt}"
 			return 0

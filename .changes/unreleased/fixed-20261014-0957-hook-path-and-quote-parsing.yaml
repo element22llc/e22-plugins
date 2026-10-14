@@ -1,0 +1,15 @@
+kind: Fixed
+body: |-
+    - **Fixed: four hook gates misread their input.** The write nudges and the
+      version-pin gate classified the absolute file path, so every write inside a
+      Claude Code worktree (under `.claude/worktrees/`) counted as spec and got no
+      nudge, and a repo cloned under any `docs/` directory was exempt from the pin
+      gate. Both now classify the path relative to the repo. A major-only tag such
+      as `python:3` was denied as "below 3.11"; it now floats the minor, as the
+      conventions say, here and in the scaffold's `ci:hygiene` scan. The
+      trunk-push gate read a quoted `git -C "dir"` target with its quotes on and
+      silently let the push through. The stacked-PR gate read `-B scratch` from a
+      PR body as the base branch and asked for no reason.
+time: 2026-10-14T09:57:10.983056-04:00
+custom:
+    Slug: hook-path-and-quote-parsing

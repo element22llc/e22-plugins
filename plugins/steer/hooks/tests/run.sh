@@ -299,6 +299,18 @@ assert_empty "version-pins: above-floor major silent" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin python 3.9)")")"
 assert_deny "version-pins: below minimum_supported denied (python 3.9)" "${out}"
+# A major-only tag floats the minor: python:3 resolves to a current 3.x (CONVENTIONS).
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 Dockerfile "FROM $(pin python 3)-slim")")"
+assert_empty "version-pins: major-only tag compared at major granularity" "${out}"
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 Dockerfile "FROM $(pin python 2)-slim")")"
+assert_deny "version-pins: major-only tag below the floor's major still denied" "${out}"
+# The docs exemption is repo-relative: a clone under a docs/ dir is still enforced.
+RD="${WORK}/docs/app"
+mkdir -p "${RD}" && git -C "${RD}" init -q
+out="$(run_hook check-version-pins.sh "$(json_write "${RD}" s1 "${RD}/compose.yaml" "image: $(pin postgres 11)")")"
+assert_deny "version-pins: an ancestor docs/ dir does not exempt the repo" "${out}"
+out="$(run_hook check-version-pins.sh "$(json_write "${RD}" s1 "${RD}/docs/setup.yaml" "image: $(pin postgres 11)")")"
+assert_empty "version-pins: the repo's own docs/ stays exempt" "${out}"
 
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"compose.yaml\",\"old_string\":\"$(pin postgres 11)\",\"new_string\":\"$(pin postgres 18)\"}}")"
 assert_empty "version-pins: upgrade edit silent (F13, old value ignored)" "${out}"
@@ -367,6 +379,13 @@ out="$(run_hook check-write-nudges.sh "$(json_write "${R1}" sA src/app.ts 'x')")
 assert_ctx "spec-before-code: first code write nudges" "${out}"
 printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: first write carries scaffold clause (${out})"
 printf '%s' "${out}" | grep -q 'Spec-first check' && ok || bad "spec-before-code: first write carries spine clause (${out})"
+
+# A worktree under .claude/worktrees/ is a repo of its own: the ancestor .claude/
+# must not classify its code as spec (which would exempt it from every nudge).
+RW="${WORK}/host/.claude/worktrees/wt"
+mkdir -p "${RW}" && git -C "${RW}" init -q
+out="$(run_hook check-write-nudges.sh "$(json_write "${RW}" sW "${RW}/src/app.ts" 'x')")"
+printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "write-nudges: a worktree under .claude/ still nudges (${out})"
 
 # Second DISTINCT file, same session+repo, still no mise.toml: spine fired once
 # already, but the SCAFFOLD nudge re-fires - and ONLY the scaffold clause.
@@ -2736,6 +2755,10 @@ assert_eq "action_root: unresolvable path falls back to cwd's root" \
 
 assert_eq "git_c_target: extracts -C target" \
 	"$(steer_git_c_target 'git -C backend push origin main')" "backend"
+assert_eq "git_c_target: unquotes a double-quoted target, spaces kept" \
+	"$(steer_git_c_target 'git -C "/x/my repo" push origin main')" "/x/my repo"
+assert_eq "git_c_target: unquotes a single-quoted target" \
+	"$(steer_git_c_target "git -C '/y' push")" "/y"
 assert_eq "git_c_target: extracts from a compound command" \
 	"$(steer_git_c_target 'cd /tmp && git -C backend push && echo ok')" "backend"
 steer_git_c_target 'git push origin main' >/dev/null &&
@@ -3073,6 +3096,11 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp10 'gh pr edit 12 -
 assert_empty "stacked-pr: edit without --base silent" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp11 'gh pr list --base feat/a')")"
 assert_empty "stacked-pr: read-only pr command silent" "${out}"
+# A flag-like word inside --title/--body text is prose, not the base.
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp12 'gh pr create --base main --title "Fix x" --body "run git checkout -B scratch then test"')")"
+assert_empty "stacked-pr: -B inside the body is not the base" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp13 'gh pr create --base "feat/a" --title "t y"')")"
+assert_ask "stacked-pr: quoted base still read beside a quoted title" "${out}"
 # The default branch comes from origin/HEAD when the clone records one.
 SP_TRUNK="$(git_repo sp_trunk trunk)"
 git -C "${SP_TRUNK}" symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
