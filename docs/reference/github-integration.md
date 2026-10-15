@@ -64,8 +64,8 @@ product-repo-facing version of this.
 
 ## Dependabot - dependency updates + scoped auto-merge (default)
 
-`/steer:setup init` and `/steer:setup adopt` install two files (sources under
-`plugins/steer/templates/github/`):
+`/steer:setup init` and `/steer:setup adopt` install one file and one CI job
+(sources under `plugins/steer/templates/github/`):
 
 - **`.github/dependabot.yml`** - the `github-actions` ecosystem is enabled live
   (every scaffolded repo ships workflows); the `npm` / `pip` / `docker` /

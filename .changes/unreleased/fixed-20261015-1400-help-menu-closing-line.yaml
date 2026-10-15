@@ -5,7 +5,8 @@ body: |-
       run of the 7.9.0 routing sweep, against its own instruction to end on the last
       journey group and the output rule's ban on closing reassurance. The skill now
       names the line as forbidden: the *More* fold's label already says it once,
-      and only the Markdown-fallback note may follow the menu.
+      and only the skill's own Artifact line - the Markdown-fallback note, or the
+      offer of the shareable version - may follow the menu.
 time: 2026-10-15T14:00:00.000000-04:00
 custom:
     Slug: help-menu-closing-line

@@ -42,7 +42,7 @@ A tracker this skill can update keeps two things in its page database:
   | Field | Values | Page label |
   |---|---|---|
   | `trStatus` | `not_started` / `in_progress` / `received` / `blocked` - has the client's input arrived | TR status |
-  | `delivery` | `planned` / `in_progress` / `done` / `at_risk` - our delivery of the item | E22 delivery |
+  | `delivery` | `planned` / `in_progress` / `done` / `at_risk` - our delivery of the item | Delivery |
   | `trOwner` | free text - the person on the client side | TR owner |
   | `sessionDate` | `YYYY-MM-DD`, or `""` to clear | session date |
   | `nextStep` | free text, replaces the previous one | next step |

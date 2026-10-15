@@ -98,8 +98,9 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 | `noncallable-gateway` | `<skill>` is `user-invocable: false` and **no** door absorbed it - `spec-scaffold` and `tracker-sync`, which an owning skill drives mid-procedure | **human decision** - route to a front door (`spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
 
-Three `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
-name in the scanner (`MODEL_ONLY`): `reference`, `report` and `loop`. Live prose
+Four `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
+name in the scanner (`MODEL_ONLY`): `reference`, `report`, `loop` and
+`weekly-update`. Live prose
 names them as a delegation ("Claude loads `/steer:reference gates`", rule 53's
 "Scaffold loops with `/steer:loop`"), not as something
 the reader types, and unlike an absorbed mode none has a front door to be
