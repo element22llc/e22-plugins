@@ -3,6 +3,45 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.10.0
+
+- **Security: Dependabot auto-merge no longer approves, and merges only the
+  commit CI tested.** The standalone `dependabot-auto-merge.yml` approved
+  with `GITHUB_TOKEN` after a wait, so a commit pushed onto the Dependabot
+  branch in that window got the bot approval. It also needed the repo-wide
+  "Allow GitHub Actions to create and approve pull requests" grant, and it
+  could never merge on a private GitHub Free repo. It is now the
+  `dependabot-auto-merge` job at the end of `ci.yml`: it runs after `ci` in
+  the same run, refuses unless every commit on the PR is Dependabot's, and
+  merges the tested head directly. Where protection requires a review (the
+  `team` profile) the bump now waits for a human. `policy/branch-protection.yml`
+  drops `actions_can_approve_pull_requests` and `allow_auto_merge` (schema
+  6), `/steer:setup protect` offers to turn the Actions approval grant off,
+  and `/steer:setup sync` migrates existing repos.
+- **Fixed: the capability menu no longer ends with a "you don't need to type
+  these" line.** `/steer:next capabilities` appended that reassurance in every
+  run of the 7.9.0 routing sweep, against its own instruction to end on the last
+  journey group and the output rule's ban on closing reassurance. The skill now
+  names the line as forbidden: the *More* fold's label already says it once,
+  and only the skill's own Artifact line - the Markdown-fallback note, or the
+  offer of the shareable version - may follow the menu.
+- **Added: `/steer:weekly-update` - a week's progress applied to an
+  Artifact-hosted project tracker.** Tell it the week in plain words and it
+  maps them to the tracker's items, previews every change, and on a yes
+  writes them with a matching Activity log entry. It works with any tracker
+  page that keeps an `items` register in its shared database (status, owner,
+  session date, next step, plus dated client answers, added requirements
+  and notes that append rather than overwrite) and speaks one update format,
+  `steer.tracker-update/v1`. Copilot cannot reach an Artifact's database, so
+  there it produces the same packet for the page's import box. Internal and
+  rule-reached: the router sends a weekly tracker update here, and progress
+  reports stay with `/steer:status`.
+- **Fixed: shipped references now agree with the Dependabot and
+  weekly-update changes.** The `dependabot.yml` header says patch/minor
+  bumps wait for a human where protection requires a review, and
+  `INVOCATION.md` lists `weekly-update` among the skills the invocation
+  scanner exempts.
+
 ## 7.9.0
 
 - **Changed: the router rule now holds only routing.** The auto-memory
