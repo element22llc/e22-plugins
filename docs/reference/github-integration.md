@@ -73,45 +73,46 @@ product-repo-facing version of this.
   stack** (`terraform` is the one an `infra` repo needs) (mirroring how
   `ci.yml` gates stack steps). Updates are grouped, and **major** bumps are
   `ignore`d - they're deferred to a deliberate `policy/versions.yml` decision.
-- **`.github/workflows/dependabot-auto-merge.yml`** - approves a Dependabot
-  **patch/minor** PR and arms GitHub's native auto-merge, pinned to its head
-  commit, so branch protection's required checks decide when it merges. The job
-  finishes in seconds; no billed runner waits on CI. **Major** bumps are never
+- **The `dependabot-auto-merge` job in `.github/workflows/ci.yml`** - runs after
+  `ci` (`needs: ci`) in the same run and merges a Dependabot **patch/minor** PR
+  directly, pinned to the head `ci` just tested (`--match-head-commit`). It never
+  approves and never arms native auto-merge. **Major** bumps are never
   auto-merged; they get a "left for a human" comment.
 
 ### The review-gate exception
 
 steer normally requires a human-approved PR before anything lands on `main`. The
-auto-merge workflow is a **deliberate, documented exception**: dependency bumps
-don't touch application logic, so the human *review* is waived. It is **not** a
-waiver of the tests - auto-merge lands the PR only once every **required** check
-passes, and the workflow refuses to arm it unless each check in its
-`GATING_CHECKS` list (`ci` by default) is required on the default branch. A bump
-that breaks tests, lint, or the version-pin scan never lands; a check that should
-gate the bump belongs in `policy/branch-protection.yml`'s required `contexts`. **CI, not a human, is what guarantees the bump is safe.** The exception is
-declared in `policy/branch-protection.yml` and the scaffold `README.md`
-branch-protection section.
+auto-merge job is a **deliberate, documented exception**: dependency bumps don't
+touch application logic, so the human *review* is waived. It is **not** a waiver
+of the tests - the job only runs once `ci` passed on that exact commit, and a job
+gates the merge only if it is in the auto-merge job's `needs`. A bump that breaks
+tests, lint, or the version-pin scan never lands. **CI, not a human, is what
+guarantees the bump is safe.** The exception is declared in
+`policy/branch-protection.yml` and the scaffold `README.md` branch-protection
+section.
 
-!!! note "Bot approval is scoped to Dependabot; the merge is GitHub's"
-    The approval is gated by the workflow's
-    `if: github.event.pull_request.user.login == 'dependabot[bot]'` guard. The guard
-    reads the PR's **author**, deliberately not `github.actor` - that names the last
-    actor to touch the context, so a crafted HEAD commit can make it report
-    `dependabot[bot]` while the rest of the branch is the attacker's. Native
-    auto-merge needs GitHub's repo-wide `allow_auto_merge` setting, which offers the
-    button on every PR; it never loosens a PR's protection - any PR merged through
-    it still needs its required checks and reviews.
+Because it never approves, the exception fires only where branch protection
+requires no review: the `solo` profile, or a repo with no protection at all (a
+private repo on GitHub Free). Under the `team` profile the job leaves a notice and
+the bump waits for a human approval like any PR.
 
-`/steer:setup protect` enables the repo settings the exception relies on - Dependabot
-**alerts** and **security updates** (so security PRs get opened) - alongside secret
-scanning. When the workflow is installed it also checks **"Allow GitHub Actions to
-create and approve pull requests"**, which the workflow's `GITHUB_TOKEN` approval
-needs, and enables it only on confirmation: it lets any workflow approve any PR, so
-a writer could self-approve through a workflow on their own branch. It likewise
-checks **"Allow auto-merge"** and that every `GATING_CHECKS` entry is a required
-check. A `GITHUB_TOKEN`-armed merge also triggers no `push` workflows, so a bot-merged bump does not deploy
-non-prod on its own. It configures settings only; GitHub performs the merge.
-`/steer:setup sync` keeps both files wired (the `dependency-automation` capability).
+!!! note "Scoped to Dependabot's own commits"
+    The job runs only when the PR's **author** (`pull_request.user.login`) and
+    the pusher of this head (`github.actor`) are both `dependabot[bot]`; either
+    alone can be moved by a writer. Before merging it lists the PR's commits and
+    refuses unless every one is authored by `dependabot[bot]`, committed by
+    `web-flow` and signature-verified, so a commit anyone else pushes onto the
+    branch takes the PR out of the exception.
+
+`/steer:setup protect` enables Dependabot **alerts** and **security updates** (so
+security PRs get opened) alongside secret scanning. The exception needs no other
+repo setting. protect reports a live **"Allow GitHub Actions to create and approve
+pull requests"** as drift - the retired approve-based design asked for it, and it
+lets any workflow approve any PR - and turns it off on confirmation. A
+`GITHUB_TOKEN` merge triggers no `push` workflows, so a bot-merged bump does not
+deploy non-prod on its own. `/steer:setup sync` keeps the job wired (the
+`dependency-automation` capability) and migrates a repo off the old standalone
+`dependabot-auto-merge.yml`.
 
 ## Production promotion gate
 

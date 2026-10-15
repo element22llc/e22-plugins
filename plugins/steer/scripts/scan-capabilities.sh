@@ -308,18 +308,21 @@ fi
 
 # --- dependency-automation - Dependabot + the scoped auto-merge exception ---
 dbc=".github/dependabot.yml"
+dbj=".github/workflows/ci.yml"
 dbw=".github/workflows/dependabot-auto-merge.yml"
-da_files="$dbc,$dbw"
-if ! exists "$dbc" && ! exists "$dbw"; then
+da_files="$dbc,$dbj"
+if exists "$dbw"; then
+	# The retired standalone workflow approves with a repo-wide grant; its
+	# migration replaces it with the ci.yml job.
+	emit "dependency-automation" "mis-wired" "$da_files,$dbw"
+elif ! exists "$dbc" && ! has "$dbj" "dependabot\[bot\]"; then
 	emit "dependency-automation" "absent" "$da_files"
-elif ! exists "$dbc" || ! exists "$dbw"; then
-	emit "dependency-automation" "mis-wired" "$da_files"
-elif has "$dbw" "dependabot\[bot\]" && has "$dbw" "update-type"; then
+elif exists "$dbc" && has "$dbj" "dependabot\[bot\]" && has "$dbj" "update-type" &&
+	has "$dbj" "match-head-commit"; then
 	emit "dependency-automation" "present-wired" "$da_files"
 else
-	# Both files exist but the workflow lost its actor guard or its update-type
-	# gating: auto-merge not scoped to dependabot[bot] patch/minor is worse than
-	# no automation, so report wired-but-wrong rather than present.
+	# Auto-merge not scoped to dependabot[bot] patch/minor on the tested head is
+	# worse than no automation, so report wired-but-wrong rather than present.
 	emit "dependency-automation" "mis-wired" "$da_files"
 fi
 

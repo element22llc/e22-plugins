@@ -197,37 +197,28 @@ Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`acti
 #### Dependabot - and the auto-merge exception
 
 [`.github/dependabot.yml`](.github/dependabot.yml) keeps dependencies patched. The
-paired [`dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml)
-workflow is a **deliberate, documented exception** to the human-review rule above:
-because dependency bumps don't touch application logic, steer **auto-approves and
-auto-merges the low-risk subset - patch and minor updates** (where most security
-fixes land). **Major** bumps are never auto-merged: they can carry breaking changes
-and may need a [`policy/versions.yml`](policy/versions.yml) decision, so a human
-reviews them. Every ecosystem also carries a 7-day `cooldown`: Dependabot proposes
-a version only once it has been public for a week - the same supply-chain guard as
-pnpm's `minimumReleaseAge` - so a hijacked release is usually yanked before
-auto-merge could land it. Security updates ignore the cooldown and arrive at once.
+`dependabot-auto-merge` job at the end of [`ci.yml`](.github/workflows/ci.yml) is
+a **deliberate, documented exception** to the human-review rule above: because
+dependency bumps don't touch application logic, steer **auto-merges the low-risk
+subset - patch and minor updates** (where most security fixes land). **Major**
+bumps are never auto-merged: they can carry breaking changes and may need a
+[`policy/versions.yml`](policy/versions.yml) decision, so a human reviews them.
+Every ecosystem also carries a 7-day `cooldown`: Dependabot proposes a version
+only once it has been public for a week - the same supply-chain guard as pnpm's
+`minimumReleaseAge` - so a hijacked release is usually yanked before auto-merge
+could land it. Security updates ignore the cooldown and arrive at once.
 
-This waives only the human *review*, never the tests: the workflow approves the
-bump and arms GitHub's native **auto-merge**, so it lands only once branch
-protection's **required** checks pass - a required check that fails blocks it
-(GitHub counts a *skipped* job as passing, so keep `ci` unconditional). Each check in the workflow's `GATING_CHECKS` list (`ci` by default -
-add your e2e or integration jobs, and require them in
-[`policy/branch-protection.yml`](policy/branch-protection.yml)) must be required,
-or the workflow refuses to arm the merge. Nothing waits on a billed runner. A bump
-that breaks tests, lint, or the version-pin scan never lands - **CI, not a human,
-is what guarantees the bump is safe.** Native auto-merge needs the repo-wide
-**"Allow auto-merge"** setting, which offers the button on every PR; a PR still
-merges through it only once its own protection, reviews included, is satisfied.
-`/steer:setup protect` enables it, plus Dependabot alerts + security updates (so
-security PRs get opened); the merge itself is GitHub's, not protect's.
+This waives only the human *review*, never the tests: the job runs after `ci` in
+the same run and merges only the commit `ci` just tested (`--match-head-commit`).
+A bump that breaks tests, lint, or the version-pin scan never lands - **CI, not a
+human, is what guarantees the bump is safe.** To gate on another job (e2e,
+integration), add it to the auto-merge job's `needs`. It merges only when every
+commit on the PR is Dependabot's own, so a commit anyone else pushes onto the
+branch takes the PR out of the exception.
 
-The workflow approves with `GITHUB_TOKEN`, which needs **Settings -> Actions ->
-General -> "Allow GitHub Actions to create and approve pull requests"**;
-`/steer:setup protect` checks it and turns it on when you confirm. The trade-off:
-with it on, *any* workflow can approve *any* PR, so someone with write access could
-self-approve through a workflow on their own branch. A merge made with
-`GITHUB_TOKEN` also triggers no `push` workflows, so a bot-merged bump does not
-deploy to non-prod by itself - the next human merge carries it. Want neither? Delete
-that workflow - Dependabot PRs then go through the same human gate as everything
-else.
+It never approves, so it needs no repo setting and works without branch
+protection. Where protection requires a review (the `team` profile), it leaves
+the bump for a human instead. A merge made with `GITHUB_TOKEN` triggers no `push`
+workflows, so a bot-merged bump does not deploy to non-prod by itself - the next
+human merge carries it. Don't want the exception? Delete that job - Dependabot
+PRs then go through the same human gate as everything else.

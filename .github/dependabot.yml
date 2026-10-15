@@ -9,7 +9,7 @@
 # ecosystem, a 7-day `cooldown` on every ecosystem, and **majors are left for a
 # human** (they can carry breaking changes and may need a `policy/versions.yml`
 # floor decision). There is no
-# `dependabot-auto-merge.yml` here - unlike a product repo, every bump in the
+# Dependabot auto-merge job here - unlike a product repo, every bump in the
 # standards repo is reviewed by a maintainer before merge.
 version: 2
 

@@ -1693,6 +1693,19 @@ cp "${PLUGIN}/hooks/lib/questions.sh" "${CRQ}/scripts/spec-questions.sh"
 capscan "${CRQ}"
 assert_eq "cap: question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
 
+# dependency-automation: wired by ci.yml's job; the retired standalone workflow is mis-wired.
+CRD="${WORK}/capDep"
+mkdir -p "${CRD}/.github/workflows"
+capscan "${CRD}"
+assert_eq "cap: dependency-automation absent" "$(capstatus "${out}" dependency-automation)" "absent"
+printf 'version: 2\n' >"${CRD}/.github/dependabot.yml"
+cp "${PLUGIN}/templates/github/workflows/ci.yml" "${CRD}/.github/workflows/ci.yml"
+capscan "${CRD}"
+assert_eq "cap: dependency-automation present-wired" "$(capstatus "${out}" dependency-automation)" "present-wired"
+printf 'on: pull_request\n' >"${CRD}/.github/workflows/dependabot-auto-merge.yml"
+capscan "${CRD}"
+assert_eq "cap: retired auto-merge workflow -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+
 # agent-surface-current: the retired-surface check keys on steer's OWN artifacts.
 # The migration that retires .github/prompts/ deliberately leaves a team-authored
 # prompt file - and the directory around it - in place, so testing the directory

@@ -94,6 +94,51 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - Dependabot auto-merge moves into `ci.yml` and stops approving
+
+- **What & why:** the standalone `dependabot-auto-merge.yml` approved with
+  `GITHUB_TOKEN` after a wait, so a commit pushed onto the Dependabot branch in
+  that window received the bot approval. It also needed the repo-wide "Allow
+  GitHub Actions to create and approve pull requests" grant, which lets any
+  workflow approve any PR. And it could never merge on a private GitHub Free
+  repo, where no check can be required. It is now the `dependabot-auto-merge`
+  job at the end of `ci.yml`: it runs after `ci` in the same run, refuses unless
+  every commit on the PR is Dependabot's, and merges the tested head directly.
+  It never approves, so under a review-requiring profile the bump waits for a
+  human. Tracked as issue #736.
+- **Precondition:** any of these fires -
+
+  ```sh
+  test -f .github/workflows/dependabot-auto-merge.yml && echo "standalone workflow present"
+  grep -nE '^(allow_auto_merge|actions_can_approve_pull_requests):' policy/branch-protection.yml 2>/dev/null
+  ```
+
+  No output => already migrated, or the repo never had the exception => no-op.
+  When this fires, skip the older entries that edit the standalone workflow
+  (v6.4.0, v7.2.1, v7.3.0, and step 4 of the SHA-pinning entry): this one
+  deletes the file they edit.
+- **Action:** read-then-propose; show the diff.
+  - `.github/workflows/ci.yml`: splice in the `dependabot-auto-merge` job from
+    `templates/github/workflows/ci.yml` after the last job, additively. Map each
+    `GATING_CHECKS` entry the old workflow named beyond `ci` into the job's
+    `needs` when it is a job in `ci.yml`. One that lives in another workflow
+    cannot gate the merge this way; say so in the PR.
+  - `git rm .github/workflows/dependabot-auto-merge.yml`. A repo that edited
+    that file beyond `GATING_CHECKS` gets those edits named in the PR, not
+    silently dropped.
+  - `policy/branch-protection.yml`: remove the `allow_auto_merge` and
+    `actions_can_approve_pull_requests` keys and the comment block above them,
+    put the template's `# Review-gate exception:` comment in their place, and
+    set `schema: 6` when the file says 4 or 5.
+  - Name `/steer:setup protect` as the follow-up: it reports a live "Allow
+    GitHub Actions to create and approve pull requests" as drift and turns it
+    off on confirmation. The repo-wide "Allow auto-merge" setting is no longer
+    needed either; leave it unless the dev wants it off. If the repo's
+    protection requires a review, tell the dev Dependabot patch/minor PRs now
+    wait for a human approval.
+
+  **No history entry is earned.**
+
 ### v7.8.0 - scaffold `mise.toml` adopts `min_version`, `usage`, `sources` and `--skip-deps`
 
 - **What & why:** the CI workflow ran the test suite twice per PR - its Coverage
@@ -178,6 +223,8 @@ Name the file and say what to carry forward.
 
   No output => already migrated, the file is absent, or the repo rewrote the step
   => no-op.
+  Superseded once the entry *Dependabot auto-merge moves into `ci.yml`* fires:
+  skip this one then.
 - **Action:** a **section re-take**. Replace the step from its `- name: Wait for
   every check, approve, merge (patch/minor)` line up to the next `- name:` with the
   step from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
@@ -256,6 +303,8 @@ Name the file and say what to carry forward.
 
   No output => already migrated, the file is absent, or the repo rewrote the step
   => no-op.
+  Superseded once the entry *Dependabot auto-merge moves into `ci.yml`* fires:
+  skip this one then.
 - **Action:** a **section re-take**. Replace the step from its `- name: Approve,
   wait for CI, merge (patch/minor)` line up to the next `- name:` with the step
   from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
@@ -547,6 +596,8 @@ Name the file and say what to carry forward.
   A repo without the file is `n/a` - creating it is
   [`CAPABILITIES.md`](CAPABILITIES.md)'s `dependency-automation` repair, not this
   entry's.
+  Superseded once the entry *Dependabot auto-merge moves into `ci.yml`* fires:
+  skip this one then.
 - **Action:** add the two read scopes to the **top-level** `permissions:` map,
   leaving the existing write scopes alone:
 
