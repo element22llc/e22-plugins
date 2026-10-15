@@ -1496,6 +1496,7 @@ RULE_REACHED_SKILLS = {
     "reference": "rule 00, plus the /steer:reference cross-references in rules 10/30/45/61/85",
     "report": "rule 00's self-report passage",
     "loop": "rule 53 (carried only by a repo that declared the automation opt-in)",
+    "weekly-update": "rule 00's weekly-update routing line",
 }
 
 _MODEL_ONLY_RE = re.compile(r'^MODEL_ONLY="\s*([a-z0-9 _-]*?)\s*"', re.MULTILINE)

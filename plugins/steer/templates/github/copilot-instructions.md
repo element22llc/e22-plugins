@@ -57,6 +57,9 @@ Issue-first requires one. Backlog work with no implementation this turn is
 `/steer:work issues`. Promotion to production is `/steer:work promote` (it cuts
 the changelog, opens the PR, and stops at the merge); a production incident is
 `/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`.
+A week's progress for a project tracker hosted as a claude.ai Artifact (a page
+with a shared `items` register) goes to `/steer:weekly-update`; a progress
+report for a reader stays `/steer:status`.
 
 **Front doors** detect context and hand off, so you rarely route to a
 specialized skill directly - each internal skill's description names the door

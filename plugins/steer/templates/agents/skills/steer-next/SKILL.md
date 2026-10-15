@@ -1,6 +1,6 @@
 ---
 name: steer-next
-description: Read-only workspace navigator and capability index - the default mode reconstructs workspace state cold (branch/PR, features, open questions, Proposed ADRs, tracker issues, claims, version drift) and arbitrates the single best next action; `capabilities` renders the plain-language capability menu. Never edits, commits, merges, or advances state.
+description: Read-only workspace navigator and capability index - the default mode reconstructs workspace state cold (branch/PR, features, questions, ADRs, issues, claims, version drift) and arbitrates the single best next action; `capabilities` renders the plain-language capability menu.
 argument-hint: '[capabilities] [optional constraints, e.g. ''only feature-x'', ''no tracker writes'']'
 ---
 
