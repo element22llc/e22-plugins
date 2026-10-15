@@ -1,6 +1,6 @@
 ---
 name: steer-status
-description: Client-facing progress reporting - the default modes cover the whole /spec spine over a time window (what shipped, what is in progress, what needs the client's input, what is next); `feature <id>` renders one feature in depth instead. A shareable Claude Artifact with a Markdown fallback, read-only and derived; never fabricates counts, dates, or status.
+description: Client-facing progress reporting - the default modes cover the whole /spec spine over a time window (what shipped, what is in progress, what needs the client's input, what is next); `feature <id>` renders one feature in depth instead. A shareable Artifact; read-only, never fabricates.
 argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
 ---
 
@@ -217,6 +217,8 @@ session needs anyway, since steer does not store it (see the "Updating a previou
   skill's own `feature <id>` mode, a different scope rather than a different door.
 - **Not** a spec author or a tracker writer - it renders what `/spec` and the
   tracker already say and writes nothing back.
+- **Not** the weekly tracker update - applying a week's progress to an
+  Artifact-hosted project tracker is `/steer-weekly-update`.
 - **Not** an auto-publisher - no scheduled or per-window generation by the plugin;
   a human runs it when a report is wanted.
 

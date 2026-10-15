@@ -1,6 +1,6 @@
 ---
 name: next
-description: "Read-only workspace navigator and capability index - the default mode reconstructs workspace state cold (branch/PR, features, open questions, Proposed ADRs, tracker issues, claims, version drift) and arbitrates the single best next action; `capabilities` renders the plain-language capability menu. Never edits, commits, merges, or advances state."
+description: "Read-only workspace navigator and capability index - the default mode reconstructs workspace state cold (branch/PR, features, questions, ADRs, issues, claims, version drift) and arbitrates the single best next action; `capabilities` renders the plain-language capability menu."
 when_to_use: >-
   Use when picking a repo up cold or mid-stream and asking "what should I do
   next?", "where do I start?", or "I'm lost" - when work spans workflows and you

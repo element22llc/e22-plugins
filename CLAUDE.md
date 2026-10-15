@@ -53,8 +53,9 @@ plugins/steer/
 │                                   #           (-> spec); issues, tidy (-> work); explain
 │                                   #           (-> status); help (-> next); spec-scaffold,
 │                                   #           tracker-sync (gateways, called by many
-│                                   #           skills); reference, report, loop (reached
-│                                   #           by a rule; loop behind the automation opt-in)
+│                                   #           skills); reference, report, loop,
+│                                   #           weekly-update (reached by a rule; loop
+│                                   #           behind the automation opt-in)
 │                                   # (no commands/ - see "invocation syntax" below)
 └── templates/
     ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,
@@ -69,7 +70,7 @@ plugins/steer/
     │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
     │                               #   (copilot-instructions.md, agents/, instructions/ -
     │                               #    via `mise run gen:copilot`)
-    ├── agents/skills/              # GENERATED cross-tool skill surface (all 27 skills in the
+    ├── agents/skills/              # GENERATED cross-tool skill surface (all 28 skills in the
     │                               #   open Agent Skills format) - consumers install it as
     │                               #   .agents/skills/; via `mise run gen:copilot`
     └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, ...)
