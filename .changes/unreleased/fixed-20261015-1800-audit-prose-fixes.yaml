@@ -1,0 +1,12 @@
+kind: Fixed
+body: |-
+    - **Fixed: shipped prose that disagreed with this release's own changes.**
+      The capability menu again offers its shareable Artifact version, which the
+      new no-closing-line instruction had forbidden; the `dependabot.yml` header
+      says patch/minor bumps wait for a human where protection requires a review;
+      `INVOCATION.md` counts `weekly-update` among the four skills the invocation
+      scanner exempts; and `/steer:weekly-update` logs the delivery column as
+      `Delivery` rather than an org-branded label.
+time: 2026-10-15T18:00:00.000000-04:00
+custom:
+    Slug: audit-prose-fixes
