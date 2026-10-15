@@ -98,7 +98,8 @@ exactly this:
      - an `update` per changed item, `if_version` pinned, carrying the changed
        fields, the rebuilt `notes` for a `note`, `updatedAt` (now) and
        `updatedBy: ""`;
-     - a `set` of `meta/log`, `if_version` pinned, with one entry per changed
+     - a `set` of `meta/log`, `if_version` pinned (unpinned only when the page
+       has no log yet), with one entry per changed
        field appended (`by: ""`, `field: "note added"` and `to: <note>` for a
        note) and the list trimmed to the last 300.
 
