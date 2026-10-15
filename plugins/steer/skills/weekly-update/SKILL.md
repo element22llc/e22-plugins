@@ -24,10 +24,9 @@ GitHub from here.
 A tracker this skill can update keeps two things in its page database:
 
 - **`items`** - one document per scope item, document id = item id (`A1`,
-  `C3`). Plan fields (`title`, `section`, `requirement`, `blocks`, `owner`,
-  `resources`, `startWeek`, `endWeek`, `days`, `trComment`, `issue`, `order`,
-  `source`) are the plan and are **never** written from an update. The
-  updatable fields are exactly:
+  `C3`). Plan fields (`title`, `section`, `blocks`, `owner`, `resources`,
+  `startWeek`, `endWeek`, `days`, `issue`, `order`, `source`) are **never**
+  written from an update. The updatable fields are exactly:
 
   | Field | Values | Page label |
   |---|---|---|
@@ -36,7 +35,9 @@ A tracker this skill can update keeps two things in its page database:
   | `trOwner` | free text - the person on the client side | TR owner |
   | `sessionDate` | `YYYY-MM-DD`, or `""` to clear | session date |
   | `nextStep` | free text, replaces the previous one | next step |
-  | `notes` | internal notes - never replaced by an update, see `note` below | notes |
+  | `notes` | internal notes - append-only, via `note` | note added |
+  | `trComment` | the client's answers - append-only, via `trAnswer` | TR answer |
+  | `requirement` | what the client asked for - append-only, via `requirementAdd` | requirement added |
 
   Every item write also sets `updatedAt` (ISO 8601 time) and `updatedBy`.
 - **`meta/log`** - `{ "entries": [{ "at", "by", "item", "field", "from", "to" }] }`,
@@ -59,17 +60,23 @@ exactly this:
   "asOf": "2026-10-16",
   "updates": [
     { "id": "A2", "trStatus": "received", "nextStep": "Wire the DEV credentials into the cluster", "note": "Databases provisioned by the infrastructure team" },
-    { "id": "C3", "delivery": "at_risk", "note": "Immuta access still pending; likely slips to W6" }
+    { "id": "C3", "delivery": "at_risk", "trAnswer": "Immuta access approved for DEV only" },
+    { "id": "D1", "requirementAdd": "DQ results must also reach the weekly governance digest" }
   ]
 }
 ```
 
-- **Only real ids, only the five set fields plus `note`.** Enum values are the
-  keys (`received`), never the labels.
+- **Only real ids, only the five set fields plus the three append fields.**
+  Enum values are the keys (`received`), never the labels.
 - **Changed fields only.** Leave out anything the week did not change; an
   empty `updates` list is a valid answer.
-- **`note` appends, never replaces.** It becomes the line `<asOf>: <note>` at
-  the top of the item's `notes`.
+- **Append fields never replace.** `note` and `trAnswer` become the line
+  `<asOf>: <text>` at the top of `notes` / `trComment`; `requirementAdd` is
+  added at the end of `requirement` as `Added <asOf>: <text>`, after a blank
+  line.
+- **A new scope item is not a packet change.** It is plan structure (stream,
+  weeks, owner, engineers): point the user at the page's **Record an update**
+  box, type *New scope item*.
 - **`asOf`** is the date the update describes - today unless the user says
   otherwise. Relative dates ("Thursday") resolve against it.
 - **Never invent.** A field moves only when the user's words say it did. "TR
@@ -96,12 +103,12 @@ exactly this:
 6. **Apply.**
    - **Claude Code:** one `ArtifactData` `batch`:
      - an `update` per changed item, `if_version` pinned, carrying the changed
-       fields, the rebuilt `notes` for a `note`, `updatedAt` (now) and
-       `updatedBy: ""`;
+       fields, the rebuilt `notes` / `trComment` / `requirement` for an
+       append field, `updatedAt` (now) and `updatedBy: ""`;
      - a `set` of `meta/log`, `if_version` pinned (unpinned only when the page
        has no log yet), with one entry per changed
-       field appended (`by: ""`, `field: "note added"` and `to: <note>` for a
-       note) and the list trimmed to the last 300.
+       field appended (`by: ""`; for an append field, `field` is its page label
+       above, `from` is `""` and `to` is the appended text) and the list trimmed to the last 300.
 
      A pinned write that fails means someone edited the page meanwhile:
      re-read, rebuild that item's diff, and preview again if it changed.
@@ -114,8 +121,9 @@ exactly this:
 
 ## Gotchas
 
-- **`notes` is one field the page overwrites whole.** Writing `notes` from a
-  `note` without prepending to the current value erases the team's history.
+- **The append fields are whole fields on the page.** Writing `notes`,
+  `trComment` or `requirement` without keeping the current value erases the
+  history; always rebuild from the value you just read.
 - **`updatedBy` from Claude Code is `""`.** The tool has no viewer id to
   write, and keeping the previous id would credit the wrong person; the page
   then shows no name and Activity says "Someone". The import box records the
