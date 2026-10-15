@@ -114,13 +114,14 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   is current and that *prior* docs changes are live. The post-merge deploy is a
   Phase-B follow-up the user owns (Step B8).
 - **Routing evals, on a minor or major cut.** The model-graded suite
-  (`mise run evals`, ~$50-61) is steer's only check that a plain-language ask
+  (`mise run evals`, ~$23 and an hour) is steer's only check that a plain-language ask
   still lands on its skill, and a minor bump is what moves the surface it reads:
   `rules/00-router.md` and every skill's `description` / `when_to_use`. It is not
   in `mise run ci` because it spends real tokens, so **this is its declared
   cadence** (`plugins/steer/evals/README.md` -> "When it runs"). Run it here in
-  Phase A, before cutting, report `aggregates.meanDelta` in the release PR (B6),
-  and treat a case scoring
+  Phase A, before cutting, report `aggregates.meanDelta` against its ceiling in
+  the release PR (B6), record the sweep with `ledger.py add --latest` in the
+  release commit, and treat a case scoring
   below `--threshold` as a Phase-A finding rather than a footnote. A **patch**
   release skips it - say so rather than leaving the reader guessing. The suite
   needs `plugin eval` early access; where the machine does not have it, say the

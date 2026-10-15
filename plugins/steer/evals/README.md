@@ -433,7 +433,7 @@ each commented in `mise.toml`.
 | `--model claude-sonnet-5-5` | pins the agent under test, so a default-model rollout never reads as a routing regression, and halves the executor cost that is nearly all of a sweep. The suite measures routing **on Sonnet**; forward `-- --model <id>` to measure another |
 | `--judge-model claude-opus-5-5` | the `answer` grader reads exactly that borderline prose; the default `haiku` judge is too coarse for it - authoring the negatives measured that directly: `routes-explain-code-to-none` scored 0.60 under haiku (`answer`: FAIL FAIL FAIL) and 1.00 under sonnet, on a run whose `routed` grader passed both times. A judge call is a few hundred tokens, so the strongest judge costs little; `replay_judge.py --model` defaults to the same |
 | `--threshold 0.6` | gives the exit code meaning: exit 1 if any case scores below it. Default is `1.0`, which fails any imperfect case; `0.6` is exactly the `routed` grader's weight - "entered the right skill even if the prose judge docked it" |
-| `--max-cost-usd 90` | runaway guard, sitting clear of what a healthy sweep costs, so it aborts a runaway (exit 2, partial results) rather than a good run |
+| `--max-cost-usd 90` | runaway guard, sitting well clear of a healthy sweep (~$23), so it aborts a runaway (exit 2, partial results) rather than a good run |
 | `--no-publish` | keeps the HTML report local instead of publishing it to claude.ai (the CLI default where the account supports it). Forward `-- --publish-report` for the link |
 
 Forwarded args override the task's defaults - the CLI takes the last occurrence of
@@ -445,14 +445,33 @@ is the same payload `--json <path>` writes, so there is no need to pass `--json`
 `--threshold` is a floor on the worst case, not the health number.
 
 Deliberately **not** in `mise run ci` - the suite spends real tokens. On the
-default model the 12-case suite measured roughly **$1.00-1.30 per case per run** across both arms (at
-`max_turns: 12`; the with-plugin arm costs ~3× the baseline, which has no rules
-to read). The pinned Sonnet executor is half that model's price, so the 29-case
-suite projects to ~$17-20 at `runs: 1` and ~$50-61 at the task's `runs: 3`, and
-the task's `--max-cost-usd 90` sits clear of it. **That is a projection, not a
-measurement**: re-measure on the first sweep, and whenever case count or a
-`max_turns` changes. The per-mode cases still carry the managed default
-`max_turns: 12` - raise one from its first run's errors and record why.
+pinned Sonnet executor a full 29-case sweep at the task's `runs: 3` **measured
+$22.95 and $22.91** (7.6.0 and 7.9.0, 55 and 61 minutes): about **$0.26 per case
+per run** across both arms - $0.20 with the plugin, $0.06 without, since the
+baseline has no rules to read - of which the Opus judge is ~$3 a sweep. The
+task's `--max-cost-usd 90` sits well clear of it. Re-measure whenever case count
+or a `max_turns` changes; the ledger below keeps every sweep's cost. The per-mode
+cases still carry the managed default `max_turns: 12` - raise one from its first
+run's errors and record why.
+
+**Record every full sweep in the ledger.** `results/` is gitignored and stays
+that way: a sweep is ~1.4 MB, carries local paths, and `evals/` ships with every
+plugin install. The trend lives in `ledger.jsonl` instead - one line per sweep,
+distilled from its `aggregate-result.json`:
+
+```shell
+uv run python plugins/steer/evals/ledger.py add --latest   # after a full sweep
+uv run python plugins/steer/evals/ledger.py                # the trend
+```
+
+`add` refuses a partial run, one without the baseline arm, and one that covered
+fewer cases than the suite holds (`--force` overrides the last; the backfill of
+the 8- and 12-case sweeps used it). Read `meanDelta` against the line's
+`ceiling`, not against 1.0: the negatives score level by construction, so the
+best possible delta is the share of positive cases - 27/29 = 0.93 today. The
+criteria moved between sweeps (the first line still graded `routed` on prose, and
+the executor was unpinned until the 29-case suite), so check `git log --
+plugins/steer/evals/` before reading a jump as the plugin's.
 
 ## When it runs
 
