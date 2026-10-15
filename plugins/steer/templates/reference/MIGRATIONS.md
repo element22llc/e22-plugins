@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - Dependabot auto-merge moves into `ci.yml` and stops approving
+### v7.10.0 - Dependabot auto-merge moves into `ci.yml` and stops approving
 
 - **What & why:** the standalone `dependabot-auto-merge.yml` approved with
   `GITHUB_TOKEN` after a wait, so a commit pushed onto the Dependabot branch in
