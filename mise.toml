@@ -276,17 +276,16 @@ depends = [
 ]
 
 # Model-graded routing evals (`claude plugin eval`). This spends real tokens
-# (~$1.00-1.30 per case per run across both ablation arms), so it is
+# (~$23 and an hour for a full sweep, measured), so it is
 # deliberately NOT in `ci`'s depends and stays off the PR path - run it on
 # the release path or when the routing surface changes. The task runs the whole
 # suite at the health settings; every flag below is load-bearing, and a bare
 # `claude plugin eval` does not exercise this suite.
 #
 # --scaffold is required: each case builds its repo from its own scaffold.sh, which
-# is author-supplied bash the tool will not run unless asked. There are three
-# scaffold variants (managed / greenfield / legacy) because one fixture cannot
-# serve both "route this ask in a bootstrapped repo" and "route this ask in a repo
-# that still needs bootstrapping" - see evals/README.md.
+# is author-supplied bash the tool will not run unless asked. There are five
+# scaffold variants (managed / greenfield / legacy / cluttered / openspec) because
+# one fixture cannot serve every repo state an ask presumes - see evals/README.md.
 #
 # --allow-tools grants the three read-only tracker tools the managed cases list.
 # They are served by the canned stand-ins in evals/mocks/github/ (--mocks defaults
@@ -318,10 +317,8 @@ depends = [
 #
 # --max-cost-usd 90 is a runaway guard, not a budget: the ceiling has to sit clear
 # of a healthy sweep or it aborts one (exit 2, partial results). 29 cases at
-# --runs 3 on a Sonnet executor project to ~$50-61 (the 12-case suite measured
-# ~$1.00-1.30 per case per run on the default model; Sonnet is half its price).
-# Projected, not measured - re-measure on the first sweep and when case count or
-# max_turns changes.
+# --runs 3 on a Sonnet executor measured $22.95 and $22.91 (evals/ledger.jsonl) -
+# re-measure when case count or max_turns changes.
 #
 # The sweep calls the API directly, never through a local proxy: a compressing
 # one corrupts what every run reads. Claude Code applies the user settings `env`
@@ -336,7 +333,8 @@ depends = [
 #
 # No --json: every run already writes that same payload as `aggregate-result.json`
 # next to `report.html` in plugins/steer/evals/results/<timestamp>/, which is
-# gitignored. `--json <path>` only relocates it.
+# gitignored. `--json <path>` only relocates it. Record a full sweep with
+# `uv run python plugins/steer/evals/ledger.py add --latest`.
 #
 # Forwarded args override these defaults (the CLI takes the last occurrence of an
 # option), so `mise run evals -- --case routes-fix-issue-to-work --runs 1` narrows
@@ -344,7 +342,7 @@ depends = [
 # the command line for that reason: it is variadic, and it would swallow them.
 
 [tasks."evals"]
-description = "Run the model-graded routing evals against the plugin (slow, ~$50-61)"
+description = "Run the model-graded routing evals against the plugin (slow, ~$23)"
 run = """
 if [ "${STEER_EVALS_ALLOW_BASE_URL:-}" = 1 ]; then
   claude=claude

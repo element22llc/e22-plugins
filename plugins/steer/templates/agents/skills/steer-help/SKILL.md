@@ -133,7 +133,10 @@ mechanics in `/steer-reference artifacts` - with the temp path
 `<tempdir>/steer-capabilities-menu.html`.
 
 End the menu with the last journey group and nothing after it - no line inviting
-correction, no offer to file a report (rule `03-output` § Responses: no closing offer). A
+correction, no offer to file a report, and no line telling the user they need not
+type these commands or can just describe a goal: the *More* fold's label already
+says that once (rule `03-output` § Responses: no closing offer). The one line that
+may follow is the Markdown-fallback note above. A
 user who wants to flag a misroute says so, and rule `00-router` § When steer itself misbehaves files it
 then; a standing invitation on every menu is tail nobody reads.
 
