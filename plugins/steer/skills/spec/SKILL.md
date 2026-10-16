@@ -2,17 +2,17 @@
 name: spec
 description: "Spec-only brainstorm for a feature - author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. `questions` sweeps the whole spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document and `roadmap` lays unshipped intent on a release timeline. Ends at an approved intent, not a build."
 when_to_use: >-
-  Use to think a feature through before committing to implementation, shape
-  acceptance criteria, or validate a spec's question state. Works spec-only on
+  Use to think a feature through ("grill me", "stress-test this"),
+  shape acceptance criteria, or validate a spec's question state. Works spec-only on
   an unmanaged repo (lite mode) - no bootstrap required. `questions` works down
-  accumulated open questions; as `questions needs` it lists what the client
+  open questions; as `questions needs` it lists what the client
   still owes before a wave (access, tooling, decisions), and as `questions
   bundle` it hands a Product Owner every feature's questions at once as a
   fillable questionnaire; `adr` records a
   hard-to-reverse or cross-cutting choice (stack, database, auth, deployment,
   tenancy) as a numbered ADR, and `adr accept <n>` is the only path from
   Proposed to Accepted. `intake` absorbs a PO's new or re-sent spec, roadmap or
-  requirements document (docx/pptx/xlsx/pdf, a deck or a spreadsheet) by
+  requirements document (docx/pptx/xlsx/pdf, deck or spreadsheet) by
   diffing it against the last version to find what changed; `roadmap` turns
   unshipped intent into a release timeline of milestones.
 argument-hint: "[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all] | questions | adr | intake | roadmap]"
@@ -152,7 +152,23 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    user-facing language: the problem, who it's for, the user-visible outcome,
    and concrete **acceptance criteria**. Keep it stack-free - this is the *what
    and why*, not the *how*. Park anything unresolved under `## Open questions`;
-   **never invent an answer**.
+   **never invent an answer**. Ask in **rounds**, not one question at a time:
+   - **A round is every question you can ask now** - those whose prerequisites
+     are already settled - numbered, in one message. A question whose answer
+     depends on another still open this round waits for the next one. After
+     each round, recompute what the answers unblocked.
+   - **Give each design question your recommended answer**, worded so "yes"
+     accepts it. Never for a gate decision - approving the intent, accepting an
+     ADR - which is never pre-selected (rule `61-gates`).
+   - **Look facts up yourself** (the code, the existing spine); ask the human
+     only for decisions.
+   - **Don't talk through a question only something concrete can answer**
+     ("one long form or three steps?", "how should this feel?"). Record it as a `Q-NNN` to settle with a prototype
+     (`required_before: implementation`) and move on.
+   - **Stop when the rounds run dry** - nothing answerable left unasked,
+     nothing silently assumed - then go to step 4. An answer that is only "ok"
+     to every recommendation decided nothing; say so, and name the choices that
+     still need a real answer.
 4. **Clarify - sweep the draft for gaps** (clarify mode - procedure in
    `MODES.md`) before
    presenting anything for approval: interrogate the draft against the gap

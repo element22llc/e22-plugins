@@ -57,6 +57,9 @@ fixtures:
   - ask: "think this feature through before we write any code"
     skill: spec
     signals: ["brainstorm", "without writing any code"]
+  - ask: "grill me on this feature idea before we commit to it"
+    skill: spec
+    signals: ["grill me", "stress-test"]
   - ask: "help me shape the acceptance criteria for this feature"
     skill: spec
     signals: ["acceptance criteria"]
