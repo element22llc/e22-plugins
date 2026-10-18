@@ -34,7 +34,10 @@ For each gap: check it isn't already answered by the draft or an existing
 question (dedupe by meaning, not wording), then add a `Q-NNN` with `status:
 open`, a sensible `impact:` / `required_before:` (a gap that would change the
 UX or data model is `blocking` at `intent-approval`; polish-class gaps gate
-later), and `owner:`. Close by summarizing what was raised vs. already covered -
+later), and `owner:`. A gap only something concrete can settle - layout, flow
+shape, how an interaction feels - is a `kind: decision` question marked to settle
+with a prototype, gated at `required_before: implementation`, never `blocking`
+at `intent-approval`: no amount of asking answers it. Close by summarizing what was raised vs. already covered -
 a draft that survives the sweep with nothing raised is a *finding worth
 stating*, not a failed run.
 

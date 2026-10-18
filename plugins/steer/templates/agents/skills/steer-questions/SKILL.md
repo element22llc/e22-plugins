@@ -176,7 +176,12 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    split: **product / behavior** ambiguities ("what should delete mean?") ->
    ask the **PO** in plain language; **technical / architectural** ambiguities
    (data model, integration boundary, library choice) -> ask the **dev**. Ask,
-   don't invent; work through them oldest/most-blocking first.
+   don't invent; work through them oldest/most-blocking first, in **rounds**:
+   each round is every question whose prerequisites are settled, numbered, in
+   one message, each with your recommended answer worded so "yes" accepts it.
+   A question that depends on another still open waits for the next round.
+   Never recommend an answer to a gate decision (ADR acceptance, intent
+   approval) - rule `61-gates` forbids pre-selecting it.
 
 6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
    *applying a decision already made is not a new decision*).

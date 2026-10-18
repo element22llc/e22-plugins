@@ -5,8 +5,8 @@ criteria, clarify open questions, validate a spec's question state, and record
 approval evidence.
 
 !!! info "When to use"
-    Use to think a feature through before implementation, shape acceptance
-    criteria, sweep the draft for gaps, validate a spec's question state, or
+    Use to think a feature through before implementation ("grill me",
+    "stress-test this"), shape acceptance criteria, sweep the draft for gaps, validate a spec's question state, or
     refine the spine that `/steer:audit spec` later diffs against the tracker's
     intent.
 
@@ -27,8 +27,8 @@ approval evidence.
 
 | Mode | What it does |
 | --- | --- |
-| `/steer:spec <feature-id>` | Open or shape the feature's `intent.md` + `contract.md`. |
-| `/steer:spec clarify <feature-id>` | Structured de-ambiguation sweep, run before approval - interrogates the draft against the classic gap classes (edge cases, error paths, permissions, data lifecycle, non-functional constraints, out-of-scope boundary) and converts each **real** gap into a `Q-NNN` open question. Never invents an answer. |
+| `/steer:spec <feature-id>` | Open or shape the feature's `intent.md` + `contract.md`. The brainstorm asks in **rounds**: every question whose prerequisites are already settled, numbered, each with a recommended answer that "yes" accepts; a question that depends on one still open waits for the next round. Gate decisions (approving the intent, accepting an ADR) are never pre-selected. A question only something concrete can answer (layout, how an interaction feels) is recorded to settle with a prototype rather than talked through. The interview stops when nothing answerable is left unasked. |
+| `/steer:spec clarify <feature-id>` | Structured de-ambiguation sweep, run before approval - interrogates the draft against the classic gap classes (edge cases, error paths, permissions, data lifecycle, non-functional constraints, out-of-scope boundary) and converts each **real** gap into a `Q-NNN` open question. A gap only a prototype can settle is gated at `required_before: implementation`, never blocking approval. Never invents an answer. |
 | `/steer:spec validate [feature-id \| --all]` | Check the spec's open-question state and structural completeness, plus the cross-artifact **analyze** pass - intent <-> contract <-> tracker consistency and acceptance-criteria quality (all warnings) - and the contract's `### R-NNN` requirement blocks: a duplicate ID fails; a requirement with no Given/When/Then scenario, a test citing a removed ID, or change-oriented wording ("no longer", "previously", ...) warns. |
 | `/steer:spec approve <feature-id>` | Record approval evidence on the intent. One of the three **promptable** gates: it offers **Approve · Reject · Decide later** in-session, showing the acceptance criteria and locked scope, and records the channel alongside the owner + timestamp. A blocking open question gated at `required_before: intent-approval` is a precondition - a failed question gate means the prompt is never shown; a blocking question gated at a *later* transition blocks that gate, not this one. |
 | `/steer:spec questions` | Sweep the **whole spine's** open questions and drive each to an answer - distinct from `clarify`, which interrogates only the draft in hand. `questions needs [--milestone <m>]` sweeps the spine, `policy/*.yml`, ADRs and the wave's issues for what the client still owes before a wave - access to grant, tooling to provision, decisions to make - and proposes one `kind:`-tagged `Q-NNN` per gap with its evidence, written only on the dev's confirmation. `questions bundle [<feature-id>]` renders the PO-answerable ones as one fillable questionnaire (Markdown fallback), grouped by `kind:`; every `access` field says never to paste a secret. Needs the spine. |
