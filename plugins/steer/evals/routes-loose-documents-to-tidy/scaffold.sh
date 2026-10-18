@@ -99,7 +99,7 @@ mkdir -p spec/features/checkout spec/decisions spec/history tests
 cat >spec/.version <<'EOF'
 # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
 # /steer:sync. Do not edit by hand.
-7.10.0
+7.11.0
 EOF
 
 cat >spec/vision.md <<'EOF'
