@@ -7,11 +7,11 @@ and Claude Code loads every skill's ``description`` + ``when_to_use`` into the
 skill listing used for routing. Neither surface is reviewed as a whole in any
 PR - each edit looks small, so the total silently creeps.
 
-This gate makes the total explicit and enforces a **ratchet**: hard ceilings
-set at the measured baseline (plus small headroom) so the always-on weight can
-only shrink or hold, never regress. The aspirational targets from the
-improvement plan (PLAN.md, Phase 1) are reported for visibility but do not
-fail the gate - lowering the ceilings toward them is deliberate, per-PR work.
+This gate makes the totals explicit. Every ceiling it enforces is a limit
+Claude Code itself applies, measured the way Claude Code measures it - never a
+policy number: two policy ratchets (on-disk rules, listing total) were retired
+after each spent its life dictating the wording of correctness fixes (history
+below).
 
 Budgets enforced:
 
@@ -20,11 +20,12 @@ Budgets enforced:
   ``inject-standards.sh`` against a throwaway fixture, so it is what a session
   truly receives (see below). Gated in CHARACTERS against the runtime's cap on
   hook output - per part, and on whole rules dropped;
-- ``LISTING_TOTAL_MAX_CHARS`` - total ``description`` + ``when_to_use``
-  characters across all skills (the always-on routing surface). The *per-skill*
-  1536-char cap lives in ``check_plugin.py``; this is the cross-skill sum.
-- ``SKILL_BODY_MAX_BYTES`` - per-skill ``SKILL.md`` body size, gating the
-  **compaction re-attach cap** (see below).
+- ``SKILL_RENDERED_MAX_CHARS`` - per-skill rendered ``SKILL.md`` size, gating
+  the **compaction re-attach cap** (see below).
+
+Reported, not gated: the skill listing, as the harness formats it, against the
+harness's own listing budget. The *per-skill* 1536-char listing cap is a hard
+gate in ``check_plugin.py``.
 
 Why the injected payload, not the on-disk total
 -----------------------------------------------
@@ -51,10 +52,10 @@ growth in the ``knowledge`` profile.
 
 Tokens, not bytes: the ceilings are expressed in tokens so they can be read
 against a context window, which is the question anyone actually has about this
-surface. Conversion uses the same deliberately pessimistic 3.5 bytes/token this
-file already applies to ``SKILL_BODY_MAX_BYTES`` - measured against
-``cl100k_base`` these rules run ~4.0 B/token, so 3.5 over-reports the cost and
-keeps the gate conservative without adding a tokenizer dependency.
+surface. Conversion uses a deliberately pessimistic 3.5 bytes/token - measured
+against ``cl100k_base`` these rules run ~4.0 B/token, so 3.5 over-reports the
+cost without adding a tokenizer dependency. The token figure is reported only;
+the rules gate itself is in characters.
 
 The compaction cap
 ------------------
@@ -63,7 +64,8 @@ An invoked skill's rendered ``SKILL.md`` enters the conversation and stays there
 for the rest of the session. When auto-compaction fires, Claude Code re-attaches
 the most recent invocation of each skill after the summary but keeps only **the
 first 5,000 tokens of each** (re-attached skills also share a combined 25,000
-token budget). Everything past that point in the file is silently dropped.
+token budget). Everything past that point is cut, leaving only a one-line
+marker that tells the model to Read the skill file for the rest.
 
 That makes an oversized ``SKILL.md`` a *correctness* problem, not just a cost
 one: whatever sits at the tail - historically the Guardrails and Coupling-rules
@@ -79,12 +81,15 @@ them. Two rules follow, and this gate enforces the second:
    just-in-time for the one path it is executing. A file read that way is a tool
    result, not skill content, so it never competes for the re-attach budget.
 
-``SKILL_BODY_MAX_BYTES`` converts the 5,000-token cap into bytes at a
-deliberately **pessimistic** 3.5 bytes/token. Measured against ``cl100k_base``
-these bodies run ~4.0 B/token, and Claude's tokenizer is denser than
-``cl100k_base`` on English prose, so 3.5 leaves margin for the gap between the
-two rather than betting the guardrails on a favourable tokenizer. Gating on
-bytes also keeps this script dependency-free (no tokenizer at check time).
+The "5,000 tokens" is not tokenizer output: Claude Code estimates them as
+``round(len(content) / 4)``, so the cap is exactly 20,000 characters of the
+*rendered* skill - frontmatter stripped, a ``Base directory for this skill:``
+line prepended, ``${CLAUDE_PLUGIN_ROOT}`` expanded to the install path.
+``SKILL_RENDERED_MAX_CHARS`` gates that rendering, with the install path
+modelled long. (Until this re-base the gate charged raw file bytes - frontmatter
+included - at 3.5 B/token, i.e. 17,500 B: a pessimism about a tokenizer the
+harness never runs, which left skills at "100% of cap" ~15% short of the real
+one.)
 
 Run from the repo root::
 
@@ -171,7 +176,7 @@ def _fixture_code_max(d: Path) -> None:
 # registered PARTS times in hooks.json, each invocation emitting one part of a
 # deterministic partition, and every part has to stay under the cap on its own.
 #
-# These constants are in the same class as SKILL_BODY_MAX_BYTES below: derived
+# These constants are in the same class as SKILL_RENDERED_MAX_CHARS below: derived
 # from harness behaviour, NOT policy. They do not move down as the ruleset
 # shrinks and must never be raised to fit new prose. The hook carries the same
 # two numbers (STEER_INJECT_CAP / STEER_INJECT_PART_BUDGET); a test pins them
@@ -249,7 +254,7 @@ def hook_parts(root: Path) -> int:
 
 
 # Ceilings are sized to buy roughly ONE whole additional rule (the mean rule is
-# ~1,875 B ≈ 536 tokens), on the same basis LISTING_TOTAL_MAX_CHARS states below:
+# ~1,875 B, ~536 tokens), on the same basis the retired listing ratchet states below:
 # the smallest headroom under which "trade prose out first" stays a real policy
 # choice rather than the only physically available move. The whole lesson of the
 # retired-ratchet history below is that a 5-to-32-byte margin makes the ceiling
@@ -554,6 +559,22 @@ def tokens(byte_count: int) -> int:
 # release notes that cite it; NOT enforced. The live ceilings are per-profile in
 # INJECTED_PROFILES.
 RULES_ONDISK_LAST_CEILING = 68_200
+# --- RETIRED: the listing-total ratchet (history, not a gate) ---------------
+# Retired for the reason the rules ratchet above was: it gated a number the
+# harness does not use. Claude Code budgets the listing at
+# `context_window * 4 * skillListingBudgetFraction` (default 0.01) characters,
+# shared by EVERY skill in the session, and counts each entry as formatted
+# (`- steer:<name>: <description> - <when_to_use>`), not the bare sum gated here.
+# That budget is 8,000 chars on a 200K window and 40,000 on 1M, so steer alone
+# overflows the first whatever this ceiling said - the harness then drops whole
+# descriptions, least-used skill first - and sits far inside the second. The
+# ceiling protected neither case. What it did do, at 0 chars of headroom, was
+# make the next skill pay in other skills' guardrail phrases: `weekly-update`
+# landed by cutting "Never edits, commits, merges, or advances state" from
+# `next` and "never fabricates counts, dates, or status" from `status`.
+# The per-skill 1,536-char cap in `check_plugin.py` IS the harness's own edge and
+# stays a hard gate; the total is reported against the real budgets below.
+#
 # LISTING re-baselined ONCE, 11,500 -> 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently
@@ -605,74 +626,115 @@ RULES_ONDISK_LAST_CEILING = 68_200
 # to buy ~521 chars - "one whole additional skill" - and any lowering from the
 # current 11,978 leaves less than that. Reclaim more first, then the ceiling can
 # move.
-LISTING_TOTAL_MAX_CHARS = 12_400
+# The last value the retired ratchet held. Reported for continuity; NOT enforced.
+LISTING_TOTAL_LAST_CEILING = 12_400
+
+# --- Skill listing, as the harness builds it (reported, not gated) ----------
+# Claude Code 2.1.301: budget = context window * 4 chars * 1%; an entry is
+# `- <plugin>:<name>: <text>` where text is `description - when_to_use` cut at
+# 1,536 chars, entries joined by newlines.
+LISTING_CHARS_PER_TOKEN = 4
+LISTING_BUDGET_FRACTION = 0.01
+LISTING_CONTEXT_WINDOWS = (200_000, 1_000_000)
+LISTING_ENTRY_MAX_CHARS = 1_536
 
 # --- Compaction re-attach cap (hard gate, per skill) -------------------------
-# 5,000 tokens at a pessimistic 3.5 bytes/token (see the module docstring). This
-# is a real ceiling, not a ratchet: it is derived from Claude Code's documented
-# re-attach behaviour, so it does NOT move down as bodies shrink and must not be
-# raised to fit new prose. A skill that outgrows it factors procedure into a
-# sibling file read just-in-time - that is the fix, every time.
-SKILL_BODY_MAX_BYTES = 17_500
+# Claude Code 2.1.301 keeps a re-attached skill whole while
+# round(len(content) / 4) <= 5,000, i.e. up to 20,000 characters of the rendered
+# skill; past that it cuts and appends a marker. Harness behaviour, not policy:
+# it does not move down as skills shrink and is never raised to fit new prose. A
+# skill that outgrows it factors procedure into a sibling file read just-in-time.
+SKILL_RENDERED_MAX_CHARS = 5_000 * 4
+# The install path is unknowable here and expanded into every
+# ${CLAUDE_PLUGIN_ROOT}, so it is modelled long (real ones run ~130 chars).
+MODEL_PLUGIN_ROOT = "/" + "p" * 255
 
-# --- Aspirational targets (reported, never enforced here) --------------------
+# --- Aspirational target (reported, never enforced here) --------------------
 # PLAN.md Phase 1 closed with the original 30K rules target retired: after two
 # trim passes the surviving prose is imperative-dense, and rule demotion was
 # investigated and rejected (see PLAN.md Phase 1 close-out). The rules target is
-# held at the pre-61-gate-prompts ratchet, BELOW the current ceiling on purpose:
-# the gap is the standing invitation to reclaim those bytes (relocating rationale
-# into templates/reference/*, or demoting a rule to conditional hook delivery the
-# way polyrepo was). The listing target stands.
-#
-# The rules target is now carried per-profile as `target_tokens` in
-# INJECTED_PROFILES; the on-disk figure below is kept only so the report can keep
-# showing the authoring surface next to the payload that is actually gated.
+# held at the pre-61-gate-prompts ratchet: the gap is the standing invitation to
+# reclaim those bytes (relocating rationale into templates/reference/*, or
+# demoting a rule to conditional hook delivery the way polyrepo was). The figure
+# is kept only so the report can show the authoring surface next to the payload
+# that is actually gated.
 RULES_TOTAL_TARGET_BYTES = 62_500
-LISTING_TOTAL_TARGET_CHARS = 10_000
 
 
-def _parse_frontmatter(text: str) -> dict:
-    """Best-effort frontmatter parse: return {} on any malformed input.
+def _split_frontmatter(text: str) -> tuple[dict, str]:
+    """(frontmatter, body). Best-effort: ({}, text) on any malformed input.
 
     Malformed frontmatter is check_plugin.py's finding, not ours - this gate
     only sums what Claude Code would actually load.
     """
-    lines = text.splitlines()
+    lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "---":
-        return {}
+        return {}, text
     for idx in range(1, len(lines)):
         if lines[idx].strip() == "---":
             try:
-                data = yaml.safe_load("\n".join(lines[1:idx]))
+                data = yaml.safe_load("".join(lines[1:idx]))
             except yaml.YAMLError:
-                return {}
-            return data if isinstance(data, dict) else {}
-    return {}
+                return {}, text
+            return (data if isinstance(data, dict) else {}), "".join(lines[idx + 1 :])
+    return {}, text
+
+
+def render_skill(name: str, text: str) -> str:
+    """The skill as Claude Code re-attaches it: frontmatter stripped, the base
+    directory line prepended, path variables expanded at MODEL_PLUGIN_ROOT."""
+    _, body = _split_frontmatter(text)
+    skill_dir = f"{MODEL_PLUGIN_ROOT}/skills/{name}"
+    body = body.replace("${CLAUDE_SKILL_DIR}", skill_dir).replace(
+        "${CLAUDE_PLUGIN_ROOT}", MODEL_PLUGIN_ROOT
+    )
+    return f"Base directory for this skill: {skill_dir}\n\n{body.lstrip()}"
+
+
+def listing_entry(plugin: str, name: str, fm: dict) -> str:
+    desc = fm.get("description")
+    wtu = fm.get("when_to_use")
+    text = desc if isinstance(desc, str) else ""
+    if isinstance(wtu, str) and wtu:
+        text = f"{text} - {wtu}"
+    if len(text) > LISTING_ENTRY_MAX_CHARS:
+        text = text[: LISTING_ENTRY_MAX_CHARS - 1] + "..."
+    return f"- {plugin}:{name}: {text}"
+
+
+def listing_budget(context_window: int) -> int:
+    return int(context_window * LISTING_CHARS_PER_TOKEN * LISTING_BUDGET_FRACTION)
+
+
+def _plugin_name(root: Path) -> str:
+    try:
+        manifest = json.loads((root / ".claude-plugin" / "plugin.json").read_text("utf-8"))
+        return str(manifest.get("name") or root.name)
+    except (OSError, ValueError):
+        return root.name
 
 
 def measure(root: Path) -> dict:
-    """Measure both always-on surfaces. Returns a stats dict."""
+    """Measure the always-on surfaces. Returns a stats dict."""
     rules = sorted((root / "rules").glob("*.md"))
     rules_bytes = sum(p.stat().st_size for p in rules)
 
-    listing_chars = 0
-    skills = []
-    bodies: list[tuple[str, int]] = []
+    plugin = _plugin_name(root)
+    skills: list[tuple[str, int, bool]] = []
+    rendered: list[tuple[str, int]] = []
     skills_dir = root / "skills"
     if skills_dir.is_dir():
         for skill_dir in sorted(p for p in skills_dir.glob("*") if p.is_dir()):
             skill_md = skill_dir / "SKILL.md"
             if not skill_md.is_file():
                 continue
-            fm = _parse_frontmatter(skill_md.read_text(encoding="utf-8"))
-            desc = fm.get("description")
-            wtu = fm.get("when_to_use")
-            chars = (len(desc) if isinstance(desc, str) else 0) + (
-                len(wtu) if isinstance(wtu, str) else 0
-            )
-            listing_chars += chars
-            skills.append((skill_dir.name, chars))
-            bodies.append((skill_dir.name, skill_md.stat().st_size))
+            text = skill_md.read_text(encoding="utf-8")
+            fm, _ = _split_frontmatter(text)
+            internal = fm.get("user-invocable") is False
+            entry = listing_entry(plugin, skill_dir.name, fm)
+            skills.append((skill_dir.name, len(entry), internal))
+            rendered.append((skill_dir.name, len(render_skill(skill_dir.name, text))))
+    listing_chars = sum(c for _, c, _ in skills) + max(0, len(skills) - 1)
 
     injected: dict[str, dict] = {}
     parts_registered = hook_parts(root)
@@ -701,7 +763,7 @@ def measure(root: Path) -> dict:
         "injected": injected,
         "skills": skills,
         "listing_chars": listing_chars,
-        "bodies": bodies,
+        "rendered": rendered,
     }
 
 
@@ -746,26 +808,16 @@ def run_checks(root: Path) -> list[str]:
             f"hooks.json. The per-part cap is Claude Code behaviour, not policy: it cannot be "
             f"raised."
         )
-    if stats["listing_chars"] > LISTING_TOTAL_MAX_CHARS:
-        errors.append(
-            f"{root / 'skills'}: total description + when_to_use is "
-            f"{stats['listing_chars']:,} chars, over the "
-            f"{LISTING_TOTAL_MAX_CHARS:,}-char routing-surface budget - the skill "
-            f"listing loads into every session. Trim descriptions to purpose + "
-            f"primary trigger; move disambiguation into the skill body, which "
-            f"loads only on invocation."
-        )
-    for name, size in sorted(stats["bodies"]):
-        if size > SKILL_BODY_MAX_BYTES:
+    for name, size in sorted(stats["rendered"]):
+        if size > SKILL_RENDERED_MAX_CHARS:
             errors.append(
-                f"{root / 'skills' / name / 'SKILL.md'}: body is {size:,} bytes, over the "
-                f"{SKILL_BODY_MAX_BYTES:,}-byte compaction cap (~5,000 tokens). After "
-                f"auto-compaction Claude Code re-attaches only the FIRST 5,000 tokens of "
-                f"an invoked skill, so everything past that point is silently dropped "
-                f"mid-run. Factor per-mode or per-phase procedure into a sibling file "
+                f"{root / 'skills' / name / 'SKILL.md'}: renders to {size:,} chars, over the "
+                f"{SKILL_RENDERED_MAX_CHARS:,}-char compaction cap. After auto-compaction "
+                f"Claude Code re-attaches an invoked skill only up to that point, so the tail "
+                f"is cut mid-run. Factor per-mode or per-phase procedure into a sibling file "
                 f"under skills/{name}/ that the dispatcher reads just-in-time, and keep "
                 f"guardrails / coupling rules near the TOP of SKILL.md. Do not raise this "
-                f"ceiling - it is derived from Claude Code behaviour, not from a budget."
+                f"ceiling - it is Claude Code behaviour, not a budget."
             )
     return errors
 
@@ -793,6 +845,14 @@ def report(root: Path) -> str:
             f"| {got['parts']} parts x {INJECTED_PART_BUDGET_CHARS:,} ch "
             f"({INJECTED_CAP_CHARS:,} ch runtime cap per part) | {status} |"
         )
+    listing = stats["listing_chars"]
+    shares = "; ".join(
+        f"{round(100 * listing / listing_budget(w))}% of the "
+        f"{f'{w // 1_000_000}M' if w >= 1_000_000 else f'{w // 1000}K'}-window budget "
+        f"({listing_budget(w):,} ch)"
+        for w in LISTING_CONTEXT_WINDOWS
+    )
+    internal = sum(c for _, c, i in stats["skills"] if i)
     lines += [
         (
             f"| rules/*.md on disk ({stats['rules_files']} files, authoring surface) "
@@ -800,23 +860,24 @@ def report(root: Path) -> str:
             f"| {RULES_TOTAL_TARGET_BYTES:,} B |"
         ),
         (
-            f"| skill listing ({len(stats['skills'])} skills) "
-            f"| {stats['listing_chars']:,} ch | {LISTING_TOTAL_MAX_CHARS:,} ch "
-            f"| {LISTING_TOTAL_TARGET_CHARS:,} ch |"
+            f"| skill listing ({len(stats['skills'])} skills, as the harness formats it; "
+            f"internal skills {internal:,} ch) "
+            f"| {listing:,} ch | not gated ({LISTING_ENTRY_MAX_CHARS:,} ch per skill) "
+            f"| {shares}, shared with every other skill |"
         ),
     ]
-    biggest = max((s for _, s in stats["bodies"]), default=0)
+    biggest = max((s for _, s in stats["rendered"]), default=0)
     lines.append(
-        f"| largest SKILL.md body ({len(stats['bodies'])} skills) "
-        f"| {biggest:,} B | {SKILL_BODY_MAX_BYTES:,} B | - |"
+        f"| largest rendered SKILL.md ({len(stats['rendered'])} skills) "
+        f"| {biggest:,} ch | {SKILL_RENDERED_MAX_CHARS:,} ch | - |"
     )
     lines += ["", "Top skill-listing consumers:"]
-    for name, chars in sorted(stats["skills"], key=lambda s: -s[1])[:5]:
+    for name, chars, _ in sorted(stats["skills"], key=lambda s: -s[1])[:5]:
         lines.append(f"- {name}: {chars:,} chars")
-    lines += ["", "Largest skill bodies (compaction cap):"]
-    for name, size in sorted(stats["bodies"], key=lambda s: -s[1])[:5]:
-        pct = round(100 * size / SKILL_BODY_MAX_BYTES)
-        lines.append(f"- {name}: {size:,} B ({pct}% of cap)")
+    lines += ["", "Largest rendered skills (compaction cap):"]
+    for name, size in sorted(stats["rendered"], key=lambda s: -s[1])[:5]:
+        pct = round(100 * size / SKILL_RENDERED_MAX_CHARS)
+        lines.append(f"- {name}: {size:,} ch ({pct}% of cap)")
     return "\n".join(lines)
 
 

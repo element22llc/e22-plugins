@@ -82,8 +82,8 @@ be unique. The full field set actually used in this repo:
 
 > **Never `disable-model-invocation: true` on a steer skill.** The name reads
 > like "keep it out of auto-routing", and the byte math is tempting - it drops a
-> skill's description from the listing entirely, which is the one budget the
-> ratchet says is nearly full. But the flag does more than that: it makes the
+> skill's description from the listing entirely, and on a 200K-context session
+> steer alone already overflows Claude Code's listing budget. But the flag does more than that: it makes the
 > skill **user-only**, so Claude cannot invoke it through the Skill tool *at
 > all*. steer's entire premise is that the model is the router and the user never
 > has to know a skill name (rule `00-router`, "map their plain-language goal to
@@ -144,17 +144,20 @@ be unique. The full field set actually used in this repo:
 > conversation and stays there for the rest of the session. When auto-compaction
 > fires, Claude Code re-attaches the most recent invocation of each skill but
 > keeps only **the first 5,000 tokens of each** (re-attached skills also share a
-> combined 25,000-token budget). Everything past that point is silently dropped
-> mid-run - so an oversized `SKILL.md` is a *correctness* bug, not just a cost:
+> combined 25,000-token budget). Everything past that point is cut mid-run,
+> leaving only a marker that says to Read the rest - so an oversized `SKILL.md`
+> is a *correctness* bug, not just a cost:
 > the tail is where Guardrails and Coupling rules historically sat, and they
 > vanish exactly when a run has gone long enough to compact. Two rules follow:
 >
 > 1. **Front-load the standing instructions.** Guardrails, coupling rules, and
 >    output contracts go near the **top** of `SKILL.md`, never the bottom.
-> 2. **Keep the body under 17,500 bytes** - the 5,000-token cap at a pessimistic
->    3.5 B/token. `check_context_budget.py` fails any skill over it. This is a
->    real ceiling derived from harness behaviour, **not** a ratchet: do not raise
->    it to fit new prose.
+> 2. **Keep the rendered skill under 20,000 characters.** The harness counts
+>    "tokens" as `length / 4`, on the skill as it re-attaches it: frontmatter
+>    stripped, a `Base directory` line prepended, `${CLAUDE_PLUGIN_ROOT}`
+>    expanded to the install path (modelled long). `check_context_budget.py`
+>    fails any skill over it. This is a real ceiling derived from harness
+>    behaviour, **not** a ratchet: do not raise it to fit new prose.
 >
 > The fix when a skill outgrows the cap is always the same - factor per-mode or
 > per-phase procedure into a sibling file (next section), never trim a guardrail.
