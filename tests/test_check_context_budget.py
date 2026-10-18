@@ -311,50 +311,82 @@ def test_token_conversion_is_pessimistic():
     assert ccb.tokens(3500) == 1000
 
 
-def test_listing_over_budget_fails(tmp_path: Path):
-    root = _make_plugin(tmp_path, desc_chars=ccb.LISTING_TOTAL_MAX_CHARS + 1)
-    errors = ccb.run_checks(root)
-    assert len(errors) == 1
-    assert "routing-surface budget" in errors[0]
+def test_listing_total_is_reported_not_gated(tmp_path: Path):
+    # The harness budgets the listing across every installed skill, so no
+    # per-plugin total is a harness edge; check_plugin.py gates the per-skill cap.
+    root = _make_plugin(tmp_path, desc_chars=ccb.LISTING_TOTAL_LAST_CEILING + 1)
+    assert ccb.run_checks(root) == []
+    assert "200K-window budget (8,000 ch)" in ccb.report(root)
 
 
-def test_skill_body_over_compaction_cap_fails(tmp_path: Path):
-    root = _make_plugin(tmp_path, body_bytes=ccb.SKILL_BODY_MAX_BYTES + 1)
+def test_listing_entry_matches_harness_format():
+    fm = {"description": "Does a thing.", "when_to_use": "Use when asked."}
+    assert ccb.listing_entry("steer", "demo", fm) == "- steer:demo: Does a thing. - Use when asked."
+    long = ccb.listing_entry("steer", "demo", {"description": "d" * 2000})
+    assert len(long) == len("- steer:demo: ") + ccb.LISTING_ENTRY_MAX_CHARS + 2
+
+
+def test_listing_budget_follows_the_context_window():
+    assert ccb.listing_budget(200_000) == 8_000
+    assert ccb.listing_budget(1_000_000) == 40_000
+
+
+def _rendered_len(root: Path) -> int:
+    body = root / "skills" / "demo-skill" / "SKILL.md"
+    return len(ccb.render_skill("demo-skill", body.read_text(encoding="utf-8")))
+
+
+def test_skill_over_compaction_cap_fails(tmp_path: Path):
+    root = _make_plugin(tmp_path, body_bytes=ccb.SKILL_RENDERED_MAX_CHARS)
     errors = ccb.run_checks(root)
     assert len(errors) == 1
     assert "compaction cap" in errors[0]
     assert "demo-skill" in errors[0]
 
 
-def test_skill_body_at_cap_passes(tmp_path: Path):
+def test_skill_rendered_at_cap_passes(tmp_path: Path):
     # The ceiling is inclusive - exactly at the cap must not fail.
     root = _make_plugin(tmp_path, body_bytes=0)
-    body = root / "skills" / "demo-skill" / "SKILL.md"
-    body.write_text(
-        body.read_text(encoding="utf-8").ljust(ccb.SKILL_BODY_MAX_BYTES, "b"), encoding="utf-8"
-    )
-    assert body.stat().st_size == ccb.SKILL_BODY_MAX_BYTES
+    pad = ccb.SKILL_RENDERED_MAX_CHARS - _rendered_len(root)
+    root = _make_plugin(tmp_path / "at", body_bytes=pad)
+    assert _rendered_len(root) == ccb.SKILL_RENDERED_MAX_CHARS
     assert ccb.run_checks(root) == []
+
+
+def test_frontmatter_does_not_count_toward_the_cap(tmp_path: Path):
+    # The harness strips frontmatter before re-attaching, so a long listing
+    # entry must not eat body headroom.
+    root = _make_plugin(tmp_path, desc_chars=5_000)
+    assert _rendered_len(root) < 1_000
+    assert ccb.run_checks(root) == []
+
+
+def test_plugin_root_expansion_counts_toward_the_cap(tmp_path: Path):
+    root = _make_plugin(tmp_path)
+    before = _rendered_len(root)
+    body = root / "skills" / "demo-skill" / "SKILL.md"
+    body.write_text(body.read_text(encoding="utf-8") + "${CLAUDE_PLUGIN_ROOT}", encoding="utf-8")
+    assert _rendered_len(root) - before == len(ccb.MODEL_PLUGIN_ROOT)
 
 
 def test_sibling_body_files_do_not_count_toward_the_cap(tmp_path: Path):
     # The whole point of factoring procedure out: a modes/*.md read
     # just-in-time is a tool result, not re-attached skill content, so it must
-    # not be summed into the SKILL.md body budget.
+    # not be summed into the SKILL.md budget.
     root = _make_plugin(tmp_path, body_bytes=100)
     modes = root / "skills" / "demo-skill" / "modes"
     modes.mkdir()
-    (modes / "big.md").write_text("x" * (ccb.SKILL_BODY_MAX_BYTES * 2), encoding="utf-8")
+    (modes / "big.md").write_text("x" * (ccb.SKILL_RENDERED_MAX_CHARS * 2), encoding="utf-8")
     assert ccb.run_checks(root) == []
 
 
-def test_every_real_skill_body_is_under_the_cap():
+def test_every_real_skill_renders_under_the_cap():
     over = [
         (name, size)
-        for name, size in ccb.measure(REAL_PLUGIN)["bodies"]
-        if size > ccb.SKILL_BODY_MAX_BYTES
+        for name, size in ccb.measure(REAL_PLUGIN)["rendered"]
+        if size > ccb.SKILL_RENDERED_MAX_CHARS
     ]
-    assert over == [], f"skill bodies over the compaction cap: {over}"
+    assert over == [], f"skills over the compaction cap: {over}"
 
 
 def test_malformed_frontmatter_counts_as_zero(tmp_path: Path):
@@ -376,8 +408,8 @@ def test_report_renders_table(tmp_path: Path):
     assert "rules/*.md on disk" in text
     assert "injected payload - knowledge" in text
     assert "parts" in text
-    assert "largest SKILL.md body" in text
-    assert "Largest skill bodies (compaction cap):" in text
+    assert "largest rendered SKILL.md" in text
+    assert "Largest rendered skills (compaction cap):" in text
     assert "demo-skill" in text
 
 

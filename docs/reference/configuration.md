@@ -171,10 +171,10 @@ the org stack defaults in rule `10-stack`:
 Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
 added to `rules/`. That leanness is **enforced, not aspirational**: CI's
-`check_context_budget.py` gate holds hard ceilings over three context surfaces:
-the **injected rules payload**, the total skill-listing `description` +
-`when_to_use` characters (ratcheted - re-armed at each reduction, so it normally
-only shrinks or holds), and the per-skill `SKILL.md` body size.
+`check_context_budget.py` gate holds hard ceilings over two context surfaces -
+the **injected rules payload** and the per-skill **rendered `SKILL.md`** - and
+reports a third, the skill listing. Every ceiling it enforces is a limit Claude
+Code itself applies, measured the way Claude Code measures it.
 
 **The rules gate measures what a session actually receives**, in characters -
 the runtime's own unit - by running every registered part of the real
@@ -201,9 +201,9 @@ precedent above). Registering one more part in `hooks/hooks.json` is the last
 resort and a deliberate, reviewed change - one more SessionStart process and up
 to 9,500 more always-on characters in every session.
 
-These two are **policy numbers, not harness limits**, so they *can* be raised -
-which is why each raise carries a recorded reason in the gate script rather than
-happening quietly.
+The gate used to hold two **policy** ratchets as well - the on-disk rules total
+and the skill-listing total. Both are retired; their history follows because it
+is the evidence for retiring them.
 
 What follows is the history of the **retired on-disk rules ratchet**, kept
 because it is the evidence for that re-base: read end to end, it is a ceiling
@@ -283,7 +283,19 @@ still owed, against the unchanged 62,500 target. For the total on any given tree
 `uv run python scripts/check_context_budget.py --report` - a figure pinned in
 prose goes stale on the next rule edit.
 
-The skill-listing ratchet has moved twice. The first, in 3.23.0, 11,500 -> 11,900
+The **skill-listing ratchet** is retired too, for the same reason: it gated a
+number the harness does not use. Claude Code budgets the listing at 1% of the
+context window, at 4 characters per token - 8,000 characters on a 200K window,
+40,000 on 1M - shared by every installed skill, and counts each entry as it
+formats it (`- steer:<name>: <description> - <when_to_use>`). On a 200K window
+steer alone overflows that budget whatever the ratchet said, and the harness
+drops whole descriptions, least-used skill first; on 1M it sits far inside it.
+The ratchet protected neither, and at zero headroom it made the next skill pay
+in other skills' guardrail phrases. The listing is now reported against both
+budgets; the per-skill 1,536-character cap stays a hard gate in
+`check_plugin.py`, because that one is the harness's own edge.
+
+Before retirement, the skill-listing ratchet moved twice. The first, in 3.23.0, 11,500 -> 11,900
 chars, for a different reason than the rules ceiling: not a budget concession but a
 **measurement correction**.
 `/steer:work`'s `when_to_use` was an unquoted YAML scalar containing `("work on
@@ -317,19 +329,24 @@ ceiling would contradict this block's own basis: 12,400 was chosen to buy ~521
 chars, and no reduction from the resulting 11,978 leaves that much. Reclaim more
 first, then the ceiling can move.
 
-The third *surface* is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
-17,500 bytes. That number is the harness's **compaction re-attach cap** - after
-auto-compaction Claude Code re-attaches an invoked skill but keeps only the
-first ~5,000 tokens of it, so anything past that point is silently dropped
-mid-run. An oversized skill therefore loses its own guardrails exactly when a
-run has gone on long enough to compact. steer's skills keep guardrails,
+The rendered-skill ceiling is per-skill and **not** a ratchet: it is the
+harness's **compaction re-attach cap**. After auto-compaction Claude Code
+re-attaches an invoked skill but keeps it whole only up to 5,000 "tokens",
+which it estimates as characters / 4 - so 20,000 characters of the skill *as
+rendered*: frontmatter stripped, a `Base directory` line prepended, and
+`${CLAUDE_PLUGIN_ROOT}` expanded to the install path, which the gate models
+long. Past that the tail is cut mid-run, leaving a marker that says to Read the
+rest - so an oversized skill loses its own guardrails exactly when a run has
+gone on long enough to compact. (The gate once charged raw file bytes,
+frontmatter included, at 3.5 bytes per token - 17,500 B - which reported
+skills at 100% of a cap they were ~10-15% under.) steer's skills keep guardrails,
 coupling rules, and output contracts near the **top** of `SKILL.md` and factor
 per-mode or per-phase procedure into sibling files (`modes/<mode>.md`,
 `OPERATIONS.md`, `PROCEDURE.md`, ...) that the skill reads **just-in-time** for
 the one path it is executing - a file read that way is a tool result, not skill
 content, so it never competes for the re-attach budget. Because this ceiling is
 derived from harness behaviour rather than a budget target, it does not move
-down as bodies shrink and is not raised to fit new prose.
+down as skills shrink and is not raised to fit new prose.
 
 A companion routing-fixture net
 (`tests/fixtures/routing/asks.yml`) pins the vocabulary plain-language routing
