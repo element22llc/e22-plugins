@@ -58,7 +58,8 @@ fillable questionnaire for a Product Owner to answer offline; see
 There is **no `SPEC-QUESTIONS.md`** - questions live next to their context:
 
 - **Per feature** -> each `spec/features/*/intent.md` -> `## Open questions`
-  (structured `### Q-NNN` blocks; canonical format in
+  (the structured `### Q-NNN` blocks - `status` / `impact` / `owner` /
+  `required_before` / `created` / `tracker`; the canonical format is in
   [`SPEC-FRAMEWORK.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md)).
 - **Product-level** (anything not yet tied to one feature) -> `spec/vision.md`
   -> `## Open questions`.
@@ -70,7 +71,7 @@ There is **no `SPEC-QUESTIONS.md`** - questions live next to their context:
 
 ## When to run
 
-Run it to work the backlog down; before a **release** or a
+Run it periodically to work the backlog down; before a **release** or a
 **PO->dev handoff**, as a "nothing unanswered left to rot" gate; or whenever
 a feature's `## Open questions` list has grown and nobody circled back.
 
@@ -95,9 +96,9 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    **`/steer-setup`**, which resolves greenfield-vs-adopt from
    `scan-spine-state.sh`. Without this the sweep is worse than useless: step 2's
    grep matches no files on an unmanaged repo, so "no open questions" reads as
-   good news when the truth is that nothing was searched. Test the **stamp**
-   (as `hooks/lib/spine.sh` does), not `spec/` - a bare directory can be empty
-   or a foreign OpenAPI `spec/`. Unlike
+   good news when the truth is that nothing was searched. Test the **stamp**, not
+   `spec/` - a bare directory can be an empty folder or a foreign OpenAPI
+   `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`. Unlike
    `adr` there is no bootstrap exception: no bootstrap invokes this skill
    mid-install, so a spine-less call is always a direct one.
 
@@ -175,9 +176,12 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    split: **product / behavior** ambiguities ("what should delete mean?") ->
    ask the **PO** in plain language; **technical / architectural** ambiguities
    (data model, integration boundary, library choice) -> ask the **dev**. Ask,
-   don't invent; work oldest/most-blocking first, in **rounds**: every
-   question whose prerequisites are settled, each with a recommended answer
-   "yes" accepts - never for a gate decision (rule `61-gates`).
+   don't invent; work through them oldest/most-blocking first, in **rounds**:
+   each round is every question whose prerequisites are settled, numbered, in
+   one message, each with your recommended answer worded so "yes" accepts it.
+   A question that depends on another still open waits for the next round.
+   Never recommend an answer to a gate decision (ADR acceptance, intent
+   approval) - rule `61-gates` forbids pre-selecting it.
 
 6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
    *applying a decision already made is not a new decision*).
