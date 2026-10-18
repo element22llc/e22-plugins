@@ -3,6 +3,21 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.11.0
+
+- **Changed: `/steer:spec` and `/steer:questions` ask in rounds.** Instead of
+  one question at a time, each round asks every question whose
+  prerequisites are already settled, numbered, with a recommended answer
+  worded so "yes" accepts it; a question that depends on one still open
+  waits for the next round. Gate decisions (intent approval, ADR
+  acceptance) are still never pre-selected. A question only something
+  concrete can answer, such as layout or how an interaction feels, is no
+  longer talked through: `clarify` records it as a question to settle with
+  a prototype, gated at implementation rather than blocking approval. The
+  brainstorm stops when nothing answerable is left unasked, and "grill me"
+  / "stress-test this" now route to `/steer:spec`. Adapted from the
+  interview mechanics of Matt Pocock's `grilling` skill.
+
 ## 7.10.0
 
 - **Security: Dependabot auto-merge no longer approves, and merges only the
