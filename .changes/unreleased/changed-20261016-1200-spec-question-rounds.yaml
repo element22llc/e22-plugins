@@ -7,7 +7,7 @@ body: |-
       waits for the next round. Gate decisions (intent approval, ADR
       acceptance) are still never pre-selected. A question only something
       concrete can answer, such as layout or how an interaction feels, is no
-      longer talked through: `clarify` records it as a decision to settle with
+      longer talked through: `clarify` records it as a question to settle with
       a prototype, gated at implementation rather than blocking approval. The
       brainstorm stops when nothing answerable is left unasked, and "grill me"
       / "stress-test this" now route to `/steer:spec`. Adapted from the

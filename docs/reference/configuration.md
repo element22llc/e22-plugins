@@ -178,11 +178,11 @@ Code itself applies, measured the way Claude Code measures it.
 
 **The rules gate measures what a session actually receives**, in characters -
 the runtime's own unit - by running every registered part of the real
-`inject-standards.sh` against four fixture profiles: `knowledge` (a non-code
-folder, which drops every marked rule), `code` (a typical product repo),
-`openspec` (a repo whose spec artifacts live in `openspec/`) and `code-max`
-(every scope predicate satisfied - the worst case any consumer pays).
-All four are gated, against the same two harness facts: no single part may
+`inject-standards.sh` against five fixture profiles: `knowledge` (a non-code
+folder, which drops every marked rule), `advisory` (a declared guest repo),
+`code` (a typical product repo), `openspec` (a repo whose spec artifacts live in
+`openspec/`) and `code-max` (every scope predicate satisfied - the worst case
+any consumer pays). All five are gated, against the same two harness facts: no single part may
 exceed the 10,000-character cap Claude Code puts on one hook command's output
 (the hook fills each part to 9,500 and the slack is never spent on rules), and
 no eligible rule may be dropped for lack of parts. A rule that does not fit
@@ -303,7 +303,7 @@ chars, for a different reason than the rules ceiling: not a budget concession bu
 characters. The ratchet had been calibrated against that truncated value, reading
 22 chars of headroom while the intended payload was ~450 over. Fixing the YAML
 necessarily exposed the real total; `work`'s entry was first trimmed 932 -> 747
-chars so the raise paid what it could. `LISTING_TOTAL_TARGET_CHARS` stays at
+chars so the raise paid what it could. `LISTING_TOTAL_TARGET_CHARS` stayed at
 10,000, again below the ceiling.
 
 The second, 11,900 -> 12,400, is a deliberate **re-arming** rather than payment for
@@ -315,7 +315,7 @@ wording of a correctness fix instead of merely bounding its cost. 12,400 buys ~5
 chars - about one mean listing entry - so trading prose out stays a real choice
 rather than the only physically available move. The policy is unchanged: trimming
 first remains the default, `check_plugin.py`'s per-skill 1,536-char cap is untouched
-so no single skill can absorb the new headroom, and the target stays 10,000.
+so no single skill can absorb the new headroom, and the target stayed 10,000.
 
 The listing ceiling was then deliberately **held** at 12,400 while 232 chars were
 reclaimed alongside the rules trim above (`/steer:reference` stopped

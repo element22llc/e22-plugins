@@ -169,7 +169,8 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    each round is every question whose prerequisites are settled, numbered, in
    one message, each with your recommended answer worded so "yes" accepts it.
    A question that depends on another still open waits for the next round.
-   Never recommend an answer to a gate decision (ADR acceptance, intent
+   An answer that is only "ok" to every recommendation decided nothing; say so,
+   and name the choices that still need a real answer. Never recommend an answer to a gate decision (ADR acceptance, intent
    approval) - rule `61-gates` forbids pre-selecting it.
 
 6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
