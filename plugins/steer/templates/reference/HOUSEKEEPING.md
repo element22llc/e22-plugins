@@ -61,6 +61,7 @@ row or none, ask rather than guess (see "Unclear names" below).
 | Inventories, vendor/system metadata spreadsheets, discovery questions, PII asset lists, CMDB docs, SQL DDL / schema dumps | `/spec/reference/` |
 | Specification / requirements documents - a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW (source material feeding the spec, not the structured spec spine itself) | `/spec/reference/` |
 | An existing top-level `Technical Metadata/` (or similarly-named source) folder | `/spec/reference/technical-metadata/` |
+| UAT / QA test scripts; a QA run's report or fix brief | `/spec/testing/`; a run's report under `/spec/testing/runs/` |
 | Architecture diagrams, flow diagrams (`.svg`, "Flows for Review" `.pptx`) | `/spec/design/` |
 | A Claude Design export (ZIP or extracted HTML) | `/spec/design/` - defer to `/steer:reference design-sources` for the exact path |
 | Code / config that lives at root | leave in place (allowlist) |

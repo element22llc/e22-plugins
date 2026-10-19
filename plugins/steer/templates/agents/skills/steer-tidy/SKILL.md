@@ -31,6 +31,7 @@ Key points (read the file for the full detail):
   metadata, schema/DDL dumps, discovery docs, PII/CMDB files, and
   **spec/requirements documents** - `.pdf`/`.docx`/decks) -> `/spec/reference/`.
   An existing `Technical Metadata/`-style folder -> `/spec/reference/technical-metadata/`.
+- **UAT/QA test scripts** -> `/spec/testing/`; a QA run's report or fix brief -> `/spec/testing/runs/`.
 - **Architecture/flow diagrams** (SVG, "Flows for Review" decks) -> `/spec/design/`.
   A **Claude Design export** also -> `/spec/design/` - defer to `/steer-reference design-sources`.
 - **Already-absorbed sources are the exception - delete, don't move.** A
