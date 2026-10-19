@@ -171,7 +171,8 @@ the spreadsheets, decks,
 diagrams, and **specification / requirements documents** (`.pdf`, `.docx`, decks -
 specs, briefs, RFP/SOW) that feed the spec. Those are **source material**:
 their home is `/spec/reference/`; architecture and flow diagrams go to
-`/spec/design/`.
+`/spec/design/`; UAT / QA scripts go to `/spec/testing/`, and a QA run's report
+or fix brief to `/spec/testing/runs/`.
 
 `DESIGN.md` is not documentation for humans only - it is **read**. A skill that
 renders a shareable Claude Artifact styles the page from the tokens `DESIGN.md`
