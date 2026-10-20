@@ -236,6 +236,12 @@ surfaces differently:
   the same tree is discovered by **Cursor**, **Gemini CLI** and **Codex** without
   any further work.
 
+**Copilot code review** reads skills only from `.github/skills`, so none of
+steer's skills reach it. It reviews against the committed
+`.github/copilot-instructions.md`, which it now reads in full: the old
+4,000-character cap on code-review instructions is gone, leaving GitHub's advice
+to keep a file under about 1,000 lines.
+
 The build renders one `.agents/skills/steer-<skill>/` directory per skill -
 including every `user-invocable: false` gateway, which the model can reach even
 though no one can type them - carrying the **real skill body** and its supporting

@@ -1,0 +1,11 @@
+kind: Fixed
+body: |-
+    - **Fixed: the scaffold no longer claims Copilot code review reads steer's
+      skills.** Code review reads skills only from `.github/skills`, not the
+      `.agents/skills/` tree steer installs, so it reviews against
+      `.github/copilot-instructions.md` alone. That file already carries the
+      Definition of Done, drift gates and high-risk areas, and code review now
+      reads it in full.
+time: 2026-10-20T17:10:00.000000-04:00
+custom:
+    Slug: code-review-skills-claim
