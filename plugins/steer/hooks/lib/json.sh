@@ -175,22 +175,22 @@ steer_json_string() {
 }
 
 # steer_hook_host - which harness is running this hook: `claude` or `copilot`.
-# The two want different SessionStart stdout (Claude Code: raw text; Copilot Chat
-# in VS Code: a JSON envelope), and VS Code runs the plugin's Claude hooks.json
-# as-is, so the script - not a manifest - has to tell them apart. The detection is
-# payload-shape only; the Copilot CLI hook variant that used to set
-# STEER_HOOK_TARGET retired with hook parity (hook enforcement is guaranteed on
-# Claude Code; VS Code picks it up incidentally, with no parity promise).
+# The two want different SessionStart stdout (Claude Code: raw text; Copilot: a
+# JSON envelope), and both Copilot surfaces run the plugin's Claude hooks.json
+# as-is - VS Code Copilot Chat, and the Copilot CLI, which loads hooks/hooks.json
+# by default convention whatever its manifest declares - so the script, not a
+# manifest, has to tell them apart. The detection is payload-shape only:
 #   1. the payload carries "permission_mode" - a documented Claude Code common
-#      input field VS Code does not send                             -> claude
-#   2. the payload has "hook_event_name", "model" and "timestamp" but no
-#      "permission_mode" - the shape Copilot Chat in VS Code sends
-#      (observed on VS Code 1.135)                                   -> copilot
+#      input field neither Copilot surface sends                     -> claude
+#   2. the payload has "hook_event_name" and "timestamp" but no
+#      "permission_mode" - the snake_case shape both Copilot surfaces send to a
+#      PascalCase registration (observed on VS Code 1.135, with "model", and on
+#      Copilot CLI 1.0.92, without it); Claude Code sends no "timestamp" -> copilot
 #   3. anything else                                                 -> claude
 # The default is deliberately Claude: mis-reading Claude Code as Copilot would
 # swap its parted raw delivery for one oversized JSON command and lose the
-# ruleset, whereas mis-reading a Copilot surface as Claude only keeps today's
-# behaviour (raw stdout, discarded there). Reads $STEER_INPUT like steer_field.
+# ruleset, whereas mis-reading a Copilot surface as Claude only loses the
+# injection there (raw stdout, discarded). Reads $STEER_INPUT like steer_field.
 steer_hook_host() {
 	case "${STEER_INPUT}" in
 	*'"permission_mode"'*)
@@ -201,13 +201,9 @@ steer_hook_host() {
 	case "${STEER_INPUT}" in
 	*'"hook_event_name"'*)
 		case "${STEER_INPUT}" in
-		*'"model"'*)
-			case "${STEER_INPUT}" in
-			*'"timestamp"'*)
-				printf 'copilot'
-				return
-				;;
-			esac
+		*'"timestamp"'*)
+			printf 'copilot'
+			return
 			;;
 		esac
 		;;

@@ -438,10 +438,9 @@ surfaces, load the rules manually with `/steer:standards`. See
 [Installation](../getting-started/installation.md) and
 [Known limitations](known-limitations.md).
 
-Hook enforcement is guaranteed on **Claude Code** only. The GitHub Copilot CLI
-has its own hook harness and the plugin used to ship a parallel
-`hooks/copilot-hooks.json` for it; that variant retired, so the CLI runs no steer
-hooks and takes the standards from the committed
-`.github/copilot-instructions.md`. Copilot Chat in VS Code runs this `hooks.json`
-directly, as a Claude-format plugin, and so picks the hooks up incidentally - with
-no parity promise - see [Copilot support](../concepts/copilot-support.md).
+Hook enforcement is guaranteed on **Claude Code** only. The plugin used to ship
+a parallel `hooks/copilot-hooks.json` for the GitHub Copilot CLI; that variant
+retired. Both the Copilot CLI and Copilot Chat in VS Code run this `hooks.json`
+directly and so pick the hooks up incidentally - with no parity promise - and the
+committed `.github/copilot-instructions.md` stays the reliable standards path
+there; see [Copilot support](../concepts/copilot-support.md).
