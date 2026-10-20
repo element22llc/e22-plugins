@@ -287,9 +287,11 @@ false` skill gets no `/steer-<name>` command.
 
 The build renders one `.agent.md` per subagent (`gen_copilot_agents.py`, drift
 gate `check_copilot_agents.py`). The subagent's Claude `tools` (`Read`/`Grep`/
-`Glob`) are mapped to Copilot's read-only built-in tool sets (`codebase`,
+`Glob`) are mapped to VS Code's read-only built-in tool sets (`read`,
 `search`), so the ported reviewer stays write-free on VS Code the same way it is
-in Claude Code.
+in Claude Code. The frontmatter opens the file and the generated-file comment
+follows it: Copilot parses no frontmatter behind a leading comment, which would
+silently drop `tools` (and, on a path-scoped instructions file, `applyTo`).
 
 ## Scope preconditions in the flat file
 

@@ -19,8 +19,8 @@ It renders one artifact per subagent into
 
 Claude tool names (``Read``/``Grep``/``Glob``/``Bash``/``Edit``/``Write``) do not
 exist in VS Code, so the subagent's ``tools`` frontmatter is mapped to Copilot's
-built-in tool *set names* (a read-only agent maps to ``codebase``/``search``/
-``usages`` with no edit/run tools). ``model: inherit`` maps to omitting ``model``
+built-in tool *set names* (a read-only agent maps to ``read``/``search`` with no
+``edit``/``execute`` sets). ``model: inherit`` maps to omitting ``model``
 (the agent inherits the picker's model).
 
 Run from the repo root::
@@ -46,14 +46,14 @@ OUT_DIR = Path("plugins/steer/templates/github/agents")
 # steer-reviewer, is read-only by construction); add edit/run mappings here if a
 # future subagent needs them.
 _TOOL_MAP: dict[str, list[str]] = {
-    "Read": ["codebase"],
+    "Read": ["read"],
     "Grep": ["search"],
     "Glob": ["search"],
     "LS": ["search"],
-    "Edit": ["editFiles"],
-    "Write": ["editFiles"],
-    "MultiEdit": ["editFiles"],
-    "Bash": ["runCommands"],
+    "Edit": ["edit"],
+    "Write": ["edit"],
+    "MultiEdit": ["edit"],
+    "Bash": ["execute"],
 }
 
 
@@ -187,7 +187,8 @@ def render_agent(name: str, fm: dict, body: str) -> str:
         f"standards already loaded from `.github/copilot-instructions.md`.{tools_note}"
     )
 
-    return f"{header}\n---\n{front_yaml}\n---\n\n{preamble}\n\n{ported}\n"
+    # Frontmatter must open the file: Copilot parses none behind a leading comment.
+    return f"---\n{front_yaml}\n---\n{header}\n\n{preamble}\n\n{ported}\n"
 
 
 def render_all(agents_dir: Path = AGENTS_DIR) -> dict[str, str]:
