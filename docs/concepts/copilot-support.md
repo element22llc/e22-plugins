@@ -30,7 +30,7 @@ truth and how to install and refresh the Copilot side.
 | Subagents | plugin `agents/` | **not declared** - the Copilot manifest carries `skills` only | `.github/agents/*.agent.md` (agent picker) |
 | MCP servers | plugin `.mcp.json` | **not declared** - the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
 | Cloud coding agent | - (Claude `@claude` workflow) | - | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
-| Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/hooks.json` as-is, incidentally - hard `deny` on version pins; `ask` becomes a deny in autopilot and `-p` runs - with no parity promise | `hooks/hooks.json` as-is, incidentally - VS Code runs the Claude-format hooks (hard `deny` on version pins), with no parity promise |
+| Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/hooks.json` runs, but gates nothing yet: the version-pin gate fails open on the CLI's tool payload ([#685](https://github.com/element22llc/e22-plugins/issues/685)) | `hooks/hooks.json` as-is, incidentally - VS Code runs the Claude-format hooks (hard `deny` on version pins), with no parity promise |
 | Status band and `/steer_snapshot` | the read-only mod `hooks/register.tsx` (`modules` in `hooks.json`; terminal and Desktop Code tab, v2.1.287+) | **none** - Copilot loads no mods; the CLI ignores the `modules` key | **none** - no mods; use `/steer-next` for the workspace state |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
@@ -402,8 +402,9 @@ detects steer as a Claude-format plugin, and the Copilot CLI loads
 export `CLAUDE_PLUGIN_ROOT`. VS Code ignores matchers, so every hook runs on
 every matching event; the CLI applies Claude's matcher semantics to PascalCase
 events and skips events it does not know (`CwdChanged`, `WorktreeRemove`). So the
-`PreToolUse` gates fire, as Claude's hard **`deny`** on version pins (the CLI
-treats `ask` as a deny in autopilot and `-p` runs), and the SessionStart and Stop
+`PreToolUse` gates fire - in VS Code as Claude's hard **`deny`** on version
+pins; on the CLI they run but fail open, because they cannot parse its file-tool
+payload ([#685](https://github.com/element22llc/e22-plugins/issues/685)) - and the SessionStart and Stop
 hooks run too: the ruleset injector recognises the Copilot payload shape and
 answers with the JSON envelope (see [Why the surfaces differ](#why-the-surfaces-differ)),
 while the advisory notices (`session-checks.sh`, `orient-session.sh`) emit raw
@@ -437,8 +438,9 @@ the standards in `.github/copilot-instructions.md`.
   shows, so it is never mistaken for a missing skill; `/steer-next` reports the
   same workspace state there.
 - **No hook guarantee off Claude Code.** The CLI and VS Code run
-  `hooks/hooks.json` incidentally, so they get Claude's hard `deny` on
-  version pins rather than anything tuned for it. The advisory nudges live in the
+  `hooks/hooks.json` incidentally. VS Code gets Claude's hard `deny` on
+  version pins rather than anything tuned for it; on the CLI the gate fails
+  open ([#685](https://github.com/element22llc/e22-plugins/issues/685)). The advisory nudges live in the
   standards text, not as hooks, and the advisory SessionStart notices emit raw
   text that both discard.
 - **Invocation form differs by surface, and the instructions file is shared.**
