@@ -10,7 +10,11 @@ real secrets). Steps 5-6 (scaffold, build feature by feature) are in
    `.env` exists with the base variables (Stack rule). Give the PO the
    localhost URL and a plain-language walkthrough of what to click. Iterate
    with them; spec changes from feedback update the relevant `intent.md` /
-   `contract.md`. **Stay in this loop - do not propose handoff from here.**
+   `contract.md`. **Settle the questions the build picked up** (step 6, or
+   `/steer:work` in governed mode): ask them as one round on the running app,
+   with what you built as the recommended answer, and fold each answer
+   (resolved, per `/steer:questions` step 6); one still unanswered stays open.
+   **Stay in this loop - do not propose handoff from here.**
    Handoff has its own gate (step 9), and the PO may take days of real use to
    get there, possibly across many sessions.
 9. **PO demo-validation gate.** Handoff is *pulled by the PO, not pushed by

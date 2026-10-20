@@ -36,8 +36,10 @@ open`, a sensible `impact:` / `required_before:` (a gap that would change the
 UX or data model is `blocking` at `intent-approval`; polish-class gaps gate
 later), and `owner:`. A gap only something concrete can settle - layout, flow
 shape, how an interaction feels - is a `Q-NNN` whose title says it settles with
-a prototype, gated at `required_before: implementation`, never `blocking`
-at `intent-approval`: no amount of asking answers it. Close by summarizing what was raised vs. already covered -
+a prototype, `impact: non-blocking` at `required_before: implementation`, never
+`blocking` at `intent-approval`: no amount of asking answers it. Name the
+option to build first in the question; the build settles it (`/steer:work`
+`start`, `/steer:build` step 6) and its owner confirms on the running change. Close by summarizing what was raised vs. already covered -
 a draft that survives the sweep with nothing raised is a *finding worth
 stating*, not a failed run.
 

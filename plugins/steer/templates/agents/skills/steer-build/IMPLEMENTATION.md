@@ -37,7 +37,9 @@ the PO-mode guardrails - which apply throughout everything below. Steps 8-10
      Issue-first (rule 36) is scoped to `system: github`, so it does not apply
      here. Build the v0 yourself: for each approved intent write `contract.md`,
      implement under `/apps` + `/packages`, and write tests in the same unit of
-     work (Definition of Done). Commit coherent units without asking
+     work (Definition of Done). Before each feature, pick up the questions it
+     settles exactly as `/steer-work` `start` does (governed mode gets this
+     through `work`); step 8 confirms them with the PO. Commit coherent units without asking
      (Commit-autonomy rule). **In PR flow** that's a single `feat/*` build
      branch, and the work stays local and provisional until the one v0 handoff
      PR (step 10); **in solo trunk** (chosen in step 1) commit directly to `main`

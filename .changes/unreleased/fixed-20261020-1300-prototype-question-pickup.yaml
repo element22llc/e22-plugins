@@ -1,0 +1,13 @@
+kind: Fixed
+body: |-
+    - **Fixed: questions parked to "settle with a prototype" were never
+      settled.** `/steer:spec clarify` parked look-and-feel questions until
+      implementation, but nothing read them when the feature was built. Such a
+      question is now explicitly non-blocking and names the option to build
+      first. `/steer:work start` (and `/steer:build` in prototype mode) builds
+      that option, and the PR lists each such question for its owner to
+      confirm on the running change. `/steer:build` puts them to the Product
+      Owner during the demo and records the answers.
+time: 2026-10-20T13:00:00.000000-04:00
+custom:
+    Slug: prototype-question-pickup

@@ -172,8 +172,10 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    - **Look facts up yourself** (the code, the existing spine); ask the human
      only for decisions.
    - **Don't talk through a question only something concrete can answer**
-     ("one long form or three steps?", "how should this feel?"). Record it as a `Q-NNN` whose title says it settles with a prototype
-     (`required_before: implementation`) and move on.
+     ("one long form or three steps?", "how should this feel?"). Record it as a
+     `Q-NNN` whose title says it settles with a prototype, naming the option to
+     build first (`impact: non-blocking`, `required_before: implementation` -
+     the build settles it), and move on.
    - **Stop when the rounds run dry** - nothing answerable left unasked,
      nothing silently assumed - then go to step 4. A marked question still
      unanswered is parked under `## Open questions`, never assumed.

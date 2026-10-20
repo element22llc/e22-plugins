@@ -24,7 +24,12 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   defines (§ Marker format), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
-  load linked specs (`steer:spec-path`, acceptance criteria); **check prior
+  load linked specs (`steer:spec-path`, acceptance criteria); **pick up the
+  questions this slice settles** - each open `impact: non-blocking` question in
+  the feature's `## Open questions` gated at `required_before: implementation`
+  is a decision the build makes: build the option it names (else the simplest)
+  and keep the list for `finish` (a *blocking* one already fails readiness,
+  above); **check prior
   learnings** - grep `spec/learnings/*.md` frontmatter (`area:`, `symptoms:`,
   `applies_when:`) for terms from the issue and the paths you expect to touch,
   and read only the files that match (no directory, nothing to do);
@@ -62,7 +67,11 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch
-  changes a `contract.md` (below), and record it with `link-delivery` - in
+  changes a `contract.md` (below), and listing each question `start` picked up
+  as settled by this change, for its owner to confirm on the running change. An
+  answer its owner gave in-session is folded now (resolved, with its
+  `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
+  open and the confirmation at review is its answer. Record the PR with `link-delivery` - in
   solo-trunk the closing trunk commit is that ref; **mark the PR ready for review** (`gh pr ready`) if it
   is still a draft, **then watch CI
   to conclusion** (`gh pr checks --watch`) before transitioning. The order matters and is
