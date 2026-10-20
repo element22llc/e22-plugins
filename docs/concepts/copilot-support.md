@@ -7,7 +7,7 @@ truth and how to install and refresh the Copilot side.
 
 !!! note "Scope"
     The Copilot target covers the **always-on standards**
-    (`.github/copilot-instructions.md`, read by both the CLI and VS Code), the
+    (`.github/copilot-instructions.md`, read by the CLI, the app and VS Code), the
     **skills** (as cross-tool `SKILL.md` on the CLI, and as
     `.agents/skills/steer-*/` in the open Agent Skills format, read by every
     non-Claude agent), **custom agents**
@@ -15,8 +15,8 @@ truth and how to install and refresh the Copilot side.
     instructions** (`.github/instructions/*.instructions.md`), **MCP servers**
     (`.vscode/mcp.json`), an opt-in **cloud coding-agent** setup workflow
     (`copilot-setup-steps.yml`). It does **not** cover hooks: **hook
-    enforcement is guaranteed on Claude Code only**. Both the Copilot CLI and
-    Copilot Chat in VS Code run the plugin's `hooks/hooks.json` directly and get
+    enforcement is guaranteed on Claude Code only**. The Copilot CLI (and so the
+    app) and Copilot Chat in VS Code run the plugin's `hooks/hooks.json` directly and get
     the hooks incidentally, with no parity promise. Skill *enforcement* still differs
     from Claude Code - see the sections below for the caveats.
 
