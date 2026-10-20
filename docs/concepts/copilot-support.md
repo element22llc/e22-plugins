@@ -236,6 +236,12 @@ surfaces differently:
   the same tree is discovered by **Cursor**, **Gemini CLI** and **Codex** without
   any further work.
 
+**Copilot code review** reads skills only from `.github/skills`, so none of
+steer's skills reach it. It reviews against the committed
+`.github/copilot-instructions.md`, which it now reads in full: the old
+4,000-character cap on code-review instructions is gone, leaving GitHub's advice
+to keep a file under about 1,000 lines.
+
 The build renders one `.agents/skills/steer-<skill>/` directory per skill -
 including every `user-invocable: false` gateway, which the model can reach even
 though no one can type them - carrying the **real skill body** and its supporting
@@ -354,14 +360,18 @@ Code only). So the scaffold ships **`.vscode/mcp.json`** - VS Code's `servers`
 schema - mirroring the same servers: the **GitHub** MCP server that the tracker
 gateway (`tracker-sync`, reached through `/steer-work` and its `issues` mode - it is
 `user-invocable: false`, so no one types it directly) is built around, and
-**context7** for current library docs. The GitHub server prompts once for a PAT
-(stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
-back to `gh` only.
+**context7** for current library docs. The GitHub server carries no token: VS
+Code signs in with the user's GitHub account on first use. It must not prompt
+for a PAT through a `${input:...}` variable, because VS Code's **Copilot harness**
+(the default for new chat sessions from VS Code 1.142) does not forward servers
+that need interactive input, so the server would be missing there. Without it,
+Copilot's tracker workflow falls back to `gh` only.
 
 Like the other Copilot artifacts, this file is **generated** - `gen_copilot_mcp.py`
 renders it from the plugin's `.mcp.json` (`mise run gen:copilot`), translating the
-one sanctioned difference: the auth placeholder (env var -> prompted input, mapped
-in the generator's `AUTH_INPUTS`). A byte-equality drift gate
+one sanctioned difference: the Claude-side PAT header is dropped, since VS Code
+signs in itself (the placeholders are listed in the generator's
+`VSCODE_SIGN_IN`). A byte-equality drift gate
 (`check_copilot_mcp.py`, part of `plugin-check`) fails the build if the committed
 mirror falls out of sync. Edit `.mcp.json` and regenerate - never hand-edit the
 template **in this repo**.

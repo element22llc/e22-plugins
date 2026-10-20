@@ -2,10 +2,9 @@
 
 ``gen_copilot_mcp.py`` renders ``plugins/steer/templates/scaffold/vscode/mcp.json``
 (VS Code's ``servers`` schema) from ``plugins/steer/.mcp.json`` (Claude's
-``mcpServers``), translating the auth placeholder (plugin user config -> prompted
-input). The
-gate byte-compares the committed mirror against a fresh render. The real plugin's
-mirror must already be in sync.
+``mcpServers``), dropping the GitHub PAT header that VS Code's own sign-in
+replaces. The gate byte-compares the committed mirror against a fresh render.
+The real plugin's mirror must already be in sync.
 """
 
 from __future__ import annotations
@@ -28,7 +27,7 @@ def _gh(auth: str) -> dict:
     return {**GITHUB, "headers": {"Authorization": f"Bearer {auth}"}}
 
 
-def test_render_translates_github_pat(tmp_path: Path):
+def test_render_drops_github_pat_for_vscode_sign_in(tmp_path: Path):
     src = tmp_path / ".mcp.json"
     src.write_text(_claude({"github": _gh("${user_config.github_pat}"), "markitdown": MARKITDOWN}))
     out = gen_copilot_mcp.render(src)
@@ -42,25 +41,37 @@ def test_render_translates_github_pat(tmp_path: Path):
     assert "You own this copy" in out
     assert "/steer:sync never rewrites .vscode/" in out
     assert "do not edit by hand" not in out
-    # The dotted user-config placeholder becomes a prompted input, with a matching
-    # inputs block. VS Code has no notion of Claude's plugin userConfig, so the
-    # reference must not survive into the mirror verbatim.
-    assert "${input:github_pat}" in out
+    # VS Code's Copilot harness does not forward a server that needs a
+    # ${input:...} prompt, so the PAT header is dropped and VS Code signs in to
+    # GitHub itself. Claude's userConfig reference must not survive either.
+    servers = json.loads(
+        "\n".join(ln for ln in out.splitlines() if not ln.lstrip().startswith("//"))
+    )["servers"]
+    assert servers["github"] == GITHUB
+    assert servers["markitdown"] == MARKITDOWN
+    assert "${input:" not in out
     assert "${user_config.github_pat}" not in out
-    assert '"inputs"' in out
-    assert '"servers"' in out
+    assert '"inputs"' not in out
+
+
+def test_render_keeps_other_headers(tmp_path: Path):
+    src = tmp_path / ".mcp.json"
+    gh = _gh("${user_config.github_pat}")
+    gh["headers"]["X-MCP-Toolsets"] = "issues"
+    src.write_text(_claude({"github": gh}))
+    out = gen_copilot_mcp.render(src)
+    assert '"X-MCP-Toolsets": "issues"' in out
+    assert "Authorization" not in out
 
 
 def test_render_passes_through_unmapped_placeholder(tmp_path: Path):
-    # A placeholder with no AUTH_INPUTS entry is carried through unchanged, and no
-    # inputs block is synthesized for it. Covers both placeholder shapes the
-    # regex accepts: a bare env var and a dotted user-config reference.
+    # A placeholder outside VSCODE_SIGN_IN is carried through unchanged. Covers both
+    # placeholder shapes the regex accepts: a bare env var and a dotted user-config reference.
     src = tmp_path / ".mcp.json"
     src.write_text(_claude({"svc": {"command": "x", "args": ["${OTHER}", "${user_config.other}"]}}))
     out = gen_copilot_mcp.render(src)
     assert "${OTHER}" in out
     assert "${user_config.other}" in out
-    assert '"inputs"' not in out
 
 
 def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
@@ -81,3 +92,4 @@ def test_real_plugin_in_sync(monkeypatch):
     monkeypatch.setattr(check_copilot_mcp, "CLAUDE_MCP", REPO_ROOT / check_copilot_mcp.CLAUDE_MCP)
     monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", REPO_ROOT / check_copilot_mcp.VSCODE_MCP)
     assert check_copilot_mcp.main() == 0
+    assert "${input:" not in (REPO_ROOT / check_copilot_mcp.VSCODE_MCP).read_text()
