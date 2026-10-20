@@ -31,6 +31,7 @@ already approved.
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) - usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; the PO-acceptance checkbox in `intent.md` (its `Status:` becomes `live` only at the actual release) |
 | A **notable event** - decision ratified, scope changed, repo-level event, PO document absorbed, incident (not an ordinary merged change) | `/spec/history/` entry: what, why, who asked, refs |
+| "We ran QA / UAT on <env> and found..." | Scripts in `/spec/testing/`; the run's report in `/spec/testing/runs/YYYY-MM-DD-HHMM-<slug>.md`, immutable once merged; each fix item an issue; a decision the run surfaced goes in the owning `contract.md` or an ADR - never only in the report |
 | "That failed because..." - a non-obvious root cause the final code, tests and docs do not explain | The strongest home that can carry it, learning file last - see section 3 |
 
 **In a polyrepo member** (`spec/PRODUCT.md` present), the product-level

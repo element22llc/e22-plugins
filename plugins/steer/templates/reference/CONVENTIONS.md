@@ -942,6 +942,9 @@ product spine, a member only its own (`/steer:reference polyrepo`).
 - **`/spec/decisions`** - ADRs.
 - **`/spec/learnings`** - non-obvious lessons no test, lint rule,
   contract or `CLAUDE.md` pattern could carry; created on first use.
+- **`/spec/testing`** - UAT / QA scripts; each QA run's report in
+  `runs/YYYY-MM-DD-HHMM-<slug>.md`, immutable once merged. Created on first
+  use.
 - **`/spec/sources`** - **recurring**, versioned PO source documents,
   maintained by `/steer:spec intake`.
 - **`/spec/reference`** - **one-off** source/research materials feeding the
