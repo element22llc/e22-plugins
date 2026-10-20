@@ -1,0 +1,12 @@
+kind: Fixed
+body: |-
+    - **Fixed: the GitHub MCP server now reaches VS Code's Copilot harness.**
+      The scaffolded `.vscode/mcp.json` asked for a GitHub token through a
+      prompt, and the Copilot harness, the default for new VS Code chat
+      sessions from 1.142, drops any server that needs one. The GitHub server
+      now signs in with your GitHub account in VS Code instead, and
+      `/steer:setup sync` removes the token prompt from repos that already
+      have the file.
+time: 2026-10-20T17:00:00.000000-04:00
+custom:
+    Slug: vscode-mcp-copilot-harness

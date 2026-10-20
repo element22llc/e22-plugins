@@ -12,12 +12,12 @@ so the two never diverge; ``check_copilot_mcp.py`` fails the build if the
 committed mirror drifts. The one sanctioned difference is authentication: Claude
 resolves the token from plugin user config (``${user_config.github_pat}``,
 prompted at install and held in the macOS Keychain or
-``~/.claude/.credentials.json``) while VS Code uses its own
-prompted input (``${input:github_pat}``) with a matching ``inputs`` block - two
-different secret stores, same "never in a repo file" property. That mapping
-lives in ``AUTH_INPUTS`` below - the MCP analog of ``gen_copilot_agents.py``'s
-``_TOOL_MAP``. Any ``${...}`` placeholder without an ``AUTH_INPUTS`` entry is
-carried through unchanged.
+``~/.claude/.credentials.json``), while VS Code signs in to GitHub's remote MCP
+server with its own GitHub account, so the mirror drops that header. It must
+not become a ``${input:...}`` prompt: VS Code's Copilot harness does not forward
+servers that need interactive input. ``VSCODE_SIGN_IN`` below lists the
+placeholders dropped this way; any other ``${...}`` placeholder is carried
+through unchanged.
 
 The mirror is JSONC (it carries ``//`` comments and an ``inputs`` block); VS Code
 tolerates both. Run from the repo root::
@@ -38,23 +38,9 @@ from typing import Any
 CLAUDE_MCP = Path("plugins/steer/.mcp.json")
 VSCODE_MCP = Path("plugins/steer/templates/scaffold/vscode/mcp.json")
 
-# Map each auth placeholder used on the Claude side to the VS Code prompted-input
-# it becomes, plus the ``inputs`` entry that declares it. Keys are the placeholder
-# names exactly as they appear inside ``${...}`` in ``.mcp.json`` - today that is
-# a ``user_config.*`` reference resolved from the plugin manifest's ``userConfig``
-# block, but a bare env-var name works the same way. The value's ``id`` is what
-# ``${input:<id>}`` references. Insertion order of the dict fields is preserved in
-# the emitted JSON (type, id, description, password).
-AUTH_INPUTS: dict[str, dict[str, Any]] = {
-    "user_config.github_pat": {
-        "type": "promptString",
-        "id": "github_pat",
-        "description": (
-            "GitHub personal access token for the GitHub MCP server (repo + issues scope)"
-        ),
-        "password": True,
-    },
-}
+# Placeholders whose header VS Code replaces with its own sign-in. Keys are the
+# names exactly as they appear inside ``${...}`` in ``.mcp.json``.
+VSCODE_SIGN_IN = frozenset({"user_config.github_pat"})
 
 # Matches ``${NAME}`` where NAME may be dotted, so both a bare env var
 # (``${FOO}``) and a plugin user-config reference (``${user_config.foo}``)
@@ -77,54 +63,23 @@ HEADER_COMMENT = [
 ]
 
 
-def _referenced_placeholders(obj: Any) -> list[str]:
-    """Placeholder names in first-appearance order across all strings."""
-    found: list[str] = []
-
-    def walk(value: Any) -> None:
-        if isinstance(value, dict):
-            for v in value.values():
-                walk(v)
-        elif isinstance(value, list):
-            for v in value:
-                walk(v)
-        elif isinstance(value, str):
-            for name in _PLACEHOLDER.findall(value):
-                if name not in found:
-                    found.append(name)
-
-    walk(obj)
-    return found
-
-
-def _to_vscode(obj: Any) -> Any:
-    """Rewrite mapped auth placeholders to ``${input:<id>}``; pass others through."""
-    if isinstance(obj, dict):
-        return {k: _to_vscode(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_to_vscode(v) for v in obj]
-    if isinstance(obj, str):
-
-        def repl(match: re.Match[str]) -> str:
-            name = match.group(1)
-            spec = AUTH_INPUTS.get(name)
-            return f"${{input:{spec['id']}}}" if spec else match.group(0)
-
-        return _PLACEHOLDER.sub(repl, obj)
-    return obj
+def _to_vscode(server: dict[str, Any]) -> dict[str, Any]:
+    """Drop headers that carry a ``VSCODE_SIGN_IN`` placeholder."""
+    headers = {
+        k: v
+        for k, v in server.get("headers", {}).items()
+        if not set(_PLACEHOLDER.findall(v)) & VSCODE_SIGN_IN
+    }
+    out = {k: v for k, v in server.items() if k != "headers"}
+    if headers:
+        out["headers"] = headers
+    return out
 
 
 def render(src: Path = CLAUDE_MCP) -> str:
     """Return the full VS Code ``mcp.json`` text (JSONC, single trailing newline)."""
     servers = json.loads(src.read_text(encoding="utf-8")).get("mcpServers", {})
-    inputs = [
-        dict(AUTH_INPUTS[name]) for name in _referenced_placeholders(servers) if name in AUTH_INPUTS
-    ]
-
-    doc: dict[str, Any] = {}
-    if inputs:
-        doc["inputs"] = inputs
-    doc["servers"] = _to_vscode(servers)
+    doc = {"servers": {name: _to_vscode(server) for name, server in servers.items()}}
 
     lines = json.dumps(doc, indent=2).split("\n")
     commented = [lines[0]] + [f"  {c}" for c in HEADER_COMMENT] + lines[1:]
