@@ -118,7 +118,7 @@ caller reads only the ops it performs:
 | Operations | Read |
 |---|---|
 | the core - `find`, `get`, `create`, `update-state`, `claim`, `comment`, `link-delivery`, `close`/`reopen` - plus the API boundary and the cross-repo closing-ref rule | [`OPERATIONS.md`](OPERATIONS.md) |
-| `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`/`field-set`, `bootstrap-fields`, `link-parent`, `link-related`, `link-blocked-by` | [`OPERATIONS-GITHUB.md`](OPERATIONS-GITHUB.md) |
+| `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`/`field-set`, `bootstrap-fields`, `link-parent`, `link-related`, `link-blocked-by`, `delivery-evidence` | [`OPERATIONS-GITHUB.md`](OPERATIONS-GITHUB.md) |
 
 **Read `OPERATIONS.md` before your first operation** - it carries the boundary
 that binds both files, and the core is what the issue lifecycle runs on. Read the

@@ -3,7 +3,7 @@
 Read this file **only when** you are about to perform one of the operations it
 lists: `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`,
 `field-set`, `bootstrap-fields`, `link-parent`, `link-related`,
-`link-blocked-by`. The API boundary, the integration ladder and the core
+`link-blocked-by`, `delivery-evidence`. The API boundary, the integration ladder and the core
 operations are in
 [`OPERATIONS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS.md) and
 bind everything here - in particular the rule that **only the queries and
@@ -19,7 +19,7 @@ detects support first and reports a gap rather than fabricating config - and the
 
 Who reads this file: `/steer:spec roadmap` (milestones, dates), `/steer:issues
 decompose`/`epic` (types, parent and related links), `reconcile` (the labels and
-types it normalizes), `triage` and `board` (the Priority floor and the ranking
+types it normalizes, and the delivery evidence it weighs), `triage` and `board` (the Priority floor and the ranking
 read), `/steer:next` and `/steer:status` (Priority and milestone reads), and
 `/steer:setup init`/`adopt` (`bootstrap-fields`). `/steer:work` and the capture,
 status and materialize modes do not - the delivery path is core-only.
@@ -145,3 +145,39 @@ parent per issue), which holds for every hop of the chain.
   double-counting in ranking; see `ISSUE-SCHEMA.md`). Idempotent. A blocked-by edge
   **informs** ranking and may *suggest* `steer:state=blocked`, but **never sets**
   it - `steer:state` stays canonical and a transition is the caller's decision.
+
+## Delivery evidence
+
+- **`delivery-evidence #N`** - read-only: the merged PRs that point at an open
+  issue, for `reconcile`'s delivered-but-open check. A PR **read** as evidence
+  about an issue stays inside this boundary; PR delivery does not. Never
+  confirms. The transport is the granted `gh api graphql` - no `gh pr` grant is
+  needed or added - else the MCP github PR tools, else report the check as not
+  run. Several issues share one query through GraphQL aliases; page
+  `timelineItems` to the end.
+
+  ```graphql
+  repository(owner: $owner, name: $repo) {
+    issue(number: $n) {
+      closedByPullRequestsReferences(first: 20, includeClosedPrs: true) {
+        nodes { number merged url repository { nameWithOwner } }
+      }
+      timelineItems(first: 100, itemTypes: [CROSS_REFERENCED_EVENT]) {
+        nodes { ... on CrossReferencedEvent { source { ... on PullRequest {
+          number merged url headRefName repository { nameWithOwner } } } } }
+      }
+    }
+  }
+  ```
+
+  Then resolve the issue's own markers. `steer:pull-request=<pr>`: read
+  `pullRequest(number: $pr) { merged headRefName }` in the repo its
+  `steer:branch` belongs to. The branch (or, in a polyrepo, the `/steer:work`
+  default `issue/<N>-`): a merged-PR search per code repo - the workspace and
+  every member in `spec/workspace.yml` -
+  `search(type: ISSUE, query: "repo:<owner/repo> is:pr is:merged head:<branch>")`.
+  **`head:` matches a prefix**, so keep only an exact `headRefName` match, or for
+  the convention one starting with `issue/<N>-` - `issue/42` must not match
+  `issue/421-...`. Return each merged PR with its tier: **strong** (named by a
+  marker or in the closing references), **medium** (a cross-reference only),
+  **weak** (found by the `issue/<N>-` convention alone, in a member).

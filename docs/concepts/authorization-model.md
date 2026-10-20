@@ -223,7 +223,8 @@ narrow slice**, each for a different transport:
   this repo. Treat it as a review obligation, not a guardrail.
 - `/steer:tracker-sync` carries `Bash(gh api graphql:*)` as a scoped carve-out, so a
   Projects v2 issue-field read does not prompt on a direct invocation - `field-get`,
-  plus the `field-set` / `link-blocked-by` / `bootstrap-fields` operations that sit
+  plus the `field-set` / `link-blocked-by` / `bootstrap-fields` / `delivery-evidence`
+  (an issue's linked merged PRs, read-only) operations that sit
   inside the gateway's declared tracker-metadata boundary. GraphQL is the transport to
   reach for on these: the REST equivalents fall outside every granted prefix and so
   prompt, and the MCP github tools are granted but expose issue fields only where the org

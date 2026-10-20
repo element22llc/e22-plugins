@@ -24,9 +24,10 @@ user-invocable: false
 # deliberately NOT listed - it stays host-gated.
 #
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
-# reads/writes and native blocked-by edges have no `gh issue` subcommand, so GraphQL is
-# the transport to reach for on `field-get`, `field-set`, `link-blocked-by` and
-# `bootstrap-fields` - all four squarely inside this gateway's declared
+# reads/writes, native blocked-by edges and an issue's linked PRs have no `gh issue`
+# subcommand, so GraphQL is the transport to reach for on `field-get`, `field-set`,
+# `link-blocked-by`, `bootstrap-fields` and `delivery-evidence` - all five squarely
+# inside this gateway's declared
 # tracker-metadata boundary (OPERATIONS-GITHUB.md). The fallbacks those ops
 # document are real
 # but neither substitutes cleanly: the REST endpoints sit outside every granted prefix
@@ -168,7 +169,7 @@ caller reads only the ops it performs:
 | Operations | Read |
 |---|---|
 | the core - `find`, `get`, `create`, `update-state`, `claim`, `comment`, `link-delivery`, `close`/`reopen` - plus the API boundary and the cross-repo closing-ref rule | [`OPERATIONS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS.md) |
-| `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`/`field-set`, `bootstrap-fields`, `link-parent`, `link-related`, `link-blocked-by` | [`OPERATIONS-GITHUB.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS-GITHUB.md) |
+| `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`/`field-set`, `bootstrap-fields`, `link-parent`, `link-related`, `link-blocked-by`, `delivery-evidence` | [`OPERATIONS-GITHUB.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS-GITHUB.md) |
 
 **Read `OPERATIONS.md` before your first operation** - it carries the boundary
 that binds both files, and the core is what the issue lifecycle runs on. Read the
