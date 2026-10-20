@@ -94,6 +94,32 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `.vscode/mcp.json` GitHub server drops the PAT prompt
+
+(Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
+
+- **What & why:** the scaffolded `.vscode/mcp.json` gave the `github` server its
+  token through `Bearer ${input:github_pat}`. VS Code's Copilot harness, the
+  default for new chat sessions from VS Code 1.142, does not forward servers
+  that need a `${input:...}` value, so the GitHub server was missing from those
+  sessions. The template now carries no token: VS Code signs in to GitHub's
+  remote MCP server with the user's GitHub account. Tracked as issue #764.
+- **Precondition:** the installed file still prompts for the PAT -
+
+  ```sh
+  grep -n 'input:github_pat' .vscode/mcp.json 2>/dev/null
+  ```
+
+  No output => already migrated, or the dev wired the token differently => no-op.
+- **Action:** read-then-propose; show the diff. In `servers.github`, remove the
+  `Authorization` header and the `headers` object if it is left empty. In
+  `inputs`, remove the entry whose `id` is `github_pat`, and the `inputs` array
+  if it is left empty. Leave every other server, header and input as it is.
+  Tell the dev VS Code asks them to sign in to GitHub the first time the server
+  starts; the PAT it stored for the old prompt is no longer used.
+
+  **No history entry is earned.**
+
 ### v7.10.0 - Dependabot auto-merge moves into `ci.yml` and stops approving
 
 - **What & why:** the standalone `dependabot-auto-merge.yml` approved with

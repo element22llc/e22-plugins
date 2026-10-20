@@ -3,21 +3,10 @@
   // mirrored for Copilot in VS Code. You own this copy: merge it additively and
   // drop servers you do not use; /steer:sync never rewrites .vscode/.
   // Plugin repo: regenerate with `mise run gen:copilot`.
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "github_pat",
-      "description": "GitHub personal access token for the GitHub MCP server (repo + issues scope)",
-      "password": true
-    }
-  ],
   "servers": {
     "github": {
       "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${input:github_pat}"
-      }
+      "url": "https://api.githubcopilot.com/mcp/"
     },
     "context7": {
       "type": "http",
