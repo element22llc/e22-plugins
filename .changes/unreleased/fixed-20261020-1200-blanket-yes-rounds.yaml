@@ -1,0 +1,14 @@
+kind: Fixed
+body: |-
+    - **Fixed: a blanket "yes" to a question round had no defined meaning.**
+      `/steer:spec` and `/steer:questions` told you to word each question so
+      "yes" accepts its recommended answer, then said an "ok" to every
+      recommendation decided nothing. Now a blanket reply accepts every
+      recommendation except the questions marked, when asked, as needing your
+      own answer: anything high-risk, what your data means (deleting,
+      retention, who sees what) and scope. Those stay open until answered. The
+      next message names what was accepted, and a resolved question records
+      that its answer was a recommendation you accepted.
+time: 2026-10-20T12:00:00.000000-04:00
+custom:
+    Slug: blanket-yes-rounds
