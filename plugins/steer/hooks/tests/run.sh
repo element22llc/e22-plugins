@@ -4245,6 +4245,7 @@ assert_has "inject copilot: envelope carries the last rule" "${out}" 'End-of-ses
 assert_has "inject copilot: envelope carries the scoped issue-first rule" "${out}" 'Issue-first (GitHub-adopted repos)'
 assert_has "inject copilot: refresh hint names the VS Code update path" "${out}" 'Extensions view'
 assert_has "inject copilot: refresh hint names the CLI update path" "${out}" 'copilot plugin update steer'
+assert_has "inject copilot: refresh hint names the Copilot app update path" "${out}" 'Customize > Plugins in the Copilot app'
 printf '%s' "${out}" | grep -q 'part 1/' && bad "inject copilot: envelope must not be labelled as a part" || ok
 printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' && bad "inject copilot: no rule may be dropped (cap lifted)" || ok
 # (a2) The Copilot CLI's payload (no "model") is detected the same way - before

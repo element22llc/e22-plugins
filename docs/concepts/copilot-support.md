@@ -1,7 +1,7 @@
 # GitHub Copilot support
 
 steer is built for Claude Code, but teammates who use **GitHub Copilot** - either
-the **Copilot CLI** or **Copilot in VS Code** - can pick up the same org
+the **Copilot CLI**, the **GitHub Copilot app** or **Copilot in VS Code** - can pick up the same org
 engineering standards. This page explains how all surfaces share one source of
 truth and how to install and refresh the Copilot side.
 
@@ -140,6 +140,16 @@ copilot plugin install steer@e22-plugins
 The CLI loads the skills via the Copilot plugin manifest and reads the standards
 from `.github/copilot-instructions.md` in the repo.
 
+### GitHub Copilot app
+
+The [desktop app](https://github.com/features/ai/github-app) runs each session
+on an embedded Copilot CLI runtime, so steer behaves there exactly as on the
+CLI: the same plugin hooks, skills (`/steer:<skill>`) and committed
+instructions file. Install it from **Customize > Plugins**: add the
+`element22llc/e22-plugins` marketplace, then install `steer`. Each app session
+runs in its own git worktree, which carries the committed Copilot files like any
+checkout.
+
 ### OpenAI Codex (CLI and app)
 
 ```shell
@@ -180,7 +190,8 @@ standards load regardless of a teammate's VS Code defaults.
 
 Where the plugin is installed, the always-on rules need no refresh: the
 SessionStart hook reads them from the installed plugin, so a plugin update
-(`copilot plugin update steer` on the CLI, the Extensions view in VS Code) is the
+(`copilot plugin update steer` on the CLI, Customize > Plugins in the Copilot
+app, the Extensions view in VS Code) is the
 whole upgrade path for the injected copy. The **committed** Copilot files - the instructions
 fallback, the cross-tool skill tree, custom agents, path-scoped instructions -
 are a **static snapshot**, so they go stale when steer's rules or skills change.

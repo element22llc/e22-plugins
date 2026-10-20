@@ -133,7 +133,7 @@ steer_chars() {
 # the others say which part they are and that order is not meaningful.
 refresh_hint() {
 	if [ "${HOST}" = "copilot" ]; then
-		printf 'Update the plugin to refresh: `copilot plugin update steer` on the CLI, the Extensions view in VS Code.'
+		printf 'Update the plugin to refresh: `copilot plugin update steer` on the CLI, Customize > Plugins in the Copilot app, the Extensions view in VS Code.'
 	else
 		printf 'Run `/plugin update steer@e22-plugins` to refresh.'
 	fi
