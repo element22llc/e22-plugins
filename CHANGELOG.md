@@ -3,6 +3,109 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.12.0
+
+- **Added: QA and UAT material has a home in the spec.** It had none, so
+  agents invented one. UAT and QA test scripts now live in `spec/testing/`, and each QA
+  run's report or fix brief in `spec/testing/runs/`, named like a history
+  entry and immutable once merged. A run's fix items still become issues,
+  and a decision it surfaces still goes in the owning `contract.md` or an
+  ADR, never only in the report. `/steer:work tidy` files such strays
+  there, and in a polyrepo the folder belongs to the workspace.
+- **Fixed: a blanket "yes" to a question round had no defined meaning.**
+  `/steer:spec` and `/steer:questions` told you to word each question so
+  "yes" accepts its recommended answer, then said an "ok" to every
+  recommendation decided nothing. Now a blanket reply accepts every
+  recommendation except the questions marked, when asked, as needing your
+  own answer: anything high-risk, what your data means (deleting,
+  retention, who sees what) and scope. Those stay open until answered. The
+  next message names what was accepted, and a resolved question records
+  that its answer was a recommendation you accepted.
+- **Fixed: questions parked to "settle with a prototype" were never
+  settled.** `/steer:spec clarify` parked look-and-feel questions until
+  implementation, but nothing read them when the feature was built. Such a
+  question is now explicitly non-blocking and names the option to build
+  first. `/steer:work start` (and `/steer:build` in prototype mode) builds
+  that option, and the PR lists each such question for its owner to
+  confirm on the running change. `/steer:build` puts them to the Product
+  Owner during the demo and records the answers.
+- **Changed: every steer interview asks in rounds with a recommended
+  answer.** The question-round rules from `/steer:spec` and
+  `/steer:questions` now live in one place, and the `/steer:build`,
+  `/steer:setup` (new repo and legacy template fork) and
+  `/steer:setup adopt` interviews follow them too: questions whose
+  prerequisites are settled come together, each with a recommended answer
+  "yes" accepts. In setup, the stack defaults and the tracker your git
+  remote implies are the recommendations; accepting the stack default this
+  way still leaves its decision record proposed, not accepted. In adopt,
+  what the code already shows is the recommendation. In a build, what
+  "delete" and retention mean is always yours to answer, never settled by
+  a blanket "yes".
+- **Changed: the Product Owner questionnaire suggests answers.**
+  `/steer:spec questions bundle` now shows a recommended answer beside
+  each question, which the Product Owner accepts by writing "yes". The
+  answer field itself is never pre-filled. Questions that are high-risk,
+  about what the data means, or about scope show options to choose from
+  instead, and a bare "yes" to one of those counts as unanswered. When
+  `/steer:spec intake clarify` reads the returned form, a "yes" resolves
+  to the recommendation it accepted, quoted alongside it, and the resolved
+  question records that it was a recommendation the Product Owner
+  accepted.
+- **Added: `/steer:work issues reconcile --all` now clears stale issues in
+  one pass.** It finds open issues a merged PR already delivered and
+  proposes closing them, ranked by how strong the evidence is; a polyrepo
+  member PR that matches the workspace issue only by its branch name is
+  shown as a candidate, never proposed for closing. Issues with no update in
+  `workflow.stale_issue_days` (90 by default, in `/spec/tracker.md`) are
+  proposed for closing as not planned when nothing has started on them, and
+  surfaced to their owner when work is claimed. In a polyrepo it also
+  sweeps every member's tracker the same way - so an issue Copilot filed and
+  delivered in a member is closed there - flags product issues filed there
+  instead of the workspace, and names any member it could not reach.
+  Proposals are grouped by who decides them and confirmed once.
+- **Fixed: the always-on rules now reach Copilot CLI sessions.** The
+  Copilot CLI runs the plugin's `hooks/hooks.json` whatever its manifest
+  declares, but its SessionStart payload carries no `model` field, so the
+  ruleset injector took it for Claude Code and printed raw text, which the
+  CLI discards. The injector now recognises the CLI the way it recognises
+  VS Code - a `timestamp` and no `permission_mode` - and sends the whole
+  ruleset as one JSON object the CLI reads. The refresh hint names both
+  update paths, and the docs no longer claim the CLI runs no steer hooks.
+  It runs the gate hooks too, but they do not gate there yet: the
+  version-pin check cannot read the CLI's file-tool payload and lets the
+  write through.
+- **Fixed: Copilot now honours the scoping on steer's generated custom
+  agent and path-scoped instructions.** `.github/agents/steer-reviewer.agent.md`
+  and `.github/instructions/*.instructions.md` opened with a
+  generated-file comment before their frontmatter, and Copilot parses no
+  frontmatter behind one. So the reviewer lost its read-only `tools` list
+  and the infrastructure standards lost their `applyTo` glob. The comment
+  now follows the frontmatter, and the reviewer's tools use VS Code's
+  current tool-set names (`read`, `search`; `codebase` is no longer a set
+  of its own). Run `/steer:setup sync` to refresh the committed copies.
+- **Fixed: the GitHub MCP server now reaches VS Code's Copilot harness.**
+  The scaffolded `.vscode/mcp.json` asked for a GitHub token through a
+  prompt, and the Copilot harness, the default for new VS Code chat
+  sessions from 1.142, drops any server that needs one. The GitHub server
+  now signs in with your GitHub account in VS Code instead, and
+  `/steer:setup sync` removes the token prompt from repos that already
+  have the file.
+- **Fixed: the scaffold no longer claims Copilot code review reads steer's
+  skills.** Code review reads skills only from `.github/skills`, not the
+  `.agents/skills/` tree steer installs, so it reviews against
+  `.github/copilot-instructions.md` alone. That file already carries the
+  Definition of Done, drift gates and high-risk areas, and code review now
+  reads it in full.
+- **Fixed: Copilot no longer loads the standards twice.** With the plugin
+  installed, a VS Code session got the rules from the plugin and again from
+  the repo's `.github/copilot-instructions.md`, about 50 KB each time, and
+  the Copilot CLI and GitHub Copilot app would have too once the plugin
+  began reaching them. When that file is current for the installed plugin
+  version, the plugin now leaves those rules to it and adds only the ones
+  the file does not carry, such as the infrastructure rule. A repo whose
+  copy is out of date still gets the current rules from the plugin, and
+  its update hint now names the app's Customize > Plugins too.
+
 ## 7.11.0
 
 - **Changed: `/steer:spec` and `/steer:questions` ask in rounds.** Instead of

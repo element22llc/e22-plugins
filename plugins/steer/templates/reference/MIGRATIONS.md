@@ -94,9 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `.vscode/mcp.json` GitHub server drops the PAT prompt
-
-(Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
+### v7.12.0 - `.vscode/mcp.json` GitHub server drops the PAT prompt
 
 - **What & why:** the scaffolded `.vscode/mcp.json` gave the `github` server its
   token through `Bearer ${input:github_pat}`. VS Code's Copilot harness, the
