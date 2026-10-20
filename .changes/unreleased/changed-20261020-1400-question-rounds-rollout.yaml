@@ -1,0 +1,17 @@
+kind: Changed
+body: |-
+    - **Changed: every steer interview asks in rounds with a recommended
+      answer.** The question-round rules from `/steer:spec` and
+      `/steer:questions` now live in one place, and the `/steer:build`,
+      `/steer:setup` (new repo and legacy template fork) and
+      `/steer:setup adopt` interviews follow them too: questions whose
+      prerequisites are settled come together, each with a recommended answer
+      "yes" accepts. In setup, the stack defaults and the tracker your git
+      remote implies are the recommendations; accepting the stack default this
+      way still leaves its decision record proposed, not accepted. In adopt,
+      what the code already shows is the recommendation. In a build, what
+      "delete" and retention mean is always yours to answer, never settled by
+      a blanket "yes".
+time: 2026-10-20T14:00:00.000000-04:00
+custom:
+    Slug: question-rounds-rollout

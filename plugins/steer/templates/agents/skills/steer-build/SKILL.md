@@ -131,7 +131,8 @@ These hold for the whole build, at every step.
 2. **Interview -> product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`):
    ask plain-language questions to fill `spec/vision.md`,
-   `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; product-level
+   `spec/users.md`, and `spec/glossary.md`, in rounds with a recommended answer
+   each per [`QUESTION-ROUNDS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/QUESTION-ROUNDS.md). Ask, don't invent; product-level
    ambiguity goes to `vision.md` -> `## Open questions`. If the PO has a Claude
    Design export, read it
    per `/steer-reference design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
@@ -162,7 +163,8 @@ These hold for the whole build, at every step.
    including **Key concepts & data** and **Lifecycle expectations**: ask the
    PO plainly what each thing is, what it must remember, and what "delete"
    should mean (*gone forever or recoverable? for how long? what happens to
-   related items?*). The PO defines these **semantics**; the schema and
+   related items?*) - marked questions in those rounds, which a blanket "yes"
+   never settles. The PO defines these **semantics**; the schema and
    deletion mechanics derived from them are the dev's to confirm at review.
    If the PO wants to **work on a feature's spec more before building it** -
    explore edge cases, sharpen acceptance criteria, drive open questions down -

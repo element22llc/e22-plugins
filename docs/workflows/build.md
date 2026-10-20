@@ -30,7 +30,10 @@ five plain-language steps - you never type an issue, spec, or work command:
    `/steer:build <your idea>`, or just say it - the always-on router rule sends it
    to the right skill.
 2. **Claude interviews you and routes the work.** It asks the questions it needs
-   (who uses it, what matters, what's out of scope), turns your answers into a
+   (who uses it, what matters, what's out of scope) a few at a time, each with
+   a suggested answer you can accept with a "yes" - except what your data
+   means, such as what "delete" should do, which is always yours to answer. It
+   turns your answers into a
    spec, and pauses for you to **approve** before any code is written. Behind the
    scenes it handles the issue, the spec, and the work items for you.
 3. **Preview it locally.** Claude builds a working local app and tells you how to
