@@ -45,7 +45,8 @@ Do not change the "[feature] Q-NNN" heading lines - they map your answers to the
 <!-- steer:q feature=product id=Q-004 kind=access source=spec/vision.md -->
 > Context: policy/delivery.yml declares a prod environment; no one outside the client can read its logs yet.
 > Do not paste passwords, keys or tokens here. Name who should get access, or where an existing secret is stored - never the secret itself.
-> Recommended: yes - grant the client's on-call lead read-only access.
+> Options: a) the client's on-call lead, read-only  b) the client's whole ops team, read-only - recommended: a
+> Choose one; "yes" does not answer this question.
 
 **Answer:**
 _(type your answer here)_

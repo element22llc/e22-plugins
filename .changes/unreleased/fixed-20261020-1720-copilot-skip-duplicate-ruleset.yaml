@@ -1,9 +1,10 @@
 kind: Fixed
 body: |-
     - **Fixed: Copilot no longer loads the standards twice.** With the plugin
-      installed, a Copilot CLI, GitHub Copilot app or VS Code session got the
-      rules from the plugin and again from the repo's
-      `.github/copilot-instructions.md`, about 50 KB each time. When that file is current for the installed plugin
+      installed, a VS Code session got the rules from the plugin and again from
+      the repo's `.github/copilot-instructions.md`, about 50 KB each time, and
+      the Copilot CLI and GitHub Copilot app would have too once the plugin
+      began reaching them. When that file is current for the installed plugin
       version, the plugin now leaves those rules to it and adds only the ones
       the file does not carry, such as the infrastructure rule. A repo whose
       copy is out of date still gets the current rules from the plugin, and
