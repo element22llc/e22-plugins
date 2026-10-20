@@ -454,8 +454,9 @@ the standards in `.github/copilot-instructions.md`.
 - **The committed file is the floor, the hook is the bonus.** Where the plugin
   is installed, both Copilot surfaces also receive the live ruleset from the
   SessionStart hook, except when the committed file is byte-identical to the
-  plugin's own copy: the rules are then already loaded, and the hook emits a
-  one-line notice instead of a second ~50 KB copy. Where it is not - the
+  plugin's own copy: those rules are then already loaded, so the hook injects
+  only the path-scoped rules the file leaves out, under a one-line notice,
+  instead of a second ~50 KB copy. Where it is not - the
   cloud agent, code review, a teammate without the plugin - the committed
   `.github/copilot-instructions.md` is the whole always-on surface. It is
   installed by `/steer:setup init` and refreshed by `/steer:setup sync`; a repo

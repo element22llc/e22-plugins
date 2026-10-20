@@ -141,7 +141,9 @@ refresh_hint() {
 
 part_header() {
 	if [ "$1" -eq 1 ]; then
-		if [ "${PARTS}" -eq 1 ]; then
+		if [ "${FLAT_CURRENT}" -eq 1 ]; then
+			printf '<!-- Engineering standards - steer plugin v%s: .github/copilot-instructions.md matches this plugin version, so its rules are not injected again; only rules it does not carry follow. If its rules are not in your context, run /steer:standards. -->\n' "${VERSION}"
+		elif [ "${PARTS}" -eq 1 ]; then
 			printf '<!-- Engineering standards - steer plugin v%s. %s -->\n' "${VERSION}" "$(refresh_hint)"
 		else
 			printf '<!-- Engineering standards - steer plugin v%s, part 1/%s. The other parts arrive as separate SessionStart blocks, in any order; the numeric rule prefixes give the sequence. %s -->\n' "${VERSION}" "${PARTS}" "$(refresh_hint)"
@@ -172,12 +174,14 @@ WORK_MODE="$(steer_work_mode "${CWD}")"
 
 # Copilot also loads the repo's .github/copilot-instructions.md, the same ruleset
 # rendered flat. When it is byte-identical to this plugin's copy it is current,
-# so injecting again would double ~50 KB of context (#767). Code mode only: the
-# knowledge and advisory banners exist nowhere but here.
+# so only the rules it leaves out (the path-scoped ones) are injected; the rest
+# would double ~50 KB of context (#767). Code mode only: the knowledge and
+# advisory banners exist nowhere but here.
+FLAT="${ROOT}/templates/github/copilot-instructions.md"
+FLAT_CURRENT=0
 if [ "${HOST}" = "copilot" ] && [ "${WORK_MODE}" = "code" ] && [ -n "${CONSUMER_ROOT}" ] &&
-	cmp -s "${CONSUMER_ROOT}/.github/copilot-instructions.md" "${ROOT}/templates/github/copilot-instructions.md"; then
-	printf '<!-- Engineering standards - steer plugin v%s: not injected, because .github/copilot-instructions.md matches this plugin version and carries the same rules. If those rules are not in your context, run /steer:standards. -->\n' "${VERSION}" | emit_context
-	exit 0
+	cmp -s "${CONSUMER_ROOT}/.github/copilot-instructions.md" "${FLAT}"; then
+	FLAT_CURRENT=1
 fi
 
 if [ ! -d "${RULES_DIR}" ]; then
@@ -264,6 +268,10 @@ for _srow in ${_sizes}; do
 		_skip=1
 		;;
 	esac
+	if [ "${FLAT_CURRENT}" -eq 1 ] && grep -qxF "$(grep -m1 '^#' "${f}")" "${FLAT}"; then
+		IFS="${NL}"
+		continue
+	fi
 	if [ "${_skip}" -eq 1 ]; then
 		_size=$((_size - _firstlen + 2))
 	else
