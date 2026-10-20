@@ -7,9 +7,10 @@ body: |-
       CLI discards. The injector now recognises the CLI the way it recognises
       VS Code - a `timestamp` and no `permission_mode` - and sends the whole
       ruleset as one JSON object the CLI reads. The refresh hint names both
-      update paths, and the docs no longer claim the CLI runs no steer hooks:
-      it runs the version-pin `deny` gate too, and treats `ask` as a deny in
-      autopilot and `-p` runs.
+      update paths, and the docs no longer claim the CLI runs no steer hooks.
+      It runs the gate hooks too, but they do not gate there yet: the
+      version-pin check cannot read the CLI's file-tool payload and lets the
+      write through.
 time: 2026-10-20T16:00:00.000000-04:00
 custom:
     Slug: copilot-cli-rule-injection
