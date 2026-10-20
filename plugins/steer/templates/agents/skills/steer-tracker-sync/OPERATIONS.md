@@ -80,7 +80,9 @@ is no less bounded by it.
 - **`find`** - locate issues and resolve identity. Searches by marker
   (`steer:finding-key`, `steer:feature-id`+kind, `steer:question-id`,
   `steer:dedupe-key`), by text, or by the arm's own metadata filters, across
-  **all** states (open + closed), scoped to this repo. Identity resolves in the
+  **all** states (open + closed), scoped to this repo - unless the caller names
+  another `repository:`, as `reconcile --all`'s polyrepo member sweep does
+  (`gh issue list --repo` is already granted). Identity resolves in the
   dedup order: explicit `#N` -> `finding-key` -> `feature-id`+kind ->
   `question-id` -> `dedupe-key` -> semantic title (**candidates only**). Exact
   match -> reuse; multiple exact matches -> stop and report; semantic candidate

@@ -170,10 +170,11 @@ parent per issue), which holds for every hop of the chain.
   }
   ```
 
-  Then resolve the issue's own markers: `steer:pull-request=<pr>` by reading
-  that PR's `merged` in the repo its `steer:branch` belongs to, and the branch
-  (or, in a polyrepo, the `/steer:work` default `issue/<N>-`) with a merged-PR
-  search per code repo - the workspace and every member in `spec/workspace.yml`:
+  Then resolve the issue's own markers. `steer:pull-request=<pr>`: read
+  `pullRequest(number: $pr) { merged headRefName }` in the repo its
+  `steer:branch` belongs to. The branch (or, in a polyrepo, the `/steer:work`
+  default `issue/<N>-`): a merged-PR search per code repo - the workspace and
+  every member in `spec/workspace.yml` -
   `search(type: ISSUE, query: "repo:<owner/repo> is:pr is:merged head:<branch>")`.
   **`head:` matches a prefix**, so keep only an exact `headRefName` match, or for
   the convention one starting with `issue/<N>-` - `issue/42` must not match

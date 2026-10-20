@@ -83,11 +83,13 @@ which also resets its clock, so the next sweep does not re-propose it.
 
 **Polyrepo - the member trackers.** In a workspace (or a member, resolved to it
 by step 3), also read the open issues of every member in `spec/workspace.yml`,
-by its `repository:`. A **stray** is a member issue carrying `steer:` markers -
-product work filed outside the workspace tracker. Run the delivered-but-open and
-idle checks on strays too, and propose moving the rest to the workspace; the
-move is done by hand (`gh issue transfer`), never by this sweep. A member issue
-with no `steer:` markers is the member's own - leave it alone. Name the members
+by its `repository:`. Run the delivered-but-open and idle checks on every one of
+them, against that member's own PRs - where a bare `Closes #N` does land, so an
+issue Copilot or a human filed in the member is caught there. A member issue
+carrying `steer:` markers that is still open after those checks is a **stray** -
+product work filed outside the workspace tracker: propose moving it to the
+workspace; the move is done by hand (`gh issue transfer`), never by this sweep.
+A member issue with no `steer:` markers stays where it is. Name the members
 covered and any **uncovered** one (`/steer-reference polyrepo` -> "Reporting
 across members").
 
