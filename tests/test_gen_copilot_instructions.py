@@ -72,3 +72,11 @@ def test_every_shipped_token_is_qualified_routed_or_exempted():
             or all(r in gen.SCOPED_RULES for r in rules)
         )
         assert decided, f"inject-when={token} ({rules}) is in neither map nor SCOPED_RULES"
+
+
+def test_path_scoped_files_open_with_frontmatter():
+    scoped = gen.render_scoped()
+    assert scoped
+    for name, text in scoped.items():
+        assert text.startswith("---\n"), name
+        assert "\napplyTo: " in text.split("\n---\n")[0], name

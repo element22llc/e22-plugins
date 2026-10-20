@@ -36,11 +36,13 @@ def test_renders_agent_with_mapped_tools_and_rewritten_refs(tmp_path: Path):
     agents = tmp_path / "agents"
     _make_agent(agents, "steer-reviewer")
     text = gen_copilot_agents.render_all(agents)["steer-reviewer.agent.md"]
-    # Read/Grep/Glob map to Copilot read-only tool sets; no edit/run tools leak in.
-    assert "codebase" in text
-    assert "search" in text
-    assert "editFiles" not in text
-    assert "runCommands" not in text
+    # Copilot parses no frontmatter behind a leading comment.
+    assert text.startswith("---\n")
+    front = text.split("---\n")[1]
+    # Read/Grep/Glob map to VS Code's read-only tool sets; no edit/execute set leaks in.
+    assert "- read\n" in front and "- search\n" in front
+    assert "edit" not in front.split("tools:")[1]
+    assert "execute" not in front
     # model: inherit is dropped (agent inherits the picker's model).
     assert "model:" not in text.split("---")[1]
     # /steer: cross-references are rewritten to the /steer- prompt names.

@@ -1,8 +1,8 @@
-<!-- Generated from the steer plugin's rules/12-stack-infra.md - do not edit by hand. Refresh with /steer:setup sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 ---
 applyTo: '**/*.tf,**/*.tofu,**/*.hcl,**/*.tfvars,**/*.tf.json,infra/**,live/**,modules/**,roles/**,playbooks/**,inventory/**'
 description: Infrastructure-as-code stack standards - applied when editing Terraform/OpenTofu/Terragrunt/Ansible/Pulumi files.
 ---
+<!-- Generated from the steer plugin's rules/12-stack-infra.md - do not edit by hand. Refresh with /steer:setup sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 ## Stack - infrastructure / IaC (e22 org pack)
 

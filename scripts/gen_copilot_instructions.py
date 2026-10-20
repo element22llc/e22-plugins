@@ -237,7 +237,8 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
             f"by hand. Refresh with /steer:setup sync from Claude Code in a managed repo, "
             f"or mise run gen:copilot in the plugin repo. -->"
         )
-        out[f"{spec['name']}.instructions.md"] = f"{header}\n---\n{front}\n---\n\n{body}\n"
+        # Frontmatter must open the file: Copilot parses none behind a leading comment.
+        out[f"{spec['name']}.instructions.md"] = f"---\n{front}\n---\n{header}\n\n{body}\n"
     return out
 
 
