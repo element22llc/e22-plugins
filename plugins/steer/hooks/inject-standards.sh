@@ -26,17 +26,18 @@
 # to stderr, which costs a session nothing). scripts/check_context_budget.py
 # runs every part of every profile pre-merge and fails on any drop.
 #
-# COPILOT CHAT IN VS CODE takes a different shape of the same payload. Its
-# SessionStart hook injects context too, but only from a JSON object on stdout
-# (`hookSpecificOutput.additionalContext`); raw text is discarded ("returned
-# non-JSON output"). There is no 10k cap there (120 K characters measured whole;
-# 10 MiB documented) but the LAST hook returning context wins, so the parts must
-# not be mirrored: when steer_hook_host says `copilot`, part 1 emits the WHOLE
-# eligible ruleset as one JSON object and every other part stays silent. VS Code
-# reaches this path by running this plugin's Claude hooks.json as-is, which is
-# why the host is detected from the payload here rather than declared by a
-# manifest (lib/json.sh, steer_hook_host). This is best-effort and carries no
-# parity promise: hook enforcement is guaranteed on Claude Code only.
+# COPILOT (VS Code Copilot Chat and the Copilot CLI) takes a different shape of
+# the same payload. Both run this plugin's Claude hooks.json as-is and inject
+# SessionStart context only from a JSON object on stdout - VS Code reads
+# `hookSpecificOutput.additionalContext`, the CLI a top-level `additionalContext`
+# - and discard raw text. There is no 10k cap there (10 MiB documented), and
+# older builds let the LAST hook returning context win (the CLI combines them
+# since 1.0.88), so the parts must not be mirrored: when steer_hook_host says
+# `copilot`, part 1 emits the WHOLE eligible ruleset as one JSON object carrying
+# both keys and every other part stays silent. The host is detected from the
+# payload (lib/json.sh, steer_hook_host) because no manifest declares it. This is
+# best-effort and carries no parity promise: hook enforcement is guaranteed on
+# Claude Code only.
 #
 # Design notes:
 #   - cwd is the CONSUMER repo, not the plugin, so paths use ${CLAUDE_PLUGIN_ROOT}.
@@ -92,9 +93,8 @@ CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 CONSUMER_ROOT="$(steer_repo_root "${CWD}" 2>/dev/null)" || CONSUMER_ROOT=""
 
-# ---- Host. Claude Code gets the parted raw-text delivery; Copilot Chat in VS
-# Code gets one JSON object from part 1 and silence from every other part (see
-# the header). The budget is lifted rather than removed: 2 M characters is far above
+# ---- Host. Claude Code gets the parted raw-text delivery; Copilot gets one
+# JSON object from part 1 and silence from every other part (see the header). The budget is lifted rather than removed: 2 M characters is far above
 # any ruleset and far below Copilot's 10 MiB stdout bound, so the partition
 # logic below runs unchanged and simply never splits or drops.
 HOST="$(steer_hook_host)"
@@ -106,10 +106,9 @@ if [ "${HOST}" = "copilot" ]; then
 fi
 
 # emit_context - stdin is the context text; on Claude it is the hook's stdout as
-# is, on Copilot it is wrapped in the envelope VS Code reads. The top-level
-# `additionalContext` key rides along for any Copilot surface that prefers it -
-# each surface ignores the key it does not read. Empty context emits nothing
-# rather than an envelope around "".
+# is, on Copilot it is wrapped in one envelope carrying the CLI's top-level key
+# and VS Code's nested one - each surface ignores the key it does not read.
+# Empty context emits nothing rather than an envelope around "".
 emit_context() {
 	if [ "${HOST}" = "copilot" ]; then
 		_ctx="$(steer_json_string)"
@@ -134,7 +133,7 @@ steer_chars() {
 # the others say which part they are and that order is not meaningful.
 refresh_hint() {
 	if [ "${HOST}" = "copilot" ]; then
-		printf 'Update the plugin from the Extensions view (VS Code) to refresh.'
+		printf 'Update the plugin to refresh: `copilot plugin update steer` on the CLI, the Extensions view in VS Code.'
 	else
 		printf 'Run `/plugin update steer@e22-plugins` to refresh.'
 	fi
