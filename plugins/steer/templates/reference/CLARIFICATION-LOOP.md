@@ -38,12 +38,14 @@ its **feature-scoped key**, `[<feature-id>] Q-NNN`:
 # steer clarification questionnaire
 <!-- steer:clarification-bundle -->
 Fill in each **Answer** block below, then send this file back.
+Where a question shows a Recommended answer, write "yes" to accept it.
 Do not change the "[feature] Q-NNN" heading lines - they map your answers to the spec.
 
 ## [product] Q-004 - Who should be granted read access to the production logs? [ACCESS]
 <!-- steer:q feature=product id=Q-004 kind=access source=spec/vision.md -->
 > Context: policy/delivery.yml declares a prod environment; no one outside the client can read its logs yet.
 > Do not paste passwords, keys or tokens here. Name who should get access, or where an existing secret is stored - never the secret itself.
+> Recommended: yes - grant the client's on-call lead read-only access.
 
 **Answer:**
 _(type your answer here)_
@@ -51,6 +53,8 @@ _(type your answer here)_
 ## [accounts] Q-017 - Should deleted accounts be purged or retained? [BLOCKING]
 <!-- steer:q feature=accounts id=Q-017 source=spec/features/accounts/intent.md -->
 > Context: the intent leaves the retention window for deleted accounts open.
+> Options: a) purge immediately  b) retain 30 days, then purge - recommended: b
+> Choose one; "yes" does not answer this question.
 
 **Answer:**
 _(type your answer here)_
@@ -79,6 +83,12 @@ _(type your answer here)_
   `steer:q` comment restates it as `kind=`. The tag is a label, not part of
   the key: the unit boundary is still the `## [<feature-id>] Q-NNN` heading,
   so segmentation and key matching are unchanged.
+- **A recommendation travels with its question.** A `> Recommended:` line is
+  the answer a bare "yes" (or "agreed", "ok") accepts; a marked question
+  ([`QUESTION-ROUNDS.md`](QUESTION-ROUNDS.md)) carries `> Options:` plus the
+  *Choose one* line instead, and a bare "yes" there answers nothing. The line
+  is part of the unit, so an accepted recommendation's quoted span includes it
+  and the fold stays auditable. Either line may be absent.
 - **Never a secret value.** Every `access` question carries the fixed
   *Do not paste passwords, keys or tokens here* line above its answer, because
   the returned document is committed under `spec/sources/`. If a returned
@@ -128,7 +138,9 @@ document: each such heading is a deliberate unit boundary. Segment **one unit
 per heading** - carrying the heading's feature-scoped key (both parts) and its
 `**Answer:**` body as the quoted span - rather than re-fusing them
 semantically. Treat an `**Answer:**` block left at its `_(type ...)_` placeholder -
-or otherwise empty - as unanswered: drop it, don't map it. Free-text the PO
+or otherwise empty - as unanswered: drop it, don't map it. A bare acceptance
+maps to the unit's `> Recommended:` text, quoted with it; under `> Options:` it
+is unanswered too, but named in the worklist so the PO is asked again. Free-text the PO
 added outside the question headings is segmented semantically as usual.
 
 ## The three-bucket worklist
