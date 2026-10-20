@@ -119,7 +119,8 @@ points at a real but empty directory.
 Two consequences worth knowing before adopting the topology:
 
 - **Reports must state their scope.** `/steer:next`, `/steer:status`,
-  `/steer:audit`, `/steer:spec roadmap` and `/steer:setup protect` name the members they
+  `/steer:audit`, `/steer:spec roadmap`, `/steer:work issues reconcile --all` and
+  `/steer:setup protect` name the members they
   covered and flag any they could reach neither way as **uncovered** - a fraction
   of a product presented as the whole is worse than a smaller, honest answer.
   `/steer:setup protect` in particular names the sibling repos still unprotected, so a
