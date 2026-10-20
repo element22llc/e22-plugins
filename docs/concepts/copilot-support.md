@@ -1,13 +1,13 @@
 # GitHub Copilot support
 
 steer is built for Claude Code, but teammates who use **GitHub Copilot** - either
-the **Copilot CLI** or **Copilot in VS Code** - can pick up the same org
+the **Copilot CLI**, the **GitHub Copilot app** or **Copilot in VS Code** - can pick up the same org
 engineering standards. This page explains how all surfaces share one source of
 truth and how to install and refresh the Copilot side.
 
 !!! note "Scope"
     The Copilot target covers the **always-on standards**
-    (`.github/copilot-instructions.md`, read by both the CLI and VS Code), the
+    (`.github/copilot-instructions.md`, read by the CLI, the app and VS Code), the
     **skills** (as cross-tool `SKILL.md` on the CLI, and as
     `.agents/skills/steer-*/` in the open Agent Skills format, read by every
     non-Claude agent), **custom agents**
@@ -15,8 +15,8 @@ truth and how to install and refresh the Copilot side.
     instructions** (`.github/instructions/*.instructions.md`), **MCP servers**
     (`.vscode/mcp.json`), an opt-in **cloud coding-agent** setup workflow
     (`copilot-setup-steps.yml`). It does **not** cover hooks: **hook
-    enforcement is guaranteed on Claude Code only**. Both the Copilot CLI and
-    Copilot Chat in VS Code run the plugin's `hooks/hooks.json` directly and get
+    enforcement is guaranteed on Claude Code only**. The Copilot CLI (and so the
+    app) and Copilot Chat in VS Code run the plugin's `hooks/hooks.json` directly and get
     the hooks incidentally, with no parity promise. Skill *enforcement* still differs
     from Claude Code - see the sections below for the caveats.
 
@@ -140,6 +140,16 @@ copilot plugin install steer@e22-plugins
 The CLI loads the skills via the Copilot plugin manifest and reads the standards
 from `.github/copilot-instructions.md` in the repo.
 
+### GitHub Copilot app
+
+The [desktop app](https://github.com/features/ai/github-app) runs each session
+on an embedded Copilot CLI runtime, so steer behaves there exactly as on the
+CLI: the same plugin hooks, skills (`/steer:<skill>`) and committed
+instructions file. Install it from **Customize > Plugins**: add the
+`element22llc/e22-plugins` marketplace, then install `steer`. Each app session
+runs in its own git worktree, which carries the committed Copilot files like any
+checkout.
+
 ### OpenAI Codex (CLI and app)
 
 ```shell
@@ -180,7 +190,8 @@ standards load regardless of a teammate's VS Code defaults.
 
 Where the plugin is installed, the always-on rules need no refresh: the
 SessionStart hook reads them from the installed plugin, so a plugin update
-(`copilot plugin update steer` on the CLI, the Extensions view in VS Code) is the
+(`copilot plugin update steer` on the CLI, Customize > Plugins in the Copilot
+app, the Extensions view in VS Code) is the
 whole upgrade path for the injected copy. The **committed** Copilot files - the instructions
 fallback, the cross-tool skill tree, custom agents, path-scoped instructions -
 are a **static snapshot**, so they go stale when steer's rules or skills change.
@@ -463,7 +474,10 @@ the standards in `.github/copilot-instructions.md`.
   `gen_agent_skills.py`.
 - **The committed file is the floor, the hook is the bonus.** Where the plugin
   is installed, both Copilot surfaces also receive the live ruleset from the
-  SessionStart hook, so a session can carry it twice. Where it is not - the
+  SessionStart hook, except when the committed file is byte-identical to the
+  plugin's own copy: those rules are then already loaded, so the hook injects
+  only the path-scoped rules the file leaves out, under a one-line notice,
+  instead of a second ~50 KB copy. Where it is not - the
   cloud agent, code review, a teammate without the plugin - the committed
   `.github/copilot-instructions.md` is the whole always-on surface. It is
   installed by `/steer:setup init` and refreshed by `/steer:setup sync`; a repo
