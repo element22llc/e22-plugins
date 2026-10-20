@@ -108,8 +108,9 @@ spine themselves must apply the same two tests.
 
 ## Reporting across members
 
-`/steer:next`, `/steer:status`, `/steer:audit`, `/steer:spec roadmap` and
-`/steer:setup protect` walk one tree by default. In a polyrepo that would hand a client
+`/steer:next`, `/steer:status`, `/steer:audit`, `/steer:spec roadmap`,
+`/steer:work issues reconcile --all` and `/steer:setup protect` walk one tree by
+default. In a polyrepo that would hand a client
 a fraction of the product with no indication it was a fraction - worse than a
 smaller, honest answer.
 

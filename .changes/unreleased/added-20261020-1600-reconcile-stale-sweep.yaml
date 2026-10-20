@@ -1,0 +1,15 @@
+kind: Added
+body: |-
+    - **Added: `/steer:work issues reconcile --all` now clears stale issues in
+      one pass.** It finds open issues a merged PR already delivered - including
+      a polyrepo member PR whose bare `Closes #N` never reached the workspace
+      issue - and proposes closing them, ranked by how strong the evidence is.
+      Issues with no update in `workflow.stale_issue_days` (90 by default, in
+      `/spec/tracker.md`) are proposed for closing as not planned when nothing
+      has started on them, and surfaced to their owner when work is claimed. In
+      a polyrepo it also reads every member's tracker, flags product issues
+      filed there instead of the workspace, and names any member it could not
+      reach. Proposals are grouped by who decides them and confirmed once.
+time: 2026-10-20T16:00:00.000000-04:00
+custom:
+    Slug: reconcile-stale-sweep

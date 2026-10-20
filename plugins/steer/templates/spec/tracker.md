@@ -13,6 +13,8 @@ workflow:
   spec_is_product_truth: true
   require_tracker_ref_for_features: true
   close_parent_after_product_validation: true
+  # Days without an update before `reconcile --all` reports an open issue idle.
+  stale_issue_days: 90
 # Labels mirror the canonical steer:source marker (the marker is the source of
 # truth; the label is derived/searchable). Kind is the steer:kind marker, not a label.
 labels:

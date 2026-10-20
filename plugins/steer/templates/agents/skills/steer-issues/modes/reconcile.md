@@ -28,7 +28,9 @@ Sweep the spine + tracker and report every disagreement:
 - **epic<->feature inconsistency** (a closed epic with open child features or vice
   versa, or a `validate`/`done` epic with no linked features);
 - promoted questions whose issue is closed but whose `Q-NNN` is still `open`;
-- and **contract-less issues** (below).
+- **contract-less issues**, **delivered-but-open** issues and **idle** issues
+  (each below);
+- and, in a polyrepo, **the member trackers** (below).
 
 **Delivery state is never reconciled - there is nothing to reconcile.** A feature's
 progress lives only in its issue `steer:state`; the spec's `Status:` holds product
@@ -55,6 +57,45 @@ existing human body; do not rewrite or guess the issue's content, and leave a
 genuinely human-authored issue (one a human typed directly) for `triage` to
 label rather than treating it as drift.
 
+**Delivered-but-open - a merged PR that never closed its issue.** The common
+cause is a PR with no closing keyword, or, in a polyrepo, a member PR whose bare
+`Closes #N` named the member's own `#N`. Read `/steer-tracker-sync
+delivery-evidence` for every open non-epic issue (epics are the rollup check
+above) and name the evidence tier on each row:
+
+| Tier | Evidence | Proposal |
+|---|---|---|
+| strong | a merged PR named by the issue's `steer:pull-request`/`steer:branch` marker or in its closing references | close `completed` -> `done` |
+| medium | a merged PR that only cross-references the issue | close `completed`, flagged: a `Refs` may be partial delivery |
+| weak | polyrepo only: a merged member PR found by the `issue/<N>-` branch name alone | candidate - show it, propose nothing |
+
+`validate -> done` is propose-only (features: the PO), so these closes wait for
+the confirmation below like every other write.
+
+**Idle - no update in `workflow.stale_issue_days`** (`/spec/tracker.md`; 90 when
+the key is absent) and no delivery evidence. Route by `steer:state`:
+`inbox`/`exploring`/`ready-for-spec`/`ready-for-dev` -> propose closing as
+`not-planned` -> `cancelled`; `in-progress`/`validate`/`blocked` -> no close,
+surface it to its assignee or claimant as a stale claim. Never propose closing a
+`spec-question` or `spec-drift` issue for idleness - closing one is a spec
+decision. An idle issue the decider keeps gets a one-line `comment` saying so,
+which also resets its clock, so the next sweep does not re-propose it.
+
+**Polyrepo - the member trackers.** In a workspace (or a member, resolved to it
+by step 3), also read the open issues of every member in `spec/workspace.yml`,
+by its `repository:`. A **stray** is a member issue carrying `steer:` markers -
+product work filed outside the workspace tracker. Run the delivered-but-open and
+idle checks on strays too, and propose moving the rest to the workspace; the
+move is done by hand (`gh issue transfer`), never by this sweep. A member issue
+with no `steer:` markers is the member's own - leave it alone. Name the members
+covered and any **uncovered** one (`/steer-reference polyrepo` -> "Reporting
+across members").
+
 Output is a reconciliation report + proposed actions, confirmed once before any
-write. `--all` is read-heavy - route all fetches through `/steer-tracker-sync`
-and say so.
+write. **Read every page of every list** - a report built from a first page is a
+partial sweep and must say so. **Group the proposals by decider** (authority
+table in `ISSUE-WORKFLOW.md`), so whoever confirms sees which rows are not
+theirs; the one confirmation may approve all, some or none of them, and every
+approved write goes through `/steer-tracker-sync` (`close` with its resolution
+mode, `comment`). `--all` is read-heavy - route all fetches through
+`/steer-tracker-sync` and say so.

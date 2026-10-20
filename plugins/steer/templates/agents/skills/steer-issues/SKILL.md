@@ -131,7 +131,7 @@ you are running; do not read the others.**
 | `decompose #N` | Feature -> implementation sub-issues (contract-gated) | [`hierarchy.md`](modes/hierarchy.md) |
 | `epic` | The tier above features: group features under one parent | [`hierarchy.md`](modes/hierarchy.md) |
 | `status [#N\|feature-id]` | Unified read-only issue + spec + readiness view | [`hierarchy.md`](modes/hierarchy.md) |
-| `reconcile` | Verify issue <-> spec pointers and lifecycle consistency | [`reconcile.md`](modes/reconcile.md) |
+| `reconcile` | Verify issue <-> spec pointers and lifecycle consistency; `--all` also sweeps stale issues, member trackers included | [`reconcile.md`](modes/reconcile.md) |
 
 ## Recommend the next action
 

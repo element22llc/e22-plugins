@@ -28,7 +28,7 @@ the paragraph is how this arm performs it.
 a closed issue. Every other caller reads the companion for the one op it is
 about to perform: `triage`'s Priority floor and `board`'s ranking read
 (`field-set` / `field-get`), `decompose`/`epic` (types, parent links),
-`reconcile` (the labels and types it normalizes), `/steer-spec roadmap`
+`reconcile` (the labels and types it normalizes, `delivery-evidence`), `/steer-spec roadmap`
 (milestones, dates), `/steer-next` and `/steer-status` (Priority and milestone
 reads), and `/steer-setup init`/`adopt` (`bootstrap-fields`).
 
@@ -43,9 +43,10 @@ to `/steer-work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
 **GraphQL is granted, and this boundary is what limits it.** Projects v2
-issue-field I/O and native blocked-by edges have no `gh issue` subcommand, and
-`gh api graphql` is the transport to reach for on `field-get` / `field-set` /
-`link-blocked-by` / `bootstrap-fields`. The fallbacks named with those ops in the
+issue-field I/O, native blocked-by edges and an issue's linked PRs have no
+`gh issue` subcommand, and `gh api graphql` is the transport to reach for on
+`field-get` / `field-set` / `link-blocked-by` / `bootstrap-fields` /
+`delivery-evidence`. The fallbacks named with those ops in the
 companion are
 real, but neither substitutes cleanly: the **REST** endpoints fall outside every
 granted prefix, so reaching for one turns a documented read into a confirmation
@@ -69,7 +70,7 @@ Each operation is MCP-first -> `gh` -> manual, and reports which path it took.
 | Operations | Read |
 |---|---|
 | `find` · `get` · `create` · `update-state` · `claim` · `comment` · `link-delivery` · `close`/`reopen` | **this file**, below |
-| `label` · `set-type` · `set-milestone` · `milestone-ensure` · `field-get` · `field-set` · `bootstrap-fields` · `link-parent` · `link-related` · `link-blocked-by` | [`OPERATIONS-GITHUB.md`](OPERATIONS-GITHUB.md) |
+| `label` · `set-type` · `set-milestone` · `milestone-ensure` · `field-get` · `field-set` · `bootstrap-fields` · `link-parent` · `link-related` · `link-blocked-by` · `delivery-evidence` | [`OPERATIONS-GITHUB.md`](OPERATIONS-GITHUB.md) |
 
 The boundary above binds every operation in both files - an op in the companion
 is no less bounded by it.
