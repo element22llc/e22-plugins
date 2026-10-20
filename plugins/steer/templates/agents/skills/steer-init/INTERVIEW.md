@@ -10,9 +10,12 @@ guardrails.
    `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
    `/spec/tracker.md`** (which issue tracker does this product use - Jira,
    GitHub Issues, Linear, Azure DevOps, other, none yet - and its
-   project/reference format). **Ask, don't invent**; route product-level
-   ambiguity to `vision.md` -> `## Open questions` rather than guessing.
-   Confirm or override the stack defaults (the always-on Stack rules). A
+   project/reference format). Ask in rounds per [`QUESTION-ROUNDS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/QUESTION-ROUNDS.md):
+   the stack defaults (the always-on Stack rules) and a tracker the git remote
+   implies are the recommended answers. A blanket "yes" to the stack default
+   is not an explicit choice, so step 4 leaves that ADR `Proposed`. **Ask,
+   don't invent**; route product-level
+   ambiguity to `vision.md` -> `## Open questions` rather than guessing. A
    PO-driven idea->app flow runs through `/steer-build` instead.
    - **In a polyrepo member** (step 2 resolved the role): `vision.md`,
      `users.md`, `glossary.md` and `/spec/tracker.md` are the **workspace's** -

@@ -7,7 +7,8 @@ stay in `SKILL.md` - they apply to every mode and are not repeated here.
 ## `brainstorm #N`
 
 Product discovery against an issue, *without* writing a spec. Discovery
-reasoning follows `/steer-spec`'s interview style; the issue body stays
+reasoning follows `/steer-spec`'s interview style (rounds per
+[`QUESTION-ROUNDS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/QUESTION-ROUNDS.md)); the issue body stays
 human-owned. Required steps, in order:
 
 1. **Read** the issue + related specs.

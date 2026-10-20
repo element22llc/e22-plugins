@@ -20,7 +20,8 @@ the old template lacked.
    one round: product name, one-line description, PO handle, dev handles,
    Greenfield-vs-Brownfield, production URL (if any). For the stack, confirm or
    override the defaults (the always-on Stack rules) rather than asking from
-   scratch - and if the dev overrides them, record the choice as an ADR (run
+   scratch - the defaults are the recommended answer
+   ([`QUESTION-ROUNDS.md`](QUESTION-ROUNDS.md)) - and if the dev overrides them, record the choice as an ADR (run
    `/steer:spec adr`).
 3. **Propose all edits in a single batch** so the dev can confirm the filled-in
    values (product name, handles, ...) before they're applied. Once applied,

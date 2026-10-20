@@ -165,20 +165,9 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    split: **product / behavior** ambiguities ("what should delete mean?") ->
    ask the **PO** in plain language; **technical / architectural** ambiguities
    (data model, integration boundary, library choice) -> ask the **dev**. Ask,
-   don't invent; work through them oldest/most-blocking first, in **rounds**:
-   each round is every question whose prerequisites are settled, numbered, in
-   one message, each with your recommended answer worded so "yes" accepts it.
-   A question that depends on another still open waits for the next round.
-   Never recommend an answer to a gate decision (ADR acceptance, intent
-   approval) - rule `61-gates` forbids pre-selecting it.
-   - **Mark the questions a blanket "yes" cannot settle** - anything in the
-     High-risk areas (rule `60-high-risk`), what the PO's data means (what
-     "delete" means, retention, who sees what), and scope (in or out of the
-     MVP). Recommend for these too, but as options to choose from.
-   - **A blanket reply accepts every unmarked recommendation**; numbered
-     answers override it, and a marked question stays open until answered.
-     Open the next message with one line naming what was accepted ("Accepted
-     Q1-Q5 as recommended; Q6 still needs your call").
+   don't invent; ask in **rounds**, oldest and most-blocking first - read
+   [`QUESTION-ROUNDS.md`](${CLAUDE_PLUGIN_ROOT}/templates/reference/QUESTION-ROUNDS.md)
+   before the first round and follow it.
 
 6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
    *applying a decision already made is not a new decision*).

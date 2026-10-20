@@ -104,7 +104,8 @@ vision/users/glossary to the **workspace** session instead.
 
 Otherwise, interview the dev (or PO) to fill `/spec/vision.md`, `/spec/users.md`,
 `/spec/glossary.md` - **ask, don't invent**. Seed each from what the code
-implies, then confirm with a human; unresolved product-level questions go to
+implies, then confirm with a human in rounds per [`QUESTION-ROUNDS.md`](${CLAUDE_PLUGIN_ROOT}/templates/reference/QUESTION-ROUNDS.md),
+what the code implies being each recommended answer; unresolved product-level questions go to
 `vision.md` -> `## Open questions`, not into guessed prose. Triage and format
 them exactly as Phase 5 says: what the code answers is written down, not asked,
 and each remaining question is a structured `### Q-NNN` block.

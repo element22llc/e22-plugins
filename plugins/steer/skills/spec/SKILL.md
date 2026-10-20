@@ -153,32 +153,12 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    user-facing language: the problem, who it's for, the user-visible outcome,
    and concrete **acceptance criteria**. Keep it stack-free - this is the *what
    and why*, not the *how*. Park anything unresolved under `## Open questions`;
-   **never invent an answer**. Ask in **rounds**, not one question at a time:
-   - **A round is every question you can ask now** - those whose prerequisites
-     are already settled - numbered, in one message. A question whose answer
-     depends on another still open this round waits for the next one. After
-     each round, recompute what the answers unblocked.
-   - **Give each design question your recommended answer**, worded so "yes"
-     accepts it. Never for a gate decision - approving the intent, accepting an
-     ADR - which is never pre-selected (rule `61-gates`).
-   - **Mark the questions a blanket "yes" cannot settle** - anything in the
-     High-risk areas (rule `60-high-risk`), what the PO's data means (what
-     "delete" means, retention, who sees what), and scope (in or out of the
-     MVP). Recommend for these too, but as options to choose from.
-   - **A blanket reply accepts every unmarked recommendation**; numbered
-     answers override it, and a marked question stays open until answered.
-     Open the next message with one line naming what was accepted ("Accepted
-     Q1-Q5 as recommended; Q6 still needs your call").
-   - **Look facts up yourself** (the code, the existing spine); ask the human
-     only for decisions.
-   - **Don't talk through a question only something concrete can answer**
-     ("one long form or three steps?", "how should this feel?"). Record it as a
-     `Q-NNN` whose title says it settles with a prototype, naming the option to
-     build first (`impact: non-blocking`, `required_before: implementation` -
-     the build settles it), and move on.
-   - **Stop when the rounds run dry** - nothing answerable left unasked,
-     nothing silently assumed - then go to step 4. A marked question still
-     unanswered is parked under `## Open questions`, never assumed.
+   **never invent an answer**. Ask in **rounds** with a recommended answer
+   each - read
+   [`QUESTION-ROUNDS.md`](${CLAUDE_PLUGIN_ROOT}/templates/reference/QUESTION-ROUNDS.md)
+   before the first round and follow it, including its prototype rule for a
+   question only something concrete can answer. When the rounds run dry, go to
+   step 4.
 4. **Clarify - sweep the draft for gaps** (clarify mode - procedure in
    `MODES.md`) before
    presenting anything for approval: interrogate the draft against the gap
