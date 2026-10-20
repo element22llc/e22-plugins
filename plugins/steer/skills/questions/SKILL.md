@@ -169,9 +169,16 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    each round is every question whose prerequisites are settled, numbered, in
    one message, each with your recommended answer worded so "yes" accepts it.
    A question that depends on another still open waits for the next round.
-   An answer that is only "ok" to every recommendation decided nothing; say so,
-   and name the choices that still need a real answer. Never recommend an answer to a gate decision (ADR acceptance, intent
+   Never recommend an answer to a gate decision (ADR acceptance, intent
    approval) - rule `61-gates` forbids pre-selecting it.
+   - **Mark the questions a blanket "yes" cannot settle** - anything in the
+     High-risk areas (rule `60-high-risk`), what the PO's data means (what
+     "delete" means, retention, who sees what), and scope (in or out of the
+     MVP). Recommend for these too, but as options to choose from.
+   - **A blanket reply accepts every unmarked recommendation**; numbered
+     answers override it, and a marked question stays open until answered.
+     Open the next message with one line naming what was accepted ("Accepted
+     Q1-Q5 as recommended; Q6 still needs your call").
 
 6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
    *applying a decision already made is not a new decision*).
@@ -201,6 +208,9 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
      cites it - a promoted issue, an ADR, a `pending fold` annotation). A
      legacy checkbox item is converted to a resolved `Q-NNN` block (step 2)
      rather than merely ticked.
+   - **An accepted recommendation says so** - its `_Resolution:_` reads
+     `recommended, accepted by <who>`, not `decided by`, so the reviewer can
+     see which answers nobody actively chose.
    - **Code-fact answers** carry the grounding (`file:line`), marked
      **dev-sign-off** - confirmed at PR review, not decided now. User-facing
      answers reflect **PO** decisions, other technical answers **dev**

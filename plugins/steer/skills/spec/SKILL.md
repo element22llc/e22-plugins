@@ -161,15 +161,22 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    - **Give each design question your recommended answer**, worded so "yes"
      accepts it. Never for a gate decision - approving the intent, accepting an
      ADR - which is never pre-selected (rule `61-gates`).
+   - **Mark the questions a blanket "yes" cannot settle** - anything in the
+     High-risk areas (rule `60-high-risk`), what the PO's data means (what
+     "delete" means, retention, who sees what), and scope (in or out of the
+     MVP). Recommend for these too, but as options to choose from.
+   - **A blanket reply accepts every unmarked recommendation**; numbered
+     answers override it, and a marked question stays open until answered.
+     Open the next message with one line naming what was accepted ("Accepted
+     Q1-Q5 as recommended; Q6 still needs your call").
    - **Look facts up yourself** (the code, the existing spine); ask the human
      only for decisions.
    - **Don't talk through a question only something concrete can answer**
      ("one long form or three steps?", "how should this feel?"). Record it as a `Q-NNN` whose title says it settles with a prototype
      (`required_before: implementation`) and move on.
    - **Stop when the rounds run dry** - nothing answerable left unasked,
-     nothing silently assumed - then go to step 4. An answer that is only "ok"
-     to every recommendation decided nothing; say so, and name the choices that
-     still need a real answer.
+     nothing silently assumed - then go to step 4. A marked question still
+     unanswered is parked under `## Open questions`, never assumed.
 4. **Clarify - sweep the draft for gaps** (clarify mode - procedure in
    `MODES.md`) before
    presenting anything for approval: interrogate the draft against the gap
@@ -177,7 +184,7 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    where ambiguity becomes structured, answerable questions instead of
    surprises at implementation.
 5. **Resolve open questions.** Run the `/steer:questions` read-then-propose loop on
-   this feature: surface each question, propose options, fold the *confirmed*
+   this feature: ask in the same rounds as step 3, fold the *confirmed*
    decision back into the spec, close the question (`status: resolved`; the
    `Q-NNN` block stays). Explicit deferral with a
    reason is a valid outcome. A question needing an external owner or scheduling
