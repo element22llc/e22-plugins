@@ -170,6 +170,16 @@ part_header() {
 # lib/scope.sh.
 WORK_MODE="$(steer_work_mode "${CWD}")"
 
+# Copilot also loads the repo's .github/copilot-instructions.md, the same ruleset
+# rendered flat. When it is byte-identical to this plugin's copy it is current,
+# so injecting again would double ~50 KB of context (#767). Code mode only: the
+# knowledge and advisory banners exist nowhere but here.
+if [ "${HOST}" = "copilot" ] && [ "${WORK_MODE}" = "code" ] && [ -n "${CONSUMER_ROOT}" ] &&
+	cmp -s "${CONSUMER_ROOT}/.github/copilot-instructions.md" "${ROOT}/templates/github/copilot-instructions.md"; then
+	printf '<!-- Engineering standards - steer plugin v%s: not injected, because .github/copilot-instructions.md matches this plugin version and carries the same rules. If those rules are not in your context, run /steer:standards. -->\n' "${VERSION}" | emit_context
+	exit 0
+fi
+
 if [ ! -d "${RULES_DIR}" ]; then
 	# Only part 1 speaks for a missing rules dir - one notice, not PARTS copies.
 	if [ "${PART}" -eq 1 ]; then

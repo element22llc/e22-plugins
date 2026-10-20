@@ -4278,6 +4278,21 @@ out="$(printf '%s' "$(cp_vscode_json "${CP_KNOW}")" | sh "${HOOKS}/inject-standa
 assert_envelope "inject copilot: knowledge-work folder gets the envelope" "${out}"
 assert_has "inject copilot: knowledge-work envelope says so" "${out}" 'knowledge-work mode'
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' && bad "inject copilot: knowledge-work envelope must omit scoped rules" || ok
+# (d2) A committed copilot-instructions.md identical to the plugin's is already
+# loaded by Copilot, so the hook says so instead of injecting the ruleset again
+# (#767). A stale copy still gets the live rules, and Claude is unaffected.
+mkdir -p "${CP_REPO}/.github"
+cp "${PLUGIN}/templates/github/copilot-instructions.md" "${CP_REPO}/.github/"
+out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
+assert_envelope "inject copilot: current committed copy - notice arrives in the envelope" "${out}"
+assert_has "inject copilot: current committed copy - notice says why" "${out}" 'not injected'
+printf '%s' "${out}" | grep -q 'You are the router' && bad "inject copilot: current committed copy must not be injected twice" || ok
+out="$(printf '%s' "$(cp_claude_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
+assert_has "inject copilot: Claude still gets the ruleset beside a committed copy" "${out}" 'You are the router'
+printf '\nstale\n' >>"${CP_REPO}/.github/copilot-instructions.md"
+out="$(printf '%s' "$(cp_cli_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
+assert_has "inject copilot: stale committed copy - live ruleset injected" "${out}" 'You are the router'
+rm -rf "${CP_REPO}/.github"
 # (e) Missing rules dir on a Copilot surface: the fallback banner is still delivered
 # - inside the envelope, so it is not discarded as non-JSON.
 out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | CLAUDE_PLUGIN_ROOT="${IF_NORULES}" sh "${HOOKS}/inject-standards.sh" 1 "${CP_PARTS}" 2>/dev/null)"
