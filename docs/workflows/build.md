@@ -35,7 +35,7 @@ five plain-language steps - you never type an issue, spec, or work command:
    scenes it handles the issue, the spec, and the work items for you.
 3. **Preview it locally.** Claude builds a working local app and tells you how to
    run it. You click around and react in plain language - *"the date filter
-   should default to this week"* - and it iterates.
+   should default to this week"* - and it iterates. Questions only a working version could answer (layout, how something feels) are built one way first and put to you here.
 4. **Hand off for review.** When you're happy, the build hands off for developer
    review. If a developer will review it, that hand-off is a **PR** - a developer
    is the human at the merge gate. Claude asks which applies at the very start:
