@@ -80,7 +80,13 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
    within each group **product-level first, then per feature**; blocking
    questions visibly flagged. Each carries its **feature-scoped key
    `[<feature-id>] Q-NNN`** and the question's context, verbatim from the
-   spec. With a single kind present, skip the group headings. **Every
+   spec, plus a recommended answer per
+   [`QUESTION-ROUNDS.md`](../../templates/reference/QUESTION-ROUNDS.md) -
+   options for a marked question - shown beside the field, **never pre-filled
+   into it**. Recommend only what the code, the spine or a default grounds (a
+   prototype question's option to build); a question whose answer depends on
+   another in the bundle gets none. The recommendation lives only on the page
+   and in its export, never in the spec. With a single kind present, skip the group headings. **Every
    `access` field carries the no-secrets line** of the return-document
    contract - shown beside the field, and emitted in the export.
 

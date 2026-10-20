@@ -295,8 +295,14 @@ def check_repo_fixtures(errors: list[str]) -> None:
 
 # The no-secrets line every `access` field carries (CLARIFICATION-LOOP.md).
 NO_SECRETS_NOTICE = "Do not paste passwords, keys or tokens here."
+CHOOSE_ONE_NOTICE = 'Choose one; "yes" does not answer this question.'
+BARE_ACCEPTANCES = {"yes", "agreed", "ok"}
 _Q_BLOCK_RE = re.compile(r"^### (Q-\d{3})\b(.*?)(?=^### |\Z)", re.M | re.S)
 _BUNDLE_UNIT_RE = re.compile(r"^## \[([a-z0-9-]+)\] (Q-\d{3})\b(.*?)(?=^## |^---|\Z)", re.M | re.S)
+
+
+def _answer(unit: str) -> str:
+    return unit.split("**Answer:**", 1)[-1].strip()
 
 
 def _field(block: str, key: str) -> str:
@@ -350,8 +356,22 @@ def check_client_needs_round_trip(errors: list[str]) -> None:
             errors.append(f"{paths['bundle']}: {qid} heading lacks its {tag} tag")
         if kind == "access" and NO_SECRETS_NOTICE not in unit:
             errors.append(f"{paths['bundle']}: access question {qid} lacks the no-secrets notice")
+        if "> Options:" in unit and CHOOSE_ONE_NOTICE not in unit:
+            errors.append(f"{paths['bundle']}: marked question {qid} lacks the choose-one line")
         if _field(folded.get(qid, ""), "status") != "resolved":
             errors.append(f"{paths['folded']}: {qid} ({kind}) did not fold to status: resolved")
+            continue
+        if _answer(unit).lower().rstrip(".!") in BARE_ACCEPTANCES:
+            if "> Options:" in unit or "> Recommended:" not in unit:
+                errors.append(
+                    f"{paths['folded']}: {qid} folded from a bare acceptance with no"
+                    " recommendation to accept - it answers nothing"
+                )
+            elif "recommended, accepted by" not in folded[qid]:
+                errors.append(
+                    f"{paths['folded']}: {qid} accepted a recommendation but its"
+                    " resolution does not say so"
+                )
     for kind in sorted(kinds - seen):
         errors.append(
             f"{paths['swept']}: no '{kind}' question - the round trip must cover every kind"

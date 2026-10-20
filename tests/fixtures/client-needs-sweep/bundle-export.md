@@ -1,6 +1,7 @@
 # steer clarification questionnaire
 <!-- steer:clarification-bundle -->
 Fill in each **Answer** block below, then send this file back.
+Where a question shows a Recommended answer, write "yes" to accept it.
 Do not change the "[feature] Q-NNN" heading lines - they map your answers to the spec.
 
 ## [product] Q-003 - Who should be invited to the AWS account as deployer for prod? [BLOCKING] [ACCESS]
@@ -21,6 +22,8 @@ Use our existing Sentry org "client-prod"; we will invite the dev lead.
 ## [product] Q-002 - Do we bill per seat or per workspace for the first release? [BLOCKING] [DECISION]
 <!-- steer:q feature=product id=Q-002 kind=decision source=spec/vision.md -->
 > Context: issue #412 is waiting on this pricing call.
+> Options: a) per seat  b) per workspace - recommended: b
+> Choose one; "yes" does not answer this question.
 
 **Answer:**
 Per workspace.
@@ -28,8 +31,9 @@ Per workspace.
 ## [product] Q-001 - Should archived invoices be shown by default?
 <!-- steer:q feature=product id=Q-001 source=spec/vision.md -->
 > Context: the vision leaves the default invoice list filter open.
+> Recommended: hide archived invoices behind an "Archived" filter.
 
 **Answer:**
-No - hidden behind an "Archived" filter.
+yes
 
 ---

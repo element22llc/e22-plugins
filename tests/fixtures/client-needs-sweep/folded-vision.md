@@ -10,7 +10,7 @@
 - required_before: intent-approval
 - tracker:
 
-_Resolution:_ Hidden by default behind an "Archived" filter. Source: spec/sources/clarifications-2026-10/answers.md "No - hidden behind an \"Archived\" filter."
+_Resolution:_ Hidden by default behind an "Archived" filter - recommended, accepted by the PO. Source: spec/sources/clarifications-2026-10/answers.md "Recommended: hide archived invoices behind an \"Archived\" filter." / "yes"
 
 ### Q-002 - Do we bill per seat or per workspace for the first release?
 - created: 2026-10-07
