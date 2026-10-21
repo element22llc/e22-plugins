@@ -29,7 +29,8 @@ Sweep the spine + tracker and report every disagreement:
   versa, or a `validate`/`done` epic with no linked features);
 - promoted questions whose issue is closed but whose `Q-NNN` is still `open`,
   and the inverse: a `resolved` `Q-NNN` whose issue is still open (propose
-  close `completed` -> `done`);
+  close `completed` -> `done`) - unless that issue is the `> Tracker:` of a
+  `Proposed` ADR, which keeps it open until `adr accept` closes it;
 - **ADR-linked**, **contract-less**, **delivered-but-open** and **idle** issues
   (each below);
 - and, in a polyrepo, **the member trackers** (below).

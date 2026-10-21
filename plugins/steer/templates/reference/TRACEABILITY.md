@@ -245,7 +245,8 @@ connect the two.** Only one file knows which tracker is in use:
   closing/linking syntax where it has one.
 - `/spec/history/`: in each entry's `Refs:` line.
 - ADR header: `> Tracker:` names the issue where the decision was worked out
-  (or `none`); accepting or superseding the ADR closes it (`/steer:spec adr`).
+  (or `none`); accepting the ADR closes it, and superseding it proposes a
+  close or a keep-with-comment for each of its open issues (`/steer:spec adr`).
 
 **Preserving issue context:** when work starts from a tracker item, copy its
 acceptance criteria and constraints into the feature's `intent.md` (don't

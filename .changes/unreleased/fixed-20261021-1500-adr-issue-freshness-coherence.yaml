@@ -1,0 +1,11 @@
+kind: Fixed
+body: |-
+    - **Fixed: a question answered by a Proposed ADR keeps its issue open.**
+      `/steer:work issues reconcile` no longer proposes closing a resolved
+      question's issue while that issue is the `> Tracker:` of an ADR still
+      `Proposed`; `adr accept` closes it. The traceability reference now says
+      superseding an ADR proposes a close or a keep for its issues, rather
+      than closing them.
+time: 2026-10-21T15:00:00.000000-04:00
+custom:
+    Slug: adr-issue-freshness-coherence
