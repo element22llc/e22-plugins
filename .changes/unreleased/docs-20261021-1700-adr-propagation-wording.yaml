@@ -1,0 +1,8 @@
+kind: Docs
+body: |-
+    - **Docs: the spec-framework reference names which ADR transitions reach
+      citing issues.** Superseding or deprecating an ADR reaches the open
+      issues citing it; accepting one closes only its own `> Tracker:` issue.
+time: 2026-10-21T17:00:00.000000-04:00
+custom:
+    Slug: adr-propagation-wording

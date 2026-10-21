@@ -275,9 +275,9 @@ Number ADRs sequentially. Do not renumber when you supersede one. Mark the old
 one as superseded and link to the new one. Status values: **Proposed** (under
 discussion), **Accepted** (in effect), **Superseded by [link]** (replaced),
 **Deprecated** (no longer in effect, kept for history). An ADR's `> Tracker:`
-names the issue where its decision was worked out; a status change propagates to
-that issue and to open issues citing the ADR (`/steer:spec adr`, backstopped by
-`/steer:work issues reconcile --all`).
+names the issue where its decision was worked out; accepting the ADR closes that
+issue, and superseding or deprecating it also reaches the open issues citing it
+(`/steer:spec adr`, backstopped by `/steer:work issues reconcile --all`).
 
 ## Greenfield design folder
 
