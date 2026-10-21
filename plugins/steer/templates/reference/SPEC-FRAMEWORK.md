@@ -276,8 +276,9 @@ one as superseded and link to the new one. Status values: **Proposed** (under
 discussion), **Accepted** (in effect), **Superseded by [link]** (replaced),
 **Deprecated** (no longer in effect, kept for history). An ADR's `> Tracker:`
 names the issue where its decision was worked out; accepting the ADR closes that
-issue, and superseding or deprecating it also reaches the open issues citing it
-(`/steer:spec adr`, backstopped by `/steer:work issues reconcile --all`).
+issue, and superseding it reaches the open issues citing the old one
+(`/steer:spec adr`). `/steer:work issues reconcile --all` backstops both and is
+the path for a deprecated ADR.
 
 ## Greenfield design folder
 

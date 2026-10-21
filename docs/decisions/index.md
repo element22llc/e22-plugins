@@ -58,8 +58,8 @@ superseded or keep it with a comment pointing at the replacement.
 
 Anything that path misses - an ADR edited by hand, one written before the field
 existed, a `Deprecated` one - is caught by `/steer:work issues reconcile --all`,
-which proposes the matching close for open issues tied to an accepted,
-superseded or deprecated ADR. See [Issues](../workflows/issues.md).
+which proposes the matching close for an accepted ADR's still-open
+`> Tracker:` issue and for open issues tied to a superseded or deprecated ADR. See [Issues](../workflows/issues.md).
 
 !!! warning "No ADR from inference"
     Reverse-engineering skills (`/steer:setup adopt`) must **never infer a ratified ADR
