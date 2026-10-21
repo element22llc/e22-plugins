@@ -53,6 +53,7 @@ owners:
 
 - **Specs:** each feature's `intent.md` carries its tracker ref(s) in the
   header (`> Tracker:`); a feature with no tracked item yet says `none yet`.
+  An ADR's `> Tracker:` names the issue where its decision was worked out.
 - **PRs:** the description references the tracker item using `reference_format`
   above (use the tracker's auto-linking/closing syntax where it has one).
 - **Action history:** every `/spec/history/` entry lists the tracker ref in

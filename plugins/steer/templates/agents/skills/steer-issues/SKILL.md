@@ -103,6 +103,8 @@ Even before repo-wide reconcile, the per-feature lifecycle must guarantee - via
   `question-id`);
 - a question whose issue is **closed** cannot stay silently `open` - it surfaces
   as a failure that blocks the relevant gate;
+- a question **resolved** on the default branch whose issue is still open is
+  stale tracker state - `reconcile --all` proposes the close;
 - **resolving** a question means folding the answer into the spec's normative
   prose, not leaving it only on the issue or in `_Resolution:_`.
 

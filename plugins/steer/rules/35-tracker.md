@@ -5,10 +5,10 @@ Products use whatever tracker the client has (Jira, GitHub Issues, Linear,
 Azure DevOps, ...). **`/spec/tracker.md`** declares the system and ref format -
 read it before referencing work items; if missing, ask and create it from the
 bundled template, **except in a polyrepo member**, where the tracker is the
-workspace's. Refs live in `intent.md`'s `> Tracker:` line, the PR description,
-and a `/spec/history/` entry's `Refs:`. Copy a tracker item's acceptance
-criteria into the intent: the spec is the in-repo source of truth and the ref
-points back.
+workspace's. Refs live in the `> Tracker:` line of an `intent.md` or ADR, the PR
+description, and a `/spec/history/` entry's `Refs:`. Copy a tracker item's
+acceptance criteria into the intent: the spec is the in-repo source of truth and
+the ref points back.
 
 **A question stays in the spec's `## Open questions`** (structured `Q-NNN`) when
 it is local to one feature and answerable while specifying it; **promote it to
