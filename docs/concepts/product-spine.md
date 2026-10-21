@@ -38,7 +38,9 @@ needs stakeholder input, or could outlive the session. Promotion does not move i
 out of the spec: the `Q-NNN` block stays and gains a `tracker:` ref, the issue
 carries the same id via `<!-- steer:question-id=Q-NNN -->`, and that pair is the
 bidirectional link - `/steer:spec validate` flags a promoted question with no
-`tracker:` ref back. A
+`tracker:` ref back. Resolving the question closes its issue with the change
+that folds the answer (or, when the answer becomes an ADR, when that ADR is
+accepted); `/steer:work issues reconcile --all` flags one left open. A
 blocking question still open after 14 days has, by definition, outlived the
 session: the SessionStart hook escalates it (a non-blocking one after 60 days, or
 14 once its feature is `live`), and on a GitHub Issues tracker

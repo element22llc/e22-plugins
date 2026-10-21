@@ -47,6 +47,20 @@ never worse off. Self-ratification is legitimate - in a solo repo the author and
 decider are the same person, and the channel stamp is what keeps it auditable.
 See rule `61-gates` and `/steer:reference gates`.
 
+## ADRs and the tracker
+
+An ADR's `> Tracker:` line names the issue where its decision was worked out (or
+`none`). Accepting the ADR closes that issue as completed, through the closing
+ref of the PR (or solo-trunk commit) that lands the acceptance. Superseding an
+ADR lists the old one's open issues - its own `> Tracker:` issue plus any that
+cite it by file stem or `ADR NNNN` - and proposes, once, to close each as
+superseded or keep it with a comment pointing at the replacement.
+
+Anything that path misses - an ADR edited by hand, one written before the field
+existed, a `Deprecated` one - is caught by `/steer:work issues reconcile --all`,
+which proposes the matching close for open issues tied to an accepted,
+superseded or deprecated ADR. See [Issues](../workflows/issues.md).
+
 !!! warning "No ADR from inference"
     Reverse-engineering skills (`/steer:setup adopt`) must **never infer a ratified ADR
     from code**. An ADR records a decision a human made; the as-built spine
