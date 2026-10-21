@@ -95,7 +95,7 @@ Refuse (report the current state, write nothing) when the ADR is `Superseded` or
 `Accepted`**: report the existing `> Ratified by:` / `> Ratified at:` and append
 **no** duplicate history entry.
 
-On a clean acceptance, in one change:
+On a clean acceptance, in one pass:
 
 1. Flip `> Status:` to `Accepted`.
 2. Stamp `> Ratified by: @<handle>`, `> Ratified at: <YYYY-MM-DD>`, and
@@ -163,7 +163,7 @@ is `Proposed`, so the next step is a human decision - but it is now an
 |---|---|---|
 | ADR drafted, `Status: Proposed`, Decider in the session | Human decision required | Answer the ratification prompt - on Approve, `/steer-spec adr accept <n>` |
 | `Proposed`, Decider is someone else | Human decision required | The named Deciders ratify or reject (no command) |
-| ADR accepted, supersedes an older one | Recommended | Mark the old ADR `Superseded by [link]` |
+| ADR accepted, superseded ADR's issues deferred at step 5 | Recommended | `/steer-work issues reconcile --all` proposes them again |
 | Accepted, and it was blocking work | Blocking now - next transition | Continue the work it gated (`/steer-work`, `/steer-spec`) |
 | Accepted, no follow-up | Complete | `No action is currently required.` |
 
