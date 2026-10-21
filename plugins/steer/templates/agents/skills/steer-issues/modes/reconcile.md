@@ -27,8 +27,10 @@ Sweep the spine + tracker and report every disagreement:
 - sub-issues with no parent link;
 - **epic<->feature inconsistency** (a closed epic with open child features or vice
   versa, or a `validate`/`done` epic with no linked features);
-- promoted questions whose issue is closed but whose `Q-NNN` is still `open`;
-- **contract-less issues**, **delivered-but-open** issues and **idle** issues
+- promoted questions whose issue is closed but whose `Q-NNN` is still `open`,
+  and the inverse: a `resolved` `Q-NNN` whose issue is still open (propose
+  close `completed` -> `done`);
+- **ADR-linked**, **contract-less**, **delivered-but-open** and **idle** issues
   (each below);
 - and, in a polyrepo, **the member trackers** (below).
 
@@ -40,6 +42,23 @@ or a reopen cannot leave a stale `Status`. Do not compare `Status:` against
 its issue reads `done` - that pairing is correct (see the crosswalk in
 `ISSUE-WORKFLOW.md`). The only spec-side state worth checking is the pair above:
 `live` without a terminal issue, and an `approved` feature with no tracker ref.
+
+**ADR-linked issues - a decision that moved while its issues did not.** For
+every ADR under `spec/decisions/` on the default branch, read its status and
+`> Tracker:` ref, and `find` the open issues citing it by text (its file stem,
+`ADR NNNN`, `ADR-NNNN`). An ADR written before `> Tracker:` existed relies on
+the text search alone.
+
+| ADR status | Open issue | Proposal |
+|---|---|---|
+| `Accepted` | its `> Tracker:` issue | close `completed` -> `done`, comment linking the ADR |
+| `Superseded by` | its `> Tracker:` issue, or one citing it | close `superseded` -> `cancelled`, comment pointing at the replacement - or keep, with that comment, when it is still valid work |
+| `Deprecated` | its `> Tracker:` issue, or one citing it | close `obsolete` -> `cancelled` - or keep, with a comment |
+| `Proposed` | - | none: the decision is still open |
+
+An issue citing an `Accepted` ADR is implementation work under it, not stale.
+Text matches are candidates: show the matched line, and propose a close only
+when the issue is about the decision itself.
 
 **Contract-less issues - the after-the-fact recovery path for a raw create that
 bypassed `/steer-tracker-sync`** (the point-of-action issue-create contract

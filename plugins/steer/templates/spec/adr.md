@@ -3,6 +3,7 @@
 > Status: Proposed | Accepted | Superseded by [link] | Deprecated
 > Date: YYYY-MM-DD
 > Deciders: @handle, @handle
+> Tracker: [ref of the issue where this decision was worked out - see /spec/tracker.md - or "none"]
 > Ratified by: [handle - set when Status becomes Accepted]
 > Ratified at: [YYYY-MM-DD]
 > Ratified via: [in-session | offline-review]

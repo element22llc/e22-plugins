@@ -237,6 +237,11 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
      carries its ref, and once its issue is answered/closed the decision is
      folded into the spec's normative prose - a closed issue with a
      still-`open` question is a validation failure (`/steer-spec validate`).
+     The inverse holds too: **resolving a promoted question closes its issue**
+     `completed` with the change that folds the answer - its closing ref in the
+     PR (or the solo-trunk commit), per `/steer-work` -> Closing ref. An answer
+     routed to an ADR puts that issue in the ADR's `> Tracker:` instead, and
+     `adr accept` closes it.
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, set its `status: deferred` and annotate **why** (and a revisit

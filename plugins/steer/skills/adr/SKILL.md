@@ -37,8 +37,10 @@ the product repo, from the bundled template.
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/adr.md` -> `spec/decisions/000N-[slug].md`.
 5. Fill in Context, Decision, Alternatives considered (with rejection reasons),
    and Consequences (positive / negative / neutral). Set Status to `Proposed`
-   until accepted; set Deciders. Leave the `> Ratified ...` fields as-is -
-   `accept` writes them. **One exception, `/steer:init` step 4:** when the dev
+   until accepted; set Deciders. Set `> Tracker:` to the issue where the
+   decision was worked out - a promoted question's issue, a
+   `needs:technical-decision` issue - or `none`. Leave the `> Ratified ...`
+   fields as-is - `accept` writes them. **One exception, `/steer:init` step 4:** when the dev
    has just chosen the stack in that interactive setup, the decision is already
    made, so init authors that ADR at `Accepted` with the ratification fields
    stamped (`> Ratified via: in-session`). That is a *create*, not a
@@ -87,7 +89,7 @@ Refuse (report the current state, write nothing) when the ADR is `Superseded` or
 `Accepted`**: report the existing `> Ratified by:` / `> Ratified at:` and append
 **no** duplicate history entry.
 
-On a clean acceptance, in one change:
+On a clean acceptance, in one pass:
 
 1. Flip `> Status:` to `Accepted`.
 2. Stamp `> Ratified by: @<handle>`, `> Ratified at: <YYYY-MM-DD>`, and
@@ -98,6 +100,20 @@ On a clean acceptance, in one change:
    this repo's but the history entry is the workspace's - per rule `30-spec` § Living documentation.
 4. If this ADR supersedes an older one, mark that one
    `Superseded by [link]` - never delete or renumber it.
+5. **Propagate to the tracker** - the decision is made, so the issues around it
+   follow in the same pass, through `/steer:tracker-sync`:
+   - **This ADR's `> Tracker:` issue** closes `completed` with the change that
+     lands the acceptance: put its closing ref in the PR (or the solo-trunk
+     commit), per `/steer:work` -> Closing ref.
+   - **The superseded ADR's issues** - its own `> Tracker:` issue if still open,
+     plus open issues `find` matches by text on its file stem or `ADR NNNN` /
+     `ADR-NNNN`. Present them once, each with a proposal: close `superseded`
+     with a comment pointing at this ADR, or keep it with that comment when it
+     is still valid work under the new decision. Text matches are candidates:
+     show them, never close one unconfirmed.
+
+   Not a GitHub tracker: list the refs to update by hand. Anything missed here is
+   caught by `/steer:work issues reconcile --all`.
 
 The channel stamp is what makes self-ratification auditable: a solo repo's author,
 decider, and reviewer are the same person, and that is legitimate - an
@@ -141,7 +157,7 @@ is `Proposed`, so the next step is a human decision - but it is now an
 |---|---|---|
 | ADR drafted, `Status: Proposed`, Decider in the session | Human decision required | Answer the ratification prompt - on Approve, `/steer:spec adr accept <n>` |
 | `Proposed`, Decider is someone else | Human decision required | The named Deciders ratify or reject (no command) |
-| ADR accepted, supersedes an older one | Recommended | Mark the old ADR `Superseded by [link]` |
+| ADR accepted, superseded ADR's issues deferred at step 5 | Recommended | `/steer:work issues reconcile --all` proposes them again |
 | Accepted, and it was blocking work | Blocking now - next transition | Continue the work it gated (`/steer:work`, `/steer:spec`) |
 | Accepted, no follow-up | Complete | `No action is currently required.` |
 
