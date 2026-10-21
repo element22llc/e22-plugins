@@ -1,0 +1,8 @@
+kind: Docs
+body: |-
+    - **Docs: the spec-framework reference names `reconcile --all` as the path
+      for a deprecated ADR's issues.** `/steer:spec adr` carries acceptance and
+      supersession to the tracker; deprecation reaches it through the sweep.
+time: 2026-10-21T18:00:00.000000-04:00
+custom:
+    Slug: adr-deprecation-path
