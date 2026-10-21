@@ -3,6 +3,19 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.13.0
+
+- **Added: issues follow their ADRs.** An ADR now names the issue where its
+  decision was worked out in a `> Tracker:` line. Accepting it closes that
+  issue with the change that lands the acceptance, and superseding an ADR
+  proposes closing or updating the open issues that cite the old one.
+  Resolving a promoted open question closes its issue the same way.
+  `/steer:work issues reconcile --all` catches the rest, including ADRs
+  edited by hand and ones written before the field existed: open issues
+  tied to an accepted, superseded or deprecated ADR, and resolved questions
+  whose issue is still open. Every close it proposes waits for one
+  confirmation.
+
 ## 7.12.0
 
 - **Added: QA and UAT material has a home in the spec.** It had none, so
