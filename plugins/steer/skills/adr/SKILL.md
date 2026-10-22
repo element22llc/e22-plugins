@@ -157,7 +157,7 @@ is `Proposed`, so the next step is a human decision - but it is now an
 |---|---|---|
 | ADR drafted, `Status: Proposed`, Decider in the session | Human decision required | Answer the ratification prompt - on Approve, `/steer:spec adr accept <n>` |
 | `Proposed`, Decider is someone else | Human decision required | The named Deciders ratify or reject (no command) |
-| ADR accepted, superseded ADR's issues deferred at step 5 | Recommended | `/steer:work issues reconcile --all` proposes them again |
+| ADR accepted, superseded ADR's issues deferred at `accept` step 5 | Recommended | `/steer:work issues reconcile --all` proposes them again |
 | Accepted, and it was blocking work | Blocking now - next transition | Continue the work it gated (`/steer:work`, `/steer:spec`) |
 | Accepted, no follow-up | Complete | `No action is currently required.` |
 
