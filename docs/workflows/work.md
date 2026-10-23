@@ -7,7 +7,7 @@ while the subcommands below read an issue and deliver it.
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish | promote | tidy | review | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "`--reviewed` - the review-gated path"
     Add `--reviewed` to wrap execution in the review loop formerly carried by the
@@ -110,6 +110,21 @@ nothing, and an unattended loop never approves. **It never merges.**
 not let you approve. It marks finished drafts ready, routes red or conflicting
 ones to `resume`, retargets an independent stacked PR onto the default branch,
 and asks you who should review an unassigned one.
+
+## Walkthrough - show the feature working
+
+`walkthrough <feature>` is for the PO or client who asks "show me" rather than
+"send me the spec". From an **approved** intent and the app running locally, it
+plans one captioned scene per user-experience step, finds stable locators with
+the Playwright CLI, and commits `scripts/demo/<feature>_walkthrough.*` with a
+`mise run demo:record` task. It then records, checks every scene on an ffmpeg
+contact sheet, and hands you the MP4 with what a viewer should know (seeded
+data, the version recorded, any real names on screen).
+
+The script is the deliverable, not the video: the video is git-ignored, and
+re-running `mise run demo:record` reproduces it after the data or UI change.
+Record on a fresh stack after `mise run dev:setup`, because leftover local
+state shows up on camera.
 
 ## Learnings - enforcement first
 
