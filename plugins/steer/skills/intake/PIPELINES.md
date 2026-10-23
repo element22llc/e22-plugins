@@ -153,14 +153,24 @@ front-end **verbatim** - step 1 (a clarification is its own `source-id`),
 step 2 (version, convert, commit, with the step-2.2 binary-hash guard), and
 step 6 (record) - replacing the git-diff (steps 3-4) with:
 
-0. **Secret check - before step 2 commits anything.** A clarification
+0. **A Doc link is fetched, not dropped.** Given a claude.ai link to a filled
+   questionnaire Doc, read it with the Docs connector and **export its tab as
+   `markdown`**; the decoded export is the received document - written straight
+   to `versions/<v>/original.md` (there is no drop file to move), hashed for
+   step 2.2's guard like any binary, format `claude-doc`, the link recorded as
+   `source.md`'s `Traceability link`. Never
+   web-fetch the link. No Docs connector in the session: ask the PO or dev to
+   download the Doc as Markdown or `.docx` and pass the file instead. Then the
+   secret check runs on the export like any other.
+   **Secret check - before step 2 commits anything.** A clarification
    document is committed under `spec/sources/`, so read the extraction for a
    pasted credential first - most likely under an `[ACCESS]` heading: a
    private-key block, a cloud access-key id, a bearer/API token, a
    `password:` / connection string with an inline password. On a hit, **stop
    and commit nothing**: name the heading (never echo the value), and hand it
    back - the client rotates it, re-sends without it, or the dev redacts it
-   locally before re-running clarify. Rule `60-high-risk` (Secrets handling).
+   locally before re-running clarify; a Doc's value also has to come out of the
+   Doc. Rule `60-high-risk` (Secrets handling).
 
 1. **Segment** the extraction into clarification units per the reference's
    segmentation rule - semantic by default; structural (one unit per

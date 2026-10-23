@@ -354,7 +354,7 @@ case except `audit`, which may additionally write a confirmed
 `/spec/AUDIT-REPORT.md` or `DRIFT-REPORT.md`.
 
 Where `Write` is kept it is bound *in prose* instead - to a temp-dir Artifact
-page, the scrubbed issue body `report` builds, or an explicitly confirmed report
+file (an HTML page or a Dashboard dataset; a Doc writes none), the scrubbed issue body `report` builds, or an explicitly confirmed report
 file. None of those skills modifies existing repo content - `Edit` is disallowed for the
 invoking turn, and the boundary across the run is one the skill keeps; the one
 deletion any of them performs is `report` clearing its

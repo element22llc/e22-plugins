@@ -26,8 +26,9 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
   Branching and committing are Bash, which the frontmatter does not withhold. `Write` splits
   the tier. `standards`, `next`, `doctor` and `reference` disallow it too. The
   five temp-writing skills - `audit`, `explain`, `help`, `status`, `report` -
-  deliberately **keep** `Write`: the artifact HTML for the four render skills
-  (the Markdown fallback is printed inline, never saved), the scrubbed issue
+  deliberately **keep** `Write`: the temp Artifact file for the four render skills
+  (an HTML page or a Dashboard dataset; a Doc writes none, and the Markdown
+  fallback is printed inline, never saved), the scrubbed issue
   body for `report`. For `explain`, `help`, `status` and `report` a single
   temp-dir path is the one permitted write; `audit` is the exception - besides
   its temp artifact and triage export it may write `/spec/AUDIT-REPORT.md` and

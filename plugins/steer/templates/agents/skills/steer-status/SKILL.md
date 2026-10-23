@@ -59,8 +59,9 @@ page came back without one, since a fork's heading is easily dropped. Everything
 
 Turn the current state of the workspace into a **client-readable progress report
 for a time window**: what shipped this period, what's in flight, what's waiting on
-the client, and what's next - published as a **Claude Code Artifact** (a private,
-hosted page on claude.ai you can then share) or rendered as **Markdown** where
+the client, and what's next - published as a **Claude Doc** (a private, hosted
+page on claude.ai you can then share, and the client can comment on or export to
+PDF), as **Slides** when it will be presented, or rendered as **Markdown** where
 Artifacts are unavailable.
 
 This is the **periodic, cross-cutting** view: `/steer-status feature <id>`
@@ -183,16 +184,23 @@ Ask `/steer-tracker-sync` for the tracker reads; read `/spec` directly for the r
 
 ## Render the report
 
-Render by the shared Artifact discipline - mechanics in
-`/steer-reference artifacts` - as a **high-level page a client can read in
-seconds**: a header banner with the period and headline (e.g. *"3 features shipped,
-Milestone 2 82% complete"*), then the sections above as compact visual blocks -
-milestone progress meters, a shipped list grouped by feature, an "in progress"
-list, a "needs your input" callout with the open-question count, and a "what's
-next" list. Publish to the temp path `<tempdir>/steer-status-<period>.html` (stable
-per window, so a re-run redeploys in place rather than making a second page);
-publishing stays
-human-gated. Where Artifacts are unavailable, print the **Markdown fallback**
+Render by the shared Artifact discipline - tiers and mechanics in
+`/steer-reference artifacts` - as a **report a client can read in seconds**:
+
+- **A Doc by default.** The lead sentence is the period and headline (e.g.
+  *"3 features shipped, Milestone 2 82% complete"*), then the sections above -
+  milestone progress as a chart once there are several milestones, a shipped
+  table grouped by feature, an "in progress" list, a "needs your input" section
+  with the open-question count, and a "what's next" list. The fork cannot show
+  the Doc to the main session: open it, and return its link.
+- **Slides** when the caller says the report will be presented (a client
+  review, a steering meeting): the headline slide, then one slide per section,
+  same content and the same derived-view rules.
+- **HTML tier** when neither type is available: the same sections as compact
+  visual blocks at `<tempdir>/steer-status-<period>.html` (stable per window, so
+  a re-run redeploys in place rather than making a second page).
+
+Publishing stays human-gated. Where Artifacts are unavailable, print the **Markdown fallback**
 inline with the same section shape - never write it to a file under the repo.
 
 When the reader is the client/PO - see rule `05` (Who you are working with) -
@@ -201,8 +209,9 @@ jargon, or milestone-mechanics. Keep outcomes and dates; drop the plumbing.
 
 ## Updating a previously shared report
 
-The publish path is stable per window, which is what lets a re-run redeploy in
-place rather than creating a second page. Do not promise that as a guarantee: this
+A Doc or deck made earlier in the conversation is updated in place; on the HTML
+tier the stable per-window path is what lets a re-run redeploy rather than create
+a second page. Do not promise that as a guarantee: this
 skill runs forked, and whether a fork's publish is recognised as a redeploy of an
 earlier one is not something steer can verify. If the caller needs a specific
 report updated, take its URL from them - which a report shared from a **different**

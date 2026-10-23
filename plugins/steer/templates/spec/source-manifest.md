@@ -13,7 +13,7 @@
 - **Owner:** [@po-handle who supplies this document]
 - **Origin:** [delivery channel - e.g. email, shared drive, chat]
 - **Traceability link:** [URL a human can open; reference only - Claude cannot fetch authenticated links, mirroring design-sources]
-- **Format:** [docx | pptx | xlsx | pdf | other]
+- **Format:** [docx | pptx | xlsx | pdf | claude-doc | other]
 - **Filenames seen:** [comma-separated history of filenames this document has arrived under]
 - **Latest absorbed version:** [vNNNN-YYYY-MM-DD, or "none yet"]
 

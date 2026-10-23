@@ -1,0 +1,16 @@
+kind: Changed
+body: |-
+  - **Changed: shareable pages start from Claude's Artifact types.** The PO
+    questionnaire from `/steer:spec questions bundle` is now a Claude Doc the
+    PO answers in place, with nothing to copy out or send back: pass its link
+    to `/steer:spec intake clarify <doc-link>`, which exports it and absorbs
+    the answers as before. Status reports, feature summaries, the release
+    timeline and the capability menu render as Docs too, a status report as
+    Slides when it will be presented, and audit findings and drift as a
+    Dashboard, with the audit triage as a Doc that `/steer:work issues
+    publish-audit <doc-link>` reads back. Where an account has no matching
+    type or no Docs connector, the hand-written page and the Markdown
+    fallback still apply.
+time: 2026-10-23T12:00:00.000000-04:00
+custom:
+  Slug: artifact-types-over-html

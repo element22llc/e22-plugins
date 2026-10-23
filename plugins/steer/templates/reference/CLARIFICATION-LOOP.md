@@ -12,18 +12,22 @@ here; when the contract changes, it changes in this one place.
 
 1. **Outbound - `/steer:spec questions bundle`** gathers the PO-answerable open
    questions across the spine and renders them as a shareable, **fillable
-   questionnaire** - a Claude Artifact, or the same fillable Markdown printed
-   inline where the Artifact tool is unavailable (rendering discipline:
+   questionnaire** - a Claude **Doc** the PO answers in place, else a
+   hand-written page with a copy-out box, else the same fillable Markdown
+   printed inline where the Artifact tool is unavailable (rendering discipline:
    [`ARTIFACTS.md`](ARTIFACTS.md)). Bundle changes nothing
    in the spec.
-2. **Offline - the PO answers in a browser.** They fill each answer, copy out
-   the return document below (a hosted page stores nothing, so the export is
-   the only data channel back), and send it on by whatever route they like -
-   email, chat, pasted into Word and returned as a `.docx`.
-3. **Inbound - `/steer:intake clarify <filled-doc>`** absorbs the export like
-   any PO source document (version-stamped and committed under
-   `spec/sources/`), segments it into units, maps each unit - by its machine
-   key where present - and sorts them into the three-bucket worklist below.
+2. **Offline - the PO answers in a browser.** In a Doc they type each answer
+   under its **Answer:** line and say they are done; nothing has to be sent
+   back - the Doc is the channel. From a hand-written page they copy out the
+   return document below (that page stores nothing, so the export is the only
+   data channel back) and send it on by whatever route they like - email,
+   chat, pasted into Word and returned as a `.docx`.
+3. **Inbound - `/steer:intake clarify <doc-link | filled-doc>`** absorbs the
+   answers like any PO source document (version-stamped and committed under
+   `spec/sources/`; a Doc is exported to Markdown first), segments them into
+   units, maps each unit - by its machine key where present - and sorts them
+   into the three-bucket worklist below.
 4. **Fold - `/steer:spec questions`** (the default resolve flow) applies each routed
    answer to the spec under its step-6 tier gate and closes the question
    (`status: resolved`, decision in `_Resolution:_`; the block itself stays).
@@ -96,7 +100,16 @@ _(type your answer here)_
   answer contains a credential anyway, `/steer:intake clarify` stops before
   committing it (the clarify pipeline in its `PIPELINES.md`).
 - **Nothing volatile is embedded** (no git SHA), so two downloads of the same
-  answers stay byte-identical for intake's binary-hash idempotency guard.
+  answers stay byte-identical for intake's binary-hash idempotency guard. A Doc
+  re-exported after more answers is a new version, which intake's versioning
+  already handles.
+- **The Doc carries the same document.** Its title is the
+  `# steer clarification questionnaire` line and each question the same flat
+  `## [<feature-id>] Q-NNN` heading, in kind order. A Doc drops HTML comments,
+  so the `steer:clarification-bundle` marker and the `steer:q` provenance are
+  absent - the title and headings identify it - and each `>` line is its own
+  quote paragraph so the export keeps them apart. Unanswered is an empty
+  **Answer:** block, not a placeholder.
 
 ### Key matching - valid, stale, and unknown keys
 
@@ -131,7 +144,8 @@ split across a table cell, err toward a **larger** unit **flagged for the human
 to split** - never confidently over-split. Drop preamble, pleasantries, and
 anything that answers nothing; do **not** force-map a non-answer.
 
-**Exception - a recognized bundle return segments structurally.** When the
+**Exception - a recognized bundle return segments structurally.** Unescape a
+Doc export's brackets first (`&#91;` and `\[` -> `[`, `\]` -> `]`). When the
 extraction is a questionnaire this org emitted (`## [<feature-id>] Q-NNN - ...`
 headings, typically under a `<!-- steer:clarification-bundle -->` marker or a
 `# steer clarification questionnaire` title), it is *not* an arbitrary client

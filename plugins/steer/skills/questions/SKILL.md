@@ -280,10 +280,10 @@ busywork the block must not invent (`NEXT-ACTIONS.md` §3).
 
 ## Bundle mode (`bundle`)
 
-One fillable questionnaire (Artifact, Markdown fallback) of every
-PO-answerable open question, grouped by `kind:`. It **changes nothing in the
-spec**; the filled copy returns through `/steer:spec intake clarify
-<filled-doc>`. Procedure, read only for this mode:
+One fillable questionnaire (a Claude Doc the PO answers in place, Markdown
+fallback) of every PO-answerable open question, grouped by `kind:`. It
+**changes nothing in the spec**; the answers return through `/steer:spec intake
+clarify <doc-link | filled-doc>`. Procedure, read only for this mode:
 [`BUNDLE.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/BUNDLE.md).
 
 ## Coupling rules

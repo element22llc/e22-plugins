@@ -136,21 +136,22 @@ After resolving the work-set in any writing mode:
    this skill produces the milestoned issues the view renders; it does not create
    or configure the Project (no per-repo board automation).
 
-### Shareable timeline (Artifact, optional)
+### Shareable timeline (Doc, optional)
 
 The GitHub Projects v2 roadmap is the canonical timeline view, but it needs a
 GitHub login and the one-time view setup. For a **quick, shareable snapshot** - the
 no-arg preview a PO can glance at, or a hand-off after a plan lands - **offer** to
-render the milestone plan as a **Claude Artifact**: milestones as columns/bands,
-each with its issues laid out as horizontal bars ordered by the same `depends-on`
-constraints, blocking/dependency edges flagged - a derived preview of the Projects
-v2 view, never a replacement for it. Every bar encodes a real milestoned issue and
+render the milestone plan as a **Claude Doc**: a lead line with the release
+count and the next confirmed date, then the timeline **drawn as a diagram** -
+milestones as bands, each with its issues as bars ordered by the same
+`depends-on` constraints, blocking/dependency edges flagged - a derived preview
+of the Projects v2 view, never a replacement for it. Every bar encodes a real milestoned issue and
 a **human-confirmed** date; a milestone with no confirmed date shows as *"date not
 set"*, never a guessed one (the "No fabricated planning data" guardrail below).
-Render by the shared discipline - mechanics in
-`/steer:reference artifacts` - with the temp path
-`<tempdir>/steer-roadmap-timeline.html`; the Markdown fallback keeps the timeline
-shape as an inline table (milestone -> issues -> dates).
+Render by the shared discipline - tiers and mechanics in
+`/steer:reference artifacts`; the HTML tier's temp path is
+`<tempdir>/steer-roadmap-timeline.html`, and the Markdown fallback keeps the
+timeline shape as an inline table (milestone -> issues -> dates).
 
 ## Guardrails
 

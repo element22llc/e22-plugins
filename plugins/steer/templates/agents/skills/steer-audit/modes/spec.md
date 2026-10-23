@@ -149,15 +149,16 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    enforces.
 
    **Optionally publish it as a shareable drift board** - where the `Artifact`
-   tool is available, **offer** a board of verdict-chipped cards (Done-but-Missing
+   tool is available, **offer** a **Dashboard** Artifact over one fixed dataset of
+   this run's drift findings: verdict-chipped rows (Done-but-Missing
    and Diverged first, tracker status preserved so defect-vs-roadmap reads at a
    glance): every chip is the verdict this run assigned, with its as-built
    evidence, and denotes *kind*, not severity. Unlike the code dashboard, the
-   drift board is **never fillable**: each drift finding needs a per-finding human
+   drift board has **no triage companion**: each drift finding needs a per-finding human
    decision (its decision-checklist issue), not a bulk selection. The write is
-   post-confirmation, per the read-only note in `SKILL.md`, to the temp path
-   `steer-audit-drift-<short-sha>.html`; all rendering mechanics live in rule
-   `/steer-reference artifacts`.
+   post-confirmation, per the read-only note in `SKILL.md`, to the temp dir (the
+   dataset JSON, or the HTML tier's `steer-audit-drift-<short-sha>.html`); all
+   rendering mechanics live in `/steer-reference artifacts`.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when
