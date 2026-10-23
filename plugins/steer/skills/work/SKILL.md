@@ -1,6 +1,6 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR, tidy sweeps the repo root into /spec, review batches the PR review queue - none takes an issue. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code."
+description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR, tidy sweeps the repo root into /spec, review batches the PR review queue, walkthrough records a captioned demo video of an approved feature - none takes an issue. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code."
 when_to_use: >-
   Use when asked to work, start, resume, or finish a specific issue ("work on
   #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue
@@ -10,9 +10,10 @@ when_to_use: >-
   ship what is already on the default branch to production ("promote to prod").
   Use tidy when the repo root is cluttered with loose documents, diagrams or
   exports ("clean up the repo", "organize the strays"). Use review to clear a
-  PR review queue fast ("review my PRs"). Use issues for backlog
+  PR review queue fast ("review my PRs"). Use walkthrough to show a PO or
+  client a feature working ("record a demo video", "show me"). Use issues for backlog
   management with no implementation this turn.
-argument-hint: "[start | resume | status | finish | promote | tidy | review | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
+argument-hint: "[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -37,7 +38,7 @@ allowed-tools:
   - Bash(gh run view *)
   - Bash(gh run watch *)
 ---
-<!-- steer:modes start,resume,status,finish,promote,tidy,review,issues -->
+<!-- steer:modes start,resume,status,finish,promote,tidy,review,walkthrough,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the
@@ -71,10 +72,12 @@ These hold for the whole run, in every mode.
    **there**. A missing local `intent.md` means the workspace has not been read
    yet, never that the feature is unspecified - **never** author product-level
    spec files here to fill the gap.
-0b. **`promote`, `tidy` and `review` skip steps 1 and 3** - none is
-   issue-scoped (`promote` ships what is merged, `tidy` moves files, `review`
-   works the PR queue), so none reads the tracker or finds-or-creates an issue.
-   Read `modes/promote.md` / `modes/review.md` from Step 1; `tidy` -> its row.
+0b. **`promote`, `tidy`, `review` and `walkthrough` skip steps 1 and 3** -
+   none is issue-scoped (`promote` ships what is merged, `tidy` moves files,
+   `review` works the PR queue, `walkthrough` records a demo of an approved
+   intent), so none reads the tracker or finds-or-creates an issue. Read
+   `modes/promote.md` / `modes/review.md` from Step 1; `tidy` and
+   `walkthrough` -> their rows.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
@@ -145,14 +148,16 @@ modes**; they differ only in the branch/PR ceremony.
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
+| **`walkthrough <feature>`** | **Not issue-scoped** - record a captioned walkthrough video of the running app that proves an approved intent: plan scenes from it, commit a re-recordable script and a `mise run demo:record` task, verify the frames, hand over the MP4. |
 | **`issues <mode>`** | **Not issue-scoped** - the backlog layer, which never edits code: `capture`, `triage`, `brainstorm`, `materialize`, `decompose`, `epic`, `status`, `board`, `reconcile`, the `publish-*` family, `bootstrap-labels`. Its mode map names the one procedure file each mode needs. |
 
-**`tidy` and `issues` delegate, they do not restate.** Both are internal skills
-(`user-invocable: false`) that own their procedure - `/steer:tidy` loads
-`HOUSEKEEPING.md`, `/steer:issues` the one mode file its mode map names. Invoke
-the skill and follow it; re-derive none of it here. Both are modes of this door
-because both change the repo's **work state**, which is what it owns - the issue
-captured today is the one `start` claims tomorrow. A recommendation you hand
+**`tidy`, `walkthrough` and `issues` delegate, they do not restate.** All three
+are internal skills (`user-invocable: false`) that own their procedure -
+`/steer:tidy` loads `HOUSEKEEPING.md`, `/steer:walkthrough` the demo templates,
+`/steer:issues` the one mode file its mode map names. Invoke the skill and follow
+it; re-derive none of it here. They are modes of this door because each changes
+the repo or its **work state**, which is what it owns - the issue captured today
+is the one `start` claims tomorrow. A recommendation you hand
 back to a user names `/steer:work <mode>`, never the owning skill.
 
 **`status #N` and `issues status` are different views.** `status #N` is one

@@ -84,6 +84,9 @@ replacements:
   - path: plugins/steer/evals/routes-client-status-to-status/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-demo-video-to-walkthrough/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-explain-code-to-none/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'

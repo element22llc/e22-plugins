@@ -27,6 +27,7 @@ PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 SCAFFOLD_VARIANTS = {
     "managed": {
         "routes-client-status-to-status",
+        "routes-demo-video-to-walkthrough",
         "routes-explain-code-to-none",
         "routes-fix-issue-to-work",
         "routes-general-knowledge-to-none",

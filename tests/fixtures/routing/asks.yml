@@ -176,6 +176,9 @@ fixtures:
   - ask: "organize these stray design exports into their right home"
     skill: work
     signals: ["organize", "diagrams"]
+  - ask: "record a short demo video of the approved checkout feature to show the client"
+    skill: work
+    signals: ["demo video"]
   - ask: "I have twenty PRs waiting on me - help me review and approve them fast"
     skill: work
     signals: ["review queue", "review my PRs"]
