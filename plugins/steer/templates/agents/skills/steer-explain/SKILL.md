@@ -1,6 +1,6 @@
 ---
 name: steer-explain
-description: 'Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back.'
+description: 'Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (or Markdown): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back.'
 argument-hint: '[feature-id]'
 user-invocable: false
 ---
@@ -45,7 +45,7 @@ scope/open-question boards, so the reader gets the gist in seconds and drills in
 only where they want to. Published as a **Claude Doc** (a private, hosted
 page on claude.ai the user can then share and a stakeholder can comment on), a
 hand-written Artifact page where no Docs type is available, or **Markdown**
-where Artifacts are not available at all.
+when the caller asks for it or Artifacts are not available at all.
 
 This is the **PO-facing presentation layer** the rest of the roster lacks: every
 other skill is dev- or tracker-facing. `explain` renders the human-readable side
@@ -218,7 +218,7 @@ to this skill**:
   stable per feature, so a re-run redeploys in place rather than making a second
   page (not a guarantee from a fork - see "Updating a previously shared page"
   below). Write only there (a system temp dir), never under the repo tree.
-- **The Markdown fallback keeps this skill's at-a-glance shape** - status as an
+- **The Markdown form keeps this skill's at-a-glance shape** - status as an
   inline pipeline (`draft -> **approved** -> live`),
   sign-off as a checklist with its "N of 4" count, the acceptance criteria as
   a second checklist with their own count, the journey as a numbered list,
@@ -261,7 +261,7 @@ the caller relays this heading with the page), and stop:
 - Derived-view discipline this mirrors: `/steer-spec roadmap`.
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
 - Status enum for the lifecycle pipeline: `ENUMS.md`.
-- Artifact rendering, the derived-view discipline, and the Markdown fallback:
+- Artifact rendering, the derived-view discipline, and Markdown output:
   `/steer-reference artifacts` - the shared standard this
   skill renders by. Visual system: the `artifact-design` skill (page shell) and,
   where offered, `dataviz` (chart colour/encoding), both loaded at publish time.

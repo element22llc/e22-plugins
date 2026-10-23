@@ -214,15 +214,16 @@ It covers, in detail:
   `DESIGN.md` tokens when it declares them, else the `artifact-design`/`dataviz`
   house default; light/dark support and semantic chart encodings stay
   non-negotiable either way.
-- **Interactivity, fillable pages, and the Markdown fallback** - lead with the gist
+- **Interactivity, fillable pages, and Markdown output** - lead with the gist
   and disclose on demand; the permission-free copy-out floor a hand-written
   fillable page needs; the **return leg** (a filled Doc is exported to Markdown by
   the ingest path, a hand-written page's copied-out document is its only channel -
   either way a machine-keyed document ingested by the owning skill:
   `/steer:spec questions bundle` -> `/steer:spec intake clarify`, the audit triage form ->
   `/steer:issues publish-audit`);
-  and the inline-Markdown fallback (never written under the repo tree) where the
-  Artifact tool is unavailable.
+  and Markdown as the second supported format - on request or where the
+  Artifact tool is unavailable; printed inline, saved to temp on request, never
+  written under the repo tree.
 
 This file carries the Artifact standard in full; the rendering skills
 (`/steer:explain`, `/steer:status`, `/steer:spec questions bundle`, `/steer:audit`,

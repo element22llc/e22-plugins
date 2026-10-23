@@ -95,13 +95,15 @@ at all - gathering uses read-only `Glob` / `Read` / `Grep` only.
      hand-written page at `<tempdir>/steer-questions-bundle[-<feature-id>].html`,
      one labelled `<textarea>` per question, upholding the **copy-out floor**.
 
-5. **Markdown fallback.** Where the Artifact tool is unavailable, print the
-   **same fillable return-document Markdown inline** - never to a file under
-   the repo - per `ARTIFACTS.md`'s fallback rules, saying plainly why the
-   hosted artifact isn't available so it isn't mistaken for a failure.
+5. **Markdown.** When the caller asks for Markdown - a PO without claude.ai,
+   a file to email - or the Artifact tool is unavailable, print the **same
+   fillable return-document Markdown inline**, and on request save it as
+   `<tempdir>/steer-questions-bundle[-<feature-id>].md` to send - never to a
+   file under the repo - per `ARTIFACTS.md` -> "Markdown output". The filled
+   file returns through `/steer-spec intake clarify <filled-doc>`.
 
 The Doc's Markdown export, the HTML page's copy-box and "Download .md", and
-the Markdown fallback all yield the **same machine-keyed return document**; its exact shape, the
+the Markdown form all yield the **same machine-keyed return document**; its exact shape, the
 `[<feature-id>] Q-NNN` key rules, and stale-key handling are the
 return-document contract in
 [`CLARIFICATION-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md).

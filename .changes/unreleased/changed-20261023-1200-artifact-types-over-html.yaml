@@ -9,8 +9,12 @@ body: |-
     Slides when it will be presented, and audit findings and drift as a
     Dashboard, with the audit triage as a Doc that `/steer:work issues
     publish-audit <doc-link>` reads back. Where an account has no matching
-    type or no Docs connector, the hand-written page and the Markdown
-    fallback still apply.
+    type or no Docs connector, the hand-written page still applies.
+    Markdown stays a supported format in its own right, not only a fallback:
+    ask for it (a reader without claude.ai, a file to attach) and every page
+    renders as Markdown with the same content, saved to a temp file on
+    request, and a filled Markdown questionnaire or triage goes back through
+    the same `clarify` and `publish-audit` paths.
 time: 2026-10-23T12:00:00.000000-04:00
 custom:
   Slug: artifact-types-over-html

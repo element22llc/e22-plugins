@@ -61,8 +61,8 @@ Turn the current state of the workspace into a **client-readable progress report
 for a time window**: what shipped this period, what's in flight, what's waiting on
 the client, and what's next - published as a **Claude Doc** (a private, hosted
 page on claude.ai you can then share, and the client can comment on or export to
-PDF), as **Slides** when it will be presented, or rendered as **Markdown** where
-Artifacts are unavailable.
+PDF), as **Slides** when it will be presented, or rendered as **Markdown** when
+the caller asks for it or Artifacts are unavailable.
 
 This is the **periodic, cross-cutting** view: `/steer-status feature <id>`
 presents **one feature** in depth; `/steer-spec roadmap` lays out the **forward**
@@ -200,8 +200,9 @@ Render by the shared Artifact discipline - tiers and mechanics in
   visual blocks at `<tempdir>/steer-status-<period>.html` (stable per window, so
   a re-run redeploys in place rather than making a second page).
 
-Publishing stays human-gated. Where Artifacts are unavailable, print the **Markdown fallback**
-inline with the same section shape - never write it to a file under the repo.
+Publishing stays human-gated. When Markdown is asked for or Artifacts are
+unavailable, print the **Markdown form** inline with the same section shape -
+never write it to a file under the repo.
 
 When the reader is the client/PO - see rule `05` (Who you are working with) -
 render in plain product language: **no** safety-level codes, issue numbers, ADR/CI

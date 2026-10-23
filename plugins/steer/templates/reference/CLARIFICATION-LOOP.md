@@ -13,8 +13,8 @@ here; when the contract changes, it changes in this one place.
 1. **Outbound - `/steer:spec questions bundle`** gathers the PO-answerable open
    questions across the spine and renders them as a shareable, **fillable
    questionnaire** - a Claude **Doc** the PO answers in place, else a
-   hand-written page with a copy-out box, else the same fillable Markdown
-   printed inline where the Artifact tool is unavailable (rendering discipline:
+   hand-written page with a copy-out box - or the same fillable Markdown,
+   when the caller asks for it or the Artifact tool is unavailable (rendering discipline:
    [`ARTIFACTS.md`](ARTIFACTS.md)). Bundle changes nothing
    in the spec.
 2. **Offline - the PO answers in a browser.** In a Doc they type each answer

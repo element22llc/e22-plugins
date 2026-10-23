@@ -156,7 +156,7 @@ a **human-confirmed** date; a milestone with no confirmed date shows as *"date n
 set"*, never a guessed one (the "No fabricated planning data" guardrail below).
 Render by the shared discipline - tiers and mechanics in
 `/steer-reference artifacts`; the HTML tier's temp path is
-`<tempdir>/steer-roadmap-timeline.html`, and the Markdown fallback keeps the
+`<tempdir>/steer-roadmap-timeline.html`, and the Markdown form keeps the
 timeline shape as an inline table (milestone -> issues -> dates).
 
 ## Guardrails

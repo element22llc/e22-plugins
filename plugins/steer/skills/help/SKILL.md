@@ -110,8 +110,8 @@ intent, not that they memorize a command.
 ## Phase 3 - offer a shareable visual menu (Artifact)
 
 The inline menu above is the fast, always-available render - where the `Artifact`
-tool is unavailable it already *is* the **Markdown fallback**, so say that rather
-than treating it as a missing feature. When the tool **is** available, additionally
+tool is unavailable, or the user asked for Markdown, it already *is* the
+**Markdown form**, so say that rather than treating it as a missing feature. When the tool **is** available, additionally
 **offer** a shareable version: the same journey groups as a **Claude Doc** - one
 section per journey, a table of goal and invocation in each - a user can hand to
 a teammate who is new to steer - an offer only, never

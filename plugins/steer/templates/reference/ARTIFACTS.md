@@ -12,6 +12,12 @@ Dashboard, Design, Motion: a ready-made page that takes Claude's content as data
 or hand-written as a plain HTML page. **steer starts from a type wherever one
 fits**; the hand-written page is the fallback, not the default.
 
+**Markdown is the other supported format, not only a fallback.** Every render has
+a Markdown form with the same content and, for a fillable page, the same machine
+keys, so a reader without claude.ai, a Copilot or Bedrock session, or anyone who
+asks for a file to attach or paste gets an equal result
+([Markdown output](#markdown-output)).
+
 This reference is the **single source of truth** for *how* steer produces an
 Artifact and *what discipline governs it*. Skills that render one - `/steer:explain`,
 `/steer:spec questions bundle`, `/steer:audit`, `/steer:spec roadmap`, `/steer:status`,
@@ -92,7 +98,11 @@ have no steer render of their own - use them only when the user asks for a
 screen mock-up or an animated walkthrough. A Design mock-up is not a design
 source until it is exported and committed (`/steer:reference design-sources`).
 
-Types are **per account**, so discover, never assume:
+**Choose the format first.** Render **Markdown** when the user asks for it -
+Markdown, a `.md` file, plain text, no Artifact, or a reader who cannot open
+claude.ai - or when the session has no `Artifact` tool; otherwise render an
+**Artifact**. An explicit ask always wins over the default. Within the Artifact
+format, types are **per account**, so discover, never assume:
 
 1. **Typed tier.** Call the `Artifact` tool's `quickstart` with the intent the
    table implies (`document` for Docs, `slides`, `other` for a dashboard). Its
@@ -101,10 +111,11 @@ Types are **per account**, so discover, never assume:
 2. **HTML tier.** The type is not listed, the quickstart names none, or the Docs
    connector is absent: hand-write the page per
    [The HTML tier](#the-html-tier). A fillable page keeps its copy-out floor.
-3. **Markdown tier.** No `Artifact` tool at all: print the content inline per
-   [Markdown fallback](#markdown-fallback-not-a-failure).
+3. **Markdown tier.** No `Artifact` tool at all: render [Markdown
+   output](#markdown-output).
 
-Say which tier ran when it is not the first, and why, in one line.
+Say which tier ran when it is not the first, and why, in one line - unless the
+user chose Markdown, which needs no explanation.
 
 ### Before any publish - the heads-up
 
@@ -279,23 +290,29 @@ per input is the contract:
   new fillable page needs its own declared key scheme and ingest route before it
   ships.
 
-## Markdown fallback - not a failure
+## Markdown output
 
-The `Artifact` tool is **unavailable** on Bedrock / Vertex / Foundry, in a
-zero-data-retention org, or with no claude.ai login. When it is:
+Markdown renders when the user asks for it, or when the `Artifact` tool is
+**unavailable** - on Bedrock / Vertex / Foundry, in a zero-data-retention org,
+with no claude.ai login, or on a surface such as Copilot that has none. Either
+way:
 
 - Render the **same content as Markdown, printed inline** in the session. Keep the
   at-a-glance shape - a status pipeline as an inline arrow chain
   (`draft -> **approved** -> ...`), an acceptance meter as a checklist with its
   "N of M" count, a journey as a numbered list, scope as two ✓ / ✗ lists, a report
   as a table.
-- For a **fillable** page, the inline fallback *is* the return document itself, so
-  the user can send it to the stakeholder and route the filled copy back through
-  the page's owning ingest path.
-- **Do not write the Markdown to a file under the repo tree** - a rendered copy in
-  the tree is the drifting second copy this discipline avoids.
-- **Say plainly** that the hosted Artifact isn't available in this environment and
-  why, so the fallback is never mistaken for a failure.
+- For a **fillable** page, the Markdown *is* the return document itself, so the
+  user can send it to the stakeholder and route the filled copy back through the
+  page's owning ingest path, which takes a Markdown file exactly as it takes a
+  Doc link.
+- **A file on request.** When the user wants something to attach or send, also
+  write it to `<tempdir>/steer-<skill>-<subject>.md` (the HTML tier's naming) and
+  give the path.
+- **Never write it under the repo tree** - a rendered copy in the tree is the
+  drifting second copy this discipline avoids.
+- **When it is a fallback, say so plainly** - that the hosted Artifact isn't
+  available in this environment and why - so it is never mistaken for a failure.
 
 ## Updating a previously shared page
 
