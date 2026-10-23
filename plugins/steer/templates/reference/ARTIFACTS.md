@@ -1,11 +1,22 @@
 # Producing Claude Artifacts
 
-The Artifact standard in full. A **Claude Artifact** is a self-contained,
-default-private web page that Claude publishes to a hosted URL on claude.ai, which
-the user can then choose to share with a teammate. Several steer skills turn a
-read-only, at-a-glance view of `/spec`, tracker, or audit state into one - a page a
-reader grasps in seconds instead of scrolling a wall of terminal text, and can hand
-to a stakeholder who has no repo and no Claude Code.
+The Artifact standard in full. A **Claude Artifact** is a default-private page
+Claude publishes to a hosted URL on claude.ai, which the user can then choose to
+share with a teammate. Several steer skills turn a read-only, at-a-glance view of
+`/spec`, tracker, or audit state into one - a page a reader grasps in seconds
+instead of scrolling a wall of terminal text, and can hand to a stakeholder who
+has no repo and no Claude Code.
+
+An Artifact is either built from a **published Artifact type** - Docs, Slides,
+Dashboard, Design, Motion: a ready-made page that takes Claude's content as data -
+or hand-written as a plain HTML page. **steer starts from a type wherever one
+fits**; the hand-written page is the fallback, not the default.
+
+**Markdown is the other supported format, not only a fallback.** Every render has
+a Markdown form with the same content and, for a fillable page, the same machine
+keys, so a reader without claude.ai, a Copilot or Bedrock session, or anyone who
+asks for a file to attach or paste gets an equal result
+([Markdown output](#markdown-output)).
 
 This reference is the **single source of truth** for *how* steer produces an
 Artifact and *what discipline governs it*. Skills that render one - `/steer:explain`,
@@ -21,11 +32,11 @@ Reach for an Artifact when the output is a **shareable, at-a-glance, derived vie
 that reads faster as a visual page than as prose:
 
 - a **presentation** of state someone wants to look at or hand on - a feature
-  summary, a capability menu, a release timeline;
+  summary, a capability menu, a release timeline, a client review deck;
 - a **report / dashboard** - leverage-ranked audit findings, a spec-vs-build drift
   board, a coverage table with status chips;
-- a **fillable page** - a questionnaire a stakeholder completes in a browser and
-  sends back (see [Fillable pages](#fillable-pages-the-copy-out-floor)).
+- a **fillable document** - a questionnaire a stakeholder answers in place (see
+  [The return leg](#the-return-leg-how-filled-answers-come-back)).
 
 Do **not** reach for an Artifact when:
 
@@ -56,17 +67,113 @@ changes; regenerate to refresh.
 - **Never advance past the source.** A status pipeline stops at the recorded
   status; an acceptance meter ticks only the boxes the spec ticks; a verdict chip
   states the verdict the audit assigned. The page reflects; it does not predict.
+- **An editable page is still a snapshot.** A Doc lets every reader edit it, so
+  render spec state as plain text and tables, never as dropdown chips or tick
+  boxes a reader could flip, and open with a lead line naming the source and the
+  as-of date. Edits there change nothing in the spec. Only a page's declared
+  fillable part - a questionnaire's answers, a triage selection - is ever read
+  back, and only by its owning ingest path.
 - **Do not persist the URL.** The page is disposable - writing its claude.ai URL
-  into the repo (spec, docs, a tracked file) would
-  recreate the drift and the claude.ai coupling this discipline avoids. Give the URL
-  to the user in the session and let them keep it if they want it.
+  into the spine or docs would recreate the drift and the claude.ai coupling this
+  discipline avoids. Give the URL to the user in the session and let them keep it.
+  One exception: when an ingest path absorbs a filled Doc, the absorbed source's
+  `source.md` records the link as its `Traceability link` - provenance for that
+  committed version, not a live pointer.
 
-## The write-location invariant
+## Pick the type - three tiers
 
-An Artifact's **only** filesystem write is its HTML source, and it goes to a
-**system temp directory - never a path under the repo working tree** (`/spec`,
-`/apps`, `/packages`, or any tracked file). This is what keeps an Artifact render
-read-only over the canonical sources even in a skill that otherwise writes.
+| Skill | Type | What it renders |
+|---|---|---|
+| `/steer:status` | **Docs**; **Slides** when the reader will present it (a client review meeting) | the whole spine over the reporting window - shipped / in-progress / needs-input / next |
+| `/steer:status feature <id>` | **Docs** | one feature's `intent.md` (+ `contract.md`) - status, sign-off, journey, scope, open questions |
+| `/steer:spec questions bundle` | **Docs**, fillable - answers are read back | open questions across the spine |
+| `/steer:audit` (code) | **Dashboard**; the triage selection is a companion **Docs** page | the audit's own vetted findings |
+| `/steer:audit spec` | **Dashboard**, read-only | the drift findings and their verdicts |
+| `/steer:spec roadmap` | **Docs**, the timeline drawn as a diagram | the milestoned work-set (a preview of the Projects v2 view) |
+| `/steer:next capabilities` | **Docs** | the live `skills/*/SKILL.md` frontmatter |
+
+`/steer:weekly-update` is not a render: it writes an existing tracker Artifact's
+shared database, and this table does not apply to it. **Design** and **Motion**
+have no steer render of their own - use them only when the user asks for a
+screen mock-up or an animated walkthrough. A Design mock-up is not a design
+source until it is exported and committed (`/steer:reference design-sources`).
+
+**Choose the format first.** Render **Markdown** when the user asks for it -
+Markdown, a `.md` file, plain text, no Artifact, or a reader who cannot open
+claude.ai - or when the session has no `Artifact` tool; otherwise render an
+**Artifact**. An explicit ask always wins over the default. Within the Artifact
+format, types are **per account**, so discover, never assume:
+
+1. **Typed tier.** Call the `Artifact` tool's `quickstart` with the intent the
+   table implies (`document` for Docs, `slides`, `other` for a dashboard). Its
+   result names the type to start from - follow it. A Docs page also needs the
+   **Claude Docs connector** tools in the session.
+2. **HTML tier.** The type is not listed, the quickstart names none, or the Docs
+   connector is absent: hand-write the page per
+   [The HTML tier](#the-html-tier). A fillable page keeps its copy-out floor.
+3. **Markdown tier.** No `Artifact` tool at all: render [Markdown
+   output](#markdown-output).
+
+Say which tier ran when it is not the first, and why, in one line - unless the
+user chose Markdown, which needs no explanation.
+
+### Before any publish - the heads-up
+
+Give a **one-line heads-up**: publishing sends the content to claude.ai, where
+the page is **private to you until you choose to share it**. Let the tool's own
+permission prompt gate it - do not pre-authorize. **In a forked skill**
+(`/steer:explain`, `/steer:status`) the heads-up travels with the fork's result
+rather than ahead of the publish, so the permission prompt - which does surface
+in the main session - is the gate that holds. Write it anyway; it tells the reader
+what was sent.
+
+### Docs
+
+A Doc is written through the **Claude Docs connector**, not as files: load the
+session's docs skill if one is listed, else the connector's `guide`, and follow
+its cadence - the skeleton first (title, byline, one pending block per section),
+open it, then **one section per call** so the reader watches it fill. No local
+file is written at all.
+
+- **Open it** with the `Artifact` tool's `open` action right after creation. A
+  forked skill cannot show it to the main session: return the link in its result.
+- **Shape follows content** - a run of stages or a timeline is a drawn diagram
+  (the connector's `diagram` topic), five or more numbers on one measure a chart,
+  items with attributes a table. A connector refusal changes nothing in the doc:
+  fix the call, never fall back silently to prose.
+- **Fillable Docs** declare which blocks are answers and carry the machine key in
+  **visible heading text** (the questionnaire's `## [<feature-id>] Q-NNN`), so the
+  export maps each answer back. Never rewrite a fillable Doc a reader has started
+  filling: render a new one.
+
+### Dashboard
+
+Start from the Dashboard type (`type_url` from the quickstart, a `title`, no
+files), then follow the instructions its create result carries. For steer the
+data is a **fixed attached file**: write the vetted findings as JSON to the
+session scratchpad (or system temp dir), upload it, and declare its dataset
+`fixed: true` - the findings belong to one audited SHA and must not refresh. Every
+figure on the page comes from that dataset, which is the derived-view rule in
+the type's own words. A Dashboard is read, never filled: a selection the reader
+makes goes in a companion Doc.
+
+### Slides
+
+Start from the Slides type, list the design systems for it, and use the one
+marked default unless the user names another. One slide per idea the reader will
+speak to; the derived-view rules bind every number on a slide.
+
+## The HTML tier
+
+The hand-written page: the fallback when no type fits or none is listed.
+
+### The write-location invariant
+
+Any local file an Artifact needs - this tier's HTML source, a Dashboard's dataset
+JSON - goes to the **session scratchpad or a system temp directory, never a path
+under the repo working tree** (`/spec`, `/apps`, `/packages`, or any tracked
+file). This is what keeps a render read-only over the canonical sources even in a
+skill that otherwise writes.
 
 - **Deterministic temp path, stable per subject.** Name the file for what it
   renders - `<tempdir>/steer-<skill>-<subject>.html` (e.g.
@@ -76,8 +183,8 @@ read-only over the canonical sources even in a skill that otherwise writes.
 - **Read-only skills keep `Write`.** `/steer:explain`, `/steer:next`,
   `/steer:status` and `/steer:audit` keep the mutating tools disallowed in
   frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`; `explain` also disallows
-  `Bash`) - but `Write` is deliberately **not** disallowed, because writing the
-  HTML to temp is a permitted write. For most of them it is the *only* one;
+  `Bash`) - but `Write` is deliberately **not** disallowed, because writing to
+  temp is a permitted write. For most of them it is the *only* one;
   `/steer:audit` is the exception, whose frontmatter documents a **second**
   post-confirmation write its modes instruct - the optional
   `/spec/AUDIT-REPORT.md` / `DRIFT-REPORT.md`. The temp-only rule above governs
@@ -89,171 +196,135 @@ read-only over the canonical sources even in a skill that otherwise writes.
 - **Never disallow `Write` to make a render "safe".** `disallowed-tools` is scoped
   to the invoking turn - upstream states the restriction *clears when you send your
   next message* - so dropping `Write` buys no safety. Bind the limit in prose
-  instead: render in-run, post-confirmation, to the temp path; the temp-only write is what keeps it read-only over the repo.
+  instead: render in-run, post-confirmation, to the temp path.
 
-## Rendering mechanics - the CSP shapes everything
+### Rendering mechanics
 
-**If the `Artifact` tool is available in this session:**
-
-1. **Load the `artifact-design` skill first.** The Artifact tool requires it before
-   authoring a page - it calibrates the design investment and gives the page shell.
-   **If the session offers a `dataviz` skill,** load it too before drawing any chart,
-   meter, or diagram, so the visuals read as one system and work in both light and
-   dark. Where no `dataviz` skill is available, proceed with `artifact-design` alone;
-   do not stall looking for it.
-2. **Build every visual self-contained - the Artifact CSP blocks all external
-   hosts.** No CDN scripts (Chart.js, Mermaid, D3-from-CDN), no remote stylesheets or
-   fonts, no remote images, no `fetch`/XHR/WebSocket. A page that depends on a remote
-   resource renders **blank**. Draw pipelines, meters, boards, timelines, and
-   relationship diagrams as **inline SVG + CSS** with small **inline JS** for
-   interactivity, and embed any asset as a `data:` URI.
+1. **Load the `artifact-design` skill first** - it calibrates the design
+   investment and gives the page shell. **If the session offers a `dataviz`
+   skill,** load it too before drawing any chart, meter, or diagram. Where none is
+   available, proceed with `artifact-design` alone; do not stall looking for it.
+2. **Build every visual self-contained.** Scripts load only from the CDN hosts the
+   `Artifact` tool allowlists, at an exact pinned version; everything else - fonts
+   aside from Google Fonts, images, `fetch` - is blocked and renders **blank**.
+   Prefer **inline SVG + CSS** with small **inline JS** for pipelines, meters,
+   boards and timelines, and embed any asset as a `data:` URI.
 3. **Be theme- and width-aware.** Style for both light and dark
    (`prefers-color-scheme` plus the viewer's theme toggle). Use relative units and
-   let wide content (tables, timelines, diagrams) scroll inside its own
-   `overflow-x` container - the page body must never scroll horizontally.
-4. **Write the HTML** to the deterministic temp path above (never under the repo
-   tree).
-5. **Give a one-line heads-up before publishing:** publishing sends the rendered
-   content to claude.ai, where the page is **private to you until you choose to
-   share it**. Let the `Artifact` tool's own permission prompt gate the publish - do
-   not pre-authorize it. **In a forked skill** (`/steer:explain`, `/steer:status`)
-   the heads-up travels with the fork's result rather than arriving ahead of it, so
-   the permission prompt - which does surface in the main session - is the gate
-   that actually holds. Write the heads-up anyway; it is what tells the reader what
-   was sent once they see the page.
-6. **Publish, then report** the URL, that it is private until shared, and that
-   re-running in this same session redeploys the **same** page - hedged in a
-   forked skill, per the note below.
+   let wide content scroll inside its own `overflow-x` container - the page body
+   must never scroll horizontally.
+4. **Write the HTML** to the deterministic temp path, give the heads-up, publish,
+   then report the URL, that it is private until shared, and that a same-session
+   re-run redeploys the **same** page - hedged in a forked skill.
 
 ### Styling - the product's theme, or the house default
-
-An Artifact should look like it belongs to the product it renders, and every steer
-page should read as one system:
 
 - **Product theme when the repo declares one.** If the working repo has a
   `DESIGN.md` (repo root, or `apps/<app>/DESIGN.md` - see
   `/steer:reference design-sources`), derive the page's look from the tokens it
-  actually records - palette, type scale, spacing/radius, component shapes -
-  inlined as CSS custom properties. The derived-view rule applies to styling too:
-  use only what `DESIGN.md` records, never invent a brand for the product. Fonts
-  stay inside the CSP - use the declared family name with a system-stack fallback,
-  never a remote font.
-- **House default otherwise.** With no `DESIGN.md` (or none that declares tokens),
-  the default *is* the `artifact-design` + `dataviz` guidance - a deliberate,
-  brand-neutral system, not an absence of style. `/steer:next capabilities` always uses
-  the default: it renders steer's own capability set, not a product's state.
-- **Non-negotiables either way:** light *and* dark must both work (adapt a
-  single-theme product palette rather than shipping a page that breaks in dark
-  mode), contrast stays accessible, and chart/status colors still follow the
-  `dataviz` encoding rules - the product palette recolors the page shell; it never
-  overrides a semantic encoding (severity, verdict, status) into ambiguity.
+  actually records, inlined as CSS custom properties. Use only what `DESIGN.md`
+  records, never invent a brand for the product.
+- **House default otherwise** - the `artifact-design` + `dataviz` guidance.
+  `/steer:next capabilities` always uses the default: it renders steer's own
+  capability set, not a product's state.
+- **Non-negotiables either way:** light *and* dark must both work, contrast stays
+  accessible, and the product palette recolors the page shell; it never overrides
+  a semantic encoding (severity, verdict, status) into ambiguity.
+
+A typed Artifact takes its look from the type (and, for Slides, the default
+design system); do not restyle it.
 
 ### Interactivity - lead with the gist, disclose on demand
 
-- **One-screen summary first.** Open with the headline state (what/why, the top
-  finding, the current status) above the fold; put detail behind collapsible
-  sections with a sticky jump-nav. Nobody should scroll pages to learn the state.
+- **One-screen summary first.** Open with the headline state above the fold; put
+  detail behind collapsible sections with a sticky jump-nav.
 - **Accessible and shareable.** Every interactive control is keyboard-reachable and
-  labelled, and the page must make **complete sense with every section expanded** -
-  so a printed copy or a shared screenshot loses nothing.
+  labelled, and the page must make **complete sense with every section expanded**.
 
 ### Fillable pages - the copy-out floor
 
-A fillable page - the `/steer:spec questions bundle` questionnaire, the audit
-dashboard's triage form - adds input on top of a read-only page, and its export
+A hand-written fillable page has no way to hand its input back, so its export
 must survive a locked-down iframe:
 
 - **A permission-free copy floor is required - this is the primary export
   path.** The page **always** renders the complete return document into a
-  **read-only `<textarea>`/`<pre>` the user can select-all and copy by hand**.
-  This needs neither the Clipboard API nor a download. Inline JS mirrors each
-  input into this box on change so it always reflects current answers.
+  **read-only `<textarea>`/`<pre>` the user can select-all and copy by hand**,
+  mirrored from each input on change.
 - **A "Copy to clipboard" button and a "Download .md" link are progressive
-  enhancement only**, layered *over* the copy-box. Both need iframe-sandbox
-  grants (`clipboard-write`, `allow-downloads`) the Artifact frame may lack, so
-  a "Copy" button or a `data:`-URI download can silently do nothing -
-  the page must be fully usable (fill -> copy -> send) with neither working.
-- **Keys survive a round-trip.** Put the machine key in **visible heading text**,
-  not only an HTML comment, so it survives a paste into Word and back. Embed nothing
-  volatile (no timestamp, no run id), so two exports of the same answers stay
-  byte-identical. **One deliberate exception:** `/steer:audit`'s triage export
-  carries the audited commit in its `<!-- steer:audit-triage sha=<audited-sha> -->`
-  marker. Findings are only meaningful relative to a commit, and the SHA is fixed
-  for the run (so it is stable, not volatile) - `/steer:work issues
-  publish-audit` reads it to flag keys that went stale because the code moved. A
-  `questions` bundle has no such scope and embeds no SHA.
+  enhancement only.** Both need iframe-sandbox grants (`clipboard-write`,
+  `allow-downloads`) the frame may lack; the page must be fully usable (fill ->
+  copy -> send) with neither working.
 
-### The return leg - how filled answers come back
+## The return leg - how filled answers come back
 
-A hosted Artifact is a **static page with no backend**: nothing a user types into
-it is stored on claude.ai, so steer can never "read the answers off the page" -
-not by re-fetching the URL, not by any tool. The **exported return document is the
-only data channel back**, and it is a contract, not a convenience:
+Every fillable page has exactly **one owning ingest path**, and the machine key
+per input is the contract:
 
-- The export carries a **machine key per input** in visible heading text (e.g.
-  `[<feature-id>] Q-NNN`, a finding's `finding-key`), so the owning skill maps
-  each answer back deterministically after any round-trip (paste into Word,
-  email, and back).
-- Every fillable page has exactly **one owning ingest path** that absorbs the
-  export and folds it into canonical state under the usual gates. For the PO
-  questionnaire that is **`/steer:spec intake clarify <filled-doc>`**, which maps each
-  answer to its key and routes it to `/steer:spec questions` to fold into the spec -
-  the full key + routing contract is
-  [`CLARIFICATION-LOOP.md`](CLARIFICATION-LOOP.md);
-  for the audit triage form it is **`/steer:work issues publish-audit
-  <triage-doc>`**, which files exactly the checked findings and flags stale or
-  unknown keys.
-- **Do not bolt an ad-hoc input onto a read-only page.** A fillable Artifact
-  exists only where an ingest path exists to receive it - today:
-  `/steer:spec questions bundle` -> `/steer:spec intake clarify` (PO answers) and the audit
-  dashboard's triage form -> `/steer:work issues publish-audit` (finding
-  selection). A new fillable page needs its own declared key scheme and ingest
-  route before it ships.
+- The key sits in **visible heading text** (e.g. `[<feature-id>] Q-NNN`, a
+  finding's `finding-key`), so the owning skill maps each answer back
+  deterministically after any round-trip (a paste into Word, an email, a Doc
+  export).
+- **Docs tier - the Doc is the channel.** The reader answers in place and says
+  so; the owner hands its link to the ingest path, which **exports the tab as
+  `markdown`** with the Docs connector and treats that export as the received
+  document. Two export quirks to normalize before matching keys: brackets come
+  back escaped (`&#91;` and `\[` for `[`, `\]` for `]`), and consecutive `>` lines
+  merge unless separated by a blank `>` line - so write each context line as its
+  own quote paragraph. Also list the tab's open comment threads; each is free text
+  outside the keyed headings.
+- **HTML and Markdown tiers - the export is the channel.** A hand-written page
+  stores nothing the reader types, so the copied-out document is the only way
+  back.
+- **Keys survive, nothing volatile is embedded** (no timestamp, no run id), so two
+  exports of the same answers stay byte-identical. **One deliberate exception:**
+  `/steer:audit`'s triage export carries the audited commit in its
+  `<!-- steer:audit-triage sha=<audited-sha> -->` marker (a Doc carries it as a
+  visible `Audited commit: <sha>` line instead - an export drops HTML comments).
+  Findings are only meaningful relative to a commit, and the SHA is fixed for the
+  run - `/steer:work issues publish-audit` reads it to flag keys that went stale.
+- **Today's ingest routes:** `/steer:spec questions bundle` ->
+  **`/steer:spec intake clarify <doc-link | filled-doc>`** (PO answers - the key +
+  routing contract is [`CLARIFICATION-LOOP.md`](CLARIFICATION-LOOP.md)), and the
+  audit triage -> **`/steer:work issues publish-audit <doc-link | triage-doc>`**
+  (finding selection). **Do not bolt an ad-hoc input onto a read-only page**: a
+  new fillable page needs its own declared key scheme and ingest route before it
+  ships.
 
-## Markdown fallback - not a failure
+## Markdown output
 
-The `Artifact` tool is **unavailable** on Bedrock / Vertex / Foundry, in a
-zero-data-retention org, or with no claude.ai login. When it is:
+Markdown renders when the user asks for it, or when the `Artifact` tool is
+**unavailable** - on Bedrock / Vertex / Foundry, in a zero-data-retention org,
+with no claude.ai login, or on a surface such as Copilot that has none. Either
+way:
 
-- Render the **same content as Markdown, printed inline** in the session so the user
-  can read and copy it. Keep the at-a-glance shape - a status pipeline as an inline
-  arrow chain (`draft -> **approved** -> ...`), an acceptance meter as a checklist with
-  its "N of M" count, a journey as a numbered list, scope as two ✓ / ✗ lists, a
-  report as a table.
-- For a **fillable** page, the inline fallback *is* the return document itself:
-  print the same machine-keyed fillable Markdown the page would export (each
-  input as a fillable block under its keyed heading) so the user can copy it,
-  send it to the stakeholder to fill, and route the filled copy back through the
-  page's owning ingest path.
-- **Do not write the Markdown to a file under the repo tree** - a rendered copy in
-  the tree is the drifting second copy this discipline avoids. The user can copy the
-  inline output anywhere they want it.
-- **Say plainly** that the hosted Artifact isn't available in this environment and
-  why, so the fallback is never mistaken for a failure.
+- Render the **same content as Markdown, printed inline** in the session. Keep the
+  at-a-glance shape - a status pipeline as an inline arrow chain
+  (`draft -> **approved** -> ...`), an acceptance meter as a checklist with its
+  "N of M" count, a journey as a numbered list, scope as two ✓ / ✗ lists, a report
+  as a table.
+- For a **fillable** page, the Markdown *is* the return document itself, so the
+  user can send it to the stakeholder and route the filled copy back through the
+  page's owning ingest path, which takes a Markdown file exactly as it takes a
+  Doc link.
+- **A file on request.** When the user wants something to attach or send, also
+  write it to `<tempdir>/steer-<skill>-<subject>.md` (the HTML tier's naming) and
+  give the path.
+- **Never write it under the repo tree** - a rendered copy in the tree is the
+  drifting second copy this discipline avoids.
+- **When it is a fallback, say so plainly** - that the hosted Artifact isn't
+  available in this environment and why - so it is never mistaken for a failure.
 
 ## Updating a previously shared page
 
-Within the **same session**, re-running a skill redeploys to the same Artifact URL
-(the deterministic temp filename is what makes this work). **In a forked skill**
-(`/steer:explain`, `/steer:status`) do not promise this to the user: whether a
-fork's publish is recognised as a redeploy of an earlier one is not something
-steer can verify, so describe it as what the stable filename is *for*, not as a
-guarantee. To update a page from a
-**different** session, the user must hand you its claude.ai URL -
-without it, a fresh session mints a new page. steer does not store that URL (see
-[Derived view](#a-derived-view-never-a-source-of-truth)); treat each run as a fresh
-render unless the user supplies a URL to update.
-
-## Where each skill uses this
-
-| Skill | Artifact | Source state it renders |
-|---|---|---|
-| `/steer:status feature <id>` | Feature summary - status pipeline, acceptance meter, clickable journey, scope + open-question boards | one feature's `intent.md` (+ `contract.md`) |
-| `/steer:spec questions bundle` | Fillable PO questionnaire (see [Fillable pages](#fillable-pages-the-copy-out-floor)) | open questions across the spine |
-| `/steer:audit` | Findings dashboard - dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:work issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
-| `/steer:spec roadmap` | Release timeline - milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
-| `/steer:status` | Client-facing period report - shipped / in-progress / needs-input / next | the whole spine over the reporting window |
-| `/steer:next capabilities` | Capability menu - skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |
+Within the **same session**, a re-run updates the page already made: a Doc made
+earlier in the conversation is edited in place, a typed Artifact is republished to
+its `url`, and an HTML page redeploys through its deterministic temp filename.
+**In a forked skill** (`/steer:explain`, `/steer:status`) do not promise this:
+whether a fork's publish is recognised as an update of an earlier one is not
+something steer can verify. To update a page from a **different** session, the
+user must hand you its link - without it, a fresh session makes a new page. steer
+does not store that link (see
+[Derived view](#a-derived-view-never-a-source-of-truth)).
 
 This file is the standard itself, not a condensed rule's companion - nothing
 about Artifacts rides in the always-on payload, so a rendering skill loads it

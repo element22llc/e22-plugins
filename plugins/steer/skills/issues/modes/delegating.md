@@ -51,10 +51,11 @@ epic with the `epic` mode instead.
 
 Take an `/steer:audit` finding set and create/update the audit-run parent +
 selected finding children (see `/steer:audit`); file via
-`/steer:tracker-sync`. Selection comes from the session, **or from the audit
-dashboard's filled triage export** (the
-`<!-- steer:audit-triage sha=<audited-sha> -->` document -
-the `/steer:reference artifacts` return leg): file exactly the findings whose `finding-key`
+`/steer:tracker-sync`. Selection comes from the session, **or from the filled
+audit triage** - a triage Doc's link (export its tab as `markdown` with the Docs
+connector; the audited SHA is its `Audited commit:` line) or the HTML page's
+`<!-- steer:audit-triage sha=<audited-sha> -->` export, the
+`/steer:reference artifacts` return leg: file exactly the findings whose `finding-key`
 is checked, carry each note into the issue body, and **flag any key that doesn't
 match the current finding set** (stale or unknown - e.g. the code moved since
 the audited SHA) instead of silently filing or dropping it. Same single

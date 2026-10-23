@@ -22,10 +22,10 @@ so - unlike frontmatter-read-only `/steer-explain` - its tools can't be locked
 down; the read-only guarantee is **behavioral, and you must uphold it**. Bundle
 **writes nothing under the repo tree**: no legacy heal/delete (step 1), no
 `created:` stamping (step 3), no `git add`/commit, no edit to any spec file.
-Its **one** write is the Artifact's HTML source, to a **system temp
-directory**, never a path under the working tree; it runs **no shell** and
-touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
-`Grep` only.
+Rendered as a Doc it writes **no local file at all**; on the HTML tier its
+**one** write is the page's source, to a **system temp directory**, never a
+path under the working tree. It runs **no shell** and touches the tracker not
+at all - gathering uses read-only `Glob` / `Read` / `Grep` only.
 
 ### Flow
 
@@ -69,34 +69,41 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
    - **Nothing to ask** -> say so, name the excluded / deferred counts, and
      **stop**. Don't render an empty form.
 
-4. **Render - Artifact when available.** Render by the **shared Artifact
-   discipline** - mechanics in `/steer-reference artifacts`
-   ([`ARTIFACTS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ARTIFACTS.md)), including the
-   **copy-out floor** a fillable page must uphold and its
-   progressive-enhancement copy/download controls - do not restate them here.
-   The temp path is `<tempdir>/steer-questions-bundle[-<feature-id>].html`.
-   The page carries one labelled **`<textarea>` per question**, grouped **by
-   `kind:`** - `access`, `tooling`, `decision`, then `clarification` - and
-   within each group **product-level first, then per feature**; blocking
-   questions visibly flagged. Each carries its **feature-scoped key
-   `[<feature-id>] Q-NNN`** and the question's context, verbatim from the
-   spec, plus a recommended answer per
+4. **Render - a Claude Doc first.** Render by the **shared Artifact
+   discipline** - tiers and mechanics in `/steer-reference artifacts`
+   ([`ARTIFACTS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ARTIFACTS.md)) - do not restate
+   them here. The questionnaire is a **Docs** Artifact the PO answers in place:
+   the skeleton first (the `# steer clarification questionnaire` title, the
+   byline, a one-paragraph lead telling the PO to type under each **Answer:**
+   line, write "yes" to accept a recommendation, leave the heading lines alone,
+   and say when they are done), then one kind group per call. Each question is
+   a flat **`## [<feature-id>] Q-NNN - <question>`** heading with its tags,
+   then its context, verbatim from the spec, as `>` paragraphs separated by a
+   blank `>` line, then an empty `**Answer:**` line. Order by **`kind:`** -
+   `access`, `tooling`, `decision`, then `clarification` - and within each
+   kind **product-level first, then per feature**; blocking questions tagged
+   `[BLOCKING]`. Close each context with a `> Recommended:` paragraph per
    [`QUESTION-ROUNDS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/QUESTION-ROUNDS.md) -
-   options for a marked question - shown beside the field, **never pre-filled
-   into it**. Recommend only what the code, the spine or a default grounds (a
-   prototype question's option to build); a question whose answer depends on
-   another in the bundle gets none. The recommendation lives only on the page
-   and in its export, never in the spec. With a single kind present, skip the group headings. **Every
-   `access` field carries the no-secrets line** of the return-document
-   contract - shown beside the field, and emitted in the export.
+   `> Options:` plus the *Choose one* line for a marked question - **never
+   pre-filled into the Answer**.
+   Recommend only what the code, the spine or a default grounds (a prototype
+   question's option to build); a question whose answer depends on another in
+   the bundle gets none. The recommendation lives only in the questionnaire,
+   never in the spec. **Every `access` question carries the no-secrets line**
+   of the return-document contract. Open the Doc and give its link.
+   - **HTML tier** (no Docs type or connector): the same content as a
+     hand-written page at `<tempdir>/steer-questions-bundle[-<feature-id>].html`,
+     one labelled `<textarea>` per question, upholding the **copy-out floor**.
 
-5. **Markdown fallback.** Where the Artifact tool is unavailable, print the
-   **same fillable return-document Markdown inline** - never to a file under
-   the repo - per `ARTIFACTS.md`'s fallback rules, saying plainly why the
-   hosted artifact isn't available so it isn't mistaken for a failure.
+5. **Markdown.** When the caller asks for Markdown - a PO without claude.ai,
+   a file to email - or the Artifact tool is unavailable, print the **same
+   fillable return-document Markdown inline**, and on request save it as
+   `<tempdir>/steer-questions-bundle[-<feature-id>].md` to send - never to a
+   file under the repo - per `ARTIFACTS.md` -> "Markdown output". The filled
+   file returns through `/steer-spec intake clarify <filled-doc>`.
 
-The copy-box, the "Download .md" export, and the Markdown fallback all emit the
-**same machine-keyed return document**; its exact shape, the
+The Doc's Markdown export, the HTML page's copy-box and "Download .md", and
+the Markdown form all yield the **same machine-keyed return document**; its exact shape, the
 `[<feature-id>] Q-NNN` key rules, and stale-key handling are the
 return-document contract in
 [`CLARIFICATION-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md).
@@ -104,7 +111,8 @@ return-document contract in
 ### Recommended next action
 
 Close with a `## Recommended next actions - /steer-spec questions bundle`
-block: the one best step is to **send the questionnaire to the PO** and, when
-the filled document returns, **absorb it with `/steer-spec intake clarify
-<filled-doc>`**, which maps each answer back to its `Q-NNN` and routes it here to fold in. Bundle itself changes
+block: the one best step is to **share the questionnaire with the PO** (a Doc:
+its Share button) and, when they say it is answered, **absorb it with
+`/steer-spec intake clarify <doc-link>`** (`<filled-doc>` for a copied-out
+return), which maps each answer back to its `Q-NNN` and routes it here to fold in. Bundle itself changes
 nothing in the spec.

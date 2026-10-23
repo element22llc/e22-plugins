@@ -1,6 +1,6 @@
 ---
 name: questions
-description: "Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `needs` raises what the client owes before a wave; `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback)."
+description: "Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `needs` raises what the client owes before a wave; `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (or Markdown)."
 when_to_use: "Reached via /steer:spec questions - not a direct entry point."
 argument-hint: "[needs [--milestone <m>] | bundle [<feature-id>]]"
 # Internal question sweep behind `/steer:spec questions`. Model-callable, hidden
@@ -280,10 +280,10 @@ busywork the block must not invent (`NEXT-ACTIONS.md` §3).
 
 ## Bundle mode (`bundle`)
 
-One fillable questionnaire (Artifact, Markdown fallback) of every
-PO-answerable open question, grouped by `kind:`. It **changes nothing in the
-spec**; the filled copy returns through `/steer:spec intake clarify
-<filled-doc>`. Procedure, read only for this mode:
+One fillable questionnaire (a Claude Doc the PO answers in place, or
+Markdown) of every PO-answerable open question, grouped by `kind:`. It
+**changes nothing in the spec**; the answers return through `/steer:spec intake
+clarify <doc-link | filled-doc>`. Procedure, read only for this mode:
 [`BUNDLE.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/BUNDLE.md).
 
 ## Coupling rules

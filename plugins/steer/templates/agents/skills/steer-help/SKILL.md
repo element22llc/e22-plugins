@@ -122,15 +122,16 @@ intent, not that they memorize a command.
 ## Phase 3 - offer a shareable visual menu (Artifact)
 
 The inline menu above is the fast, always-available render - where the `Artifact`
-tool is unavailable it already *is* the **Markdown fallback**, so say that rather
-than treating it as a missing feature. When the tool **is** available, additionally
-**offer** a shareable visual version: the same journey groups as a browsable card
-grid a user can hand to a teammate who is new to steer - an offer only, never
+tool is unavailable, or the user asked for Markdown, it already *is* the
+**Markdown form**, so say that rather than treating it as a missing feature. When the tool **is** available, additionally
+**offer** a shareable version: the same journey groups as a **Claude Doc** - one
+section per journey, a table of goal and invocation in each - a user can hand to
+a teammate who is new to steer - an offer only, never
 auto-published; a curious user often just wants the inline list. The cards are
 still **derived from the live skill frontmatter** (Phase 1), never a hardcoded
 or invented capability. Render by the shared discipline -
-mechanics in `/steer-reference artifacts` - with the temp path
-`<tempdir>/steer-capabilities-menu.html`.
+tiers and mechanics in `/steer-reference artifacts`; the HTML tier is a card grid
+at `<tempdir>/steer-capabilities-menu.html`.
 
 End the menu with the last journey group and nothing after it - no line inviting
 correction, no offer to file a report, and no line telling the user they need not

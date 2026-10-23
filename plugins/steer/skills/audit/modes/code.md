@@ -117,23 +117,27 @@ of dimension.
    this skill keeps, not one the tooling enforces.
 
    **Optionally publish it as a shareable dashboard** - where the `Artifact` tool
-   is available, **offer** a dimension-tiled findings dashboard (a Claude
-   Artifact): every tile and card encodes a finding this run actually vetted,
-   never an inflated count or a severity beyond the audit's evidence. On request
-   it renders **fillable** as a triage form (file/leave checkbox + note per
-   finding); the export is machine-keyed - each finding under its stable
-   **`finding-key`**, beneath one `<!-- steer:audit-triage sha=<audited-sha> -->`
-   marker (the audited SHA is fixed for the run) - with exactly one ingest route:
-   **`/steer:issues publish-audit <triage-doc>`**. The write is post-confirmation,
-   per the read-only note in `SKILL.md`, to the temp path
-   `steer-audit-code-<short-sha>.html`; all rendering mechanics live in rule
-   `/steer:reference artifacts`.
+   is available, **offer** a **Dashboard** Artifact of the findings: dimension
+   tiles and a leverage-ranked findings table over one fixed dataset of this
+   run's vetted findings, so every tile and row encodes a finding this run
+   actually vetted, never an inflated count or a severity beyond the audit's
+   evidence. On request add a **triage Doc** beside it: a visible
+   `Audited commit: <audited-sha>` line, then one `## <finding-key> - <title>`
+   section per finding with its one-line summary, a `- [ ] File as an issue`
+   task and an empty `**Note:**` line. The dev ticks and annotates in place and
+   hands its link to the one ingest route, **`/steer:issues publish-audit
+   <doc-link>`**. Without the Docs connector the triage is the HTML tier's
+   fillable page, whose export carries the same keys beneath one
+   `<!-- steer:audit-triage sha=<audited-sha> -->` marker. Any local file
+   (the dataset JSON, an HTML page such as `steer-audit-code-<short-sha>.html`)
+   is written post-confirmation, per the read-only note in `SKILL.md`, to the
+   temp dir; all rendering mechanics live in `/steer:reference artifacts`.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** -> a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
      one **audit-run** parent (scope, plugin version, audited SHA, dimensions
      run/skipped, summary, report path) plus selected **finding** children -
-     selected in-session or via the dashboard's filled triage export - each
+     selected in-session or via the filled triage Doc or export - each
      carrying a **stable `finding-key`** so re-runs *reconcile* (update/close)
      rather than pile up duplicates (see Reconciliation below).
      Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`

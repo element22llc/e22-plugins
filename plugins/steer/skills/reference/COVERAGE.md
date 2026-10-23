@@ -196,28 +196,34 @@ It covers, in detail:
   timeline, a fillable questionnaire) vs. durable truth, a next-action/decision, or
   anything carrying secrets - where a page is the wrong shape.
 - **The derived-view discipline** - render canonical state, never own it; never
-  fabricate a value or advance a marker past the source; never persist the page URL
-  in the repo; on-demand only, never auto-generated per feature or on a schedule.
-- **The write-location invariant** - the page HTML is the only write, to a system
-  temp dir (never under the repo tree), on a deterministic per-subject filename so a
+  fabricate a value or advance a marker past the source; an editable Doc is still a
+  snapshot; never persist the page URL in the repo (an absorbed Doc's link is
+  provenance); on-demand only, never auto-generated per feature or on a schedule.
+- **Pick the type - three tiers** - the skill-to-type table (Docs, Slides,
+  Dashboard), discovery through the Artifact tool's `quickstart`, then the
+  hand-written HTML tier, then the Markdown tier; Docs, Dashboard and Slides
+  mechanics, and the publish heads-up.
+- **The write-location invariant** - any local file a render needs (the HTML page,
+  a Dashboard's dataset JSON) goes to a system temp dir (never under the repo tree), on a deterministic per-subject filename so a
   same-session re-run redeploys the same URL (hedged for forked skills); and how
   read-only and `Write`-disallowed skills each uphold it.
-- **Rendering mechanics** - load `artifact-design` first (and `dataviz` for charts);
-  build everything inline because the Artifact CSP blocks all external hosts (no CDN
-  scripts, remote fonts, or images); theme- and width-awareness; the
-  private-until-shared publish step gated by the Artifact tool's own prompt.
+- **HTML-tier rendering mechanics** - load `artifact-design` first (and `dataviz`
+  for charts); build visuals inline, scripts only from the Artifact tool's
+  allowlisted CDNs at a pinned version; theme- and width-awareness.
 - **The styling contract** - derive the page's look from the working repo's
   `DESIGN.md` tokens when it declares them, else the `artifact-design`/`dataviz`
   house default; light/dark support and semantic chart encodings stay
   non-negotiable either way.
-- **Interactivity, fillable pages, and the Markdown fallback** - lead with the gist
-  and disclose on demand; the permission-free copy-out floor a questionnaire needs;
-  the **return leg** (a hosted page stores nothing - data comes back only through
-  the exported, machine-keyed document ingested by the owning skill:
+- **Interactivity, fillable pages, and Markdown output** - lead with the gist
+  and disclose on demand; the permission-free copy-out floor a hand-written
+  fillable page needs; the **return leg** (a filled Doc is exported to Markdown by
+  the ingest path, a hand-written page's copied-out document is its only channel -
+  either way a machine-keyed document ingested by the owning skill:
   `/steer:spec questions bundle` -> `/steer:spec intake clarify`, the audit triage form ->
   `/steer:issues publish-audit`);
-  and the inline-Markdown fallback (never written under the repo tree) where the
-  Artifact tool is unavailable.
+  and Markdown as the second supported format - on request or where the
+  Artifact tool is unavailable; printed inline, saved to temp on request, never
+  written under the repo tree.
 
 This file carries the Artifact standard in full; the rendering skills
 (`/steer:explain`, `/steer:status`, `/steer:spec questions bundle`, `/steer:audit`,

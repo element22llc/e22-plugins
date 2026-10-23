@@ -2,7 +2,7 @@
 name: intake
 description: "Internal document absorb - commit a PO office document plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human prose. `clarify` folds a client answers document; `status` prints the read-only ledger of every absorbed source."
 when_to_use: "Reached via /steer:spec intake - not a direct entry point."
-argument-hint: "[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]"
+argument-hint: "[<path-to-doc> | clarify <path-to-doc | doc-link> | <source-id> | status]"
 # Internal ingestion path behind `/steer:spec intake`. Model-callable, hidden
 # from the slash menu - see the note on `init`.
 user-invocable: false
@@ -93,7 +93,7 @@ argument, list the sources under `spec/sources/` and ask which document to absor
 with its latest absorbed version, the features/issues it maps to, and any version
 whose extraction is still `none` (awaiting a text-bearing copy). No writes.
 
-`clarify` (`clarify <path-to-doc>`): absorb a **client clarification document** -
+`clarify` (`clarify <path-to-doc | doc-link>`): absorb a **client clarification document** - a file, or the claude.ai link of a filled questionnaire Doc -
 one that answers open questions and/or introduces new scope - see
 "The clarify pipeline" in `PIPELINES.md`.
 

@@ -44,8 +44,9 @@ argument-hint: '[code | spec | all] [--since <ref>]'
 > rather than by the frontmatter: use it for **nothing except** the two outputs
 > this skill's modes instruct, and only **after** the user confirms them in a
 > fresh message - the optional reports (`AUDIT-REPORT.md` / `DRIFT-REPORT.md`)
-> and the optional **Artifact dashboard**, whose only write is its HTML to a
-> system temp dir, never under the repo tree (`/steer-reference artifacts`). One further
+> and the optional **Artifact dashboard**, whose only local write is its dataset
+> JSON (or, on the HTML tier, its page) to a system temp dir, never under the
+> repo tree (`/steer-reference artifacts`); a triage Doc writes no local file. One further
 > temp-only write is sanctioned: the triage export that `/steer-tracker-sync pull`
 > materializes into a temp directory when `spec` mode offers it instead of pasting
 > - same temp-dir limit, never under the repo tree. Never use `Write` to create or

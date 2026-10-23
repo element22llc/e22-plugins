@@ -45,7 +45,7 @@ restate its steps here.
 | `validate [<id> \| --all]` | Check the open-question contract and intent/contract/tracker consistency | - |
 | `questions` | Sweep the **whole spine's** open questions and drive each to an answer; `questions needs [--milestone <m>]` raises what the client still owes (access, tooling, decisions) as questions before a wave; `questions bundle [<id>]` renders the PO-answerable ones as one fillable questionnaire | `/steer:questions` |
 | `adr` | Record a hard-to-reverse choice as a numbered ADR; `adr accept <n>` writes the `Proposed -> Accepted` transition its Deciders ratify | `/steer:adr` |
-| `intake` | Absorb a PO document (docx/pptx/xlsx/pdf) into the spine by diffing it against the last version; `intake clarify <path>` folds a client's answers document, `intake status` prints the read-only ledger of every absorbed source | `/steer:intake` |
+| `intake` | Absorb a PO document (docx/pptx/xlsx/pdf) into the spine by diffing it against the last version; `intake clarify <path | doc-link>` folds a client's answers document, `intake status` prints the read-only ledger of every absorbed source | `/steer:intake` |
 | `roadmap` | Lay unshipped intent on a release timeline as milestone-grouped issues; no argument is a read-only preview, then `from-features` / `from-gap` / `sync` | `/steer:roadmap` |
 
 All four are `user-invocable: false` - a user reaches them **only** through this

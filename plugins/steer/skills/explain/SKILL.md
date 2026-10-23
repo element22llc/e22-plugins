@@ -1,6 +1,6 @@
 ---
 name: explain
-description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
+description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (or Markdown): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
 when_to_use: "Reached via /steer:status feature <id> - not a direct entry point."
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
@@ -43,9 +43,10 @@ Turn one feature's approved intent into a **high-level page a stakeholder can
 read at a glance** - not a five-page wall of text but a **visual, interactive
 summary**: a status pipeline, a sign-off meter, a clickable user-journey, and
 scope/open-question boards, so the reader gets the gist in seconds and drills in
-only where they want to. Published as a **Claude Code Artifact** (a private,
-hosted page on claude.ai you can then share with a teammate), or rendered as
-**Markdown** where Artifacts are not available.
+only where they want to. Published as a **Claude Doc** (a private, hosted
+page on claude.ai the user can then share and a stakeholder can comment on), a
+hand-written Artifact page where no Docs type is available, or **Markdown**
+when the caller asks for it or Artifacts are not available at all.
 
 This is the **PO-facing presentation layer** the rest of the roster lacks: every
 other skill is dev- or tracker-facing. `explain` renders the human-readable side
@@ -71,9 +72,9 @@ stale the moment the spec changes - regenerate to refresh.
   `disallowed-tools` applies to the invoking turn, but is silent on whether it
   reaches a forked subagent, and `background: false` is what keeps the fork off
   the wider background tool set. The prose is the binding constraint. It never
-  touches the tracker. The **one** thing it writes is the artifact's HTML source
-  (via `Write`, which is *not* disallowed) - so that write is bound not by the
-  frontmatter but by a hard prose invariant: **only to a system temp directory,
+  touches the tracker. A Doc writes no local file; the **one** thing the HTML
+  tier writes is the page's source (via `Write`, which is *not* disallowed) - so
+  that write is bound not by the frontmatter but by a hard prose invariant: **only to a system temp directory,
   never a path under the repo working tree** (`/spec`, `/apps`, `/packages`, or any
   tracked file). Discover features with `Glob`/`Read`, never a shell listing.
 - **Do not persist the artifact URL** anywhere in the repo. The page is a
@@ -145,6 +146,8 @@ root, or `apps/<app>/DESIGN.md` - see `/steer:reference design-sources`), else t
 
 ### 3a. Show, don't tell - visual encodings (derived, never decorative)
 
+These encodings are for the HTML tier; step 4 maps them onto a Doc.
+
 A stakeholder should grasp the feature from the visuals before reading a
 paragraph. Encode each spec section as the shape that reads fastest - but **every
 visual must encode a real value the spec actually contains**. No fabricated
@@ -199,15 +202,24 @@ chart. Map the intent's own sections to these visuals:
 
 ### 4. Publish (or fall back)
 
-Render **by the shared Artifact discipline** - full mechanics
-in `/steer:reference artifacts` - and do not restate it here. Two things are
-**specific to this skill**:
+Render **by the shared Artifact discipline** - tiers and mechanics in
+`/steer:reference artifacts` - and do not restate it here. What is **specific
+to this skill**:
 
-- **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** - stable per
-  feature, so a re-run redeploys in place rather than making a second page (not a
-  guarantee from a fork - see "Updating a previously shared page" below).
-  Write only there (a system temp dir), never under the repo tree.
-- **The Markdown fallback keeps this skill's at-a-glance shape** - status as an
+- **A Doc first.** Lead with what/why and a one-line status ("Approved, not yet
+  built", sign-off "2 of 4"), then: status as a small drawn pipeline
+  `draft -> approved -> live` with the recorded stage marked; sign-off and the
+  acceptance criteria as two plain lists with their counts - each item prefixed
+  ✓ or ✗ as the spec records it, never as tick boxes a reader could flip; the
+  journey as a numbered list; scope as a two-column in/out table; a concept
+  diagram only where the intent states the links; open questions as a table of
+  key, question, status and blocking; the provenance footer last. The fork
+  cannot show the Doc to the main session: open it, and return its link.
+- **HTML tier** - the 3a/3b encodings at `<tempdir>/steer-explain-<feature-id>.html`,
+  stable per feature, so a re-run redeploys in place rather than making a second
+  page (not a guarantee from a fork - see "Updating a previously shared page"
+  below). Write only there (a system temp dir), never under the repo tree.
+- **The Markdown form keeps this skill's at-a-glance shape** - status as an
   inline pipeline (`draft -> **approved** -> live`),
   sign-off as a checklist with its "N of 4" count, the acceptance criteria as
   a second checklist with their own count, the journey as a numbered list,
@@ -216,8 +228,9 @@ in `/steer:reference artifacts` - and do not restate it here. Two things are
 
 ## Updating a previously shared page
 
-The publish path is a stable per-feature filename, which is what lets a re-run
-redeploy in place rather than creating a second page. Do not promise that to the
+A Doc made earlier in the conversation is edited in place; on the HTML tier the
+stable per-feature filename is what lets a re-run redeploy rather than create a
+second page. Do not promise that to the
 user as a guarantee: this skill runs forked, and whether a fork's publish is
 recognised as a redeploy of an earlier one is not something steer can verify. If
 the caller needs a specific page updated, take its URL from them. Updating a page
@@ -249,7 +262,7 @@ the caller relays this heading with the page), and stop:
 - Derived-view discipline this mirrors: `/steer:spec roadmap`.
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
 - Status enum for the lifecycle pipeline: `ENUMS.md`.
-- Artifact rendering, the derived-view discipline, and the Markdown fallback:
+- Artifact rendering, the derived-view discipline, and Markdown output:
   `/steer:reference artifacts` - the shared standard this
   skill renders by. Visual system: the `artifact-design` skill (page shell) and,
   where offered, `dataviz` (chart colour/encoding), both loaded at publish time.
