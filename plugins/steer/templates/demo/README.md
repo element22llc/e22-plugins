@@ -9,7 +9,7 @@ Nothing here is copied at `/steer:init` time.
 
 | Template | Stack | Lands at |
 |---|---|---|
-| `walkthrough.ts` | Node / Next.js (the default) | `scripts/demo/<feature>_walkthrough.ts` |
+| `walkthrough.mts` | Node / Next.js (the default) | `scripts/demo/<feature>_walkthrough.mts` |
 | `walkthrough.py` | Python | `scripts/demo/<feature>_walkthrough.py` |
 
 Both carry the same overlay (title and closing cards, a caption bar, highlight
@@ -37,14 +37,15 @@ run = [
 
 **Node** - pnpm has no dependency groups, so `playwright` is a devDependency;
 the browser download, the heavy part, still happens only in `demo:record`. The
-script runs on Node's built-in type stripping (Node 22.18+), with no build step:
+script runs on Node's built-in type stripping (Node 22.18+), with no build step;
+the `.mts` extension makes it ESM whatever `package.json` declares:
 
 ```toml
 [tasks."demo:record"]
 description = "Record the walkthrough videos into demo/ (app must be running)"
 run = [
   "pnpm exec playwright install chromium",
-  "node scripts/demo/<feature>_walkthrough.ts",
+  "node scripts/demo/<feature>_walkthrough.mts",
 ]
 ```
 

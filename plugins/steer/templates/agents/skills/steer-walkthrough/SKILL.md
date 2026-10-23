@@ -48,8 +48,8 @@ Templates, per-stack wiring and the tool-choice table:
    issue refs, feature slugs or spec paths. Note which persona each scene needs.
    A criterion the UI cannot show (retention, a background job) is left out and
    listed in the report. Post the scene list and carry on; it is not a gate.
-2. **Explore the running app with the Playwright CLI**: `open`, `goto`,
-   `snapshot`, one command per call, to find each scene's page and a stable
+2. **Explore the running app with the Playwright CLI** (`npx -y @playwright/cli`,
+   or an installed `playwright-cli`): `open`, `goto`, `snapshot`, one command per call, to find each scene's page and a stable
    locator (role, label or text before CSS). Sign in once and `state-save`, so
    you know where the app keeps its session. With no shell, use the Playwright
    MCP instead. Close the browser when done.

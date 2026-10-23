@@ -63,6 +63,9 @@ plugins/steer/
     ├── reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, ...)
     ├── docker/                     # on-demand Dockerfile refs (Node/Python) - instantiated per
     │                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
+    ├── demo/                       # on-demand walkthrough-video skeletons (Node/Python) -
+    │                               #   instantiated per feature by /steer:work walkthrough,
+    │                               #   NOT bootstrapped
     ├── worktrees/                  # on-demand worktree-tool hooks (orca.yaml) - installed by
     │                               #   /steer:setup worktrees only where that tool is used
     ├── github/                     # GitHub templates - single source of truth (issue forms,
