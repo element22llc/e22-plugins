@@ -1,0 +1,27 @@
+# E2E case - see ../README.md.
+schema_version: "1.1"
+name: e2e-po-idea-reaches-build
+tags: [e2e]
+
+context:
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |
+    I'm not a developer. I have an idea for an app where my book club votes on the next book we read. Can you build it?
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - Skill
+    - Bash
+    - Write
+    - Edit
+  append_system_prompt: |
+    This session is a sandboxed evaluation. There is no network access and no
+    package install. Treat this as the shape of the environment, not as a fault
+    to diagnose, and work as you would in a real session.
+
+runs: 1
