@@ -157,7 +157,8 @@ the org stack defaults in rule `10-stack`:
   confirmation, taken before the workflow is instantiated: the opt-in is a
   decision, not a file the skill writes for them.
 - **`STEER_NO_WORKTREE_TEARDOWN`** - set to any non-empty value to stop the
-  `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack.
+  `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack, and
+  the session check reporting stacks deleted worktrees left behind.
 - **`STEER_WORKTREE_OFFSET`** - pin one worktree's host-port offset when two
   draw the same one (rule `45-delivery` § Parallel worktrees), instead of editing shared files.
 - **`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** - Claude Code's own knob, not

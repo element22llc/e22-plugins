@@ -13,7 +13,9 @@
 #   exactly there, so the teardown is attempted automatically rather than
 #   requested. How reliably differs by event, and the difference is not cosmetic:
 #   `WorktreeRemove` gets the ordinary command-hook timeout and its declared 60s
-#   is real, so the full `docker:clean` is dependable; `SessionEnd` hooks share a
+#   is real, but it fires only for a worktree a `WorktreeCreate` hook created -
+#   never for the ones Claude Code creates and removes itself, whose volumes
+#   check-worktree-orphans.sh reports instead; `SessionEnd` hooks share a
 #   1.5-second budget that a PLUGIN-declared timeout cannot raise, so the
 #   `docker:down` pass there is best-effort and will often be cancelled before it
 #   finishes. Do not describe the SessionEnd half as a guarantee.

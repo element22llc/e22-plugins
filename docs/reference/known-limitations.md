@@ -282,12 +282,14 @@ raises a prompt. Be honest about the tiers:
   `mise run ... docker:down` frequently exceeds 1.5s, in which case the hook is
   cancelled mid-run. **Do not rely on exiting a session to free a worktree's
   ports.** Raise the budget yourself if you want it to fit:
-  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`. `WorktreeRemove` takes
-  the ordinary command-hook timeout and is the dependable half.
-- **`WorktreeRemove` fires only for worktrees Claude Code deletes.** Orca,
-  Conductor and a plain `git worktree remove` delete theirs without it, so the
-  stack keeps running. Trust inheritance, per-worktree ports and the
-  `SessionEnd` stop still apply. `/steer:setup worktrees` installs the tool's
+  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.
+- **`WorktreeRemove` fires only for a worktree a `WorktreeCreate` hook
+  created.** Claude Code removes the worktrees it creates itself (`claude
+  --worktree`, `EnterWorktree`, `isolation: worktree`) without raising it, and
+  Orca, Conductor and a plain `git worktree remove` do the same, so a deleted
+  worktree's stack and volumes stay behind. In the primary checkout a session
+  check names what Claude Code worktrees left; trust inheritance, per-worktree
+  ports and the `SessionEnd` stop still apply. `/steer:setup worktrees` installs the tool's
   own teardown - for Orca, an `orca.yaml` archive hook, which needs Orca's
   repository hook policy to allow shared scripts and which `orca worktree rm`
   skips without `--run-hooks` - and sweeps the stacks already orphaned.

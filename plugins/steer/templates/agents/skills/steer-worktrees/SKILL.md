@@ -22,12 +22,13 @@ user-invocable: false
 # Worktree handling (`/steer-setup worktrees`)
 
 Rule `45-delivery` § Parallel worktrees assumes every worktree inherits trust,
-runs its own Compose stack and is cleaned up when it goes. steer's hooks deliver
-that only for worktrees Claude Code manages: **only Claude Code raises
-`WorktreeRemove`**. A tool that creates and deletes worktrees itself - Orca,
-Conductor, a plain `git worktree remove` - leaves its stack running unless the
-repo carries that tool's own teardown hook. This skill checks a repo, installs
-what its worktree tool needs, and sweeps what a deleted worktree left behind.
+runs its own Compose stack and is cleaned up when it goes. steer delivers
+trust and ports wherever the worktree lives, but **no tool tells steer a worktree
+is being deleted**: Claude Code removes its own without raising `WorktreeRemove`,
+and Orca, Conductor or a plain `git worktree remove` do the same. A deleted
+worktree's stack and volumes stay behind unless the repo carries that tool's own
+teardown hook. This skill checks a repo, installs what its worktree tool needs,
+and sweeps what a deleted worktree left behind.
 
 ## 1. Scan
 
@@ -52,12 +53,12 @@ destroys data (orphans).
 | `worktreeinclude absent` / `incomplete` | Add the uncovered paths to `.worktreeinclude` (a glob like `apps/*/.env` where several share a shape). Git-ignored boot files only - never caches or build output. |
 | `env-copy missing <wt>: <files>` | The worktree predates the include. Offer to copy those files from the primary; never overwrite one that exists. Local only, nothing to commit. |
 | `worktree-dir unignored <dir>` | Add `<dir>/` to `.gitignore`. |
-| `teardown hooked` | Nothing - steer's `WorktreeRemove` hook runs `docker:clean`. |
+| `teardown swept` | Nothing to install: Claude Code deletes its worktrees without a hook steer can use, so the primary checkout's session check reports their stacks and the `orphan` row below removes them. |
 | `teardown absent orca` | Install `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/worktrees/orca.yaml` at the repo root. |
 | `teardown merge orca` | Keep the repo's `orca.yaml`; add the template's archive line to its `scripts.archive`. |
 | `teardown manual conductor` | No bundled hook: add `mise run docker:clean \|\| true` to the archive script in Conductor's repository settings. |
 | `teardown manual git` | Nothing to install: say `mise run docker:clean` runs **before** `git worktree remove`; the orphan sweep is the backstop. |
-| `orphan <project> <dir>` | List them. On an explicit yes: `docker compose -p <project> down --remove-orphans`, then `docker volume rm` each `docker volume ls -q --filter label=com.docker.compose.project=<project>`. |
+| `orphan <project> <dir>` | List them (`-` for the dir: only volumes remain, matched by name). On an explicit yes: `docker compose -p <project> down --remove-orphans`, then `docker volume rm` each `docker volume ls -q --filter label=com.docker.compose.project=<project>`. |
 
 After installing Orca's hook, say both limits plainly: Orca's repository hook
 policy must allow the shared `orca.yaml` script, and `orca worktree rm` skips it

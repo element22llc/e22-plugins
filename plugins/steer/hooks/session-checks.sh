@@ -51,7 +51,8 @@ for _check in \
 	check-unmanaged-repo.sh \
 	surface-faults.sh \
 	check-graduation.sh \
-	check-worktree-trust.sh; do
+	check-worktree-trust.sh \
+	check-worktree-orphans.sh; do
 	_out="$(printf '%s' "${STEER_SESSION_INPUT}" | sh "${HERE}/${_check}")" || :
 	[ -n "${_out}" ] && printf '%s\n' "${_out}"
 done
