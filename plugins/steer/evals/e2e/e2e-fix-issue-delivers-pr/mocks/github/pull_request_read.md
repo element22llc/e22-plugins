@@ -9,7 +9,7 @@
   "base": {
     "ref": "main"
   },
-  "body": "Closes #123\n\nMultiplies unit price by quantity; adds a regression test.",
+  "body": "Refs #123\n\nMultiplies unit price by quantity; adds a regression test.",
   "mergeable": true,
   "mergeable_state": "clean",
   "check_runs": [

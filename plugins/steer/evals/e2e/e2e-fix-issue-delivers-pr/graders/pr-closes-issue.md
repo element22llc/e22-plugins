@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '(Closes|Fixes|Resolves) (acme/checkout)?#123'
+pattern: '"body"\s*:\s*"[^"]*(Closes|Fixes|Resolves) (acme/checkout)?#123'
 flags: i
 target: mock_calls
 weight: 2

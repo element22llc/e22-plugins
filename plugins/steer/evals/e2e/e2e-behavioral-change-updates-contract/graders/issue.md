@@ -1,6 +1,6 @@
 ---
 type: tool_used
-tool: mcp__github__issue_write
+tool: mcp__plugin_steer_github__issue_write
 input_match: '"create"'
 weight: 1
 ---

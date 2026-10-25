@@ -89,3 +89,14 @@ def test_managed_scaffolds_stamp_the_plugin_version_and_are_restamped():
         assert f"plugins/steer/evals/e2e/{d.name}/scaffold.sh" in changie, (
             f"{d.name}: not re-stamped"
         )
+
+
+def test_tool_graders_name_mcp_tools_as_the_session_sees_them():
+    # The run sees the plugin's server as mcp__plugin_steer_github__*; a grader on
+    # mcp__github__* never matches, so its `max: 0` passes vacuously.
+    for d in _cases():
+        for g in (d / "graders").glob("*.md"):
+            front, _ = _frontmatter(g)
+            tool = str(front.get("tool", ""))
+            if tool.startswith("mcp__"):
+                assert tool.startswith("mcp__plugin_steer_"), f"{g}: grade on {tool!r}"

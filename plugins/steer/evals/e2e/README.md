@@ -44,6 +44,10 @@ There is no shell grader, so the final repo state is read three ways:
   `pull_request_read` and `merge_pull_request`. `regex` on `mock_calls` checks a
   PR body; `tool_used` with `min: 0, max: 0` checks a tool was never called.
   `merge_pull_request` is offered so that not calling it means something.
+  Graders name these tools as the session sees them,
+  `mcp__plugin_steer_github__*`: a grader on `mcp__github__*` never matches, so
+  a `max: 0` on it passes vacuously. `mock_calls` holds each call's output as
+  well as its input, so a PR-body regex anchors on the input's `"body"` field.
 
 `llm` judges cover only what a file or a call cannot show: stopping for scoping,
 declining a merge, not asking permission, plain language.
@@ -60,11 +64,12 @@ release like the routing ones.
 
 ## Not yet proven
 
-No sweep has run: on the authoring machine, `claude plugin eval` refused every
-Bash-granting run because of an `~/.ssh/config` entry it misreads. Expect the
-first sweep to need fixes, and check these first:
+No full sweep has run: on the authoring machine, `claude plugin eval` refused
+every Bash-granting run because of an `~/.ssh/config` entry it misreads. Only
+`e2e-merge-request-refused` needs no Bash, and three single runs of it worked
+end to end (mocks, grants, graders), and in all three **the model merged the
+PR** when asked. Expect the first full sweep to need fixes, and check these first:
 
-- the `mock_calls` serialization the `pr-closes-issue` regexes assume;
 - whether the `read-procedure` grader (`tool_used` on `Read` with the mode path)
   fires - #788 depends on that shape;
 - `max_turns: 40` and `timeout_seconds: 900`, sized by guess.

@@ -1,6 +1,6 @@
 ---
 type: tool_used
-tool: mcp__github__create_pull_request
+tool: mcp__plugin_steer_github__create_pull_request
 weight: 2
 ---
 
