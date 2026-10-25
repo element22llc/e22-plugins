@@ -1742,6 +1742,34 @@ capscan "${CRP}"
 assert_eq "cap: stale AGENTS.md pointer block IS drift" \
 	"$(capstatus "${out}" agent-surface-current)" "mis-wired"
 
+# agents-md-imported: Claude Code reads AGENTS.md only when no CLAUDE.md exists,
+# so team content there needs a bare `@AGENTS.md` line in CLAUDE.md.
+CRA="${WORK}/capAgentsMd"
+mkdir -p "${CRA}"
+printf '# Product\n' >"${CRA}/CLAUDE.md"
+capscan "${CRA}"
+assert_eq "cap: no AGENTS.md -> agents-md n/a" "$(capstatus "${out}" agents-md-imported)" "n/a"
+{
+	printf '\n'
+	cat "${PLUGIN}/templates/agents/agents-pointer.md"
+	printf '\n'
+} >"${CRA}/AGENTS.md"
+capscan "${CRA}"
+assert_eq "cap: block-only AGENTS.md -> agents-md n/a" "$(capstatus "${out}" agents-md-imported)" "n/a"
+printf '# Team rules\n\nUse tabs.\n' >>"${CRA}/AGENTS.md"
+capscan "${CRA}"
+assert_eq "cap: team AGENTS.md not imported -> mis-wired" "$(capstatus "${out}" agents-md-imported)" "mis-wired"
+printf 'See `@AGENTS.md` for team rules.\n' >>"${CRA}/CLAUDE.md"
+capscan "${CRA}"
+assert_eq "cap: backticked @AGENTS.md is not an import -> mis-wired" \
+	"$(capstatus "${out}" agents-md-imported)" "mis-wired"
+printf '<!-- steer:agents-md -->\n@AGENTS.md\n' >>"${CRA}/CLAUDE.md"
+capscan "${CRA}"
+assert_eq "cap: bare @AGENTS.md line -> present-wired" "$(capstatus "${out}" agents-md-imported)" "present-wired"
+rm "${CRA}/CLAUDE.md"
+capscan "${CRA}"
+assert_eq "cap: no CLAUDE.md, AGENTS.md read natively -> n/a" "$(capstatus "${out}" agents-md-imported)" "n/a"
+
 # version-pin-enforcement: policy + byte-identical scripts -> wired; drift -> mis-wired.
 CR3="${WORK}/cap3"
 mkdir -p "${CR3}/policy" "${CR3}/scripts"
