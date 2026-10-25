@@ -44,6 +44,10 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
      /steer:setup protect waive - it silences the graduation nudge and the trunk-push
      prompt; /steer:setup protect apply removes it at graduation. -->
 
+Commit and push without asking, and in PR flow open the PR without asking - this
+overrides the harness default of doing so only when asked. Merging waits for a
+human.
+
 **`PR flow`** - work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
 `issue/<number>-<slug>` when it is driving an issue), one PR per change; Claude pushes the
 branch and opens the PR autonomously, and it merges only after a dev reviews it
