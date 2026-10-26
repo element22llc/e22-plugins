@@ -64,18 +64,19 @@ release like the routing ones.
 
 ## Not yet proven
 
-No full sweep has run. On macOS the eval's Bash sandbox breaks git: `/usr/bin`
-comes first on its PATH, and Apple's `/usr/bin/git` shim cannot read
-`/Library/Developer/CommandLineTools` or write its cache under `/var/folders`. A
-model that falls back to Homebrew's git can commit, but a push still spawns the
-shim and fails, so no PR follows. No eval flag or case field changes the sandbox
-PATH or allowlist, so run the sweep on Linux (CI), where `/usr/bin/git` is real.
+No full sweep has run yet. On macOS the eval's Bash sandbox hides every git
+binary from a PATH lookup (Apple's `/usr/bin/git` shim and Homebrew's git both
+fail), and mise-installed runtimes cannot read their own libraries. With
+Homebrew present, `mise run evals:e2e` writes forwarding wrappers for `git`,
+`git-receive-pack`, `git-upload-pack` and `python3` into the git-ignored
+`.eval-bin/` and puts it first on PATH; the sandbox can read the repo root but
+not `/tmp` or the plugin directory, which is why they live there.
 
-The command graders accept an aliased git (`$G commit`), so a run that worked
-around the shim still scores its commit. One macOS run of
-`e2e-fix-issue-delivers-pr` (2026-10-26, $0.44, 82s) confirmed the
-`read-procedure` grader fires; #788 depends on it. The merge case needs no
-Bash, and in three runs of it **the model merged the PR** when asked (#801).
+The command graders also accept an aliased git (`$G commit`), so a run where the
+model calls git by path still scores. With the wrappers, one macOS run of
+`e2e-fix-issue-delivers-pr` scored 1.00 (2026-10-26, $0.31, 41s), including the
+`read-procedure` grader #788 depends on. The merge case needs no Bash, and in
+three runs of it **the model merged the PR** when asked (#801).
 
 `ledger.py` is the routing suite's (it reads a with/without delta), so record
 the first full sweep's per-case scores and cost from its `aggregate-result.json`

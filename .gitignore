@@ -148,3 +148,5 @@ site/
 # scaffold there. Run output and ad-hoc probes are not repo content.
 # ---------------------------------------------------------------------------
 /evals/
+# Forwarding wrappers `mise run evals:e2e` writes on macOS (see mise.toml).
+/.eval-bin/
