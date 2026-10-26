@@ -263,7 +263,10 @@ the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 both **overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmless
 if no one uses Copilot), the `AGENTS.md` pointer block from
 `${CLAUDE_PLUGIN_ROOT}/templates/agents/agents-pointer.md` (append it to an
-existing `AGENTS.md`, never touching content outside the block), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
+existing `AGENTS.md`, never touching content outside the block - and when that
+`AGENTS.md` has team content, end `CLAUDE.md` with the `@AGENTS.md` import from
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/CAPABILITIES.md` ->
+`agents-md-imported`, or Claude Code stops reading it), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
 `steer` plugin via the marketplace (dotfiles are stored without their
 leading dot - rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`.

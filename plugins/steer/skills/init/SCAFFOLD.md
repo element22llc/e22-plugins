@@ -39,7 +39,10 @@ the opt-in `copilot-setup-steps.yml` is **not** auto-installed), copy
 Cursor, Gemini CLI and Codex read natively as `/steer-<skill>`; steer-managed,
 overwrite on refresh, never hand-edit), add the
 `${CLAUDE_PLUGIN_ROOT}/templates/agents/agents-pointer.md` block to `AGENTS.md`
-(create it if absent; never touch content outside the block), and instantiate the
+(create it if absent; never touch content outside the block; if it already has
+team content, end `CLAUDE.md` with the `@AGENTS.md` import from
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/CAPABILITIES.md` ->
+`agents-md-imported`), and instantiate the
 spec spine from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
 `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts -

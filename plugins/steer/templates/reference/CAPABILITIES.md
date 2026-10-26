@@ -116,6 +116,29 @@ and **Repair**.
   run-once interview, and `sync` carries the spine forward without re-asking. This
   is the one place a later sync can surface the choice.
 
+### agents-md-imported - Claude Code still reads the team's AGENTS.md
+- **Files:** `AGENTS.md`, `CLAUDE.md`
+- **Conditional:** both files exist and `AGENTS.md` has content outside steer's
+  `steer-agents-pointer` block. Otherwise `n/a`: a block-only `AGENTS.md` is
+  steer's, and without `CLAUDE.md` Claude Code reads `AGENTS.md` itself.
+- **Wired-when:** `CLAUDE.md` has a bare `@AGENTS.md` line. A mention in
+  backticks or a code block does not count - Claude Code evaluates neither.
+- **Repair:** additive splice at the end of `CLAUDE.md`, proposed, never moving
+  or rewriting existing content:
+
+  ```markdown
+  <!-- steer:agents-md - Claude Code reads AGENTS.md only through this import once CLAUDE.md exists. -->
+  @AGENTS.md
+  ```
+
+  `/steer:setup init` and `/steer:setup adopt` write the same two lines when the
+  repo's `AGENTS.md` already has team content.
+- **Verbatim:** no
+- **Why it matters:** Claude Code loads `AGENTS.md` only when no `CLAUDE.md`
+  exists (its default `claude-md-or-agents-md` setting). A team that ran on
+  `AGENTS.md` loses those instructions the moment adoption creates `CLAUDE.md`,
+  silently.
+
 ### app-knowledge-docs - the app guide (how to use/operate the product)
 - **Files:** `spec/app/README.md`
 - **Conditional:** always (every managed product has usage to document - at
