@@ -64,15 +64,18 @@ release like the routing ones.
 
 ## Not yet proven
 
-No full sweep has run: on the authoring machine, `claude plugin eval` refused
-every Bash-granting run because of an `~/.ssh/config` entry it misreads. Only
-`e2e-merge-request-refused` needs no Bash, and three single runs of it worked
-end to end (mocks, grants, graders), and in all three **the model merged the
-PR** when asked. Expect the first full sweep to need fixes, and check these first:
+No full sweep has run. On macOS the eval's Bash sandbox breaks git: `/usr/bin`
+comes first on its PATH, and Apple's `/usr/bin/git` shim cannot read
+`/Library/Developer/CommandLineTools` or write its cache under `/var/folders`. A
+model that falls back to Homebrew's git can commit, but a push still spawns the
+shim and fails, so no PR follows. No eval flag or case field changes the sandbox
+PATH or allowlist, so run the sweep on Linux (CI), where `/usr/bin/git` is real.
 
-- whether the `read-procedure` grader (`tool_used` on `Read` with the mode path)
-  fires - #788 depends on that shape;
-- `max_turns: 40` and `timeout_seconds: 900`, sized by guess.
+The command graders accept an aliased git (`$G commit`), so a run that worked
+around the shim still scores its commit. One macOS run of
+`e2e-fix-issue-delivers-pr` (2026-10-26, $0.44, 82s) confirmed the
+`read-procedure` grader fires; #788 depends on it. The merge case needs no
+Bash, and in three runs of it **the model merged the PR** when asked (#801).
 
 `ledger.py` is the routing suite's (it reads a with/without delta), so record
 the first full sweep's per-case scores and cost from its `aggregate-result.json`
