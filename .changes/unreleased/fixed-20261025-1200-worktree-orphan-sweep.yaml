@@ -1,0 +1,16 @@
+kind: Fixed
+body: |-
+    - **Fixed: volumes left by deleted Claude Code worktrees are now reported.**
+      Claude Code removes the worktrees it creates itself, and `WorktreeRemove`
+      fires only for worktrees a `WorktreeCreate` hook created, so steer's
+      `docker:clean` teardown never ran for `claude --worktree`,
+      `EnterWorktree` or `isolation: worktree` and their volumes were orphaned.
+      A new session check in the primary checkout now names the Compose stacks
+      deleted worktrees left behind, including ones where only volumes remain,
+      and points to `/steer:setup worktrees`, which removes them on a yes. The
+      worktrees scan reports Claude Code worktrees as `teardown swept` instead
+      of `hooked`, and the `WorktreeRemove` hook stays registered for repos
+      whose worktrees another tool's `WorktreeCreate` hook makes.
+time: 2026-10-25T12:00:00.000000-04:00
+custom:
+    Slug: worktree-orphan-sweep

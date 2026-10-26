@@ -507,8 +507,9 @@ the standards in `.github/copilot-instructions.md`.
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
   Rules `45-delivery` § Parallel worktrees and `50-done` § End-of-session checklist therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
-  else. (On Claude Code only the `WorktreeRemove` half is dependable; the
-  `SessionEnd` half is best-effort - see
+  else. (On Claude Code neither half is dependable: `WorktreeRemove` fires only
+  for worktrees a `WorktreeCreate` hook created, and the `SessionEnd` half is
+  best-effort - see
   [Hooks -> Lifecycle events](../reference/hooks.md#lifecycle-events).)
   What *is* surface-agnostic is the per-worktree `COMPOSE_PROJECT_NAME`/port
   offset: it comes from the scaffold's `mise` config

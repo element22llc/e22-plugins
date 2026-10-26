@@ -598,12 +598,13 @@ committed `compose.yaml`, so local matches deployed:
 - **A worktree another tool manages needs that tool's teardown.** steer keys
   off the `.git` file's `gitdir:` pointer, so trust inheritance and
   `worktree-env.sh` work wherever the worktree lives - Orca's
-  `~/orca/workspaces/<repo>/<name>` included. Only Claude Code raises
-  `WorktreeRemove`, though: Orca, Conductor or a plain `git worktree remove`
-  delete a worktree without it, leaving its stack running. `/steer:setup
-  worktrees` checks a repo, installs the tool's hook (for Orca, an `orca.yaml`
-  `scripts.archive` from `templates/worktrees/`) and sweeps the stacks deleted
-  worktrees left behind.
+  `~/orca/workspaces/<repo>/<name>` included. No tool tells steer a worktree is
+  going away: Claude Code removes its own without raising `WorktreeRemove` (the
+  primary checkout's session check then reports the stack left behind), and
+  Orca, Conductor or a plain `git worktree remove` leave theirs running.
+  `/steer:setup worktrees` checks a repo, installs the tool's hook (for Orca, an
+  `orca.yaml` `scripts.archive` from `templates/worktrees/`) and sweeps the
+  stacks deleted worktrees left behind.
 
 ## Internal monorepo layout
 
