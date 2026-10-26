@@ -100,3 +100,26 @@ def test_tool_graders_name_mcp_tools_as_the_session_sees_them():
             tool = str(front.get("tool", ""))
             if tool.startswith("mcp__"):
                 assert tool.startswith("mcp__plugin_steer_"), f"{g}: grade on {tool!r}"
+
+
+def test_git_command_graders_match_an_aliased_git():
+    # A sandbox whose /usr/bin/git fails leaves the model calling another git
+    # through a variable; the graders must still see the commit, push or merge.
+    expect = {
+        "committed.md": (["git commit -m x", "$G commit -q -m x"], ["git commit-tree abc"]),
+        "pushed.md": (["git push -u origin b", "${G} push origin b"], ["git status"]),
+        "no-shell-merge.md": (["gh pr merge 45", "$G merge main"], ["git merge-base a b"]),
+    }
+    seen = set()
+    for d in _cases():
+        for name, (hits, misses) in expect.items():
+            g = d / "graders" / name
+            if not g.is_file():
+                continue
+            seen.add(name)
+            pattern = _frontmatter(g)[0]["input_match"]
+            for cmd in hits:
+                assert re.search(pattern, cmd), f"{g}: misses {cmd!r}"
+            for cmd in misses:
+                assert not re.search(pattern, cmd), f"{g}: matches {cmd!r}"
+    assert seen == set(expect)
