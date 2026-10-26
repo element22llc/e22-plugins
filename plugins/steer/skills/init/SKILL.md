@@ -177,8 +177,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `pnpm-lock.yaml`. Once the first real app/workspace exists, generate and
    commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`); maintain it with
    every dependency change. Make `mise run dev:setup` real and idempotent for
-   this product (Python: `uv run ...` task commands; drop `compose.yaml` +
-   docker/db tasks if there are no backing services).
+   this product (Python: `uv run ...` task commands; an `infra`, `library` or
+   `cli` repo with no backing services may drop `compose.yaml` and with it the
+   `docker:*`/`db:*` tasks - the MANIFEST's `compose.yaml` row).
 
    Then **wire the commit gate**: `mise generate git-pre-commit
    --task=pre-commit --write`. `.git/hooks/` is not versioned, so this is

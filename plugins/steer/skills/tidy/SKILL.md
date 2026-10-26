@@ -19,8 +19,8 @@ Key points (read the file for the full detail):
 - The repo **root** holds scaffolding + config only. Everything on the **root
   allowlist** (and the known dirs `apps/ packages/ configs/ infra/ policy/
   scripts/ spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
-- **Member: never create a product-level spine dir locally** (rule
-  `HOUSEKEEPING.md`) - a stray whose home is one of them is reported with the
+- **Member: never create a product-level spine dir locally** (`HOUSEKEEPING.md`
+  -> Procedure, step 3) - a stray whose home is one of them is reported with the
   workspace named as its destination, not filed here. `spec/design/` and
   `spec/decisions/` *are* the member's own and are handled normally.
 - Loose **source/research materials** (spreadsheets, inventories, vendor

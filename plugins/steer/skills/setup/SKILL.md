@@ -138,8 +138,7 @@ offer after a long scoping pass. Honor that:
   still gets the bundled scaffold and a `/spec` spine. Those words change spec *depth* and
   *ceremony* (lighter interview; declaring solo-trunk mode drops per-feature branch/PR - a
   GitHub-adopted repo still keeps the issue where Issue-first requires one), never *whether* scaffold
-  and spine exist. The greenfield-vs-prototype ceremony mechanics are canonical in Spec workflow
-  (`30-spec`) - don't restate them; route and let that skill own depth.
+  and spine exist. Route, and let `/steer:init`'s interview set the depth.
 
 (A non-technical owner's idea routes to `/steer:build` instead - bootstrap-inclusive, with its own
 prototype-ceremony handling. This section governs the developer path that lands here.)

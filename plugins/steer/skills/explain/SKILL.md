@@ -48,8 +48,7 @@ page on claude.ai the user can then share and a stakeholder can comment on), a
 hand-written Artifact page where no Docs type is available, or **Markdown**
 when the caller asks for it or Artifacts are not available at all.
 
-This is the **PO-facing presentation layer** the rest of the roster lacks: every
-other skill is dev- or tracker-facing. `explain` renders the human-readable side
+This is the **PO-facing presentation layer** for one feature: `explain` renders the human-readable side
 of a feature - what it does, why, the experience, what's in and out of scope, its
 status, and its open questions - in plain language.
 
@@ -253,7 +252,7 @@ the caller relays this heading with the page), and stop:
 
 - Spec `Status:` still `draft`/unapproved -> offer `/steer:spec approve <id>`.
 - Open blocking questions remain -> offer `/steer:spec questions` (or `/steer:spec`).
-- Nothing outstanding -> `No action is required.` - still under the heading,
+- Nothing outstanding -> `No action is currently required.` - still under the heading,
   which attributes the reply as the provenance footer attributes the page.
 
 ## Reference

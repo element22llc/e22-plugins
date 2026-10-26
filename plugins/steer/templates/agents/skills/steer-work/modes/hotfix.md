@@ -37,11 +37,10 @@ rule `61-gates` rules out.
 
 What changes versus the normal flow:
 
-- **Branch.** Work on a `hotfix/<n>-slug` branch (not `issue/<n>`) so the
-  issue-first Stop hook recognises the sanctioned after-the-fact lane. `<n>` is the
-  issue number once it exists; until then use a short slug and record it when the
-  issue is filed. The reconciliation hook recognises the `hotfix/` prefix directly
-  as the after-the-fact lane, so a work marker is not required up front; record it
+- **Branch.** Work on a `hotfix/<n>-slug` branch (not `issue/<n>`): the
+  issue-first Stop hook recognises the `hotfix/` prefix as the after-the-fact
+  lane, so no work marker is needed up front. `<n>` is the issue number once it
+  exists; until then use a short slug, and record the number and the marker
   when the issue is filed in the follow-up.
 - **Issue after-the-fact.** Don't block the fix on find-or-create. File or backfill
   the issue as soon as practical and reference it from the PR/commit - the hook
@@ -57,7 +56,7 @@ What changes versus the normal flow:
   else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening
   the PR are autonomous (Commit autonomy), while `gh pr merge` and any deploy
   stay human-gated (this skill does not pre-approve them).
-- **Mandatory follow-up (not optional).** Once the fire is out, restore traceability:
+- **Mandatory follow-up.** Once the fire is out, restore traceability:
   backfill/finish the issue, write the spec/ADR if a durable decision was made,
   put the incident's root cause on the enforcement ladder (`finish` in
   `modes/subcommands.md` - an incident is the strongest trigger, and a regression

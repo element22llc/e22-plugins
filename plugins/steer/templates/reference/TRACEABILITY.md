@@ -1,7 +1,8 @@
 # Traceability & living documentation
 
-Full prose behind the always-on `living-docs`, `issue-tracker`, `drift-gates`,
-`compliance`, and `user-facing-copy` rules. Loaded on demand via
+Full prose behind the always-on rules `30-spec` (Living documentation, internal
+ids off end-user surfaces), `35-tracker`, and `50-done` (Drift gates, SOC 2 /
+ISO 27001 alignment). Loaded on demand via
 **`/steer:reference traceability`**.
 
 The goal: a PO can express intent in plain language, a dev can review precise
@@ -72,7 +73,7 @@ engineer intent from prose - that's what contracts and ADRs are for.
 ### The end-user surface carries no internal ids
 
 Both registers above are *internal* - a PO reads bookkeeping refs fluently. The
-app's own users do not, and the always-on `user-facing-copy` rule keeps every
+app's own users do not, and rule `30-spec` (Living documentation) keeps every
 internal identifier off the surfaces they read:
 
 - **App UI copy** - page, section and nav titles, labels, badges, chips,
@@ -271,7 +272,7 @@ Drift is any meaningful mismatch along intent <-> spec <-> contract <-> tracker 
 app docs <-> action history <-> tests <-> delivered behavior. The standing rule
 (spec-framework Rule 5): **resolve drift via explicit human review, never
 silently** - fix the code, fix the artifact, or record the accepted
-divergence. The always-on `drift-gates` rule lists the nine review-sensitive
+divergence. Rule `50-done` (Drift gates) lists the nine review-sensitive
 classes; the scaffold's PR template carries them as a checklist so the flag is
 part of the review record.
 

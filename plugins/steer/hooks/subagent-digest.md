@@ -1,7 +1,7 @@
 A subagent starts with a fresh context: none of the session's always-on standards
 reach it. These are the ones that bind any agent editing or reviewing this repo.
-The full ruleset is at ${CLAUDE_PLUGIN_ROOT}/rules/ - read it if you need more
-than this.
+The full ruleset is the steer plugin's `rules/` directory - read it if you need
+more than this.
 
 - **Stay in the scope you were given.** Do the bounded task; do not widen it,
   refactor around it, or fix things you noticed on the way.

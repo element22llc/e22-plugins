@@ -228,7 +228,7 @@ two always-on lines, full prose via `/steer:reference context-hygiene`):
 - **Delegates heavy, multi-phase, or search-heavy runs to subagents**, which get a
   fresh context window by construction and return only the result - so the heavy
   intermediate context never lands in your main session. Read/search/summarize
-  fan-out delegations can run on a cheaper Sonnet-tier model at low effort;
+  fan-out delegations can run on a cheaper model at lower effort;
   reviewer/verify/judge delegations stay on the session model.
 - **Keeps durable run-state and task constraints in files** (`/spec/**`, sidecars),
   which survive compaction and a fresh session where chat history does not. The

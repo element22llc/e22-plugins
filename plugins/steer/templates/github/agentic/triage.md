@@ -11,7 +11,7 @@
 # What it does: when an issue is opened/reopened, classify it against steer's
 # label taxonomy and GitHub Issue Type, then post one advisory triage comment.
 # It is ADVISORY ONLY - it never closes issues and never resolves product or
-# technical questions. Those stay human-gated (rule 95 "not the gate" + the
+# technical questions. Those stay human-gated (rule 00 "not the gate" + the
 # /steer:work issues lifecycle). The only writes are the declared safe-outputs.
 on:
   issues:
@@ -28,7 +28,7 @@ permissions: read-all
 # Optionally pin a model:
 #   engine:
 #     id: claude
-#     model: claude-opus-4-8
+#     model: <model-id>
 engine: claude
 
 timeout-minutes: 10

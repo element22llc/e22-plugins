@@ -20,10 +20,9 @@ question.
 ## 2. Legacy `- [ ]` checkbox items
 
 A spec predating the structured `### Q-NNN` format may still carry plain
-`- [ ]` items. The window in which they counted as ordinary backlog is **closed**:
-they have no status, owner, gate, or date, so nothing can age or route them, and
-waiting to convert each "as it is touched" left untouched features carrying them
-forever. Convert them all, **before** gathering.
+`- [ ]` items. They have no status, owner, gate, or date, so nothing can age or
+route them, and converting each only as it is touched leaves untouched features
+carrying them indefinitely. Convert them all, **before** gathering.
 
 **In scope** are only those **inside a `## Open questions` section and outside
 any `### ` block**, skipping a bracketed `[placeholder]` rest - the exact scope

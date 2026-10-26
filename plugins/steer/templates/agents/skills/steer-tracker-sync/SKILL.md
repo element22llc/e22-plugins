@@ -70,7 +70,7 @@ shell escaping. Detect capability **in this order, every run**:
 1. **Read `/spec/tracker.md`.** Confirm the frontmatter key `system: github`
    (the lowercase enum value - not prose). If the tracker
    is Jira/Linear/Azure DevOps/other, print the manual-export instructions (the
-   same paste/path flow `/steer-audit spec` uses today) and **stop** - there is no
+   same paste/path flow `/steer-audit spec` uses) and **stop** - there is no
    GitHub API path for a non-GitHub tracker. Don't fabricate one.
 
    **Polyrepo member** (`spec/PRODUCT.md` present, no local `spec/tracker.md`):

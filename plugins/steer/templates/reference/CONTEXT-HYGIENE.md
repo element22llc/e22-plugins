@@ -50,12 +50,12 @@ delegation shapes above want different tiers:
 
 - **Read/search/summarize fan-out** (the *search-heavy* and *fan-out-shaped* runs -
   locate code, grep-and-summarize, gather per-file facts, then return a conclusion) ->
-  run on a **Sonnet-tier model at low effort**. This is the profile where Sonnet lands
-  closest to Opus, and its failure mode - occasionally missing a file - is cheap for
-  the vetting caller to catch. Sonnet is cheaper per token and the read volume is the
-  same either way, so this cuts *cost*, not token count.
+  run on a **cheaper model at lower effort** where the delegation lets you pick
+  one. Its failure mode - occasionally missing a file - is cheap for the vetting
+  caller to catch, and the read volume is the same either way, so this cuts
+  *cost*, not token count.
 - **Reviewer / verify / judge delegations** (the examples below) -> keep on the
-  **session model** (`inherit`, i.e. Opus-tier). A missed or mis-ranked finding here
+  **session model** (`inherit`). A missed or mis-ranked finding here
   is expensive and hard to catch downstream, so don't trade capability for cost at the
   step whose whole job is to be trustworthy.
 

@@ -18,17 +18,9 @@ The gate's requirement is that **the deciding human decides**. It has never been
 a requirement about *channel* - a decision typed into a status field and the same
 decision stated in the session carry identical authority when they come from the
 same person. What the in-session prompt removes is a **round trip**, not the
-decision:
-
-| | Before | After |
-|---|---|---|
-| Who decides | the named human | **unchanged** |
-| How it's expressed | hand-edit `> Status:` out-of-band, later | answer a prompt, now |
-| What's recorded | the flipped field | the flipped field **+ who / when / channel** |
-| If unanswered | artifact stays `Proposed` / `draft` | **unchanged** |
-
-The change is strictly additive: `Decide later` reproduces today's behaviour
-exactly, so no repo can end up more stuck than it was.
+decision: the named human still decides, and the record gains **who / when /
+channel** beside the flipped field. `Decide later` leaves the artifact
+`Proposed` / `draft`, untouched.
 
 **Self-ratification is legitimate.** In a solo repo the author, decider, and
 reviewer are the same person; requiring them to leave the session to ratify their
@@ -68,7 +60,7 @@ One question, **three options**, in this order:
 ```text
 Approve   - record the decision and continue in this pass
 Reject    - record that it was declined, and why
-Decide later - leave everything untouched (today's behaviour)
+Decide later - leave everything untouched
 ```
 
 **The prompt must carry the tradeoff.** A human cannot decide what they cannot
@@ -150,16 +142,15 @@ system, and **asking is not authorization**:
 **Not on this list: the ungraduated solo-trunk trunk push.** While a local
 graduation signal stands, rule `45-delivery` stops trunk pushes being
 *silent* - the session's **first** one waits for a human yes, and repeats carry a
-non-blocking reminder (on the Copilot CLI the repeat is instead a **silent allow**:
-that envelope has no non-blocking channel) - and `check-bash-actions.sh` surfaces
+non-blocking reminder - and `check-bash-actions.sh` surfaces
 that first push as a PreToolUse **`ask`**, deliberately never a deny. A yes there
 **does** authorize that push; the gate clears for good by graduating
 (`/steer:setup protect`) - or by recording a **graduation waiver** (`/steer:setup protect
 waive`) when the repo deliberately stays single-dev on trunk and the local
 signals are expected; the waiver is a recorded decision the shared detector
-honours, not a way to skip the prompt for one push. Because the Copilot CLI has
-no non-blocking channel, a push declined there must not be retried in the hope
-of a quieter second attempt - graduate or waive instead. So it is answerable -
+honours, not a way to skip the prompt for one push. The ask fires once per
+session, so a declined push must not be retried in the hope of a quieter
+second attempt - graduate or waive instead. So it is answerable -
 but it is not one of the three gates in
 §2 either: it is a push-time permission decision the harness raises once, with no
 `/spec` field to record and no three-option prompt.

@@ -254,8 +254,9 @@ declared dependencies -> `package.json`, `pyproject.toml`.
   change, so you almost never install deps by hand; if you must, route it through
   mise - `mise exec -- pnpm install` - so it can't pick up a global/nvm copy.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
-- **Deploy:** promotion via merge (`main` -> non-prod, `prod` PR -> prod) - see
-  Deployment & environments; there is no `pnpm deploy` task.
+- **Deploy:** whatever `policy/delivery.yml` declares (seeded: merge to `main` ->
+  non-prod, `prod` PR -> prod) - see Deployment & environments; there is no
+  `pnpm deploy` task.
 
 The `pnpm`/`uv` lines are the **app / service** profile. An infra repo uses
 `mise run infra:*` instead, and a workspace repo's tasks are all `ws:`-prefixed;

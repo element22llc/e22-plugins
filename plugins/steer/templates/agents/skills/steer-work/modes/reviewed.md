@@ -6,8 +6,7 @@ authorization scope, delivery mode, subcommands, and guardrails stay in
 
 `--reviewed` wraps the `start`->`finish` flow in two **independent** review
 gates plus a bounded fix loop, so the delivery is **vetted, not first-draft**.
-This is the review-gated path formerly carried by the standalone `deliver` skill; the execution
-itself is unchanged - the same claim, branch, implement, test, PR, and transition
+The execution is the normal flow: the same claim, branch, implement, test, PR, and transition
 steps run, with gates added around them. Full protocol, rubric structure, and
 stopping rules: [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md).
 
