@@ -373,6 +373,8 @@ $claude plugin eval plugins/steer \
 # (#786, #788), not against no plugin; --threshold 0 because a case score here
 # is a measurement, not a gate. The mocked GitHub tools still need the grant. 8 cases at
 # --runs 3; the 25 USD cap is a guess until a sweep is measured (evals/e2e/README.md).
+# On macOS the sandbox hides every git binary from a PATH lookup, so .eval-bin/
+# puts forwarding wrappers to Homebrew's git and python3 first on PATH.
 [tasks."evals:e2e"]
 description = "Run the end-to-end evals against the plugin (slow, paid)"
 run = """
@@ -380,6 +382,15 @@ if [ "${STEER_EVALS_ALLOW_BASE_URL:-}" = 1 ]; then
   claude=claude
 else
   claude="env -u ANTHROPIC_BASE_URL claude --setting-sources project,local"
+fi
+if [ "$(uname)" = Darwin ] && brew=$(brew --prefix 2>/dev/null) && [ -x "$brew/bin/git" ]; then
+  mkdir -p .eval-bin
+  for t in git git-receive-pack git-upload-pack python3; do
+    [ -x "$brew/bin/$t" ] || continue
+    printf '#!/bin/sh\\nexec %s "$@"\\n' "$brew/bin/$t" > ".eval-bin/$t"
+    chmod +x ".eval-bin/$t"
+  done
+  PATH="$PWD/.eval-bin:$PATH"
 fi
 $claude plugin eval plugins/steer \
   --scaffold \
