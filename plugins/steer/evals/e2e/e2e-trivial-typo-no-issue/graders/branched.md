@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Bash
-input_match: '(checkout -b|switch -c|branch [a-z])'
+input_match: '(checkout( -\w+)* -[bB] |switch( -\w+)* (-[cC]|--create) |branch [a-z])'
 weight: 1
 ---
 
