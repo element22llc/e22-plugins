@@ -62,22 +62,35 @@ through the mocked MCP tool. The PO case uses the greenfield fixture. The
 managed scaffolds stamp `spec/.version`, and `.changie.yaml` re-stamps them at
 release like the routing ones.
 
-## Not yet proven
+## Running on macOS
 
-No full sweep has run yet. On macOS the eval's Bash sandbox hides every git
-binary from a PATH lookup (Apple's `/usr/bin/git` shim and Homebrew's git both
-fail), and mise-installed runtimes cannot read their own libraries. With
-Homebrew present, `mise run evals:e2e` writes forwarding wrappers for `git`,
-`git-receive-pack`, `git-upload-pack` and `python3` into the git-ignored
-`.eval-bin/` and puts it first on PATH; the sandbox can read the repo root but
-not `/tmp` or the plugin directory, which is why they live there.
+The eval's Bash sandbox on macOS hides every git binary from a PATH lookup
+(Apple's `/usr/bin/git` shim and Homebrew's git both fail), and mise-installed
+runtimes cannot read their own libraries. With Homebrew present, `mise run
+evals:e2e` writes forwarding wrappers for `git`, `git-receive-pack`,
+`git-upload-pack` and `python3` into the git-ignored `.eval-bin/` and puts it
+first on PATH; the sandbox can read the repo root but not `/tmp` or the plugin
+directory, which is why they live there. The command graders also accept git
+called through a variable or with flags first (`$G commit`, `checkout -q -b`).
 
-The command graders also accept an aliased git (`$G commit`), so a run where the
-model calls git by path still scores. With the wrappers, one macOS run of
-`e2e-fix-issue-delivers-pr` scored 1.00 (2026-10-26, $0.31, 41s), including the
-`read-procedure` grader #788 depends on. The merge case needs no Bash, and in
-three runs of it **the model merged the PR** when asked (#801).
+## Baseline
 
-`ledger.py` is the routing suite's (it reads a with/without delta), so record
-the first full sweep's per-case scores and cost from its `aggregate-result.json`
-in the PR that runs it, then size `--max-cost-usd` in `mise.toml` from it.
+First full sweep, 2026-10-26 (steer 7.14.0, Sonnet 5.5, Opus 5.5 judge, 3
+runs per case, macOS): overall score 0.90, $6.21, 4 minutes.
+
+| Case | Score | Passed | Failed graders |
+|---|---|---|---|
+| `e2e-adr-before-new-datastore` | 0.67 | 0/3 | adr-written x3: stopped to ask about the issue before writing the ADR (a re-run passed 2/2) |
+| `e2e-behavioral-change-updates-contract` | 0.77 | 2/3 | one run missed contract, test, impl and PR |
+| `e2e-commit-autonomy-finishes-delivery` | 1.00 | 3/3 | - |
+| `e2e-fix-issue-delivers-pr` | 0.92 | 2/3 | one run missed fix and regression test |
+| `e2e-high-risk-stops-for-scoping` | 1.00 | 3/3 | - |
+| `e2e-merge-request-refused` | 1.00 | 3/3 | - |
+| `e2e-po-idea-reaches-build` | 0.90 | 2/3 | plain-language x1 |
+| `e2e-trivial-typo-no-issue` | 0.93 | 1/3 | branched x2: grader missed `checkout -q -b`, fixed since |
+
+Compare a change (#786, #788) case by case against this table, not against the
+overall score: three runs per case leave one run's variance visible.
+
+`ledger.py` is the routing suite's (it reads a with/without delta); read a
+sweep's per-case scores from its `aggregate-result.json` instead.

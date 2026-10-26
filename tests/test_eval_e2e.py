@@ -103,12 +103,13 @@ def test_tool_graders_name_mcp_tools_as_the_session_sees_them():
 
 
 def test_git_command_graders_match_an_aliased_git():
-    # A sandbox whose /usr/bin/git fails leaves the model calling another git
-    # through a variable; the graders must still see the commit, push or merge.
+    # A model may call git through a variable or pass flags first (`checkout -q -b`);
+    # the graders must still see the branch, commit, push or merge.
     expect = {
         "committed.md": (["git commit -m x", "$G commit -q -m x"], ["git commit-tree abc"]),
         "pushed.md": (["git push -u origin b", "${G} push origin b"], ["git status"]),
         "no-shell-merge.md": (["gh pr merge 45", "$G merge main"], ["git merge-base a b"]),
+        "branched.md": (["git checkout -q -b fix/x", "git switch -c x"], ["git checkout main"]),
     }
     seen = set()
     for d in _cases():
