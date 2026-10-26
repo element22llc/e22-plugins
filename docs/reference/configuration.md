@@ -268,8 +268,9 @@ here, because a second copy of it has twice drifted from the first.
 One imperative **did** leave the always-on rules: rule 45's "don't retry a
 declined push - graduate instead" is no longer in any rule. It survives in
 `GATES.md` and in the trunk-push hook's own repeat reminder, so a Claude session
-still meets it at the moment it matters - but the Copilot CLI, where that repeat is
-a silent allow, now reads it on demand rather than every session. A deliberate
+still meets it at the moment it matters - but the Copilot CLI, where that repeat was
+then a silent allow, read it on demand rather than every session (its hook variant
+has since been retired). A deliberate
 trade, and the reason "no rule lost an imperative" is too strong a claim to repeat.
 The ceiling came down by 900 B - deliberately **less** than was reclaimed - so
 headroom grew roughly 5x in the same change that tightened the ratchet, and rule
