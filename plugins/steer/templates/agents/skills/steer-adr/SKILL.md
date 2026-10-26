@@ -103,7 +103,7 @@ On a clean acceptance, in one pass:
    review outside the session).
 3. Write **one** `/spec/history/` entry file - what / why / who asked / refs (rule
    `30-spec` § Living documentation: one entry per ratified decision). **In a member** the ADR is
-   this repo's but the history entry is the workspace's - per rule `30-spec` § Living documentation.
+   this repo's but the history entry is the workspace's - per `/steer-reference polyrepo`.
 4. If this ADR supersedes an older one, mark that one
    `Superseded by [link]` - never delete or renumber it.
 5. **Propagate to the tracker** - the decision is made, so the issues around it

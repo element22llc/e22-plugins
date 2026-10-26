@@ -75,8 +75,8 @@ sequences those across the lifecycle.
    `/steer-tracker-sync` apply. Never fabricate tracker state.
 2. **Detect capability via `/steer-tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues were actually touched.
-3. **Member? The tracker and the specs are in the workspace** (rules
-   `35-tracker`, `30-spec`) - resolve it by the ladder in
+3. **Member? The tracker and the specs are in the workspace** (rule
+   `35-tracker`) - resolve it by the ladder in
    `/steer-reference polyrepo` and read both from there; never file a product
    issue against the member's own repo to work around it. Two facts shape
    decomposition: **sub-issues do

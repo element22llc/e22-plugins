@@ -51,7 +51,9 @@ normally.
 - **Identify ambiguity out loud.** When intent could mean two things, say so
   and ask - a one-line question now beats intent drift at review.
 - **Same change, not "later".** Doc updates ride in the PR that changes the
-  behavior. A wrap-up documentation pass is already drift.
+  behavior. A wrap-up documentation pass is already drift. The PR that
+  establishes the stack or first app also retires the scaffold's now-false
+  placeholder prose.
 - **Proposals, not stealth edits.** Updating an *approved* intent or a
   ratified decision is itself a change - propose it and get the owning
   human's yes (PO for intent, dev for contracts/ADRs).

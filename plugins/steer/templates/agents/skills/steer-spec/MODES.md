@@ -201,7 +201,7 @@ you may not record their approval for them.
    scaffolded `ci:spec` gate fails on it. A block whose marker sits on a real,
    filled-in question is not a seed - drop just the marker so it is counted.
 3. Write **one** `/spec/history/` entry file (what / why / who-asked / refs) -
-   in a member, to the workspace's ledger per rule `30-spec` § Living documentation.
+   in a member, to the workspace's ledger per `/steer-reference polyrepo`.
 4. Recommend the local next action - decompose into work
    (`/steer-issues decompose`, then execute each via
    `/steer-work`) or, for a PO-driven build,

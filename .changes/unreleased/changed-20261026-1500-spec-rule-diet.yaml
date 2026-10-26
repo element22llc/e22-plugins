@@ -1,0 +1,16 @@
+kind: Changed
+body: |-
+    - **Changed: the always-on Spec workflow rule is 40% shorter.** Rule
+      `30-spec` drops from 5,524 to 3,307 characters, the first slice of the
+      always-on rule triage. Its triggers, durable-decision capture,
+      living-documentation routing, history entries and the internal-ids ban
+      stay injected (and in the Copilot instructions). Detail already carried
+      elsewhere leaves the rule: the full routing table and the polyrepo
+      member destinations live in `/steer:reference traceability` and
+      `/steer:reference polyrepo`, design-export handling in
+      `/steer:reference design-sources`, and the members' own session note
+      already names the workspace spine. Skills that cited the rule for a
+      member's history entry now cite `/steer:reference polyrepo`.
+time: 2026-10-26T15:00:00.000000-04:00
+custom:
+    Slug: spec-rule-diet
