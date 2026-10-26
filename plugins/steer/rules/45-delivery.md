@@ -3,7 +3,8 @@
 
 Commits are cheap and local - the reviewed **PR merge** is the gate (see "You
 are not the gate"), not each commit and not the push. Never pause work to ask
-"should I commit / push / open the PR?".
+"should I commit / push / open the PR?". This deliberately overrides a surface's
+default to commit, push or open a PR only when asked (CLI, web, GitHub Action).
 
 Delivery runs in exactly **two modes**, keyed to the product `CLAUDE.md`
 `## Delivery mode` marker (`<!-- steer:delivery-mode=solo-trunk -->` -> solo
