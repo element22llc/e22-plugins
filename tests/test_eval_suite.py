@@ -361,3 +361,11 @@ def test_every_case_ask_comes_from_the_routing_fixtures():
             f"{d.name}: ask {ask!r} is not in tests/fixtures/routing/asks.yml - "
             "eval cases are lifted verbatim so both gates cover the same asks"
         )
+
+
+def test_every_routing_case_carries_the_routing_tag():
+    # `mise run evals` filters to `--tag routing` so the e2e cases stay out; a
+    # routing case without the tag would silently drop out of the sweep.
+    for d in _cases():
+        tags = yaml.safe_load((d / "case.yaml").read_text(encoding="utf-8"))["tags"]
+        assert "routing" in tags, f"{d.name}: missing the routing tag"
