@@ -145,7 +145,7 @@ It covers, in detail:
 - **Delegate heavy runs to a subagent** - when a run is long, multi-phase, or
   search-heavy, fork it (fresh context by construction) and return only the
   structured result; which model tier each shape wants (read/search fan-out ->
-  Sonnet-tier at low effort; reviewer/verify delegations -> session model); the
+  a cheaper model at lower effort; reviewer/verify delegations -> session model); the
   steer exemplars (`/steer:audit` -> `steer-reviewer`, `/steer:work --reviewed`)
   and when *not* to fork.
 - **Keep durable state in files** - what survives compaction (`/spec/**`, rules,
@@ -177,13 +177,13 @@ It covers, in detail:
   `architecture-diagram.md` so the two tiers compose. Includes the inert
   `diagrams:render` mise task and how to activate it.
 - **Drift discipline** - the diagram is updated in the same PR that reshapes the
-  system (living-docs rule `32`); on Tier 2 `architecture-diagram.md` is
+  system (the `30-spec` living-docs rule); on Tier 2 `architecture-diagram.md` is
   *generated* - edit the `.likec4` source, not the Mermaid.
 - **Tool choices considered** - why Mermaid + LikeC4 (diagram-as-code, git-diffable,
   Claude-authorable) over GUI/JSON tools (Excalidraw, draw.io) or diagram-editor
   libraries (ReactFlow).
 
-This backs the always-on living-docs rule `32` and the `spec/design/` layout.
+This backs the always-on `30-spec` living-docs rule and the `spec/design/` layout.
 
 ## artifacts
 
@@ -237,8 +237,8 @@ It covers, in detail:
 
 - **What the prompt changes - and what it does not.** A gate requires the deciding
   *human*, never a particular channel; the in-session prompt removes a round trip,
-  not the decision. `Decide later` reproduces today's behaviour exactly, so the
-  change is strictly additive.
+  not the decision. `Decide later` leaves everything untouched, so the prompt
+  never forces an answer.
 - **The three promptable gates** - ADR `Proposed -> Accepted`, intent
   `draft -> approved`, `--reviewed` plan sign-off - each keeping its existing owner,
   single writer, and preconditions (a failed blocking-question gate means the

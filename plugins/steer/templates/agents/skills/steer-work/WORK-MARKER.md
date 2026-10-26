@@ -10,7 +10,7 @@ The marker is a small Markdown file. The `issue:` / `branch:` lines are written
 once and never rewritten; the session list under the heading is the single source
 of truth for "which Claude Code session(s) worked this branch" - the head is the
 most recent. The Stop hook keeps that head current each turn, and `resume` reads
-it (see above). Session ids are local breadcrumbs and **never** go into tracker
+it (`modes/subcommands.md` -> `resume`). Session ids are local breadcrumbs and **never** go into tracker
 metadata.
 
 ```markdown

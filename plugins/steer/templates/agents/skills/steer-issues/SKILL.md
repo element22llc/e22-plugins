@@ -90,9 +90,9 @@ table in `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugin
 format (markers, headings, **managed blocks**, idempotency) in
 `ISSUE-SCHEMA.md`; the open-question contract in `SPEC-FRAMEWORK.md`.
 
-## Question-reconciliation floor (safe from the first release)
+## Question-reconciliation floor
 
-Even before repo-wide reconcile, the per-feature lifecycle must guarantee - via
+The per-feature lifecycle must guarantee - via
 `/steer-spec validate` at every gate and `reconcile`:
 
 - an **approved** intent contains **no `open` `blocking` question gated at

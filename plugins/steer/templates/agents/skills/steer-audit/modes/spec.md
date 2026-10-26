@@ -142,11 +142,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    Offer to also write it to `/spec/DRIFT-REPORT.md`
    **only if the dev wants it tracked** - it's a point-in-time artifact, not part
    of the durable spine. Write it to the working tree only, and say plainly
-   that committing it is the dev's next step. `EnterWorktree` is disallowed so this
-   skill cannot open a worktree, but the git verbs are not blocked by the
-   frontmatter - `allowed-tools` grants without restricting - so leaving the branch
-   and the commit to the dev is a boundary this skill keeps, not one the tooling
-   enforces.
+   that committing it is the dev's next step.
 
    **Optionally publish it as a shareable drift board** - where the `Artifact`
    tool is available, **offer** a **Dashboard** Artifact over one fixed dataset of

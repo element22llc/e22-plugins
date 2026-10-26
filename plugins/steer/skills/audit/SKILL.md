@@ -82,8 +82,7 @@ govern how each finding gets *resolved*.
   -> procedure: [`modes/code.md`](${CLAUDE_PLUGIN_ROOT}/skills/audit/modes/code.md)
 - **`spec`** - **spec-vs-spec** conformance: diff the **as-built `/spec`** (what
   the code actually does, reverse-engineered by `/steer:adopt`) against the
-  **tracker spec** (what was asked for) and surface every divergence. The former
-  `drift` skill.
+  **tracker spec** (what was asked for) and surface every divergence.
   -> procedure: [`modes/spec.md`](${CLAUDE_PLUGIN_ROOT}/skills/audit/modes/spec.md)
 - **`all`** - run `code` then `spec` in sequence and report both, each with its
   own ranked report and routing. Use it for a full periodic pass (health **and**

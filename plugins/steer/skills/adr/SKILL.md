@@ -67,7 +67,7 @@ your own proposal is exactly where rubber-stamping happens.
   ADR's Context (or supersede it later). Never delete or renumber a rejected ADR;
   don't immediately re-draft the same proposal and re-ask.
 - **Decide later** -> leave every field untouched. `/steer:next` keeps surfacing it
-  as *Human decision required*, exactly as before.
+  as *Human decision required*.
 
 Never pre-select an option, never infer approval from ambient agreement ("ok",
 "thanks", silence, or sign-off on an earlier plan), and never bundle two ADRs into

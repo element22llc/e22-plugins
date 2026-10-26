@@ -54,8 +54,7 @@ For every remaining PR, spawn a **fresh read-only subagent** in the same message
 (waves of up to 10), each with one PR - not `steer-reviewer`, which audits
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
 read, and the rubric: rule `50-done` (Definition of Done and the drift classes),
-rule `40-testing`, and rule `80-change-class`. Ask it to return a **card**, at
-most 8 lines:
+rule `40-testing`, and rule `80-change-class`. Ask it to return a compact **card**:
 
 - one line on what the PR does, in the reader's terms;
 - class: Trivial, Behavioral or High-risk (the heavier when arguable);

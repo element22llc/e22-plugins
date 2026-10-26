@@ -35,10 +35,9 @@ automatically.
 Skip any skill whose frontmatter says `user-invocable: false` - the internal
 gateways and the skills a front door has absorbed as a mode, this one included.
 A user cannot type them, so listing them as commands would hand out invocations
-the harness rejects. You may mention that a front door auto-routes to specialized skills
-(`setup` -> `init` / `adopt` / `sync` / `doctor` / `protect`; `spec` ->
-`questions` / `adr` / `intake` / `roadmap`; `work` -> `issues` / `tidy`), but
-don't enumerate those unless the user asks to zoom in.
+the harness rejects. You may mention that a front door auto-routes to specialized
+skills - each internal skill's `when_to_use` names its door ("Reached via
+/steer:setup worktrees") - but don't enumerate them unless the user asks to zoom in.
 
 ## Phase 1 - Read the listing
 
@@ -135,7 +134,7 @@ then; a standing invitation on every menu is tail nobody reads.
 If the user named a skill or area (`$ARGUMENTS`), skip the full menu and expand
 just that one: read the target skill's `SKILL.md` frontmatter (`description` +
 `when_to_use` + `argument-hint`) and summarize what it does, when to use it, and
-which front door reaches it (per the hand-off list above). Still read-only -
+which front door reaches it (its `when_to_use` names the door). Still read-only -
 describe it; don't run it.
 
 ## What this skill is not

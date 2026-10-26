@@ -250,8 +250,7 @@ It applies to the **feature path only** - `bug`, `task`, `finding`, and
 
 Read it in the one direction that carries information: **"is it built?" is an
 issue question** (`in-progress`/`validate`/`done`), **"was this scope approved?"
-and "can users see it?" are spec questions**. Asking the spec how far delivery got
-is the mistake this table used to invite.
+and "can users see it?" are spec questions**.
 
 Only two rows admit a legitimate mismatch, and both are human events rather than
 drift: `exploring` holds no `Status:` until an `intent.md` is materialized as

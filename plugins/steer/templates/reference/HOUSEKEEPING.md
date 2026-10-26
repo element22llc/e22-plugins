@@ -1,10 +1,11 @@
 # Repo housekeeping
 
 How to keep a product repo's root clean by sorting loose files into their
-correct home under `/spec`. The always-on rule keeps only a short summary; this
+correct home under `/spec`. The always-on router only routes a sweep here; this
 is the full sweep procedure, loaded on demand via `/steer:work tidy`.
 
-Products are internal monorepos (see the layout rule). The **root** is for
+Products are internal monorepos (`/steer:reference conventions` -> Internal
+monorepo layout). The **root** is for
 scaffolding and config - not a dumping ground for the spreadsheets, decks,
 diagrams, and documents that feed the spec. A PO building from the template
 often commits a pile of source material at the root; this sweep **relocates,

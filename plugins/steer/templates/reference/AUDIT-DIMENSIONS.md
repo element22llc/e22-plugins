@@ -62,8 +62,8 @@ so in the report.
     and divider comments; commented-out code; task or history narration; doc
     comments on internals; rationale essays inline in `mise.toml`, `compose.yaml`,
     Dockerfiles or CI instead of the reference prose / `ARCHITECTURE.md`. Cite
-    the densest files (comment lines above a third of the file - where the
-    write-time hook blocks; it advises from a fifth), not every line; the fix is
+    the densest files (comment lines above a third of the file; the write-time
+    hook advises from a fifth and never blocks), not every line; the fix is
     `/simplify`-class cleanup, so route it there rather than listing lines. A
     file carrying `steer:allow-comments <reason>` has already been triaged -
     report it only if the recorded reason no longer holds.

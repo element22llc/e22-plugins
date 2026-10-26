@@ -262,7 +262,7 @@ depends = ["dev:*"]                       # both servers in parallel; mise is th
 ```
 
 `mise run dev` is the one command; `dev:web` delegates into pnpm, `dev:api` runs
-uv directly. Nothing is duplicated and no `pnpm`⇄`mise` loop can form.
+uv directly. Nothing is duplicated and no `pnpm` <-> `mise` loop can form.
 
 The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
@@ -735,7 +735,7 @@ fail", the Definition of Done, and review.
 #### Coverage
 
 Coverage is a **signal to find untested behavior, not a target** - see the always-on
-Coverage rules. Measure it every run and keep it visible; gate only the lines a PR
+Testing rule. Measure it every run and keep it visible; gate only the lines a PR
 **changes**, never a global percentage.
 
 One coverage tool per language, emitting a standard report:
@@ -916,10 +916,6 @@ would otherwise write CRLF, and a CRLF `scripts/*.sh` fails to *parse* while a
 CRLF Docker entrypoint fails to run. Binaries are marked `binary` so they are
 never normalized. Merge the file additively if one exists
 (`scripts/scaffold_reconcile.py`).
-
-<!-- Absorbed from the former always-on rule `20-layout`: a description of where
-     directories live is reference material, not an imperative that has to be
-     in context every session. Reach it via `/steer:reference conventions`. -->
 
 ## Where things live
 

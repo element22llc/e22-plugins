@@ -88,10 +88,9 @@ The export is a **spec to realize**, not code to ship. Decide by one question -
 - **Never** let "temporary" prototype hosting silently become the permanent
   front-end with no tracked trigger - that is the real failure mode.
 
-The old "rewriting 250 KB of JSX is too expensive" objection assumed a human
-re-typing it by hand. The port is now a mechanical agent task, and the original
-prototype is the **pixel-diff oracle** to verify against - so the cost that used
-to justify serving-as-is is much smaller than it looks.
+Porting is a mechanical agent task, not a human re-typing the JSX, and the
+original prototype is the **pixel-diff oracle** to verify against - so the size
+of the export is not a reason to serve it as-is.
 
 ## Building UI without a (full) export
 

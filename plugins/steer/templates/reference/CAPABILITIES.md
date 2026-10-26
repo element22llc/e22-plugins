@@ -111,8 +111,7 @@ and **Repair**.
   (`/steer:setup protect waive`, a second `<!-- steer:graduation=waived -->` line) when
   the repo deliberately stays single-dev on trunk.
 - **Verbatim:** no
-- **Why it matters:** a repo bootstrapped before solo-trunk existed (≤ 2.11.0)
-  silently runs `pr-flow` forever - the solo-trunk offer lives only in `init`'s
+- **Why it matters:** a repo without the marker silently runs `pr-flow` forever - the solo-trunk offer lives only in `init`'s
   run-once interview, and `sync` carries the spine forward without re-asking. This
   is the one place a later sync can surface the choice.
 
@@ -248,7 +247,7 @@ and **Repair**.
   `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
   `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
 - **Conditional:** always (GitHub-hosted repos)
-- **Wired-when:** `ci.yml` reaches the hygiene stage - now via `mise run ci:hygiene`,
+- **Wired-when:** `ci.yml` reaches the hygiene stage - via `mise run ci:hygiene`,
   which runs `scan-version-pins.sh` - **and** `mise.toml` defines the `check` + `ci`
   tasks **and** every `scripts/ci-*.sh` the tasks invoke is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
@@ -438,13 +437,10 @@ and **Repair**.
   start fragments from empty. Its shape is unknown and a bad split loses history.
 - **Verbatim:** no - seeded once, then the product's. Reconcile additively;
   never overwrite a `.changie.yaml` a repo has tuned.
-- **Why it matters:** the standard promised this file and never delivered it.
-  Rule `45-delivery` tells every session "commit messages are **not** the
-  release changelog - that stays the curated `CHANGELOG.md`", `CONVENTIONS.md`
-  records the decision not to derive it from commit types, and the scaffold even
-  shipped a `CHANGELOG.md merge=union` driver for a file nothing installed. So
-  every consumer repo carried the rule and the merge driver without the
-  changelog - the agent was told to keep something that did not exist.
+- **Why it matters:** rule `45-delivery` has every shipping change add a
+  fragment (`mise run changelog:new`) and generates `CHANGELOG.md` from them;
+  without `.changie.yaml` and `.changes/unreleased/` that instruction has
+  nowhere to land and `ci:changelog` has nothing to check.
 
 ### line-ending-normalization - LF pinned for every checkout
 - **Files:** `.gitattributes`
@@ -456,7 +452,7 @@ and **Repair**.
   capability gap, so a repo with an older or hand-written `.gitattributes` is
   `present-wired` here and gets its missing lines spliced there. This entry exists
   solely to close the **create-missing** hole: step 5 splices only into files that
-  already exist, and until now nothing created this one.
+  already exist, so nothing else creates this one.
 - **Repair:** **propose creating** it from
   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitattributes` (the scaffold stores
   dotfiles without the leading dot - install it **as `.gitattributes`**) and
@@ -473,13 +469,11 @@ and **Repair**.
   one-shot that stays the human's call (it touches every affected file and
   collides with anything in flight). Say that plainly when proposing.
 - **Verbatim:** no
-- **Why it matters:** this is the exposure that produced the v5.0.0 CRLF release.
-  A CRLF shell script does not warn, it fails to **parse** - so `scripts/*.sh`,
-  every CI step that runs them, and a Docker image's entrypoint all die at once
-  with `syntax error near unexpected token $'{\r'`. A repo that never had a
-  `.gitattributes` had no route to one at all: `/steer:init` and `/steer:adopt`
-  install it from the install map, but a repo adopted before it shipped (< 3.12.0)
-  or one that lost the file stayed exposed through every steady-state sync.
+- **Why it matters:** a CRLF shell script does not warn, it fails to **parse** -
+  so `scripts/*.sh`, every CI step that runs them, and a Docker image's
+  entrypoint all die at once with `syntax error near unexpected token $'{\r'`.
+  `/steer:init` and `/steer:adopt` install the file from the install map; a repo
+  that never had one, or lost it, has no other route to it.
 
 ### backing-services-compose - local backing services
 - **Files:** `compose.yaml`

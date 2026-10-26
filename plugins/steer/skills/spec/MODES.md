@@ -176,7 +176,7 @@ tradeoff to the PO and ask: **Approve · Reject · Decide later** (rule
 `61-gates`; full protocol `/steer:reference gates`). The prompt shows the
 **acceptance criteria**, the **locked scope - in and out**, and any non-blocking
 open questions that survive approval. `Decide later` leaves the intent `draft`
-exactly as today; `Reject` records the reason in `intent.md`. Never pre-select
+untouched; `Reject` records the reason in `intent.md`. Never pre-select
 `Approve`, and never read ambient agreement as approval.
 
 **Order matters: preconditions first, prompt second.** If the blocking-question

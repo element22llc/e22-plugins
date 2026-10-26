@@ -24,11 +24,11 @@ argument-hint: '[idea or product description]'
 This is the PO-facing path through the standard Greenfield flow
 (`Spec workflow` rules): interview -> spec -> PO approval -> build -> demo -> dev
 handoff (a v0 PR in PR flow, or graduation off the trunk in solo trunk).
-The PO personally installs only **Claude Code and Docker Desktop**, on a
+The PO personally installs only **Claude Code, `git` and Docker Desktop**, on a
 supported machine - **macOS, Linux, or Windows** (WSL2 for CLI/IDE work; on the
 Claude Desktop Code tab, Git for Windows is enough - see the `Stack` rule and
 `/steer-setup doctor`). You verify and drive everything
-else yourself: install the supported local toolchain (mise, then pnpm/uv, git)
+else yourself: install the supported local toolchain (mise, then pnpm/uv)
 where the OS permits, and handle GitHub auth for the eventual PR - never hand the
 PO commands. Speak plainly throughout - no git/stack jargon (see the
 "Who you are working with" rule).
@@ -195,9 +195,9 @@ These hold for the whole build, at every step.
    *pulled by the PO, not pushed by you* - stay in the build/iterate loop until
    they ask. The demo procedure, the gate's exact wording, and the handoff
    artifact (identical in every mode) are in
-   [`HANDOFF.md`](HANDOFF.md). **Do not
-   propose handoff from the build loop** - read this file only once the PO has
-   asked to wrap up.
+   [`HANDOFF.md`](HANDOFF.md). - read it once
+   the feature work is built and you are ready to demo. **Do not propose
+   handoff from the build loop**: step 9's gate opens only when the PO asks.
 
 ## Recommend the next action
 

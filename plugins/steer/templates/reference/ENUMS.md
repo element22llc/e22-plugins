@@ -23,11 +23,10 @@ is an accepted close, not a release.
 **Delivery progress is not in here, deliberately.** Whether a feature is being
 built, has an open PR, or was merged is the issue's `steer:state`
 (`in-progress`/`validate`/`done`) and is read from the tracker, never mirrored
-into `intent.md`. A mirrored value is a value that drifts: it used to be copied
-here as `implemented`/`validated`, which meant every merge, close, and reopen had
-to be replayed by hand into a second file, and `reconcile` existed largely to
-repair what that missed. `Status:` now changes at exactly **two** human events -
-PO approval and release - so a merge can no longer leave it stale.
+into `intent.md`. A mirrored value is a value that drifts: every merge, close,
+and reopen would have to be replayed by hand into a second file. `Status:`
+changes at exactly **two** human events - PO approval and release - so a merge
+cannot leave it stale.
 
 Consequence for readers: to answer "is it built?" read the issue; to answer "did
 the PO approve this scope?" or "can users see it?" read the spec. (See
@@ -53,8 +52,7 @@ still unresolved, blocks that gate.
 
 `clarification · decision · access · tooling`
 
-**Optional**; an absent `kind:` reads as `clarification`, so every question
-written before the field existed behaves exactly as it did. Orthogonal to
+**Optional**; an absent `kind:` reads as `clarification`. Orthogonal to
 `owner:` - `owner` is *who* decides, `kind` is *what* is being asked:
 
 - `clarification` - an ambiguity in the spec the answer resolves.

@@ -546,7 +546,7 @@ if command -v git >/dev/null 2>&1; then
 	out="$(run_hook check-write-nudges.sh "$(json_write "${RSY}" sSY2 src/app.ts 'x')")"
 	assert_ctx "issue-first: feat/sync app source still nudges" "${out}"
 
-	# Hotfix fast-path exemption (rule 62): app source on a hotfix/<n> branch is the
+	# Hotfix fast-path exemption (rule 61): app source on a hotfix/<n> branch is the
 	# sanctioned after-the-fact lane -> silent at the point of action (the issue is
 	# filed in the post-incident follow-up).
 	RHF="$(git_repo repoHotfixPre hotfix/42-outage)"
@@ -829,7 +829,7 @@ if command -v git >/dev/null 2>&1; then
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S16}" stS16)")"
 	assert_block "stop-reconcile: feat/sync app source still reported (sync must not touch app code)" "${out}"
 
-	# Q: hotfix fast-path (rule 62). A governed change on a hotfix/<n> branch files
+	# Q: hotfix fast-path (rule 61). A governed change on a hotfix/<n> branch files
 	# its issue after-the-fact by design, so it still surfaces a one-time advisory
 	# but REFRAMED as the mandatory post-incident follow-up - never the standard
 	# "branch does not reference an issue" nag.

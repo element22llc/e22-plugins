@@ -221,8 +221,7 @@ not as a compliance gap to fix immediately. In that case also report the
 branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, say
 so plainly and recommend graduating now - and note that while the local signals
 stand, the trunk-push hook surfaces the session's **first** `git push` for a human
-yes (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
-repeat is a silent allow), so graduating also restores silent delivery - **or**,
+yes (rule 45; repeats carry a non-blocking reminder), so graduating also restores silent delivery - **or**,
 when only local signals hold and the dev intends to stay single-dev on trunk,
 name `waive` as the other way to restore it; when none holds, note
 that staying on solo-trunk is fine for now. (The SessionStart

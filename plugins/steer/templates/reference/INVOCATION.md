@@ -113,7 +113,7 @@ deterministic rewrite. The imperative framing in installed docs ("Run
 branch and surfaces the other two for the dev. The version-keyed one-shot for the
 `reference`-mode renames is the v3.8.0 entry in [MIGRATIONS.md](MIGRATIONS.md); this
 detector is the standing every-sync backstop. The v7 absorption renames have the same
-pairing: the `[Unreleased]` entry is the one-shot, `absorbed-mode` is the backstop, and
+pairing: the v7.0.0 entry is the one-shot, `absorbed-mode` is the backstop, and
 both derive the same front door from the same mode markers. Keep this class vocabulary
 in lockstep with `scripts/scan-invocations.sh`.
 

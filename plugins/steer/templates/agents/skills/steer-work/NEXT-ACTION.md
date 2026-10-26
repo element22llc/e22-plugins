@@ -13,7 +13,7 @@ End every invocation with a `## Recommended next actions - /steer-work` block
 `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the **locality
 rule**, consider only this issue, its branch, PR, criteria, validation, and any
 blocker directly hit - not the wider workspace. Map execution state to actions
-without redefining the subcommands above:
+without redefining the subcommands in `SKILL.md`:
 
 | State | Category | Action / suggested command |
 |---|---|---|

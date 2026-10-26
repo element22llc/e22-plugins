@@ -83,9 +83,9 @@ one after 60 (14 once its feature is `live`), aged from its `created:` date or
 the heading's `git blame` date when absent - the cue to promote it (step 6) or
 defer it (step 7).
 
-That hook is **Claude Code only** - no other surface has a SessionStart channel
-that can reach you, so nothing announces either the backlog or the staleness
-escalation there. Apply both yourself instead: read each feature's `## Open
+That hook is guaranteed only on Claude Code, so elsewhere nothing may announce
+either the backlog or the staleness escalation. Where no such notice reached
+you, apply both yourself: read each feature's `## Open
 questions` list, and age every open entry from its `created:` date (or the
 heading's `git blame` date) against those thresholds. Wherever a step below says
 "hook-escalated", read it as "stale by that same test".
