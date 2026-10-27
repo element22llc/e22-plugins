@@ -1,6 +1,6 @@
 ---
 name: steer-issues
-description: 'Internal backlog layer for the /spec spine - capture, triage, brainstorm, materialize, decompose, epics, status, a ranked board, bounded reconcile, the publish-* family and bootstrap-labels. A thin orchestrator: /spec stays product truth, the issue is the work/decision layer.'
+description: Backlog layer - capture, triage, decompose, board and the other issue modes; never edits code.
 argument-hint: '[capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new "<title>"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-work issues - not a direct entry point.
+**When to use.** Reached via /steer-work issues.
 
 <!-- steer:modes capture,triage,brainstorm,materialize,decompose,epic,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 

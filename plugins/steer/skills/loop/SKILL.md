@@ -1,7 +1,7 @@
 ---
 name: loop
-description: "Internal automation scaffolder - a scheduled GitHub Actions workflow that triages work (CI failures, open issues, drift) via /steer:audit + /steer:next, drafts fixes in reviewed worktrees, and opens draft PRs. Stops at every human gate; never merges or deploys."
-when_to_use: "Reached when the dev asks for an autonomous loop - a scheduled sweep that runs on its own - or from rule 53 in a repo that declared the automation opt-in. Not a direct entry point."
+description: "Scaffold a scheduled GitHub Actions workflow that triages work and opens draft PRs; never merges or deploys."
+when_to_use: "Reached when the dev asks for an autonomous loop on a schedule, or from rule 53."
 argument-hint: "[scaffold | verify | remove]"
 # Internal, and deliberately so: an autonomous loop is machinery a repo opts into
 # once (`policy/automation.yml`, `loops: true`), not a skill a user browses to.

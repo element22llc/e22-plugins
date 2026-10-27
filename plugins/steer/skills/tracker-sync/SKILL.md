@@ -1,9 +1,7 @@
 ---
 name: tracker-sync
-description: "Internal gateway for all tracker metadata I/O (GitHub MCP-first, gh fallback, manual floor) - reads and writes issues, and folds pulled criteria into intent.md, for the owning skills."
-when_to_use: >-
-  Reached via /steer:issues, /steer:work, and the other owning skills - not a
-  direct entry point.
+description: "Gateway for every tracker read and write (GitHub MCP-first, gh fallback)."
+when_to_use: "Reached via the owning skills, never directly."
 argument-hint: "[<op> | pull | push] [#issue | feature-id]"
 # Internal gateway: driven by /steer:issues and /steer:work, and also by
 # /steer:spec (its optional file-the-intent exit), /steer:roadmap, /steer:questions,

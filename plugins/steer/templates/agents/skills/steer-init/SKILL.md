@@ -1,6 +1,6 @@
 ---
 name: steer-init
-description: Internal greenfield bootstrap - lay the /spec spine + scaffolding, pin the toolchain, leave the repo working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode.
+description: Greenfield bootstrap - lay the /spec spine and scaffold, pin the toolchain, choose PR flow or solo trunk.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup init - not a direct entry point.
+**When to use.** Reached via /steer-setup init.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

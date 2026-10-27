@@ -1,6 +1,6 @@
 ---
 name: steer-questions
-description: Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `needs` raises what the client owes before a wave; `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (or Markdown).
+description: Sweep every open question in the /spec spine, resolve each or promote it to an issue.
 argument-hint: '[needs [--milestone <m>] | bundle [<feature-id>]]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-spec questions - not a direct entry point.
+**When to use.** Reached via /steer-spec questions.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

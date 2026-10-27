@@ -1,6 +1,6 @@
 ---
 name: steer-loop
-description: Internal automation scaffolder - a scheduled GitHub Actions workflow that triages work (CI failures, open issues, drift) via /steer-audit + /steer-next, drafts fixes in reviewed worktrees, and opens draft PRs. Stops at every human gate; never merges or deploys.
+description: Scaffold a scheduled GitHub Actions workflow that triages work and opens draft PRs; never merges or deploys.
 argument-hint: '[scaffold | verify | remove]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached when the dev asks for an autonomous loop - a scheduled sweep that runs on its own - or from rule 53 in a repo that declared the automation opt-in. Not a direct entry point.
+**When to use.** Reached when the dev asks for an autonomous loop on a schedule, or from rule 53.
 
 <!-- steer:modes scaffold,verify,remove -->
 

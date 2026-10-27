@@ -1,7 +1,7 @@
 ---
 name: roadmap
-description: "Internal release timeline - turn the /spec spine's unshipped intent into issues grouped under release milestones, viewable as a GitHub Projects v2 roadmap (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Optionally renders an Artifact timeline."
-when_to_use: "Reached via /steer:spec roadmap - not a direct entry point."
+description: "Group unshipped intent into issues under release milestones; never fabricates dates."
+when_to_use: "Reached via /steer:spec roadmap."
 argument-hint: "[<no argument = read-only preview> | from-features | from-gap | sync]"
 # Internal timeline path behind `/steer:spec roadmap`. Model-callable, hidden
 # from the slash menu - see the note on `init`.

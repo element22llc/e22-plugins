@@ -1,6 +1,6 @@
 ---
 name: steer-roadmap
-description: Internal release timeline - turn the /spec spine's unshipped intent into issues grouped under release milestones, viewable as a GitHub Projects v2 roadmap (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Optionally renders an Artifact timeline.
+description: Group unshipped intent into issues under release milestones; never fabricates dates.
 argument-hint: '[<no argument = read-only preview> | from-features | from-gap | sync]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-spec roadmap - not a direct entry point.
+**When to use.** Reached via /steer-spec roadmap.
 
 <!-- steer:modes default,from-features,from-gap,sync -->
 

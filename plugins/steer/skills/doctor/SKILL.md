@@ -1,7 +1,7 @@
 ---
 name: doctor
-description: "Internal prerequisite path - detect what a managed repo needs locally before bootstrap or dev (git, mise and the runtimes it manages, Docker), flagging a shadowed runtime; installs mise + runtimes on confirmation, GUI and `sudo` steps handed over."
-when_to_use: "Reached via /steer:setup doctor - not a direct entry point."
+description: "Detect and install missing local prerequisites (git, mise, runtimes, Docker), flagging a shadowed runtime."
+when_to_use: "Reached via /steer:setup doctor."
 # Internal prerequisite path behind `/steer:setup doctor`. Model-callable,
 # hidden from the slash menu - see the note on `init`.
 user-invocable: false

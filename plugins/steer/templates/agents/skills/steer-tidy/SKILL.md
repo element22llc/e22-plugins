@@ -1,6 +1,6 @@
 ---
 name: steer-tidy
-description: 'Internal sweep - file the loose documents at the repo root into their home: source/research material to /spec/reference, diagrams to /spec/design. Confident strays move now; renames and deletes wait for a yes.'
+description: File loose root documents into /spec/reference and /spec/design; renames and deletes wait for a yes.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-work tidy - not a direct entry point.
+**When to use.** Reached via /steer-work tidy.
 
 # Repo housekeeping (`/steer-work tidy`)
 

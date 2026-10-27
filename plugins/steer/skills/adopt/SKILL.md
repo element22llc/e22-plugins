@@ -1,7 +1,7 @@
 ---
 name: adopt
-description: Internal brownfield adoption - bring an existing repo that never went through bootstrap (a "vibe-coded" app) onto the standards - reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
-when_to_use: "Reached via /steer:setup adopt - not a direct entry point."
+description: "Brownfield adoption - reverse-engineer the /spec from an existing repo's code and sync the scaffold without clobbering it."
+when_to_use: "Reached via /steer:setup adopt."
 # Internal adoption path behind `/steer:setup adopt`. Model-callable, hidden from
 # the slash menu - see the note on `init`.
 user-invocable: false

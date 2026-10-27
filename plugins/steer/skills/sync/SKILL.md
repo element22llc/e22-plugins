@@ -1,7 +1,7 @@
 ---
 name: sync
-description: "Internal steady-state update - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers."
-when_to_use: "Reached via /steer:setup sync - not a direct entry point."
+description: "Apply migrations and reconcile spine + scaffold after a plugin release, then land a PR; never clobbers."
+when_to_use: "Reached via /steer:setup sync."
 argument-hint: "[--check]"
 # Internal update path behind `/steer:setup sync` - see the note on `init`.
 user-invocable: false

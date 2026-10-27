@@ -1,7 +1,7 @@
 ---
 name: explain
-description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (or Markdown): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
-when_to_use: "Reached via /steer:status feature <id> - not a direct entry point."
+description: "Render one feature spec as a shareable stakeholder page. Read-only."
+when_to_use: "Reached via /steer:status feature <id>."
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 # Internal single-feature renderer behind `/steer:status feature <id>`.

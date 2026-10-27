@@ -339,6 +339,16 @@ paths`, `lite mode`, `exports`, `costly to unwind`, `promote to prod`, `pptx`,
 `xlsx` - so this too was a deliberate trade. On a 200K window the listing still
 overflows the 8,000-char budget.
 
+The second step cut the 21 internal skills to a one-line purpose plus the door
+that reaches them (`Reached via /steer:setup adopt.`), keeping a guardrail only
+where no other entry carries it (`never merges or deploys`, `never fabricates
+dates`, `Read-only`). Internal entries went from 7,095 to 3,207 chars and the
+listing to 7,898 - 99% of the 200K budget, with steer the only plugin loaded.
+Dropped with them: the `Internal` prefix, `not a direct entry point`, and mode
+literals the doors already list or the bodies carry - among them `vibe-coded`,
+`Keep/Refactor/Rewrite/Reject`, `waive`, `apply --solo`, `needs`, `bundle`,
+`clarify`, `Projects v2`, `Orca`, `Conductor`.
+
 The rendered-skill ceiling is per-skill and **not** a ratchet: it is the
 harness's **compaction re-attach cap**. After auto-compaction Claude Code
 re-attaches an invoked skill but keeps it whole only up to 5,000 "tokens",

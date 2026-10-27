@@ -1,7 +1,7 @@
 ---
 name: adr
-description: "Internal decision record - create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed -> Accepted transition."
-when_to_use: "Reached via /steer:spec adr - not a direct entry point."
+description: "Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed -> Accepted."
+when_to_use: "Reached via /steer:spec adr."
 argument-hint: "[<slug> | accept <n>]"
 # Internal decision-capture path behind `/steer:spec adr`. Model-callable,
 # hidden from the slash menu - see the note on `init`.
