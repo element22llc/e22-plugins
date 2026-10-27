@@ -6,11 +6,11 @@ when_to_use: >-
   template placeholders), to adopt an existing repo, vibe-coded or not, by
   reverse-engineering its spec, or to sync to the latest plugin (migrations
   and drift after a plugin release; `sync --check` is read-only; brings
-  openspec repos up to date too). `doctor`: missing prerequisites, "command
-  not found". `protect`: protect main - branch protection, merge rules,
-  solo-trunk graduation or waiver. `worktrees`: parallel worktrees another
-  tool manages. `advisory`: use the standards on code steer should not
-  bootstrap.
+  openspec repos up to date too). `doctor`: get a machine ready - missing
+  prerequisites, "command not found". `protect`: protect main - branch
+  protection, merge rules, solo-trunk graduation or waiver. `worktrees`:
+  parallel worktrees another tool manages. `advisory`: use the standards on
+  code steer should not bootstrap (an external review, someone else's code).
 argument-hint: "[init | adopt | sync | doctor | protect | worktrees | advisory] [--check]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)

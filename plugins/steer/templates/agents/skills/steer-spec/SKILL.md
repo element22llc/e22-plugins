@@ -10,7 +10,7 @@ argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | vali
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to think a feature through ("grill me", "stress-test this") or shape acceptance criteria; works on an unmanaged repo too. `clarify` sweeps a draft for gaps and edge cases, `approve` flips its Status, `validate` checks consistency. `questions` works down open questions (`needs`: what the client still owes before a wave; `bundle`: a fillable questionnaire for the PO). `adr` records a hard-to-reverse or cross-cutting decision (stack, database, auth, deployment); `adr accept <n>` ratifies it. `intake` absorbs a re-sent PO document (docx, deck, spreadsheet) and finds what changed. `roadmap` lays unshipped intent on a release timeline of milestones.
+**When to use.** Use to think a feature through ("grill me", "stress-test this") or shape acceptance criteria; works on an unmanaged repo too. `clarify` sweeps a draft for gaps and edge cases, `approve` flips its Status, `validate` checks consistency. `questions` works down open questions (`needs`: what the client still owes before a wave; `bundle`: a fillable questionnaire for the PO). `adr` records a hard-to-reverse or cross-cutting decision (stack, database, auth, deployment, tenancy); `adr accept <n>` ratifies it. `intake` absorbs a re-sent PO document (docx, pdf, deck, spreadsheet) and finds what changed. `roadmap` lays unshipped intent on a release timeline of milestones.
 
 <!-- steer:modes default,approve,clarify,validate,questions,adr,intake,roadmap -->
 # Brainstorm a feature spec - no build

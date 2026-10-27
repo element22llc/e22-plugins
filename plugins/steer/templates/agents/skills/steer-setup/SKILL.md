@@ -10,7 +10,7 @@ argument-hint: '[init | adopt | sync | doctor | protect | worktrees | advisory] 
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to set up, onboard or bootstrap a repo (`init`, also for leftover template placeholders), to adopt an existing repo, vibe-coded or not, by reverse-engineering its spec, or to sync to the latest plugin (migrations and drift after a plugin release; `sync --check` is read-only; brings openspec repos up to date too). `doctor`: missing prerequisites, "command not found". `protect`: protect main - branch protection, merge rules, solo-trunk graduation or waiver. `worktrees`: parallel worktrees another tool manages. `advisory`: use the standards on code steer should not bootstrap.
+**When to use.** Use to set up, onboard or bootstrap a repo (`init`, also for leftover template placeholders), to adopt an existing repo, vibe-coded or not, by reverse-engineering its spec, or to sync to the latest plugin (migrations and drift after a plugin release; `sync --check` is read-only; brings openspec repos up to date too). `doctor`: get a machine ready - missing prerequisites, "command not found". `protect`: protect main - branch protection, merge rules, solo-trunk graduation or waiver. `worktrees`: parallel worktrees another tool manages. `advisory`: use the standards on code steer should not bootstrap (an external review, someone else's code).
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

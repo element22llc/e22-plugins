@@ -8,9 +8,9 @@ when_to_use: >-
   consistency. `questions` works down open questions (`needs`: what the client
   still owes before a wave; `bundle`: a fillable questionnaire for the PO).
   `adr` records a hard-to-reverse or cross-cutting decision (stack, database,
-  auth, deployment); `adr accept <n>` ratifies it. `intake` absorbs a re-sent
-  PO document (docx, deck, spreadsheet) and finds what changed. `roadmap` lays
-  unshipped intent on a release timeline of milestones.
+  auth, deployment, tenancy); `adr accept <n>` ratifies it. `intake` absorbs a
+  re-sent PO document (docx, pdf, deck, spreadsheet) and finds what changed.
+  `roadmap` lays unshipped intent on a release timeline of milestones.
 argument-hint: "[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all] | questions | adr | intake | roadmap]"
 ---
 <!-- steer:modes default,approve,clarify,validate,questions,adr,intake,roadmap -->

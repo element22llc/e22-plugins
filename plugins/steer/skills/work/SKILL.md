@@ -4,11 +4,12 @@ description: "Implement a GitHub issue end-to-end - claim, branch, PR (or solo-t
 when_to_use: >-
   Use to work, fix, resume or finish an issue ("fix #123") or to implement a
   change now. `--reviewed` adds plan and code review gates for costly changes;
-  `--hotfix` only for a real production incident. Modes that take no issue:
-  `promote` (ship main to production), `review` (clear the PR review queue,
-  "review my PRs"), `tidy` (clean up the repo root, organize stray documents
-  and diagrams), `walkthrough` (record a demo video). `issues`: backlog work
-  with no code this turn - capture, triage, decompose, a ranked board.
+  `--hotfix` only for a real production incident ("prod is down"), never
+  ordinary urgent work. Modes that take no issue: `promote` (ship main to
+  production), `review` (clear the PR review queue, "review my PRs"), `tidy`
+  (clean up the repo root, organize stray documents and diagrams),
+  `walkthrough` (record a demo video). `issues`: backlog work with no code
+  this turn - capture, triage, decompose, a ranked board.
 argument-hint: "[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)

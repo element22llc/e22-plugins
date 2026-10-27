@@ -10,7 +10,7 @@ argument-hint: '[start | resume | status | finish | promote | tidy | review | wa
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to work, fix, resume or finish an issue ("fix #123") or to implement a change now. `--reviewed` adds plan and code review gates for costly changes; `--hotfix` only for a real production incident. Modes that take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the repo root, organize stray documents and diagrams), `walkthrough` (record a demo video). `issues`: backlog work with no code this turn - capture, triage, decompose, a ranked board.
+**When to use.** Use to work, fix, resume or finish an issue ("fix #123") or to implement a change now. `--reviewed` adds plan and code review gates for costly changes; `--hotfix` only for a real production incident ("prod is down"), never ordinary urgent work. Modes that take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the repo root, organize stray documents and diagrams), `walkthrough` (record a demo video). `issues`: backlog work with no code this turn - capture, triage, decompose, a ranked board.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
