@@ -1,0 +1,16 @@
+kind: Changed
+body: |-
+    - **Changed: the always-on delivery rule is 40% shorter.** Rule
+      `45-delivery` drops from 5,208 to 3,209 characters, the second slice of
+      the always-on rule triage. Commit autonomy, the two delivery modes, the
+      merge and deploy gate, the deployment baselines and the worktree
+      service and trust rules stay injected (and in the Copilot instructions).
+      Detail carried elsewhere leaves the rule: the stacked-PR rationale is in
+      the stacked-PR hook's prompt, the solo-trunk graduation gate in
+      `/steer:reference gates`, the delivery model and worktree mechanics in
+      `/steer:reference conventions`, and deploy-pipeline scoping in the
+      High-risk areas rule. The conventions reference now carries the
+      empty-`observability` flag the rule used to state.
+time: 2026-10-27T10:00:00.000000-04:00
+custom:
+    Slug: delivery-rule-diet
