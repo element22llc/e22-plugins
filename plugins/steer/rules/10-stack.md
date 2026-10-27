@@ -1,60 +1,34 @@
 <!-- steer:inject-when=org-e22 -->
 ## Stack (e22 org pack)
 
-**The e22 org pack** - delivered where `policy/org.yml` says `pack: e22`, which
-is also what an absent file means. Another pack drops this section and leaves
-the core rules, which name no product.
+The e22 org pack reaches a repo whose `policy/org.yml` says `pack: e22`, or that
+has no such file. These are **default biases**, not mandates: when intent
+clearly warrants a different stack, propose the better fit and record an ADR
+(`/steer:spec adr`). When you pick or change a piece, verify the current stable
+version in-session via the bundled `context7` MCP server - never from
+training-data memory. The bullets are the **app / service** profile; rationale,
+mechanics and the other profiles are in `/steer:reference conventions`.
 
-**Default biases**, not mandates - when intent clearly warrants a different
-stack, propose the better fit and record an ADR (`/steer:spec adr`). Rationale
-and full detail: `/steer:reference conventions`. When you pick or change a
-piece, verify the current stable version in-session via the bundled `context7`
-MCP server - never from training-data memory.
+- **App:** Next.js + TypeScript + Tailwind, with Node + PostgreSQL + Drizzle
+  **inside** the Next.js app. A standalone `apps/api`, or Python + FastAPI, is an
+  ADR.
+- **Tooling:** pnpm / uv; Biome / Ruff, each the lint *and* format tool with
+  nothing alongside it without an ADR; Vitest / pytest; VS Code.
+- **Platform:** AWS via OpenTofu + Terragrunt (`/infra`), GitHub Actions, a
+  `Dockerfile` per deployable `apps/<app>`. Better Auth (high-risk: scope it and
+  write the ADR first), Sentry, and SSM Parameter Store `SecureString` as the
+  declared secret store.
+- **Local services:** a committed `compose.yaml` adapted from the scaffold, the
+  **same engine as deployed** (no SQLite for PostgreSQL), every host port
+  overridable (`"${POSTGRES_PORT:-5432}:5432"`, var in `.env.example`). An older
+  image major needs an ADR plus `# steer:allow-pin`.
+- **Tasks and env:** mise is the single task entry point; keep `mise run
+  dev:setup` (services up -> migrate -> seed) green. Environment tasks live in
+  `mise.toml`, not `package.json`, and delegate one way only. Local config in a
+  git-ignored `.env`, names in `.env.example`.
 
-These bullets are the **app / service** profile, the default. An infra,
-library, cli or workspace repo keeps the universal core - mise pinning, the
-`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:setup`
-records which.
-
-- **Frontend:** Next.js + TypeScript + Tailwind.
-- **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
-  Next.js app. A standalone `apps/api`, or Python + FastAPI, only when intent
-  warrants it - either split is an ADR.
-- **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS via Actions - confirm the target per app; each deployable
-  `apps/<app>` carries a `Dockerfile`, built by CI when present.
-- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI work.
-- **Editor:** VS Code; committed `.vscode/` config ships in the scaffold.
-- **Lint/format:** Biome (Node/TS), Ruff (Python) - each is the lint *and*
-  format tool; nothing alongside them without an ADR.
-- **Testing:** Vitest (Node/TS), pytest (Python).
-- **Auth:** Better Auth - high-risk; scope with the dev and write an ADR
-  first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
-  never committed - see Secrets handling.
-- **Secret store (deployed):** SSM Parameter Store `SecureString` - what Secrets
-  handling means by "the declared store". Secrets Manager only for rotation,
-  cross-account sharing, or large/binary values.
-- **Local services:** Docker Compose via a committed `compose.yaml`, adapted
-  from the bundled scaffold. **Same engine locally as deployed** (no SQLite
-  stand-in for PostgreSQL) and **every published host port overridable** -
-  `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` - with the override
-  var in `.env.example`. Keep image majors current; an older pin needs an ADR
-  plus `# steer:allow-pin`.
-- **Task running:** mise is the single task entry point, and `mise run
-  dev:setup` (idempotent: services up -> migrate -> seed) is the standard entry -
-  keep it green. Environment tasks live in `mise.toml`, not `package.json`; a
-  mise task may delegate to an app-level script, one way only.
-- **Environment variables:** local config in a git-ignored `.env` /
-  `.env.local`; names documented in `.env.example` - bootstrap and storage
-  rules in Secrets handling.
-
-Task-ordering mechanics, the auto-install blocks, the polyglot `dev` task and
-the per-profile layouts are in `/steer:reference conventions`.
-
-**Patterns, instantiated here:** typed by default -> TS `strict` / Python hints
-under a type checker; parameterized data access -> Drizzle Kit or SQLAlchemy +
-Alembic; server-first -> Server Components, `NEXT_PUBLIC_*`; shared domain
-modules -> `packages/`; nothing silenced -> unexpected errors to Sentry with
-context; lockfiles -> `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
-`.terraform.lock.hcl` (mise writes `mise.lock` only if it exists already);
-declared dependencies -> `package.json`, `pyproject.toml`.
+**Patterns, instantiated here:** TS `strict` / Python hints under a type
+checker; Drizzle Kit or SQLAlchemy + Alembic; Server Components, `NEXT_PUBLIC_*`
+for public values only; shared modules in `packages/`; unexpected errors to
+Sentry; lockfiles `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+`.terraform.lock.hcl`; dependencies in `package.json`, `pyproject.toml`.
