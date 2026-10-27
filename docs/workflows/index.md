@@ -119,7 +119,7 @@ below give the detail.
 | --- | --- |
 | [`/steer:work issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work, without editing code. |
 | [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document, `roadmap` lays unshipped intent on a timeline. |
-| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan -> plan-gate review -> implement -> `/code-review` -> bounded fix) - vetted, not first-draft. |
+| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. `finish` runs an independent code-gate review on every non-Trivial change; add `--reviewed` for a plan-gate review before implementing. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 
 ## Steady state

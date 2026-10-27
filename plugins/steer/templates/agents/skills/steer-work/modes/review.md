@@ -53,8 +53,10 @@ A **draft, red or conflicting PR is not reviewed** - it goes straight to the
 For every remaining PR, spawn a **fresh read-only subagent** in the same message
 (waves of up to 10), each with one PR - not `steer-reviewer`, which audits
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
-read, and the rubric: rule `50-done` (Definition of Done and the drift classes),
-rule `40-testing`, and rule `80-change-class`. Ask it to return a compact **card**:
+read, and the code-gate rubric in
+[`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) §4 - the same one
+the author's `finish` ran, searching this checkout for the other-instances and
+peer passes. Ask it to return a compact **card**:
 
 - one line on what the PR does, in the reader's terms;
 - class: Trivial, Behavioral or High-risk (the heavier when arguable);

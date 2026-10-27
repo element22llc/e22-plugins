@@ -41,7 +41,7 @@ an unrelated question.
 | `/steer:setup` | Auto-routing bootstrap front door - detects repo state and runs the `init` / `adopt` / `sync` mode. Naming the mode skips detection; `setup sync --check` is read-only. |
 | `/steer:work tidy` | Moves/renames/deletes loose files. |
 | `/steer:build` | PO build: spec -> working app -> PR. |
-| `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
+| `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); `finish` runs an independent code gate on every non-Trivial change; add `--reviewed` for a plan gate before implementing. |
 | `/steer:spec` | Authors/iterates a feature spec. |
 | `/steer:spec intake` | Absorbs a PO-supplied spec/roadmap document into `/spec` + the tracker. |
 | `/steer:spec adr` | Creates a numbered ADR. |

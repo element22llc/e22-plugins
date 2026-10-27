@@ -1,6 +1,7 @@
 # The review-gated execution loop
 
-The protocol behind `/steer:work --reviewed`. The loop takes a task and produces
+The protocol behind `/steer:work --reviewed`, and behind the code gate `finish`
+runs on its own. The loop takes a task and produces
 a **vetted** result instead of a first draft, by inserting two *independent*
 review gates - one on the plan, one on the diff - and a bounded fix loop around
 the implementation step that `/steer:work` already owns.
@@ -21,10 +22,11 @@ cannot see in its own work. Caught at the plan stage a flaw is cheap; caught in
 the diff it is dearer; caught after merge, dearest. The loop front-loads that
 catch.
 
-It is **opt-in**, not always-on. Running a multi-subagent review loop on every
-session would contradict the output-discipline rule and waste tokens on trivial
-work. Reach for it deliberately, on work where a wrong approach is costly to
-unwind.
+The **plan gate is opt-in** (`--reviewed`): reach for it on work where a wrong
+approach is costly to unwind. The **code gate runs by default** - `finish` runs
+it on every Behavioral or High-risk change, Trivial work skips it. It is one
+reviewer, not a loop of them, and its findings cost less before the push than
+from the human reviewer after it.
 
 ## 2. The three disciplines (non-negotiable)
 
@@ -33,10 +35,8 @@ The loop degrades into theater without all three.
 1. **Independence.** Each gate is a *fresh subagent* that never saw the rationale
    for the choices it reviews. A context that produced an artifact is anchored to
    its own reasoning and will confirm it. This is why each gate is a *separate*
-   subagent - a fresh general reviewer for the plan gate, `/code-review` (plus an
-   optional `steer-reviewer` standards pass) for the code gate - not "re-read your
-   own work." §3 says which belongs to which, and why `steer-reviewer` cannot do
-   the plan gate.
+   fresh general reviewer subagent - not "re-read your own work." §3 says what
+   else the code gate may add, and why `steer-reviewer` cannot do the plan gate.
 2. **Explicit rubric.** The reviewer scores against the **restated requirements**
    (what success means, spelled out) plus the **relevant steer rules** - not a
    vague "is this good?". A reviewer with no rubric emits generic feedback that
@@ -54,13 +54,15 @@ The loop degrades into theater without all three.
   a **fresh independent subagent**, *not* `steer-reviewer`: that agent requires
   `path:line` evidence in existing code, which a prospective plan can't supply, so
   it would return nothing.
-- **Code gate** reviews the *diff*: correctness bugs, regressions, and fidelity to
-  the approved plan. This is `/code-review`'s job. `steer-reviewer` is `Read`/
-  `Grep`/`Glob`-only and has no git access, so it can check the **on-disk result
-  against standards** but never "the diff" - keep that split. The gate is
-  pre-merge in PR flow; in solo-trunk mode the change is already on `main` by the
-  time it runs, so its findings become immediate follow-up fixes, not a merge
-  block.
+- **Code gate** reviews the *diff in its repo*: correctness, regressions,
+  fidelity to the requirement, and what the diff alone hides - the sibling code
+  the change should also have touched, the peers it should match, the risk it
+  introduces. A fresh read-only subagent runs it against the §4 rubric; where the
+  client has `/code-review`, run it alongside for a deeper correctness sweep.
+  `steer-reviewer` is `Read`/`Grep`/`Glob`-only and has no git access, so it can
+  check the **on-disk result against standards** but never "the diff" - keep
+  that split. The gate runs after the local gates are green and before the first
+  push, in both delivery modes.
 
 ## 4. Rubric shape per gate
 
@@ -71,12 +73,34 @@ Give the reviewer three things, every time:
   Ask for severity-ranked findings and an explicit "what is missing" pass (the
   plan is prospective, so the reviewer reasons about the approach rather than
   citing `path:line`s).
-- **Code gate** - the diff (`/code-review`); for standards-sensitive repos, the
-  set of changed files plus the standards they must honor (`steer-reviewer`).
+- **Code gate** - the restated requirement (the issue's acceptance criteria, the
+  intent), the change class, the branch diff against its merge base, and read
+  access to the whole repo. The rubric is rules `50-done`, `40-testing`,
+  `80-change-class` and `85-practices`, plus `60-high-risk` for a High-risk
+  change. Ask for five passes, skipping style the linters own:
+  1. **Correctness and fidelity** - bugs, regressions, and whether the diff does
+     what the requirement asks.
+  2. **Other instances** - for every bug fixed or pattern changed, search the
+     repo for the same shape. An unfixed sibling is a finding unless the PR
+     names it out of scope.
+  3. **Peer consistency** - compare each new file, module or unit with its
+     nearest existing siblings: version pins, lockfiles, shared vs duplicated
+     config, naming, layout. A deviation with no stated reason is a finding.
+  4. **Introduced risk** - what can fail now that could not before: rollout
+     order, a partial apply, a default that goes live, an import or migration
+     path, a window between two steps.
+  5. **Docs the diff touched** - complete and consistent with each other.
 
-Severity ranking is what makes the loop converge: fix every **high** finding,
-weigh **medium**, treat **low** as optional. Only high-severity findings keep the
-fix loop open.
+  It returns severity-ranked findings with `path:line`, and **design questions**
+  apart: choices a reasonable reviewer would challenge, which the author answers
+  in the PR rather than necessarily changing. `/steer:work review` hands its
+  reviewers this same rubric, so the author's gate runs the review the human's
+  agent will run. For standards-sensitive repos, `steer-reviewer` may also check
+  the changed files against the standards.
+
+Severity ranking is what makes the loop converge: **high** is what a reviewer
+would block the merge on - fix every one; weigh **medium**, treat **low** as
+optional. Only high-severity findings keep the fix loop open.
 
 ## 5. Where the loop sits among the skills
 
@@ -89,8 +113,9 @@ fix loop open.
 - **`/steer:build`** is the PO-facing greenfield flow. In its governed mode it
   routes implementation through `/steer:work`; in its default prototype/local mode
   it implements directly.
-- **`/code-review`** is the built-in diff reviewer the code gate invokes; the loop
-  does not reinvent it.
+- **`/code-review`** is the built-in diff reviewer the code gate adds where the
+  client has it, for correctness depth; the rubric reviewer covers what it
+  cannot see outside the diff.
 - **`steer-reviewer`** is the shipped read-only subagent the code gate's optional
   standards check invokes explicitly (it cites `path:line` evidence in existing
   code, so it is *not* used for the plan gate) - the same explicit-invocation
@@ -100,7 +125,7 @@ fix loop open.
 ## 6. Cost
 
 Each gate spends tokens on top of the implementation. That is the price of a
-vetted result, and the reason for the triage step (trivial tasks skip the loop)
+vetted result, and the reason for the triage step (Trivial changes skip both gates)
 and the 2-round cap. If a run stops at the cap with findings still open, say so
 and name what was left - silent truncation reads as "all clear" when it was not.
 
