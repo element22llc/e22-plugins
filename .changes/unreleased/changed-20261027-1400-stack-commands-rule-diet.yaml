@@ -1,0 +1,17 @@
+kind: Changed
+body: |-
+    - **Changed: the always-on stack and commands rules are 43% shorter.**
+      Rules `10-stack` and `15-commands` drop from 5,001 to 2,856 characters
+      together, the third slice of the always-on rule triage. The default
+      stack, its ADR triggers, the `context7` version check, the local-services
+      rules a reviewer can check in a diff, the deployed secret-store default,
+      the patterns' default-stack instances and the setup / develop / test
+      commands stay injected (and in the Copilot instructions). Detail the
+      conventions reference already carries leaves the rules: VS Code and WSL2
+      setup, the Secrets Manager exception, the dependency auto-install
+      mechanics and the PATH-shadowing diagnosis. The conventions reference
+      now also says to confirm each app's deploy target and that CI builds an
+      app's `Dockerfile` when present.
+time: 2026-10-27T14:00:00.000000-04:00
+custom:
+    Slug: stack-commands-rule-diet

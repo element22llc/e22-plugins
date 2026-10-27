@@ -182,91 +182,54 @@ graduation (Commit autonomy).
 
 > **Applies only to a repo on the e22 org pack** - `policy/org.yml` with `pack: e22`, which is also what an absent file means. A repo that declares another pack skips this section and follows the vendor-neutral core rules, which name no product.
 
-**The e22 org pack** - delivered where `policy/org.yml` says `pack: e22`, which
-is also what an absent file means. Another pack drops this section and leaves
-the core rules, which name no product.
+The e22 org pack reaches a repo whose `policy/org.yml` says `pack: e22`, or that
+has no such file. These are **default biases**, not mandates: when intent
+clearly warrants a different stack, propose the better fit and record an ADR
+(`/steer:spec adr`). When you pick or change a piece, verify the current stable
+version in-session via the bundled `context7` MCP server - never from
+training-data memory. The bullets are the **app / service** profile; rationale,
+mechanics and the other profiles are in `/steer:reference conventions`.
 
-**Default biases**, not mandates - when intent clearly warrants a different
-stack, propose the better fit and record an ADR (`/steer:spec adr`). Rationale
-and full detail: `/steer:reference conventions`. When you pick or change a
-piece, verify the current stable version in-session via the bundled `context7`
-MCP server - never from training-data memory.
+- **App:** Next.js + TypeScript + Tailwind, with Node + PostgreSQL + Drizzle
+  **inside** the Next.js app. A standalone `apps/api`, or Python + FastAPI, is an
+  ADR.
+- **Tooling:** pnpm / uv; Biome / Ruff, each the lint *and* format tool with
+  nothing alongside it without an ADR; Vitest / pytest; VS Code.
+- **Platform:** AWS via OpenTofu + Terragrunt (`/infra`), GitHub Actions, a
+  `Dockerfile` per deployable `apps/<app>`. Better Auth (high-risk: scope it and
+  write the ADR first), Sentry, and SSM Parameter Store `SecureString` as the
+  declared secret store.
+- **Local services:** a committed `compose.yaml` adapted from the scaffold, the
+  **same engine as deployed** (no SQLite for PostgreSQL), every host port
+  overridable (`"${POSTGRES_PORT:-5432}:5432"`, var in `.env.example`). An older
+  image major needs an ADR plus `# steer:allow-pin`.
+- **Tasks and env:** mise is the single task entry point; keep `mise run
+  dev:setup` (services up -> migrate -> seed) green. Environment tasks live in
+  `mise.toml`, not `package.json`, and delegate one way only. Local config in a
+  git-ignored `.env`, names in `.env.example`.
 
-These bullets are the **app / service** profile, the default. An infra,
-library, cli or workspace repo keeps the universal core - mise pinning, the
-`/spec` spine, CI hygiene - and swaps the app layer for its own; `/steer:setup`
-records which.
-
-- **Frontend:** Next.js + TypeScript + Tailwind.
-- **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
-  Next.js app. A standalone `apps/api`, or Python + FastAPI, only when intent
-  warrants it - either split is an ADR.
-- **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS via Actions - confirm the target per app; each deployable
-  `apps/<app>` carries a `Dockerfile`, built by CI when present.
-- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI work.
-- **Editor:** VS Code; committed `.vscode/` config ships in the scaffold.
-- **Lint/format:** Biome (Node/TS), Ruff (Python) - each is the lint *and*
-  format tool; nothing alongside them without an ADR.
-- **Testing:** Vitest (Node/TS), pytest (Python).
-- **Auth:** Better Auth - high-risk; scope with the dev and write an ADR
-  first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
-  never committed - see Secrets handling.
-- **Secret store (deployed):** SSM Parameter Store `SecureString` - what Secrets
-  handling means by "the declared store". Secrets Manager only for rotation,
-  cross-account sharing, or large/binary values.
-- **Local services:** Docker Compose via a committed `compose.yaml`, adapted
-  from the bundled scaffold. **Same engine locally as deployed** (no SQLite
-  stand-in for PostgreSQL) and **every published host port overridable** -
-  `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` - with the override
-  var in `.env.example`. Keep image majors current; an older pin needs an ADR
-  plus `# steer:allow-pin`.
-- **Task running:** mise is the single task entry point, and `mise run
-  dev:setup` (idempotent: services up -> migrate -> seed) is the standard entry -
-  keep it green. Environment tasks live in `mise.toml`, not `package.json`; a
-  mise task may delegate to an app-level script, one way only.
-- **Environment variables:** local config in a git-ignored `.env` /
-  `.env.local`; names documented in `.env.example` - bootstrap and storage
-  rules in Secrets handling.
-
-Task-ordering mechanics, the auto-install blocks, the polyglot `dev` task and
-the per-profile layouts are in `/steer:reference conventions`.
-
-**Patterns, instantiated here:** typed by default -> TS `strict` / Python hints
-under a type checker; parameterized data access -> Drizzle Kit or SQLAlchemy +
-Alembic; server-first -> Server Components, `NEXT_PUBLIC_*`; shared domain
-modules -> `packages/`; nothing silenced -> unexpected errors to Sentry with
-context; lockfiles -> `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
-`.terraform.lock.hcl` (mise writes `mise.lock` only if it exists already);
-declared dependencies -> `package.json`, `pyproject.toml`.
+**Patterns, instantiated here:** TS `strict` / Python hints under a type
+checker; Drizzle Kit or SQLAlchemy + Alembic; Server Components, `NEXT_PUBLIC_*`
+for public values only; shared modules in `packages/`; unexpected errors to
+Sentry; lockfiles `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+`.terraform.lock.hcl`; dependencies in `package.json`, `pyproject.toml`.
 
 
 ## Useful commands (e22 org pack)
 
 > **Applies only to a repo on the e22 org pack** - `policy/org.yml` with `pack: e22`, which is also what an absent file means. A repo that declares another pack skips this section and follows the vendor-neutral core rules, which name no product.
 
-- **First-time setup:** `mise trust && mise install` (full mise setup in the
-  product README), then `mise run dev:setup` - idempotent local env: services
-  up -> migrate -> seed.
-- **Develop:** `pnpm dev` (Node) / `uv run <cmd>` (Python) - with mise activated,
-  bare `pnpm`/`uv` resolve to the **pinned** runtime. The scaffold's `[deps]`
-  auto-install runs `pnpm install` / `uv sync` before any `mise run ...` on lockfile
-  change, so you almost never install deps by hand; if you must, route it through
-  mise - `mise exec -- pnpm install` - so it can't pick up a global/nvm copy.
-- **Test:** `pnpm test` (Vitest) / `uv run pytest`.
-- **Deploy:** whatever `policy/delivery.yml` declares (seeded: merge to `main` ->
-  non-prod, `prod` PR -> prod) - see Deployment & environments; there is no
-  `pnpm deploy` task.
+- **First-time setup:** `mise trust && mise install`, then `mise run dev:setup`.
+- **Develop / test:** `pnpm dev`, `pnpm test` (Node) / `uv run <cmd>`, `uv run
+  pytest` (Python). Dependencies install on the next `mise run` after a lockfile
+  change; by hand, `mise exec -- pnpm install`, never a global copy.
+- **Deploy:** whatever `policy/delivery.yml` declares; there is no `pnpm
+  deploy` task.
 
-The `pnpm`/`uv` lines are the **app / service** profile. An infra repo uses
-`mise run infra:*` instead, and a workspace repo's tasks are all `ws:`-prefixed;
-`mise trust && mise install` is universal, and `mise tasks` lists what a repo
-really has.
-
-Commands assume mise is activated and **wins PATH** over any other version
-manager - otherwise a bare `pnpm` or `node` silently runs a global version.
-"Tool not found" means mise is not activated; a *wrong* version means it is
-shadowed. Either way, run **`/steer:setup doctor`**.
+Those lines are the app profile: an infra repo uses `mise run infra:*`, a
+workspace repo's tasks are all `ws:`-prefixed, and `mise tasks` lists what a
+repo really has. Commands assume mise is activated and **wins PATH**; a missing
+tool or a wrong version means run **`/steer:setup doctor`**.
 
 
 ## Spec workflow

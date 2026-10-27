@@ -611,7 +611,8 @@ committed `compose.yaml`, so local matches deployed:
 Code lives at the repo root in three top-level directories:
 
 - **`/apps`** - deployable applications. Each app is independently buildable and
-  deployable, with its own deploy target.
+  deployable, with its own deploy target - confirm it per app. A deployable app
+  carries a `Dockerfile`, which CI builds when present.
 - **`/packages`** - shared libraries consumed by apps or other packages. Not
   independently deployed.
 - **`/configs`** - shared tooling configuration (lint, base tsconfig, formatter,
