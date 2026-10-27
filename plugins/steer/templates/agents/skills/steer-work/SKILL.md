@@ -1,6 +1,6 @@
 ---
 name: steer-work
-description: Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR, tidy sweeps the repo root into /spec, review batches the PR review queue, walkthrough records a captioned demo video of an approved feature - none takes an issue. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code.
+description: Implement a GitHub issue end-to-end - claim, branch, PR (or solo-trunk commit), CI, lifecycle transition - finding or creating the issue when a change needs one.
 argument-hint: '[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]'
 ---
 
@@ -10,7 +10,7 @@ argument-hint: '[start | resume | status | finish | promote | tidy | review | wa
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("do this with review"). Add --hotfix only for a real production incident ("prod is down") - never for ordinary urgent work. Use promote to ship what is already on the default branch to production ("promote to prod"). Use tidy when the repo root is cluttered with loose documents, diagrams or exports ("clean up the repo", "organize the strays"). Use review to clear a PR review queue fast ("review my PRs"). Use walkthrough to show a PO or client a feature working ("record a demo video", "show me"). Use issues for backlog management with no implementation this turn.
+**When to use.** Use to work, fix, resume or finish an issue ("fix #123") or to implement a change now. `--reviewed` adds plan and code review gates for costly changes; `--hotfix` only for a real production incident. Modes that take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the repo root, organize stray documents and diagrams), `walkthrough` (record a demo video). `issues`: backlog work with no code this turn - capture, triage, decompose, a ranked board.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

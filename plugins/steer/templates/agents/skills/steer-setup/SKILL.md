@@ -1,6 +1,6 @@
 ---
 name: steer-setup
-description: One front door for getting a repo onto the standards - detect the /spec spine state and route to `init` (greenfield bootstrap of spine + scaffold, or a template fork's leftover placeholders), `adopt` (reverse-engineer the spec from an existing repo, vibe-coded or not) or `sync` (migrations and drift after a plugin release); `doctor` fixes local prerequisites, `protect` raises branch protection, `worktrees` checks parallel worktrees, `advisory` uses the standards without adopting the repo.
+description: One front door for getting a repo onto the standards - reads the /spec spine state and routes to `init`, `adopt` or `sync`.
 argument-hint: '[init | adopt | sync | doctor | protect | worktrees | advisory] [--check]'
 ---
 
@@ -10,7 +10,7 @@ argument-hint: '[init | adopt | sync | doctor | protect | worktrees | advisory] 
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to set up, onboard, bootstrap or adopt a repo, sync to the latest plugin, get a machine ready, or protect main - the single entry point whenever you would otherwise guess which path fits. `sync` brings a managed or openspec repo up to date, `sync --check` is the read-only drift report; `doctor` diagnoses missing prerequisites ("command not found", a shadowed runtime); `protect` applies branch protection and merge rules, graduates solo trunk or waives it; `worktrees` checks worktrees another tool manages; `advisory` (`off` to leave) is for an external review or someone else's code steer should not bootstrap.
+**When to use.** Use to set up, onboard or bootstrap a repo (`init`, also for leftover template placeholders), to adopt an existing repo, vibe-coded or not, by reverse-engineering its spec, or to sync to the latest plugin (migrations and drift after a plugin release; `sync --check` is read-only; brings openspec repos up to date too). `doctor`: missing prerequisites, "command not found". `protect`: protect main - branch protection, merge rules, solo-trunk graduation or waiver. `worktrees`: parallel worktrees another tool manages. `advisory`: use the standards on code steer should not bootstrap.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

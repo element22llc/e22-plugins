@@ -1,0 +1,14 @@
+kind: Changed
+body: |-
+    - **Changed: the `spec`, `work` and `setup` skill listings are about half
+      as long.** Their `description` + `when_to_use` dropped from 1,365 /
+      1,417 / 1,140 to 836 / 696 / 724 characters as rendered, taking steer's
+      whole skill listing from 13,329 to 11,663 characters. Every mode and
+      routing trigger phrase stays; restated detail (step lists, error-path
+      examples, the `issues` mode catalogue) now lives only in the skill
+      bodies. On a 200K-context model the listing is still over Claude Code's
+      8,000-character budget, so the harness keeps dropping the
+      least-used descriptions there; this is the first step of #788.
+time: 2026-10-27T10:00:00.000000-04:00
+custom:
+    Slug: door-listing-trim
