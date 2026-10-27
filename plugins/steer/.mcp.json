@@ -4,7 +4,8 @@
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": {
-        "Authorization": "Bearer ${user_config.github_pat}"
+        "Authorization": "Bearer ${user_config.github_pat}",
+        "X-MCP-Toolsets": "context,issues"
       }
     },
     "context7": {
