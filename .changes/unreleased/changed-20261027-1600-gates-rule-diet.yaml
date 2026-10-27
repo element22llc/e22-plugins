@@ -1,0 +1,15 @@
+kind: Changed
+body: |-
+    - **Changed: the always-on gates rule is 22% shorter.** Rule `61-gates`
+      drops from 2,586 to 2,027 characters, the fourth slice of the always-on
+      rule triage. The three promptable gates and their commands, the
+      Approve / Reject / Decide later prompt with its no-ambient-agreement
+      rule, the recording duty, the never-promptable list (verbatim) and the
+      hotfix lane's opening condition and follow-up stay injected (and in the
+      Copilot instructions). The rationale for recording self-ratification and
+      the hotfix lane's single-reviewer and deploy-permission detail leave the
+      rule; `/steer:reference gates` and `/steer:work --hotfix` already carry
+      them.
+time: 2026-10-27T16:00:00.000000-04:00
+custom:
+    Slug: gates-rule-diet
