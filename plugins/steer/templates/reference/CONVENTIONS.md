@@ -804,7 +804,8 @@ follows it; only a gate *weaker* than this default needs an ADR.
 - **Observable by default** - a deployed environment ships logs, metrics with
   alarms, error tracking (Sentry), per-app health checks, and alerting routed to a
   human. "Deployed but unobservable" is not done; capture the wiring in
-  `ARCHITECTURE.md`.
+  `ARCHITECTURE.md`. An empty `observability` list in `policy/delivery.yml` is
+  a flag to raise with the dev, not a licence to skip it.
 - **Rollback & migrations** - every prod deploy has a known rollback (revert the
   `prod` merge / redeploy the prior SHA); migrations are **expand/contract** so the
   running version survives the deploy and a rollback never leaves schema ahead of
