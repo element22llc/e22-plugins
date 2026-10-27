@@ -563,8 +563,8 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   never point a loop at a solo-trunk repo - unattended direct-to-`main`
   delivery has no gate at all.
 - **Split ideation from verification.** The drafting agent never clears its own
-  change - route the check through an independent reviewer (`steer-reviewer`,
-  `/steer:audit`, the test harness).
+  change - route it through the test harness and the code gate `/steer:work
+  finish` runs, a fresh reviewer subagent on the `REVIEW-LOOP.md` §4 rubric.
 - **Keep durable state outside the model.** A loop's memory is the tracker +
   `/spec/**` (issues, `/spec/history/`), not chat context - record what it did and
   what's left so the next run resumes instead of repeating.

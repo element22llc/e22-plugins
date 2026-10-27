@@ -78,7 +78,7 @@ below give the detail.
 | Capture, triage, or decompose ideas into issues | [`/steer:work issues`](issues.md) |
 | Shape or approve a feature spec | [`/steer:spec`](spec.md) |
 | Start, resume, or finish an issue | [`/steer:work`](work.md) |
-| Implement with a review-gated loop (vetted, not first-draft) | [`/steer:work --reviewed`](work.md) |
+| Implement with a plan-review gate on top of `finish`'s code gate | [`/steer:work --reviewed`](work.md) |
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
 | Browse everything steer can do - not sure what to ask for | `/steer:next capabilities` |
@@ -87,7 +87,7 @@ below give the detail.
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:setup sync` |
 | Generate a release-milestone timeline | [`/steer:spec roadmap`](spec.md) |
-| Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | Ask for an autonomous loop - Claude scaffolds it (`/steer:loop`): a workflow that discovers, triages, drafts a fix reviewed by `steer-reviewer`, and opens a **draft** PR, never merging or deploying (rule 53). It starts by asking you to declare the automation opt-in |
+| Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | Ask for an autonomous loop - Claude scaffolds it (`/steer:loop`): a workflow that discovers, triages, drafts a fix reviewed by the `/steer:work finish` code gate, and opens a **draft** PR, never merging or deploying (rule 53). It starts by asking you to declare the automation opt-in |
 | Lock branch protection or flip the delivery mode | `/steer:setup protect` |
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
@@ -119,7 +119,7 @@ below give the detail.
 | --- | --- |
 | [`/steer:work issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work, without editing code. |
 | [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document, `roadmap` lays unshipped intent on a timeline. |
-| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan -> plan-gate review -> implement -> `/code-review` -> bounded fix) - vetted, not first-draft. |
+| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. `finish` runs an independent code-gate review on every non-Trivial change; add `--reviewed` for a plan-gate review before implementing. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 
 ## Steady state

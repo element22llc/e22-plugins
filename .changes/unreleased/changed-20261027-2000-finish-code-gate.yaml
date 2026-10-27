@@ -1,0 +1,36 @@
+kind: Changed
+body: |-
+    - **Changed: `/steer:work finish` now runs an independent code review
+      before the first push.** On every Behavioral or High-risk change, a fresh
+      read-only reviewer subagent reviews the branch after the local gates are
+      green. High-severity findings are fixed, the local gates re-run, and the
+      branch re-reviewed, capped at 2 rounds. Medium findings left open and
+      design questions go under the PR's *Notes for the reviewer*, with the
+      decision taken. Trivial changes skip the gate; a `--hotfix` always
+      runs it, an incident fix being High-risk whatever its size. Before
+      this, the code gate ran only under `--reviewed`, so a High-risk PR got
+      no independent review unless the dev opted in. `--reviewed` now adds
+      only the plan gate and the plan sign-off.
+    - **Changed: the code-gate rubric reads the repo, not just the diff.**
+      `REVIEW-LOOP.md` section 4 now defines five passes:
+      - correctness and fidelity to the requirement;
+      - other instances of the bug fixed or pattern changed;
+      - consistency with sibling files (pins, lockfiles, shared config);
+      - risk the change introduces;
+      - completeness of the docs the diff touched.
+      It reports design questions apart from findings. `/steer:work review`
+      hands its reviewers the same rubric, so the author's gate runs the
+      review the human's agent will run. These passes target what a
+      diff-only `/code-review` misses: an unfixed sibling module, a missing
+      lockfile, a half-updated doc. Where `/code-review` is available it
+      still runs alongside, for correctness depth.
+    - **Changed: the autonomous loop reviews with the same code gate.** Rule
+      `53-autonomous-loops`, `/steer:loop` and the scaffolded `steer-loop.yml`
+      prompt route the loop's independent review through the code gate and
+      its rubric instead of `steer-reviewer`, which has no git and cannot
+      read a diff. The draft PR now carries the review's open findings and
+      design questions. `/steer:loop verify` flags an installed prompt that
+      still names `steer-reviewer` and offers to re-scaffold it.
+time: 2026-10-27T20:00:00.000000-04:00
+custom:
+    Slug: finish-code-gate

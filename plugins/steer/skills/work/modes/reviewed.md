@@ -1,11 +1,12 @@
-# `/steer:work --reviewed` - independent plan and code review gates
+# `/steer:work --reviewed` - an independent plan gate
 
 Read this file only when `--reviewed` was passed. The preconditions,
 authorization scope, delivery mode, subcommands, and guardrails stay in
 `SKILL.md` and apply unchanged.
 
-`--reviewed` wraps the `start`->`finish` flow in two **independent** review
-gates plus a bounded fix loop, so the delivery is **vetted, not first-draft**.
+`--reviewed` adds an **independent** plan gate and a human plan sign-off in
+front of the `start`->`finish` flow, whose `finish` already runs the code gate,
+so the approach is **vetted, not first-draft**.
 The execution is the normal flow: the same claim, branch, implement, test, PR, and transition
 steps run, with gates added around them. Full protocol, rubric structure, and
 stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
@@ -39,17 +40,12 @@ stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
   `/steer:spec adr accept <n>` and implementation continues in the same pass.
 - **Implement** via the normal `start`->`finish` flow - do not stand up a second
   path.
-- **Code gate - independent.** After implementing, run `/code-review` on the diff
-  for correctness bugs and fidelity to the approved plan; in
-  spec/standards-sensitive repos additionally invoke `steer-reviewer` to check the
-  on-disk result against the standards (read-only, no git access - it reviews
-  state, not the diff). In **pr-flow** this gate runs **before** merge; in
-  **solo-trunk** it reviews the trunk commit after the fact and its findings
-  become immediate follow-up fixes - say so rather than implying it blocked a
-  merge.
-- **Bounded fix loop.** Apply fixes for confirmed findings, then re-review.
-  **Cap at 2 rounds**; exit as soon as a round surfaces no high-severity findings.
-  If you stop at the cap with findings still open, say what was left and why.
+- **Code gate and bounded fix loop - the ones `finish` already runs.** The flag
+  adds nothing to them but the approved plan, which joins the restated
+  requirement in the reviewer's rubric (`modes/subcommands.md` -> `finish`;
+  `REVIEW-LOOP.md` §4). In spec/standards-sensitive repos additionally invoke
+  `steer-reviewer` to check the on-disk result against the standards (read-only,
+  no git access - it reviews state, not the diff).
 - **Report.** One line per gate - what it checked and its verdict - plus any
   residual risk, then the `## Recommended next actions` block from `SKILL.md`.
   Resolved findings are not re-listed; the diff carries them.
