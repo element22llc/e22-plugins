@@ -1,0 +1,13 @@
+kind: Changed
+body: |-
+    - **Changed: the always-on output rule is 16% shorter.** Rule `03-output`
+      drops from 3,527 to 2,980 characters, the fifth slice of the always-on
+      rule triage. The response shape, the no-closing-offer rule, the
+      never-echo-machinery rule with its attribution exception, the formatting
+      rules and the whole Code comments section stay injected (and in the
+      Copilot instructions). Rhetoric and the compact-contract-blocks bullet
+      leave the rule: the next-actions block, the end-of-session checklist and
+      the gate prompt keep the shapes their own rules and references set.
+time: 2026-10-27T18:00:00.000000-04:00
+custom:
+    Slug: output-rule-diet
