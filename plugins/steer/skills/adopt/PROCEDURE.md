@@ -258,6 +258,7 @@ The plugin carries the full repo scaffold at
 the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 `docker:up/down`, `db:migrate`, `db:seed`), `compose.yaml`, CI under
 `.github/workflows/`, the PR template (drift-gate + living-docs checklists),
+`REVIEW.md` (review calibration for Claude and Copilot code review; team-owned),
 `.github/copilot-instructions.md` (the generated Copilot standards surface) and
 `.agents/skills/steer-*/**` (the generated cross-tool skill surface -
 both **overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmless
