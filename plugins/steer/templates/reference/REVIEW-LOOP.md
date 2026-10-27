@@ -110,6 +110,8 @@ optional. Only high-severity findings keep the fix loop open.
   added around it. In
   prototype/local mode (no tracker) there is no `/steer:work`; apply this protocol
   directly around implementation, exactly as `/steer:build` does in that mode.
+  The code gate is default-on only inside `finish`, so there both gates run
+  when asked for.
 - **`/steer:build`** is the PO-facing greenfield flow. In its governed mode it
   routes implementation through `/steer:work`; in its default prototype/local mode
   it implements directly.

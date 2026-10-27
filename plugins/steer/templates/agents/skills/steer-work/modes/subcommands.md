@@ -58,7 +58,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   the shipped `ci.yml` does not run. **Then run the code gate**, unless the
   change is Trivial (rule `80-change-class`, the heavier class when arguable)
   or under `--hotfix`: a fresh read-only reviewer subagent, never this
-  context, scores the branch against the code-gate rubric in
+  context and not `steer-reviewer` (no git), reads the change with `git diff
+  $(git merge-base origin/<default> HEAD)` - committed and uncommitted alike -
+  and scores it against the code-gate rubric in
   [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) §4. Fix every
   high-severity finding, re-run the local gates, and re-review; stop after 2
   rounds or the first round with no high finding, and name any high finding
