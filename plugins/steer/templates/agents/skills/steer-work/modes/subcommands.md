@@ -57,7 +57,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   checkpoint, a backup) goes to a **draft** PR (`gh pr create --draft`), which
   the shipped `ci.yml` does not run. **Then commit and run the code gate**
   before the first push, unless the change is Trivial (rule
-  `80-change-class`, the heavier class when arguable) or under `--hotfix`: a
+  `80-change-class`, the heavier class when arguable; a `--hotfix` never is): a
   fresh read-only reviewer subagent, never this context and not
   `steer-reviewer` (no git), reads `git diff origin/<default>...HEAD` and
   scores it against the code-gate rubric in

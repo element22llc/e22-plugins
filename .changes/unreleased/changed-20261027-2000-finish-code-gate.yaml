@@ -6,7 +6,8 @@ body: |-
       green. High-severity findings are fixed, the local gates re-run, and the
       branch re-reviewed, capped at 2 rounds. Medium findings left open and
       design questions go under the PR's *Notes for the reviewer*, with the
-      decision taken. Trivial changes and `--hotfix` skip the gate. Before
+      decision taken. Trivial changes skip the gate; a `--hotfix` always
+      runs it, an incident fix being High-risk whatever its size. Before
       this, the code gate ran only under `--reviewed`, so a High-risk PR got
       no independent review unless the dev opted in. `--reviewed` now adds
       only the plan gate and the plan sign-off.
@@ -23,6 +24,13 @@ body: |-
       diff-only `/code-review` misses: an unfixed sibling module, a missing
       lockfile, a half-updated doc. Where `/code-review` is available it
       still runs alongside, for correctness depth.
+    - **Changed: the autonomous loop reviews with the same code gate.** Rule
+      `53-autonomous-loops`, `/steer:loop` and the scaffolded `steer-loop.yml`
+      prompt route the loop's independent review through the code gate and
+      its rubric instead of `steer-reviewer`, which has no git and cannot
+      read a diff. The draft PR now carries the review's open findings and
+      design questions. `/steer:loop verify` flags an installed prompt that
+      still names `steer-reviewer` and offers to re-scaffold it.
 time: 2026-10-27T20:00:00.000000-04:00
 custom:
     Slug: finish-code-gate

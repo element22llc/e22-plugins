@@ -49,9 +49,10 @@ What changes versus the normal flow:
   the high-risk scoping ceremony of rules 60 and 80) - it does **not**
   remove the PR/merge human gate. No self-merge.
 - **Local gates, no draft.** Run the local gates before the push as `finish`
-  does - a red CI round-trip is slower than a local run - but skip its code
-  gate (the expedited reviewer is the review) and open the PR ready for review
-  rather than as a draft.
+  does - a red CI round-trip is slower than a local run - and its code gate,
+  whatever the diff's size: an incident fix is High-risk, and one expedited
+  human reviewer is exactly when an independent pass matters. Open the PR ready
+  for review rather than as a draft.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under `45-delivery` ->
   "Deployment & environments" (validate in non-prod where feasible) - but, exactly as everywhere
   else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening
