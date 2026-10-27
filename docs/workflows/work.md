@@ -9,7 +9,7 @@ while the subcommands below read an issue and deliver it.
 
 **Argument hint:** `[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
-!!! tip "`--reviewed` - the review-gated path"
+!!! tip "Review gates - `finish` and `--reviewed`"
     `finish` runs an independent code gate on every non-Trivial change: a fresh
     reviewer checks correctness, other instances of the fixed pattern, peer
     consistency, introduced risk and touched docs, with a bounded fix loop.

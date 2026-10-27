@@ -1,11 +1,12 @@
-# `/steer:work --reviewed` - independent plan and code review gates
+# `/steer:work --reviewed` - an independent plan gate
 
 Read this file only when `--reviewed` was passed. The preconditions,
 authorization scope, delivery mode, subcommands, and guardrails stay in
 `SKILL.md` and apply unchanged.
 
-`--reviewed` wraps the `start`->`finish` flow in two **independent** review
-gates plus a bounded fix loop, so the delivery is **vetted, not first-draft**.
+`--reviewed` adds an **independent** plan gate and a human plan sign-off in
+front of the `start`->`finish` flow, whose `finish` already runs the code gate,
+so the approach is **vetted, not first-draft**.
 The execution is the normal flow: the same claim, branch, implement, test, PR, and transition
 steps run, with gates added around them. Full protocol, rubric structure, and
 stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).

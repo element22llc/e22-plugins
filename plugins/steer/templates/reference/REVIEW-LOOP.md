@@ -8,7 +8,8 @@ the implementation step that `/steer:work` already owns.
 
 This file owns the **shared logic**: the three disciplines, the per-gate rubric,
 the stopping rules, and how the loop relates to the other execution skills. The
-`/steer:work` skill's `--reviewed` mode owns only the step-by-step it runs.
+`/steer:work` skill owns the step-by-step: `finish` for the code gate, the
+`--reviewed` mode for the plan gate.
 
 ---
 
@@ -110,8 +111,7 @@ optional. Only high-severity findings keep the fix loop open.
   added around it. In
   prototype/local mode (no tracker) there is no `/steer:work`; apply this protocol
   directly around implementation, exactly as `/steer:build` does in that mode.
-  The code gate is default-on only inside `finish`, so there both gates run
-  when asked for.
+  In prototype mode neither gate is default; run them when asked.
 - **`/steer:build`** is the PO-facing greenfield flow. In its governed mode it
   routes implementation through `/steer:work`; in its default prototype/local mode
   it implements directly.

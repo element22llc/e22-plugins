@@ -55,8 +55,9 @@ For every remaining PR, spawn a **fresh read-only subagent** in the same message
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
 read, and the code-gate rubric in
 [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) §4 - the same one
-the author's `finish` ran, searching this checkout for the other-instances and
-peer passes. Ask it to return a compact **card**:
+the author's `finish` ran. The local checkout may sit at the base, not the PR
+head: it serves the other-instances and peer passes, which look outside the
+diff. Ask it to return a compact **card**:
 
 - one line on what the PR does, in the reader's terms;
 - class: Trivial, Behavioral or High-risk (the heavier when arguable);
@@ -64,10 +65,11 @@ peer passes. Ask it to return a compact **card**:
   behavior changed - yes / no / n/a;
 - every drift flag checked in the PR body, and any it should have checked;
 - findings with `path:line`, severity-ranked, or `none`;
+- design questions the author should answer in the PR, or `none`;
 - a suggested verdict: `approve`, `changes` or `look`.
 
 The cards are input to the human's call, not the call. Read them; drop a
-finding you cannot reproduce from the diff.
+finding you cannot reproduce from the diff or the checkout.
 
 ## Step 4 - one decision, then one command
 

@@ -78,7 +78,7 @@ below give the detail.
 | Capture, triage, or decompose ideas into issues | [`/steer:work issues`](issues.md) |
 | Shape or approve a feature spec | [`/steer:spec`](spec.md) |
 | Start, resume, or finish an issue | [`/steer:work`](work.md) |
-| Implement with a review-gated loop (vetted, not first-draft) | [`/steer:work --reviewed`](work.md) |
+| Implement with a plan-review gate on top of `finish`'s code gate | [`/steer:work --reviewed`](work.md) |
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
 | Browse everything steer can do - not sure what to ask for | `/steer:next capabilities` |
