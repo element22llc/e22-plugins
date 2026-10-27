@@ -1,6 +1,6 @@
 ---
 name: steer-help
-description: Internal renderer for the capability menu - the shipped skill set in plain language, essentials first, the rest by journey, every line built from live frontmatter. Read-only; optional Artifact menu.
+description: Render steer's capability menu from live frontmatter. Read-only.
 argument-hint: '[optional: a skill or area to zoom into]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-next capabilities - not a direct entry point.
+**When to use.** Reached via /steer-next capabilities.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

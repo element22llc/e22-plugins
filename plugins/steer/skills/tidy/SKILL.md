@@ -1,7 +1,7 @@
 ---
 name: tidy
-description: "Internal sweep - file the loose documents at the repo root into their home: source/research material to /spec/reference, diagrams to /spec/design. Confident strays move now; renames and deletes wait for a yes."
-when_to_use: "Reached via /steer:work tidy - not a direct entry point."
+description: "File loose root documents into /spec/reference and /spec/design; renames and deletes wait for a yes."
+when_to_use: "Reached via /steer:work tidy."
 # Internal sweep behind `/steer:work tidy`. Model-callable, hidden from the slash
 # menu, so changing the repo is one user-facing door whether the change is code
 # or where a file lives.

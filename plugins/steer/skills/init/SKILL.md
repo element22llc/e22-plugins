@@ -1,7 +1,7 @@
 ---
 name: init
-description: "Internal greenfield bootstrap - lay the /spec spine + scaffolding, pin the toolchain, leave the repo working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode."
-when_to_use: "Reached via /steer:setup init - not a direct entry point."
+description: "Greenfield bootstrap - lay the /spec spine and scaffold, pin the toolchain, choose PR flow or solo trunk."
+when_to_use: "Reached via /steer:setup init."
 # Internal bootstrap behind `/steer:setup init`. Model-callable, hidden from the
 # slash menu: getting a repo onto the standards is one user-facing door, and
 # which of init/adopt/sync fits is a detection the front door makes, never a

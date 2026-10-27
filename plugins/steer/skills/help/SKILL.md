@@ -1,7 +1,7 @@
 ---
 name: help
-description: "Internal renderer for the capability menu - the shipped skill set in plain language, essentials first, the rest by journey, every line built from live frontmatter. Read-only; optional Artifact menu."
-when_to_use: "Reached via /steer:next capabilities - not a direct entry point."
+description: "Render steer's capability menu from live frontmatter. Read-only."
+when_to_use: "Reached via /steer:next capabilities."
 argument-hint: "[optional: a skill or area to zoom into]"
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
 # Internal menu renderer: the capability index behind `/steer:next capabilities`.

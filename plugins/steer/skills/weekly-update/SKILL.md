@@ -1,6 +1,6 @@
 ---
 name: weekly-update
-description: "Internal tracker writer - applies a week's work to an Artifact-hosted project tracker (Copilot: a packet to paste)."
+description: "Apply a week's work to an Artifact-hosted project tracker."
 when_to_use: "Reached from rule 00 for a weekly tracker update."
 argument-hint: "[<tracker-url>] [<the week in your words>]"
 # Rule-reached (rule 00), not a /steer:status mode: status runs forked and

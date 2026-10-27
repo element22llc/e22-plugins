@@ -1,7 +1,7 @@
 ---
 name: protect
-description: "Internal branch-protection path - diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` is the one-person profile, `waive` keeps a single-dev repo on trunk. Verifies by default."
-when_to_use: "Reached via /steer:setup protect - not a direct entry point."
+description: "Diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation."
+when_to_use: "Reached via /steer:setup protect."
 argument-hint: "[verify | apply [--solo | --team] | waive]"
 # Internal governance path behind `/steer:setup protect`. Model-callable, hidden
 # from the slash menu - see the note on `init`.

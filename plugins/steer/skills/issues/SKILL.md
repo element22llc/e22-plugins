@@ -1,7 +1,7 @@
 ---
 name: issues
-description: "Internal backlog layer for the /spec spine - capture, triage, brainstorm, materialize, decompose, epics, status, a ranked board, bounded reconcile, the publish-* family and bootstrap-labels. A thin orchestrator: /spec stays product truth, the issue is the work/decision layer."
-when_to_use: "Reached via /steer:work issues - not a direct entry point."
+description: "Backlog layer - capture, triage, decompose, board and the other issue modes; never edits code."
+when_to_use: "Reached via /steer:work issues."
 # Internal backlog lifecycle behind `/steer:work issues`. Model-callable, hidden
 # from the slash menu: the backlog and the delivery it feeds are one user-facing
 # door, and which moment of the work an ask belongs to is a routing call the

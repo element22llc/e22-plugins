@@ -1,7 +1,7 @@
 ---
 name: spec-scaffold
-description: Create a feature's spec (intent.md + contract.md) from the bundled templates, or additively reconcile an existing one without overwriting filled-in content.
-when_to_use: "Invoked by /steer:spec, /steer:build, /steer:init, /steer:adopt, or /steer:intake with a resolved feature id - not a direct entry point."
+description: "Create or additively reconcile a feature's intent.md + contract.md from the templates."
+when_to_use: "Invoked by the spec-authoring skills with a resolved feature id."
 argument-hint: "[feature-id]"
 allowed-tools:
   - Bash(sh *scripts/template-reconcile.sh*)

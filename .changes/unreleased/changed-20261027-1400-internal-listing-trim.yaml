@@ -1,0 +1,14 @@
+kind: Changed
+body: |-
+    - **Changed: the 21 internal skills list in one line each.** Each entry is
+      now a one-line purpose plus the door that reaches it (`Reached via
+      /steer:setup adopt.`), keeping a guardrail only where no other entry
+      carries it. Internal entries drop from 7,095 to 3,207 characters and
+      steer's whole skill listing from 11,786 to 7,898 - under Claude Code's
+      8,000-character budget on a 200K-context model when steer is the only
+      plugin, so the harness no longer drops the internal skills' descriptions
+      there. Every routing fixture signal stays; mode detail lives in the
+      doors' listings and the skill bodies. Second step of #788.
+time: 2026-10-27T14:00:00.000000-04:00
+custom:
+    Slug: internal-listing-trim

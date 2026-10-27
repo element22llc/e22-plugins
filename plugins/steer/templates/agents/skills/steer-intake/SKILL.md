@@ -1,6 +1,6 @@
 ---
 name: steer-intake
-description: Internal document absorb - commit a PO office document plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human prose. `clarify` folds a client answers document; `status` prints the read-only ledger of every absorbed source.
+description: Absorb a PO document under spec/sources/ and route what changed into the spine and tracker.
 argument-hint: '[<path-to-doc> | clarify <path-to-doc | doc-link> | <source-id> | status]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-spec intake - not a direct entry point.
+**When to use.** Reached via /steer-spec intake.
 
 <!-- steer:modes default,status,clarify -->
 

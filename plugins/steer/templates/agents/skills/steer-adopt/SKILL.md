@@ -1,6 +1,6 @@
 ---
 name: steer-adopt
-description: Internal brownfield adoption - bring an existing repo that never went through bootstrap (a "vibe-coded" app) onto the standards - reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
+description: Brownfield adoption - reverse-engineer the /spec from an existing repo's code and sync the scaffold without clobbering it.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup adopt - not a direct entry point.
+**When to use.** Reached via /steer-setup adopt.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

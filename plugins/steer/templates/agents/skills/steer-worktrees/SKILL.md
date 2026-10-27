@@ -1,6 +1,6 @@
 ---
 name: steer-worktrees
-description: Internal worktree check - whatever tool made them (Claude Code, Orca, Conductor, git), each worktree inherits mise trust, gets its own ports, carries its boot files and is torn down on delete; sweeps stacks deleted ones left. Writes on confirmation.
+description: Check each worktree inherits mise trust, gets its own ports and boot files, and is torn down on delete.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup worktrees - not a direct entry point.
+**When to use.** Reached via /steer-setup worktrees.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need

@@ -1,6 +1,6 @@
 ---
 name: steer-protect
-description: Internal branch-protection path - diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` is the one-person profile, `waive` keeps a single-dev repo on trunk. Verifies by default.
+description: Diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation.
 argument-hint: '[verify | apply [--solo | --team] | waive]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup protect - not a direct entry point.
+**When to use.** Reached via /steer-setup protect.
 
 <!-- steer:modes verify,apply,waive -->
 

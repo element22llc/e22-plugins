@@ -1,6 +1,6 @@
 ---
 name: steer-explain
-description: 'Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (or Markdown): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back.'
+description: Render one feature spec as a shareable stakeholder page. Read-only.
 argument-hint: '[feature-id]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-status feature <id> - not a direct entry point.
+**When to use.** Reached via /steer-status feature <id>.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Bash`, `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

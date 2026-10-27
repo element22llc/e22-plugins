@@ -1,6 +1,6 @@
 ---
 name: steer-adr
-description: Internal decision record - create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed -> Accepted transition.
+description: Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed -> Accepted.
 argument-hint: '[<slug> | accept <n>]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-spec adr - not a direct entry point.
+**When to use.** Reached via /steer-spec adr.
 
 <!-- steer:modes default,accept -->
 

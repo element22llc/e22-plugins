@@ -1,7 +1,7 @@
 ---
 name: worktrees
-description: "Internal worktree check - whatever tool made them (Claude Code, Orca, Conductor, git), each worktree inherits mise trust, gets its own ports, carries its boot files and is torn down on delete; sweeps stacks deleted ones left. Writes on confirmation."
-when_to_use: "Reached via /steer:setup worktrees - not a direct entry point."
+description: "Check each worktree inherits mise trust, gets its own ports and boot files, and is torn down on delete."
+when_to_use: "Reached via /steer:setup worktrees."
 # Internal path behind `/steer:setup worktrees`. Model-callable, hidden from the
 # slash menu - see the note on `init`.
 user-invocable: false

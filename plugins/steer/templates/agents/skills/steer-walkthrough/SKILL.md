@@ -1,6 +1,6 @@
 ---
 name: steer-walkthrough
-description: 'Internal recorder - a captioned walkthrough video of the running app that proves an approved feature intent: scenes planned from the intent, a committed re-recordable script plus a `mise run demo:record` task, and the frames verified before the MP4 is handed over.'
+description: Record a captioned walkthrough video proving an approved feature intent.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-work walkthrough <feature> - not a direct entry point.
+**When to use.** Reached via /steer-work walkthrough <feature>.
 
 # Walkthrough video (`/steer-work walkthrough <feature>`)
 
