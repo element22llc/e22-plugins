@@ -331,6 +331,14 @@ ceiling would contradict this block's own basis: 12,400 was chosen to buy ~521
 chars, and no reduction from the resulting 11,978 leaves that much. Reclaim more
 first, then the ceiling can move.
 
+After retirement the three front doors - `spec`, `work`, `setup`, the largest
+entries - were cut to purpose plus one trigger phrase per mode (#788's first
+step), taking the listing from 13,329 to 11,786 chars. Every routing fixture
+signal and guardrail survived; restated literals did not - among them `error
+paths`, `lite mode`, `exports`, `costly to unwind`, `promote to prod`, `pptx`,
+`xlsx` - so this too was a deliberate trade. On a 200K window the listing still
+overflows the 8,000-char budget.
+
 The rendered-skill ceiling is per-skill and **not** a ratchet: it is the
 harness's **compaction re-attach cap**. After auto-compaction Claude Code
 re-attaches an invoked skill but keeps it whole only up to 5,000 "tokens",
