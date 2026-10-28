@@ -89,7 +89,7 @@
         ]
       },
       {
-        "matcher": "Bash|mcp__.*[Ii]ssue.*",
+        "matcher": "Bash|mcp__.*([Ii]ssue|merge_pull_request).*",
         "hooks": [
           {
             "type": "command",
