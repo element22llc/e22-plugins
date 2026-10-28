@@ -170,32 +170,41 @@ def test_real_plugin_delivers_every_rule_in_every_profile():
         )
 
 
-def test_the_gate_measures_characters_of_the_exact_serialized_payload():
+def _non_ascii_plugin(tmp_path: Path) -> Path:
+    # The real ruleset is ASCII (rule 85), so bytes and characters agree there and
+    # a unit test on it proves nothing. Accented letters stay legitimate content.
+    root = _make_plugin(tmp_path)
+    (root / "rules" / "00-demo.md").write_text("règle déployée " * 20, encoding="utf-8")
+    return root
+
+
+def test_the_gate_measures_characters_of_the_exact_serialized_payload(tmp_path: Path):
     """Unit discipline: the cap is in CHARACTERS, so the gate must be too.
 
-    Non-ASCII prose (em dashes, arrows) makes bytes and characters differ on this
-    ruleset. Measuring bytes where the runtime measures characters would be a
-    silent disagreement between the hook that enforces the cap and the gate that
-    verifies it. This pins that `chars` is `len()` of the identical string the
-    hook emitted, not a byte count and not a re-read of the files.
+    Non-ASCII prose makes bytes and characters differ. Measuring bytes where the
+    runtime measures characters would be a silent disagreement between the hook
+    that enforces the cap and the gate that verifies it. This pins that `chars` is
+    `len()` of the identical string the hook emitted, not a byte count and not a
+    re-read of the files.
     """
-    parts = ccb.measure_injected(REAL_PLUGIN, "code")
+    root = _non_ascii_plugin(tmp_path)
+    parts = ccb.measure_injected(root, "code")
     payload = "".join(out for out, _ in parts)
-    got = ccb.measure(REAL_PLUGIN)["injected"]["code"]
+    got = ccb.measure(root)["injected"]["code"]
 
     assert got["chars"] == len(payload)
     assert got["part_chars"] == [len(out) for out, _ in parts]
     assert got["bytes"] == len(payload.encode("utf-8"))
     # If these were equal the test would prove nothing about the unit.
-    assert got["bytes"] > got["chars"], "expected non-ASCII prose in the ruleset"
+    assert got["bytes"] > got["chars"], "expected non-ASCII prose in the payload"
 
 
-def test_hook_counts_characters_the_way_the_gate_does():
+def test_hook_counts_characters_the_way_the_gate_does(tmp_path: Path):
     """The hook budgets itself with `LC_ALL=C tr -d '\\200-\\277' | wc -c`, which
     is the code-point count regardless of the session's locale. It must equal
-    Python's len() on the real payload - in a UTF-8 locale AND under LC_ALL=C,
+    Python's len() on a non-ASCII payload - in a UTF-8 locale AND under LC_ALL=C,
     which is what a GUI-launched session may run with."""
-    parts = ccb.measure_injected(REAL_PLUGIN, "code")
+    parts = ccb.measure_injected(_non_ascii_plugin(tmp_path), "code")
     payload = "".join(out for out, _ in parts)
     for locale in ("en_US.UTF-8", "C"):
         counted = subprocess.run(
