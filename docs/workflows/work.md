@@ -9,10 +9,12 @@ while the subcommands below read an issue and deliver it.
 
 **Argument hint:** `[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
-!!! tip "`--reviewed` - the review-gated path"
-    Add `--reviewed` to wrap execution in the review loop formerly carried by the
-    standalone `deliver` skill: an independent plan-gate review -> implement ->
-    `/code-review` gate -> bounded fix. The shared protocol lives in
+!!! tip "Review gates - `finish` and `--reviewed`"
+    `finish` runs an independent code gate on every non-Trivial change: a fresh
+    reviewer checks correctness, other instances of the fixed pattern, peer
+    consistency, introduced risk and touched docs, with a bounded fix loop.
+    Add `--reviewed` for an independent plan-gate review and plan sign-off
+    before implementing. The shared protocol and rubric live in
     `templates/reference/REVIEW-LOOP.md`.
 
 !!! warning "`--hotfix` - the production-incident fast-path"
@@ -189,6 +191,22 @@ each turn, and `resume` reads it: if a different prior session is recorded, it
 offers `claude --resume <id>` (and the transcript path) so you can re-enter that
 conversation for context. These session ids are local-only breadcrumbs - they
 stay in the git-ignored marker and never reach the tracker.
+
+## Native Claude Code delivery features
+
+Claude Code's own delivery tools fit this flow without moving the merge gate.
+`/steer:reference conventions` has the detail:
+
+- **`/batch`** takes one umbrella issue. Each unit opens its PR against a
+  `batch/<slug>` branch cut from the default branch, with `Refs #N`, and the
+  single `batch/<slug>` -> default PR closes the umbrella.
+- **`/autofix-pr`** pushes CI and review fixes to the PR branch. Tell it to
+  leave drift flags to the human reviewer.
+- **Plan mode** produces an acceptable plan for a Behavioral change. Leave
+  `plansDirectory` unset, or point it at a git-ignored path, so plan files
+  stay out of the spine.
+- **`claude --worktree "#<n>"`** opens a pull request, not an issue. To start
+  an issue, run `start` inside any worktree.
 
 ## Rules it follows
 

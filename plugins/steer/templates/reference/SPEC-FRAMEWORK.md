@@ -83,7 +83,7 @@ section of the spec above.
 
 `kind:` is **optional** and orthogonal to `owner:` - `owner` is the role that
 decides, `kind` is what is being asked (`ENUMS.md` -> `question_kind`). Absent,
-it reads as `clarification`, exactly as before the field existed. An `access`
+it reads as `clarification`. An `access`
 question asks for a **grant or confirmation** (a role, an invite, a store
 path), **never a secret value** - the answer is committed under
 `spec/sources/`. `/steer:spec questions needs` raises `access` / `tooling` /

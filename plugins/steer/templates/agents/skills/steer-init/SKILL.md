@@ -1,6 +1,6 @@
 ---
 name: steer-init
-description: Internal greenfield bootstrap - lay the /spec spine + scaffolding, pin the toolchain, leave the repo working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode.
+description: Greenfield bootstrap - lay the /spec spine and scaffold, pin the toolchain, choose PR flow or solo trunk.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup init - not a direct entry point.
+**When to use.** Reached via /steer-setup init.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
@@ -168,8 +168,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `pnpm-lock.yaml`. Once the first real app/workspace exists, generate and
    commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`); maintain it with
    every dependency change. Make `mise run dev:setup` real and idempotent for
-   this product (Python: `uv run ...` task commands; drop `compose.yaml` +
-   docker/db tasks if there are no backing services).
+   this product (Python: `uv run ...` task commands; an `infra`, `library` or
+   `cli` repo with no backing services may drop `compose.yaml` and with it the
+   `docker:*`/`db:*` tasks - the MANIFEST's `compose.yaml` row).
 
    Then **wire the commit gate**: `mise generate git-pre-commit
    --task=pre-commit --write`. `.git/hooks/` is not versioned, so this is

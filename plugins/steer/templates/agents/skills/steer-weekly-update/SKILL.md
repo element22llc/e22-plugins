@@ -1,6 +1,6 @@
 ---
 name: steer-weekly-update
-description: 'Internal tracker writer - applies a week''s work to an Artifact-hosted project tracker (Copilot: a packet to paste).'
+description: Apply a week's work to an Artifact-hosted project tracker.
 argument-hint: '[<tracker-url>] [<the week in your words>]'
 user-invocable: false
 ---

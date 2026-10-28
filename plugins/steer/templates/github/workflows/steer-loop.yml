@@ -59,11 +59,13 @@ jobs:
             3. Draft the fix in an isolated worktree and run the verify loop
                (tests, lint, typecheck) until green. If it doesn't converge,
                stop and report what blocked you - do not thrash.
-            4. Have the change independently reviewed (steer-reviewer /
-               /steer:audit), not by the drafting agent's own say-so.
+            4. Have the change independently reviewed, never by the drafting
+               agent's own say-so: run the code gate /steer:work finish runs
+               (a fresh reviewer subagent on the REVIEW-LOOP.md section 4
+               rubric), fix high-severity findings, at most 2 rounds.
             5. Push your own work branch and open a DRAFT pull request with the
-               diff, the verification output,
-               and any drift classes flagged. Update the tracked issue. (The
+               diff, the verification output, the review's open findings and
+               design questions, and any drift classes flagged. Update the tracked issue. (The
                draft flag marks the PR as unattended output - the merge review
                is the gate.)
             6. Do NOT merge, deploy, push to main or any protected branch,

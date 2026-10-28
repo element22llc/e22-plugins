@@ -1,7 +1,7 @@
 ---
 name: issues
-description: "Internal backlog layer for the /spec spine - capture, triage, brainstorm, materialize, decompose, epics, status, a ranked board, bounded reconcile, the publish-* family and bootstrap-labels. A thin orchestrator: /spec stays product truth, the issue is the work/decision layer."
-when_to_use: "Reached via /steer:work issues - not a direct entry point."
+description: "Backlog layer - capture, triage, decompose, board and the other issue modes; never edits code."
+when_to_use: "Reached via /steer:work issues."
 # Internal backlog lifecycle behind `/steer:work issues`. Model-callable, hidden
 # from the slash menu: the backlog and the delivery it feeds are one user-facing
 # door, and which moment of the work an ask belongs to is a routing call the
@@ -78,8 +78,8 @@ sequences those across the lifecycle.
    `/steer:tracker-sync` apply. Never fabricate tracker state.
 2. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues were actually touched.
-3. **Member? The tracker and the specs are in the workspace** (rules
-   `35-tracker`, `30-spec`) - resolve it by the ladder in
+3. **Member? The tracker and the specs are in the workspace** (rule
+   `35-tracker`) - resolve it by the ladder in
    `/steer:reference polyrepo` and read both from there; never file a product
    issue against the member's own repo to work around it. Two facts shape
    decomposition: **sub-issues do
@@ -93,9 +93,9 @@ table in `${CLAUDE_PLUGIN_ROOT}/templates/reference/ISSUE-WORKFLOW.md`; the issu
 format (markers, headings, **managed blocks**, idempotency) in
 `ISSUE-SCHEMA.md`; the open-question contract in `SPEC-FRAMEWORK.md`.
 
-## Question-reconciliation floor (safe from the first release)
+## Question-reconciliation floor
 
-Even before repo-wide reconcile, the per-feature lifecycle must guarantee - via
+The per-feature lifecycle must guarantee - via
 `/steer:spec validate` at every gate and `reconcile`:
 
 - an **approved** intent contains **no `open` `blocking` question gated at

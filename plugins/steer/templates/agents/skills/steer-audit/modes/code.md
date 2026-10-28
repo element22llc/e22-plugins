@@ -111,10 +111,6 @@ of dimension.
    `/spec/AUDIT-REPORT.md` **only if the dev wants it tracked** - it's a
    point-in-time artifact, not part of the durable spine. Write it to the working
    tree only, and say plainly that committing it is the dev's next step.
-   `EnterWorktree` is disallowed so this skill cannot open a worktree, but the git
-   verbs are not blocked by the frontmatter - `allowed-tools` grants without
-   restricting - so leaving the branch and the commit to the dev is a boundary
-   this skill keeps, not one the tooling enforces.
 
    **Optionally publish it as a shareable dashboard** - where the `Artifact` tool
    is available, **offer** a **Dashboard** Artifact of the findings: dimension
@@ -125,7 +121,7 @@ of dimension.
    `Audited commit: <audited-sha>` line, then one `## <finding-key> - <title>`
    section per finding with its one-line summary, a `- [ ] File as an issue`
    task and an empty `**Note:**` line. The dev ticks and annotates in place and
-   hands its link to the one ingest route, **`/steer-issues publish-audit
+   hands its link to the one ingest route, **`/steer-work issues publish-audit
    <doc-link>`**. Without the Docs connector the triage is the HTML tier's
    fillable page, whose export carries the same keys beneath one
    `<!-- steer:audit-triage sha=<audited-sha> -->` marker. Any local file
@@ -189,11 +185,7 @@ of dimension.
    **Filing the backlog is never the current action while a confirmed blocker is
    open.** `publish-audit` is `Recommended` - it *tracks* findings, it does not
    resolve one - so a confirmed money, correctness, or security defect outranks
-   it every time, and `publish-audit` then covers the **remainder**. Two of three
-   v6.1.0 eval runs got this right by inventing the `/steer-work` row that was
-   missing from this table; the third fell back to `publish-audit` as the current
-   action and demoted the confirmed defect to a bullet. Same repo, same findings,
-   different answer - which is a defect in this table, not in the runs.
+   it every time, and `publish-audit` then covers the **remainder**.
 
 ## Reconciliation across runs - audits are reconciling, not additive
 

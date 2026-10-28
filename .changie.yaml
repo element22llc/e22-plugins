@@ -159,3 +159,25 @@ replacements:
   - path: plugins/steer/evals/routes-what-can-steer-do-to-help/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
+  # The e2e fixtures (evals/e2e/) build on the managed spine and stamp it too.
+  - path: plugins/steer/evals/e2e/e2e-adr-before-new-datastore/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-behavioral-change-updates-contract/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-commit-autonomy-finishes-delivery/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-fix-issue-delivers-pr/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-high-risk-stops-for-scoping/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-merge-request-refused/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-trivial-typo-no-issue/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'

@@ -1,6 +1,6 @@
 ---
 name: steer-intake
-description: Internal document absorb - commit a PO office document plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human prose. `clarify` folds a client answers document; `status` prints the read-only ledger of every absorbed source.
+description: Absorb a PO document under spec/sources/ and route what changed into the spine and tracker.
 argument-hint: '[<path-to-doc> | clarify <path-to-doc | doc-link> | <source-id> | status]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-spec intake - not a direct entry point.
+**When to use.** Reached via /steer-spec intake.
 
 <!-- steer:modes default,status,clarify -->
 
@@ -42,8 +42,9 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
 
 ## First, every run
 
-1. **Require a `/spec` spine.** If `spec/` does not exist, stop and route the
-   user to `/steer-setup`. Intake operates on a spine; it does not create one.
+1. **Require a `/spec` spine.** If `spec/.version` is absent, stop and route the
+   user to `/steer-setup`. Intake operates on a spine; it does not create one,
+   and a bare `spec/` (an empty folder, a foreign OpenAPI `spec/`) is not one.
    **A member is not a spine** - `spec/` exists there only to hold
    `spec/PRODUCT.md`, so the presence check alone would pass and then route
    product-level content into the member. When `spec/PRODUCT.md` is present,
@@ -61,13 +62,10 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
      to enable conversion (install `uv`; the `convert:doc` task), and **stop
      before diffing** - never fabricate an extraction.
 
-   > There is **no markitdown MCP server**. It was removed from the plugin's
-   > `.mcp.json` because it spawned a `uvx markitdown-mcp` subprocess in *every*
-   > session - including the overwhelming majority that never convert a
-   > document - to serve this one skill. `convert:doc` runs the same
-   > `markitdown` tool on demand. If a repo predates the removal and still lists
-   > a `markitdown` server in its own `.mcp.json` or `.vscode/mcp.json`, that
-   > entry is stale but harmless; `/steer-setup sync` clears it.
+   > There is **no markitdown MCP server**; `convert:doc` runs the same
+   > `markitdown` tool on demand. A `markitdown` server still listed in a repo's
+   > own `.mcp.json` or `.vscode/mcp.json` is stale but harmless;
+   > `/steer-setup sync` clears it.
 
 ## Modes
 

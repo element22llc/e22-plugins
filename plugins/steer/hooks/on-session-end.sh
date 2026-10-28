@@ -7,8 +7,9 @@
 #   moment it matters is the moment the session is over. SessionEnd is that
 #   moment, and it is a real event - so the port-freeing half of that checklist
 #   item is now attempted automatically instead of requested (best-effort: see
-#   the 1.5s budget below). The volume-destroying half belongs to WorktreeRemove;
-#   see hooks/lib/worktree-lifecycle.sh for why they differ.
+#   the 1.5s budget below). The volume-destroying half belongs to WorktreeRemove,
+#   or to the orphan sweep where that never fires; see
+#   hooks/lib/worktree-lifecycle.sh for why they differ.
 #
 # WHAT IT WILL NOT DO
 #   * Never touches a plain checkout. A dev's main stack is theirs; only a LINKED
@@ -38,8 +39,8 @@
 #   output discarded and its work left unfinished. `mise tasks ls` plus
 #   `mise run -C ... docker:down` will often not finish inside 1.5s, so treat this
 #   hook as an opportunistic port-freeing pass, NOT a guarantee that containers
-#   stopped. `WorktreeRemove` is the reliable half - it takes the ordinary
-#   command-hook timeout, so the 60s there is real.
+#   stopped. `WorktreeRemove` takes the ordinary command-hook timeout, so the 60s
+#   there is real - but it fires only for worktrees a `WorktreeCreate` hook made.
 #
 #   A dev who wants the full teardown to fit can raise the budget themselves:
 #   `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.

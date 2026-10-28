@@ -1,6 +1,6 @@
 ---
 name: steer-protect
-description: Internal branch-protection path - diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` is the one-person profile, `waive` keeps a single-dev repo on trunk. Verifies by default.
+description: Diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation.
 argument-hint: '[verify | apply [--solo | --team] | waive]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup protect - not a direct entry point.
+**When to use.** Reached via /steer-setup protect.
 
 <!-- steer:modes verify,apply,waive -->
 
@@ -51,7 +51,7 @@ marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so t
 steer hooks resume the per-feature branch/PR flow (the mode is over - the server wall
 now enforces it) - and write a graduation entry under `/spec/history/`. **In a
 member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
-graduation entry goes to the workspace's ledger per rule `30-spec` § Living documentation.
+graduation entry goes to the workspace's ledger per `/steer-reference polyrepo`.
 
 **A one-person repo graduates with the `solo` profile.** GitHub will not let a
 PR's author approve it, so the policy's default 1-approval rule would leave a
@@ -221,8 +221,7 @@ not as a compliance gap to fix immediately. In that case also report the
 branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, say
 so plainly and recommend graduating now - and note that while the local signals
 stand, the trunk-push hook surfaces the session's **first** `git push` for a human
-yes (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
-repeat is a silent allow), so graduating also restores silent delivery - **or**,
+yes (rule 45; repeats carry a non-blocking reminder), so graduating also restores silent delivery - **or**,
 when only local signals hold and the dev intends to stay single-dev on trunk,
 name `waive` as the other way to restore it; when none holds, note
 that staying on solo-trunk is fine for now. (The SessionStart

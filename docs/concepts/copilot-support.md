@@ -98,9 +98,10 @@ drift gate (`check_agent_skills.py`).
 
 Copilot reads several repository instruction files and **merges** them - including
 `AGENTS.md` *and* `CLAUDE.md`/`GEMINI.md` - resolving conflicts
-non-deterministically. Emitting an `AGENTS.md` would therefore double-load the
-org standards alongside a repo's existing `CLAUDE.md`, while Claude Code (which
-does not read `AGENTS.md`) would ignore it entirely.
+non-deterministically. Emitting the standards into `AGENTS.md` would therefore
+double-load them alongside a repo's existing `CLAUDE.md`. Claude Code reads
+`AGENTS.md` too, but only when no `CLAUDE.md` exists or when `CLAUDE.md` imports
+it - and it already gets the standards from the plugin.
 
 `.github/copilot-instructions.md` is Copilot's **primary** instructions file, is
 **never** read by Claude Code, and lives under `.github/` so it does not compete
@@ -116,9 +117,25 @@ and explains how to invoke the `.agents/skills/` tree (`$steer-<skill>` in Codex
 A copy of the rules would hit two problems: Codex truncates `AGENTS.md` at 32 KiB,
 and Copilot would load the rules twice. A pointer of a few lines avoids both.
 
+Every Copilot surface (CLI, VS Code, cloud agent, code review) reads `AGENTS.md`
+as well, and so does Claude Code when `CLAUDE.md` imports it. Those agents may
+already have the standards in context from the plugin's injection, so the block
+says: if your context holds a block beginning `Engineering standards - steer
+plugin v`, do not read `.github/copilot-instructions.md` again; and invoke
+`/steer:<skill>` when it exists rather than opening the `.agents/skills/` copy.
+
 Steer owns only the text between its `steer-agents-pointer` markers. If the repo
 already has an `AGENTS.md`, the block is appended and the team's content is left
 alone. `/steer:setup sync` refreshes the block in place.
+
+**A team `AGENTS.md` keeps working in Claude Code.** Claude Code reads
+`AGENTS.md` only when no `CLAUDE.md` exists, so the `CLAUDE.md` that adoption
+creates would silence the team's file. When `AGENTS.md` has content outside
+steer's block, `/steer:setup init` and `/steer:setup adopt` end `CLAUDE.md` with
+an `@AGENTS.md` import, and `/steer:setup sync` proposes it for repos adopted
+earlier. The Copilot CLI then loads `AGENTS.md` twice - once on its own and once
+inlined into `CLAUDE.md` (observed on 1.0.99). That costs the file's size, and is
+accepted so Claude Code keeps reading the team's file.
 
 **Best-effort, like Copilot.** The agent has to follow the pointer: nothing
 injects the rules and no hook enforces a gate.
@@ -507,8 +524,9 @@ the standards in `.github/copilot-instructions.md`.
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
   Rules `45-delivery` § Parallel worktrees and `50-done` § End-of-session checklist therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
-  else. (On Claude Code only the `WorktreeRemove` half is dependable; the
-  `SessionEnd` half is best-effort - see
+  else. (On Claude Code neither half is dependable: `WorktreeRemove` fires only
+  for worktrees a `WorktreeCreate` hook created, and the `SessionEnd` half is
+  best-effort - see
   [Hooks -> Lifecycle events](../reference/hooks.md#lifecycle-events).)
   What *is* surface-agnostic is the per-worktree `COMPOSE_PROJECT_NAME`/port
   offset: it comes from the scaffold's `mise` config

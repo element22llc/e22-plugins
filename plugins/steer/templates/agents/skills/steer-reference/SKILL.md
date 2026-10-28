@@ -1,6 +1,6 @@
 ---
 name: steer-reference
-description: 'Internal loader - one of steer''s full reference docs, read-only: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo.'
+description: 'Load one of steer''s full reference docs: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo.'
 argument-hint: '[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached when a rule or a skill points at a reference topic - not a direct entry point.
+**When to use.** Reached when a rule or skill names a topic.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

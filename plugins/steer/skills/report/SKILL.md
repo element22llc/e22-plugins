@@ -1,7 +1,7 @@
 ---
 name: report
-description: "Internal phone-home - file a bug about the steer plugin itself upstream in element22llc/e22-plugins, scrubbed and deduped, via GitHub MCP or gh. Steer's own defects, not product bugs (those go to /steer:work issues)."
-when_to_use: "Reached when steer misbehaves - a SessionStart self-fault notice, contradictory or impossible skill/rule instructions, a missing or crashing bundled helper."
+description: "File a scrubbed, deduped bug about the steer plugin itself upstream; product bugs go to /steer:work issues."
+when_to_use: "Reached when steer misbehaves."
 argument-hint: "[describe the defect | run with no args to use recorded faults]"
 # Internal phone-home. You file a steer defect on the user's behalf the moment you
 # hit one (rule 00, "When steer itself misbehaves"); a user reporting one describes

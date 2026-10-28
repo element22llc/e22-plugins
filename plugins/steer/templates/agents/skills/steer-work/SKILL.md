@@ -1,6 +1,6 @@
 ---
 name: steer-work
-description: Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR, tidy sweeps the repo root into /spec, review batches the PR review queue, walkthrough records a captioned demo video of an approved feature - none takes an issue. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code.
+description: Implement a GitHub issue end-to-end - claim, branch, PR (or solo-trunk commit), CI, lifecycle transition - finding or creating the issue when a change needs one.
 argument-hint: '[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]'
 ---
 
@@ -10,7 +10,7 @@ argument-hint: '[start | resume | status | finish | promote | tidy | review | wa
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("do this with review"). Add --hotfix only for a real production incident ("prod is down") - never for ordinary urgent work. Use promote to ship what is already on the default branch to production ("promote to prod"). Use tidy when the repo root is cluttered with loose documents, diagrams or exports ("clean up the repo", "organize the strays"). Use review to clear a PR review queue fast ("review my PRs"). Use walkthrough to show a PO or client a feature working ("record a demo video", "show me"). Use issues for backlog management with no implementation this turn.
+**When to use.** Use to work, fix, resume or finish an issue ("fix #123") or to implement a change now. `--reviewed` adds a plan review gate for costly changes; `--hotfix` only for a real production incident ("prod is down"), never ordinary urgent work. Modes that take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the repo root, organize stray documents and diagrams), `walkthrough` (record a demo video). `issues`: backlog work with no code this turn - capture, triage, decompose, a ranked board.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
@@ -125,7 +125,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
-| **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
+| **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
@@ -155,9 +155,9 @@ phase reconciles rather than duplicates.
 
 ## Optional flags - read the procedure only when the flag is passed
 
-- **`--reviewed`** - wrap `start`->`finish` in two independent review gates (plan
-  gate + code gate) plus a bounded fix loop, so the delivery is vetted rather
-  than first-draft. Triage trivial work out of the gates.
+- **`--reviewed`** - add an independent plan gate and a human plan sign-off
+  before implementing, on top of the code gate `finish` always runs on
+  non-Trivial work. Triage trivial work out of the gates.
   -> procedure: [`modes/reviewed.md`](modes/reviewed.md)
 - **`--hotfix`** - the production-incident fast path (rule `61-gates` § Hotfix): a
   `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
@@ -248,6 +248,10 @@ solo-trunk, **one trunk commit per issue**, each closing its own `#N`). Combine 
 when one issue explicitly depends on the other, separating them would produce an
 invalid intermediate state, or the user explicitly asks for combined delivery -
 otherwise issue-first traceability degrades into many-issues-to-one-PR.
+
+Native `/batch`, `/autofix-pr`, plan mode and `claude --worktree` fit this flow
+as `/steer-reference conventions` § Native Claude Code delivery features lays
+out - read it before driving one.
 
 ## Discovered work - bounded scope
 

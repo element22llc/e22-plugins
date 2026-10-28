@@ -1,6 +1,6 @@
 ---
 name: steer-spec-scaffold
-description: Create a feature's spec (intent.md + contract.md) from the bundled templates, or additively reconcile an existing one without overwriting filled-in content.
+description: Create or additively reconcile a feature's intent.md + contract.md from the templates.
 argument-hint: '[feature-id]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Invoked by /steer-spec, /steer-build, /steer-init, /steer-adopt, or /steer-intake with a resolved feature id - not a direct entry point.
+**When to use.** Invoked by the spec-authoring skills with a resolved feature id.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
@@ -31,7 +31,7 @@ feature, using the canonical templates bundled with this plugin.
    `export-csv`). Ask the dev if it isn't obvious.
 2. Create the folder `spec/features/[id]/` **in the repo that owns the product
    spine**. Normally that is this repo - but in a **member** `spec/features/**`
-   belongs to the workspace (rule `30-spec`): resolve it by the ladder
+   belongs to the workspace: resolve it by the ladder
    in `/steer-reference polyrepo` and create the feature there, never here. **If
    the folder already exists**, this `[id]` was scaffolded before - do not
    clobber it; go to step 3's reconcile branch.

@@ -1,7 +1,7 @@
 ---
 name: spec-scaffold
-description: Create a feature's spec (intent.md + contract.md) from the bundled templates, or additively reconcile an existing one without overwriting filled-in content.
-when_to_use: "Invoked by /steer:spec, /steer:build, /steer:init, /steer:adopt, or /steer:intake with a resolved feature id - not a direct entry point."
+description: "Create or additively reconcile a feature's intent.md + contract.md from the templates."
+when_to_use: "Invoked by the spec-authoring skills with a resolved feature id."
 argument-hint: "[feature-id]"
 allowed-tools:
   - Bash(sh *scripts/template-reconcile.sh*)
@@ -22,7 +22,7 @@ feature, using the canonical templates bundled with this plugin.
    `export-csv`). Ask the dev if it isn't obvious.
 2. Create the folder `spec/features/[id]/` **in the repo that owns the product
    spine**. Normally that is this repo - but in a **member** `spec/features/**`
-   belongs to the workspace (rule `30-spec`): resolve it by the ladder
+   belongs to the workspace: resolve it by the ladder
    in `/steer:reference polyrepo` and create the feature there, never here. **If
    the folder already exists**, this `[id]` was scaffolded before - do not
    clobber it; go to step 3's reconcile branch.

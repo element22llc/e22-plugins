@@ -1,6 +1,6 @@
 ---
 name: steer-adr
-description: Internal decision record - create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed -> Accepted transition.
+description: Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed -> Accepted.
 argument-hint: '[<slug> | accept <n>]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-spec adr - not a direct entry point.
+**When to use.** Reached via /steer-spec adr.
 
 <!-- steer:modes default,accept -->
 
@@ -73,7 +73,7 @@ your own proposal is exactly where rubber-stamping happens.
   ADR's Context (or supersede it later). Never delete or renumber a rejected ADR;
   don't immediately re-draft the same proposal and re-ask.
 - **Decide later** -> leave every field untouched. `/steer-next` keeps surfacing it
-  as *Human decision required*, exactly as before.
+  as *Human decision required*.
 
 Never pre-select an option, never infer approval from ambient agreement ("ok",
 "thanks", silence, or sign-off on an earlier plan), and never bundle two ADRs into
@@ -103,7 +103,7 @@ On a clean acceptance, in one pass:
    review outside the session).
 3. Write **one** `/spec/history/` entry file - what / why / who asked / refs (rule
    `30-spec` § Living documentation: one entry per ratified decision). **In a member** the ADR is
-   this repo's but the history entry is the workspace's - per rule `30-spec` § Living documentation.
+   this repo's but the history entry is the workspace's - per `/steer-reference polyrepo`.
 4. If this ADR supersedes an older one, mark that one
    `Superseded by [link]` - never delete or renumber it.
 5. **Propagate to the tracker** - the decision is made, so the issues around it

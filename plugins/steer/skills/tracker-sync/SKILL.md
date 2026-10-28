@@ -1,9 +1,7 @@
 ---
 name: tracker-sync
-description: "Internal gateway for all tracker metadata I/O (GitHub MCP-first, gh fallback, manual floor) - reads and writes issues, and folds pulled criteria into intent.md, for the owning skills."
-when_to_use: >-
-  Reached via /steer:issues, /steer:work, and the other owning skills - not a
-  direct entry point.
+description: "Gateway for every tracker read and write (GitHub MCP-first, gh fallback)."
+when_to_use: "Reached via the owning skills, never directly."
 argument-hint: "[<op> | pull | push] [#issue | feature-id]"
 # Internal gateway: driven by /steer:issues and /steer:work, and also by
 # /steer:spec (its optional file-the-intent exit), /steer:roadmap, /steer:questions,
@@ -121,7 +119,7 @@ shell escaping. Detect capability **in this order, every run**:
 1. **Read `/spec/tracker.md`.** Confirm the frontmatter key `system: github`
    (the lowercase enum value - not prose). If the tracker
    is Jira/Linear/Azure DevOps/other, print the manual-export instructions (the
-   same paste/path flow `/steer:audit spec` uses today) and **stop** - there is no
+   same paste/path flow `/steer:audit spec` uses) and **stop** - there is no
    GitHub API path for a non-GitHub tracker. Don't fabricate one.
 
    **Polyrepo member** (`spec/PRODUCT.md` present, no local `spec/tracker.md`):

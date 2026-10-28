@@ -1,7 +1,7 @@
 ---
 name: reference
-description: "Internal loader - one of steer's full reference docs, read-only: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo."
-when_to_use: "Reached when a rule or a skill points at a reference topic - not a direct entry point."
+description: "Load one of steer's full reference docs: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo."
+when_to_use: "Reached when a rule or skill names a topic."
 argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]"
 # Internal prose loader. The rules and the skills name the topic they need
 # (`/steer:reference conventions`), so the model reaches this skill from a

@@ -1,7 +1,7 @@
 ---
 name: explain
-description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (or Markdown): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
-when_to_use: "Reached via /steer:status feature <id> - not a direct entry point."
+description: "Render one feature spec as a shareable stakeholder page. Read-only."
+when_to_use: "Reached via /steer:status feature <id>."
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 # Internal single-feature renderer behind `/steer:status feature <id>`.
@@ -48,8 +48,7 @@ page on claude.ai the user can then share and a stakeholder can comment on), a
 hand-written Artifact page where no Docs type is available, or **Markdown**
 when the caller asks for it or Artifacts are not available at all.
 
-This is the **PO-facing presentation layer** the rest of the roster lacks: every
-other skill is dev- or tracker-facing. `explain` renders the human-readable side
+This is the **PO-facing presentation layer** for one feature: `explain` renders the human-readable side
 of a feature - what it does, why, the experience, what's in and out of scope, its
 status, and its open questions - in plain language.
 
@@ -253,7 +252,7 @@ the caller relays this heading with the page), and stop:
 
 - Spec `Status:` still `draft`/unapproved -> offer `/steer:spec approve <id>`.
 - Open blocking questions remain -> offer `/steer:spec questions` (or `/steer:spec`).
-- Nothing outstanding -> `No action is required.` - still under the heading,
+- Nothing outstanding -> `No action is currently required.` - still under the heading,
   which attributes the reply as the provenance footer attributes the page.
 
 ## Reference

@@ -1,7 +1,7 @@
 ---
 name: tidy
-description: "Internal sweep - file the loose documents at the repo root into their home: source/research material to /spec/reference, diagrams to /spec/design. Confident strays move now; renames and deletes wait for a yes."
-when_to_use: "Reached via /steer:work tidy - not a direct entry point."
+description: "File loose root documents into /spec/reference and /spec/design; renames and deletes wait for a yes."
+when_to_use: "Reached via /steer:work tidy."
 # Internal sweep behind `/steer:work tidy`. Model-callable, hidden from the slash
 # menu, so changing the repo is one user-facing door whether the change is code
 # or where a file lives.
@@ -19,8 +19,8 @@ Key points (read the file for the full detail):
 - The repo **root** holds scaffolding + config only. Everything on the **root
   allowlist** (and the known dirs `apps/ packages/ configs/ infra/ policy/
   scripts/ spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
-- **Member: never create a product-level spine dir locally** (rule
-  `HOUSEKEEPING.md`) - a stray whose home is one of them is reported with the
+- **Member: never create a product-level spine dir locally** (`HOUSEKEEPING.md`
+  -> Procedure, step 3) - a stray whose home is one of them is reported with the
   workspace named as its destination, not filed here. `spec/design/` and
   `spec/decisions/` *are* the member's own and are handled normally.
 - Loose **source/research materials** (spreadsheets, inventories, vendor

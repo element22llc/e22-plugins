@@ -1,7 +1,7 @@
 ---
 name: loop
-description: "Internal automation scaffolder - a scheduled GitHub Actions workflow that triages work (CI failures, open issues, drift) via /steer:audit + /steer:next, drafts fixes in reviewed worktrees, and opens draft PRs. Stops at every human gate; never merges or deploys."
-when_to_use: "Reached when the dev asks for an autonomous loop - a scheduled sweep that runs on its own - or from rule 53 in a repo that declared the automation opt-in. Not a direct entry point."
+description: "Scaffold a scheduled GitHub Actions workflow that triages work and opens draft PRs; never merges or deploys."
+when_to_use: "Reached when the dev asks for an autonomous loop on a schedule, or from rule 53."
 argument-hint: "[scaffold | verify | remove]"
 # Internal, and deliberately so: an autonomous loop is machinery a repo opts into
 # once (`policy/automation.yml`, `loops: true`), not a skill a user browses to.
@@ -43,9 +43,9 @@ ruleset.
 **The one invariant, always: the loop closes only up to a human gate - never
 through one** (rule 53). It discovers, triages, drafts in an isolated worktree,
 runs the verify loop, has the change checked by an **independent reviewer** it did
-not author with (`steer-reviewer` / `/steer:audit` - rule 53's
-split-ideation-from-verification step; the drafting agent never clears its own
-work), pushes its **own work branch**, and opens a **draft** PR -
+not author with (the code gate `/steer:work finish` runs, on the `REVIEW-LOOP.md`
+§4 rubric - rule 53's split-ideation-from-verification step; the drafting agent
+never clears its own work), pushes its **own work branch**, and opens a **draft** PR -
 autonomous delivery up to the merge, exactly like an interactive session (Commit
 autonomy). It does **not** merge, deploy,
 push to `main` or any protected branch, ratify an ADR, or handle real secrets.
@@ -97,7 +97,8 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/steer-loop.yml` to
    `.github/workflows/steer-loop.yml`. This template is **on-demand** - it is not
    part of the bootstrap scaffold, so a repo only gets a loop when someone asks
-   for one here.
+   for one here. A dev who asks for a cloud scheduled task (`/schedule`)
+   instead takes the path in **Cloud scheduled task** below from here.
 3. **Resolve the two choices with the dev - don't guess:**
    - **Schedule (`cron`).** The template defaults to weekday mornings
      (`0 13 * * 1-5`, 13:00 UTC). Confirm or adjust the cadence. Keep it modest -
@@ -131,6 +132,41 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    step this stopped at: a failed precondition, the opt-in awaiting the dev's
    answer, or the PR opened.
 
+## Cloud scheduled task (`/schedule`)
+
+The Actions workflow stays the default: it needs no Claude plan, works for every
+client, and lives in the repo, where review and `verify` can see it. Claude
+Code's cloud scheduled tasks (`/schedule`, formerly routines; research preview)
+are an alternative **only when the org delivers steer to cloud sessions through
+server-managed settings** (a Team or Enterprise Owner, under Organization
+settings > Claude Code > Managed settings). A cloud session installs neither the
+repo's `enabledPlugins` nor the dev's local plugins, so without that the run has
+no rule 53, no steer skills and no hooks - say so and keep the workflow.
+
+| | Actions workflow | Cloud scheduled task |
+|---|---|---|
+| Owner | the repo, changed by PR | the dev's claude.ai account; teammates cannot see it, and its PRs carry the dev's GitHub identity |
+| Cost | API spend on `ANTHROPIC_API_KEY` | the dev's subscription usage |
+| Secrets | the Actions secret | the cloud environment's network secrets - never its variables, which anyone using the environment sees |
+| Triggers | `cron`, `workflow_dispatch` | a schedule (hourly at most), an API call, GitHub events (needs the Claude GitHub App) |
+| Runs | the Actions log | the task's run history; `/schedule` can explain a run |
+| Pushes | the `permissions:` block | auto mode, `claude/*` branches; only branch protection stops a push, and not where the dev's identity can bypass it |
+
+The path, after scaffold step 1's opt-in:
+
+1. **Resolve schedule and scope** as in scaffold step 3.
+2. **Hand the dev the prompt** - the `prompt:` block of
+   `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/steer-loop.yml`, narrowed to
+   the agreed scope, with the draft-PR instruction intact. **The dev creates the
+   task** (`/schedule` or claude.ai/code/routines) and removes every connector it
+   does not need: creating it is what arms the loop, as the merge does for the
+   workflow, so never create it on their behalf.
+3. **Require protection the dev cannot bypass** - `/steer:setup protect apply`
+   with admins enforced, since the run pushes as the dev.
+4. **Deliver `policy/automation.yml`** and the `/spec/history/` entry as in
+   scaffold step 5, naming the cloud task and its schedule, then report as in
+   step 6.
+
 ## Verify (read-only)
 
 Report whether `.github/workflows/steer-loop.yml` exists and is wired:
@@ -142,6 +178,8 @@ Report whether `.github/workflows/steer-loop.yml` exists and is wired:
   `issues: write`, `id-token: write`, `actions: read` - flag any broader grant;
 - the prompt contains no merge/deploy/push-to-`main` instruction (rule 53 - the
   loop pushes only its own work branches);
+- the prompt's review step names the code gate (`REVIEW-LOOP.md` §4); one that
+  still names `steer-reviewer` predates it - offer to re-scaffold the prompt;
 - `ANTHROPIC_API_KEY` is present in `gh secret list`;
 - `policy/automation.yml` declares `loops: true` - without it the repo runs the
   loop but no session is told the boundary, and nobody is on record as having
@@ -149,7 +187,9 @@ Report whether `.github/workflows/steer-loop.yml` exists and is wired:
   `scaffold` step 1 asks for, not as a file to write.
 
 If everything holds, say the loop is wired and name its schedule. If nothing is
-installed, say so and offer `scaffold`.
+installed, say so and offer `scaffold`. A cloud scheduled task lives on the dev's
+account, out of this check's reach: where the history entry names one, ask the
+dev to confirm it with `/schedule list`.
 
 ## Remove
 
@@ -159,7 +199,7 @@ declared in it), and delivers the removal the
 same way as scaffold (branch, commit, push, PR - the merge review is the gate).
 Confirm first - a scheduled loop someone relies on shouldn't vanish
 silently. The `ANTHROPIC_API_KEY` secret is left alone (other workflows may use
-it).
+it). A cloud scheduled task is the dev's to delete; the removal PR says so.
 
 ## What this skill is not
 

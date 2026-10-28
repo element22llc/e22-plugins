@@ -1,6 +1,6 @@
 ---
 name: steer-explain
-description: 'Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (or Markdown): status pipeline, sign-off meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back.'
+description: Render one feature spec as a shareable stakeholder page. Read-only.
 argument-hint: '[feature-id]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-status feature <id> - not a direct entry point.
+**When to use.** Reached via /steer-status feature <id>.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Bash`, `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
@@ -47,8 +47,7 @@ page on claude.ai the user can then share and a stakeholder can comment on), a
 hand-written Artifact page where no Docs type is available, or **Markdown**
 when the caller asks for it or Artifacts are not available at all.
 
-This is the **PO-facing presentation layer** the rest of the roster lacks: every
-other skill is dev- or tracker-facing. `explain` renders the human-readable side
+This is the **PO-facing presentation layer** for one feature: `explain` renders the human-readable side
 of a feature - what it does, why, the experience, what's in and out of scope, its
 status, and its open questions - in plain language.
 
@@ -252,7 +251,7 @@ the caller relays this heading with the page), and stop:
 
 - Spec `Status:` still `draft`/unapproved -> offer `/steer-spec approve <id>`.
 - Open blocking questions remain -> offer `/steer-spec questions` (or `/steer-spec`).
-- Nothing outstanding -> `No action is required.` - still under the heading,
+- Nothing outstanding -> `No action is currently required.` - still under the heading,
   which attributes the reply as the provenance footer attributes the page.
 
 ## Reference

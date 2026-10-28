@@ -1,7 +1,7 @@
 ---
 name: questions
-description: "Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `needs` raises what the client owes before a wave; `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (or Markdown)."
-when_to_use: "Reached via /steer:spec questions - not a direct entry point."
+description: "Sweep every open question in the /spec spine, resolve each or promote it to an issue."
+when_to_use: "Reached via /steer:spec questions."
 argument-hint: "[needs [--milestone <m>] | bundle [<feature-id>]]"
 # Internal question sweep behind `/steer:spec questions`. Model-callable, hidden
 # from the slash menu - see the note on `init`.
@@ -72,9 +72,9 @@ one after 60 (14 once its feature is `live`), aged from its `created:` date or
 the heading's `git blame` date when absent - the cue to promote it (step 6) or
 defer it (step 7).
 
-That hook is **Claude Code only** - no other surface has a SessionStart channel
-that can reach you, so nothing announces either the backlog or the staleness
-escalation there. Apply both yourself instead: read each feature's `## Open
+That hook is guaranteed only on Claude Code, so elsewhere nothing may announce
+either the backlog or the staleness escalation. Where no such notice reached
+you, apply both yourself: read each feature's `## Open
 questions` list, and age every open entry from its `created:` date (or the
 heading's `git blame` date) against those thresholds. Wherever a step below says
 "hook-escalated", read it as "stale by that same test".

@@ -64,8 +64,9 @@ When rules are drifted or absent:
    and its waiver prose in the same edit, and let the graduation entry say the
    waiver ended here. A waiver left behind is inert in pr-flow but reads as a
    contradiction. The graduation entry also names the **profile** applied
-   (`solo` or `team`) - for `solo`, that entry is the record of the choice the
-   policy's "tighten, don't loosen" note asks for; no separate ADR is needed.
+   (`solo` or `team`) - for `solo`, that entry is the record of the choice:
+   `solo` is the policy's own one-person profile, not a weaker per-repo policy,
+   so no separate ADR is needed.
 
 **Insufficient permissions (`403`/admin required):** you cannot set protection
 without admin on the repo. Do not retry blindly - print the equivalent manual

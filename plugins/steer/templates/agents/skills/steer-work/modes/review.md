@@ -53,9 +53,11 @@ A **draft, red or conflicting PR is not reviewed** - it goes straight to the
 For every remaining PR, spawn a **fresh read-only subagent** in the same message
 (waves of up to 10), each with one PR - not `steer-reviewer`, which audits
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
-read, and the rubric: rule `50-done` (Definition of Done and the drift classes),
-rule `40-testing`, and rule `80-change-class`. Ask it to return a **card**, at
-most 8 lines:
+read, and the code-gate rubric in
+[`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) §4 - the same one
+the author's `finish` ran. The local checkout may sit at the base, not the PR
+head: it serves the other-instances and peer passes, which look outside the
+diff. Ask it to return a compact **card**:
 
 - one line on what the PR does, in the reader's terms;
 - class: Trivial, Behavioral or High-risk (the heavier when arguable);
@@ -63,10 +65,11 @@ most 8 lines:
   behavior changed - yes / no / n/a;
 - every drift flag checked in the PR body, and any it should have checked;
 - findings with `path:line`, severity-ranked, or `none`;
+- design questions the author should answer in the PR, or `none`;
 - a suggested verdict: `approve`, `changes` or `look`.
 
 The cards are input to the human's call, not the call. Read them; drop a
-finding you cannot reproduce from the diff.
+finding you cannot reproduce from the diff or the checkout.
 
 ## Step 4 - one decision, then one command
 

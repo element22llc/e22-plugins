@@ -155,6 +155,12 @@ unattended and expect the approvals to happen - `/steer:loop` is the sanctioned
 scheduled/headless path precisely because it stops at those gates (it never
 merges).
 
+A **cloud scheduled task** (`/schedule`) runs without steer unless the org
+delivers the plugin through server-managed settings: cloud sessions install
+neither a repo's `enabledPlugins` nor the plugins on your machine. That is why
+`/steer:loop` keeps the Actions workflow as its default and offers the cloud
+task only where the org has done so.
+
 ## GitHub auth / `gh`
 
 Anything that touches the tracker or GitHub needs an authenticated path. Tracker
@@ -225,10 +231,13 @@ or start a new session** - only you can. So `steer` will never silently compact 
 What it does instead (the context-hygiene standard; the router carries the
 two always-on lines, full prose via `/steer:reference context-hygiene`):
 
-- **Delegates heavy, multi-phase, or search-heavy runs to subagents**, which get a
-  fresh context window by construction and return only the result - so the heavy
-  intermediate context never lands in your main session. Read/search/summarize
-  fan-out delegations can run on a cheaper Sonnet-tier model at low effort;
+- **Delegates bounded runs to subagents** - a search sweep whose transcript is
+  bloat, independent parallel units, or a review that must stay independent. Each
+  gets a fresh context window by construction and returns only the result, so the
+  heavy intermediate context never lands in your main session. Connected
+  multi-phase work stays in one context, where later steps can use what earlier
+  ones found. Read/search/summarize
+  fan-out delegations can run on a cheaper model at lower effort;
   reviewer/verify/judge delegations stay on the session model.
 - **Keeps durable run-state and task constraints in files** (`/spec/**`, sidecars),
   which survive compaction and a fresh session where chat history does not. The
@@ -282,12 +291,14 @@ raises a prompt. Be honest about the tiers:
   `mise run ... docker:down` frequently exceeds 1.5s, in which case the hook is
   cancelled mid-run. **Do not rely on exiting a session to free a worktree's
   ports.** Raise the budget yourself if you want it to fit:
-  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`. `WorktreeRemove` takes
-  the ordinary command-hook timeout and is the dependable half.
-- **`WorktreeRemove` fires only for worktrees Claude Code deletes.** Orca,
-  Conductor and a plain `git worktree remove` delete theirs without it, so the
-  stack keeps running. Trust inheritance, per-worktree ports and the
-  `SessionEnd` stop still apply. `/steer:setup worktrees` installs the tool's
+  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.
+- **`WorktreeRemove` fires only for a worktree a `WorktreeCreate` hook
+  created.** Claude Code removes the worktrees it creates itself (`claude
+  --worktree`, `EnterWorktree`, `isolation: worktree`) without raising it, and
+  Orca, Conductor and a plain `git worktree remove` do the same, so a deleted
+  worktree's stack and volumes stay behind. In the primary checkout a session
+  check names what Claude Code worktrees left; trust inheritance, per-worktree
+  ports and the `SessionEnd` stop still apply. `/steer:setup worktrees` installs the tool's
   own teardown - for Orca, an `orca.yaml` archive hook, which needs Orca's
   repository hook policy to allow shared scripts and which `orca worktree rm`
   skips without `--run-hooks` - and sweeps the stacks already orphaned.

@@ -262,10 +262,11 @@ still prompts.
 Long prose belongs in `plugins/steer/templates/reference/*`, surfaced through the
 skill - not inlined into the SKILL.md.
 
-When a skill runs a **long, multi-phase, or search-heavy** flow, delegate it to a
-subagent (fresh context by construction) and persist run-state and task constraints
-in `/spec/**` rather than running everything inline - keeping the main session lean
-and the state durable across compaction. See `/steer:reference context-hygiene` and the
+A skill runs in the main loop by default. Delegate to a subagent (fresh context by
+construction) only a search sweep whose transcript is bloat, independent parallel
+units, or a review that must stay independent; a connected multi-phase flow stays
+inline. Persist run-state and task constraints in `/spec/**` so they survive
+compaction. See `/steer:reference context-hygiene` and the
 exemplars it cites (`/steer:audit` -> the `steer-reviewer` agent;
 `/steer:work --reviewed`'s plan gate).
 

@@ -7,8 +7,9 @@
 #   assumes: inherited `mise trust`, per-worktree Compose isolation, the git-ignored
 #   boot files copied in, in-repo worktree dirs ignored, a teardown that fires when
 #   the worktree is deleted, and no Compose stack left behind by one already gone.
-#   Only Claude Code tells steer a worktree is going away (`WorktreeRemove`); every
-#   other manager needs its own archive hook, or leaves the orphans this reports.
+#   No manager tells steer a worktree is going away: Claude Code removes its own
+#   without `WorktreeRemove`, so its leftovers are swept (the primary checkout's
+#   session check reports them); Orca and Conductor need their own archive hook.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   No. Reads git metadata, a few repo files, `mise trust --show` and
@@ -23,8 +24,8 @@
 #   worktreeinclude  ok | absent | incomplete | n/a    <uncovered files, comma-joined>
 #   env-copy         missing                           <worktree>: <files>
 #   worktree-dir     ignored | unignored               <in-repo worktree dir>
-#   teardown         hooked | ok | absent | merge | manual | n/a   <manager>
-#   orphan           <compose project>                 <config dir that no longer exists>
+#   teardown         swept | ok | absent | merge | manual | n/a   <manager>
+#   orphan           <compose project>                 <config dir that no longer exists, or - (volumes only)>
 #   orphans          <count> | n/a                     <why n/a>
 #   A gap is reported on STDOUT, never via a nonzero exit.
 #
@@ -42,6 +43,7 @@ set -u
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
 . "${HERE}/../hooks/lib/repo-root.sh"
 . "${HERE}/../hooks/lib/mise-trust.sh"
+. "${HERE}/../hooks/lib/worktree-orphans.sh"
 
 ROOT="$(steer_repo_root "${1:-.}")" || {
 	echo "scan-worktrees: not inside a git work tree: ${1:-.}" >&2
@@ -175,7 +177,7 @@ for _m in ${MANAGERS}; do
 		continue
 	fi
 	case "${_m}" in
-	claude-code) emit teardown hooked "${_m}" ;;
+	claude-code) emit teardown swept "${_m}" ;;
 	orca)
 		if [ ! -f "${ROOT}/orca.yaml" ]; then
 			emit teardown absent "${_m}"
@@ -189,26 +191,19 @@ for _m in ${MANAGERS}; do
 	esac
 done
 
-# Orphans: Compose projects named the way worktree-env.sh names this repo's linked
-# worktrees (`<primary-basename>-<worktree>`) whose config dir is gone.
+# Orphans: this repo's worktree stacks whose checkout is gone (lib/worktree-orphans.sh).
 if ! command -v docker >/dev/null 2>&1; then
 	emit orphans n/a "docker not on PATH"
-elif ! _ls="$(docker compose ls --all --format json 2>/dev/null)"; then
+elif ! _orphans="$(steer_wt_orphans "${PRIMARY}")"; then
 	emit orphans n/a "docker compose ls failed (daemon down?)"
 else
-	_prefix="$(basename "${PRIMARY}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-' | sed 's/-\{1,\}/-/g;s/^-//;s/-$//')-"
 	_n=0
-	_rows="$(printf '%s' "${_ls}" | tr '{' '\n' |
-		sed -n 's/.*"Name":"\([^"]*\)".*"ConfigFiles":"\([^",]*\).*/\1|\2/p')"
-	while IFS='|' read -r _name _cfg; do
-		[ -n "${_name}" ] && [ -n "${_cfg}" ] || continue
-		case "${_name}" in "${_prefix}"?*) ;; *) continue ;; esac
-		_dir="$(dirname "${_cfg}")"
-		[ -d "${_dir}" ] && continue
+	while IFS="$(printf '\t')" read -r _name _dir; do
+		[ -n "${_name}" ] || continue
 		emit orphan "${_name}" "${_dir}"
 		_n=$((_n + 1))
 	done <<EOF
-${_rows}
+${_orphans}
 EOF
 	emit orphans "${_n}"
 fi

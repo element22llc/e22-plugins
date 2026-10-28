@@ -262,7 +262,7 @@ depends = ["dev:*"]                       # both servers in parallel; mise is th
 ```
 
 `mise run dev` is the one command; `dev:web` delegates into pnpm, `dev:api` runs
-uv directly. Nothing is duplicated and no `pnpm`⇄`mise` loop can form.
+uv directly. Nothing is duplicated and no `pnpm` <-> `mise` loop can form.
 
 The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
@@ -598,19 +598,62 @@ committed `compose.yaml`, so local matches deployed:
 - **A worktree another tool manages needs that tool's teardown.** steer keys
   off the `.git` file's `gitdir:` pointer, so trust inheritance and
   `worktree-env.sh` work wherever the worktree lives - Orca's
-  `~/orca/workspaces/<repo>/<name>` included. Only Claude Code raises
-  `WorktreeRemove`, though: Orca, Conductor or a plain `git worktree remove`
-  delete a worktree without it, leaving its stack running. `/steer:setup
-  worktrees` checks a repo, installs the tool's hook (for Orca, an `orca.yaml`
-  `scripts.archive` from `templates/worktrees/`) and sweeps the stacks deleted
-  worktrees left behind.
+  `~/orca/workspaces/<repo>/<name>` included. No tool tells steer a worktree is
+  going away: Claude Code removes its own without raising `WorktreeRemove` (the
+  primary checkout's session check then reports the stack left behind), and
+  Orca, Conductor or a plain `git worktree remove` leave theirs running.
+  `/steer:setup worktrees` checks a repo, installs the tool's hook (for Orca, an
+  `orca.yaml` `scripts.archive` from `templates/worktrees/`) and sweeps the
+  stacks deleted worktrees left behind.
+
+## Native Claude Code delivery features
+
+Claude Code ships its own delivery tools. Each one fits the standards as below,
+and none of them moves the merge or deploy gate.
+
+- **`/batch`** splits one large change into 5-30 units. Each unit runs as a
+  background subagent in its own worktree, which publishes its change. The
+  batch takes **one umbrella issue**, not one per unit. Cut `batch/<slug>` off
+  the default branch and push it. Then say in the `/batch` instruction that
+  each unit opens its PR against `batch/<slug>` and references the umbrella
+  with `Refs #N`, never `Closes`. The docs do not say which base a unit's PR
+  targets, so check the first one. The unit PRs are siblings (rule
+  `45-delivery`). The single `batch/<slug>` -> default PR closes the umbrella
+  and carries the changelog fragment.
+- **`/autofix-pr`** starts a cloud session that watches the current branch's
+  PR and pushes fixes for CI failures and review comments. It fits pr-flow
+  because it only pushes to the PR branch. The docs describe no merge step, so
+  treat it as a tool that does not merge. It posts its review-thread replies
+  under your GitHub account. A drift flag blocks merge until a human reviewer
+  resolves it (rule `50-done`), so leave flags out of its scope:
+  `/autofix-pr fix CI failures and code review comments; leave drift flags and
+  product questions to me`. It needs the Claude GitHub App on the repo and
+  does not react to merge conflicts.
+- **Plan mode** produces an acceptable plan for a Behavioral change (rule
+  `80-change-class`). Leave `plansDirectory` unset. A plan file is a working
+  note, like a chat summary. Its decisions go into `intent.md`, `contract.md`
+  or an ADR, and a plan worth sharing goes in the issue or the PR description.
+  If a team wants plan files beside the code, point `plansDirectory` at a
+  git-ignored path. A committed plan becomes a second, unreviewed source of
+  truth.
+- **Worktrees.** `claude --worktree "#<n>"` takes a **pull request**, not an
+  issue. It fetches that PR's head into `.claude/worktrees/pr-<n>` so you can
+  review or fix the PR. To start an issue, run `/steer:work start #N` in any
+  worktree. It cuts `issue/<n>-<slug>` from the default branch and writes the
+  work marker, even when the worktree opened on a `worktree-<name>` branch.
+  `--worktree` and subagent worktrees (`isolation: worktree`) branch from the
+  default branch unless `worktree.baseRef` is `head`. That default already
+  satisfies rule `45-delivery`'s "off the default branch", so leave
+  `worktree.baseRef` unset. Trust inheritance, the port offset and the
+  teardown gap in Local services above apply to every one of these worktrees.
 
 ## Internal monorepo layout
 
 Code lives at the repo root in three top-level directories:
 
 - **`/apps`** - deployable applications. Each app is independently buildable and
-  deployable, with its own deploy target.
+  deployable, with its own deploy target - confirm it per app. A deployable app
+  carries a `Dockerfile`, which CI builds when present.
 - **`/packages`** - shared libraries consumed by apps or other packages. Not
   independently deployed.
 - **`/configs`** - shared tooling configuration (lint, base tsconfig, formatter,
@@ -734,7 +777,7 @@ fail", the Definition of Done, and review.
 #### Coverage
 
 Coverage is a **signal to find untested behavior, not a target** - see the always-on
-Coverage rules. Measure it every run and keep it visible; gate only the lines a PR
+Testing rule. Measure it every run and keep it visible; gate only the lines a PR
 **changes**, never a global percentage.
 
 One coverage tool per language, emitting a standard report:
@@ -803,7 +846,8 @@ follows it; only a gate *weaker* than this default needs an ADR.
 - **Observable by default** - a deployed environment ships logs, metrics with
   alarms, error tracking (Sentry), per-app health checks, and alerting routed to a
   human. "Deployed but unobservable" is not done; capture the wiring in
-  `ARCHITECTURE.md`.
+  `ARCHITECTURE.md`. An empty `observability` list in `policy/delivery.yml` is
+  a flag to raise with the dev, not a licence to skip it.
 - **Rollback & migrations** - every prod deploy has a known rollback (revert the
   `prod` merge / redeploy the prior SHA); migrations are **expand/contract** so the
   running version survives the deploy and a rollback never leaves schema ahead of
@@ -915,10 +959,6 @@ would otherwise write CRLF, and a CRLF `scripts/*.sh` fails to *parse* while a
 CRLF Docker entrypoint fails to run. Binaries are marked `binary` so they are
 never normalized. Merge the file additively if one exists
 (`scripts/scaffold_reconcile.py`).
-
-<!-- Absorbed from the former always-on rule `20-layout`: a description of where
-     directories live is reference material, not an imperative that has to be
-     in context every session. Reach it via `/steer:reference conventions`. -->
 
 ## Where things live
 

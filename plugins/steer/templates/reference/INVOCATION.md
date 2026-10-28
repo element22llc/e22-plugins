@@ -41,7 +41,7 @@ an unrelated question.
 | `/steer:setup` | Auto-routing bootstrap front door - detects repo state and runs the `init` / `adopt` / `sync` mode. Naming the mode skips detection; `setup sync --check` is read-only. |
 | `/steer:work tidy` | Moves/renames/deletes loose files. |
 | `/steer:build` | PO build: spec -> working app -> PR. |
-| `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
+| `/steer:work` | Executes an issue end-to-end (branch -> PR -> transition); `finish` runs an independent code gate on every non-Trivial change; add `--reviewed` for a plan gate before implementing. |
 | `/steer:spec` | Authors/iterates a feature spec. |
 | `/steer:spec intake` | Absorbs a PO-supplied spec/roadmap document into `/spec` + the tracker. |
 | `/steer:spec adr` | Creates a numbered ADR. |
@@ -113,7 +113,7 @@ deterministic rewrite. The imperative framing in installed docs ("Run
 branch and surfaces the other two for the dev. The version-keyed one-shot for the
 `reference`-mode renames is the v3.8.0 entry in [MIGRATIONS.md](MIGRATIONS.md); this
 detector is the standing every-sync backstop. The v7 absorption renames have the same
-pairing: the `[Unreleased]` entry is the one-shot, `absorbed-mode` is the backstop, and
+pairing: the v7.0.0 entry is the one-shot, `absorbed-mode` is the backstop, and
 both derive the same front door from the same mode markers. Keep this class vocabulary
 in lockstep with `scripts/scan-invocations.sh`.
 

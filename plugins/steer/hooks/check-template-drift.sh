@@ -101,7 +101,7 @@ done
 [ -n "$REPORT" ] || exit 0
 
 printf '<!-- steer: template drift detected -->\n'
-printf '# ⚠ template reconciliation required - do this before anything else\n\n'
+printf '# Template drift - reconcile before resuming spec work\n\n'
 printf 'One or more spec files in this repo were instantiated under an OLDER plugin '
 printf 'version and are missing sections the current bundled template now defines. '
 printf 'These gaps are invisible if you resume "from the checklist" - that is exactly '

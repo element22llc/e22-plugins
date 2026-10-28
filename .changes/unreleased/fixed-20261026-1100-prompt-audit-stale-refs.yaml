@@ -1,0 +1,21 @@
+kind: Fixed
+body: |-
+    - **Fixed: stale facts and dated phrasing across the prompt surface.** A
+      prompt audit against Claude Opus 5.5 found little old-model prompting but
+      many references the plugin's own refactors had left behind. `intake`,
+      `roadmap` and `questions bundle` now test for a spine by `spec/.version`
+      like the rest of the skills, not by a bare `spec/`; `init` drops
+      `compose.yaml` only for `infra`, `library` and `cli` repos, matching the
+      scaffold manifest; the Stop hook's hotfix notice cites rule `61`, not a
+      rule `62` that does not exist; and pointers to rules folded away in 7.0
+      (`living-docs`, `drift-gates`, `user-facing-copy`, `95-not-the-gate`,
+      Coverage, layout, housekeeping) now name their current homes. The retired
+      Copilot CLI "silent allow" premise, the retired comment-density block
+      tier, a pinned model ID in the triage example, eval-run and version
+      archaeology, and "now / no longer / today's behaviour" phrasing are gone.
+      The template-drift notice no longer tells the agent to drop everything
+      before it, and the subagent digest no longer carries an unexpanded
+      `${CLAUDE_PLUGIN_ROOT}`.
+time: 2026-10-26T11:00:00.000000-04:00
+custom:
+    Slug: prompt-audit-stale-refs

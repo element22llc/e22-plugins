@@ -154,6 +154,23 @@ else
 	emit "delivery-mode-declared" "mis-wired" "$F"
 fi
 
+# --- agents-md-imported - Claude Code still reads the team's AGENTS.md ---
+# Claude Code reads AGENTS.md only when no CLAUDE.md exists, so the CLAUDE.md the
+# bootstrap writes silences a team AGENTS.md unless it imports it. steer's own
+# pointer block is not team content. The import must be a bare line: an `@path`
+# in backticks or a code block is not evaluated.
+F="AGENTS.md"
+ai_files="$F,CLAUDE.md"
+if ! exists "$F" || ! exists "CLAUDE.md" ||
+	! awk '/^<!-- steer-agents-pointer:start/{p=1} !p && NF{t=1} /^<!-- steer-agents-pointer:end -->/{p=0} END{exit !t}' \
+		"$ROOT/$F" 2>/dev/null; then
+	emit "agents-md-imported" "n/a" "$ai_files"
+elif grep -Eq '^@(\./)?AGENTS\.md[[:space:]]*$' "$ROOT/CLAUDE.md" 2>/dev/null; then
+	emit "agents-md-imported" "present-wired" "$ai_files"
+else
+	emit "agents-md-imported" "mis-wired" "$ai_files"
+fi
+
 # --- app-knowledge-docs - the app guide (how to use/operate the product) ---
 # The layout reference (CONVENTIONS.md), `rules/30-spec.md` § Living documentation,
 # `50-done.md`, the PR
@@ -296,6 +313,15 @@ elif has "$F" "scan-version-pins.sh"; then
 	emit "drift-gate" "present-wired" "$dg_files"
 else
 	emit "drift-gate" "mis-wired" "$dg_files"
+fi
+
+# --- review-calibration - automated PR reviews rank findings by the standards ---
+# Presence-only: the file is team-owned, so its content is step 5's reconcile.
+F="REVIEW.md"
+if exists "$F"; then
+	emit "review-calibration" "present-wired" "$F"
+else
+	emit "review-calibration" "absent" "$F"
 fi
 
 # --- branch-protection-policy - machine-readable gate description ---

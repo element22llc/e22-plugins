@@ -11,13 +11,13 @@ install `spec/PRODUCT.md` (from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`) and **skip every
 product-level artifact** below - `vision.md`, `users.md`, `glossary.md`,
 `/spec/history/`, `/spec/app/`, `/spec/features/`, `/spec/tracker.md`, and
-`/spec/sources/` (like `/spec/reference/`, that one is the workspace's - rule
-`HOUSEKEEPING.md` forbids creating it in a member). Those
+`/spec/sources/` (like `/spec/reference/`, that one is the workspace's - `templates/reference/HOUSEKEEPING.md`
+forbids creating it in a member). Those
 live once, in the workspace. The member still gets its own internals:
 `spec/decisions/`, `spec/design/`, `DESIGN.md`, `ARCHITECTURE.md`,
 `PRODUCTIONIZATION.md`, and the whole non-`spec/` scaffold. Writing the
-product-level files here manufactures the split-brain spine rule
-`30-spec` and `/steer:reference polyrepo` exist to prevent - if you
+product-level files here manufactures the split-brain spine
+`/steer:reference polyrepo` exists to prevent - if you
 cannot tell which role this repo plays, say so and stop rather than write them
 locally. Everything else in this step is unchanged.
 
@@ -39,7 +39,10 @@ the opt-in `copilot-setup-steps.yml` is **not** auto-installed), copy
 Cursor, Gemini CLI and Codex read natively as `/steer-<skill>`; steer-managed,
 overwrite on refresh, never hand-edit), add the
 `${CLAUDE_PLUGIN_ROOT}/templates/agents/agents-pointer.md` block to `AGENTS.md`
-(create it if absent; never touch content outside the block), and instantiate the
+(create it if absent; never touch content outside the block; if it already has
+team content, end `CLAUDE.md` with the `@AGENTS.md` import from
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/CAPABILITIES.md` ->
+`agents-md-imported`), and instantiate the
 spec spine from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
 `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts -
@@ -92,8 +95,7 @@ instead of overwriting it.
     the Layer-2 dir `profiles/workspace/`: `README.md` and `mise.toml` and
     `compose.yaml` all **replace** their core counterparts, `gitignore` merges
     into `.gitignore`, and `scripts/ws.sh` installs as `scripts/ws.sh`. **Skip
-    Layer 1 entirely** - this repo owns no application code, so also drop
-    Layer 0's `apps/` and the Dockerfile refs. **Keep** Layer 0's
+    Layer 1 entirely** - this repo owns no application code. **Keep** Layer 0's
     `scripts/worktree-env.sh`: the workspace boots the members' services
     together and needs its own Compose project name so it never collides with a
     member's standalone stack.

@@ -34,6 +34,10 @@ It covers, in detail:
   standalone `apps/api` or the Python/FastAPI switch is warranted (ADR either way).
 - **Local services** - Docker Compose from the template `compose.yaml`, the
   same-engine-as-deployed rule, and how `dev:setup` ties in.
+- **Native Claude Code delivery features** - `/batch` (one umbrella issue,
+  unit PRs into `batch/<slug>`), `/autofix-pr` (pushes, leaves drift flags to
+  the human), plan mode and `plansDirectory`, `claude --worktree "#<n>"` (a PR,
+  not an issue) and subagent worktrees.
 - **Monorepo layout** - `/apps`, `/packages`, `/configs`; polyrepo across
   products, monorepo within one.
 - **Workspace tooling** - pnpm (Node), uv (Python).
@@ -142,10 +146,12 @@ It covers, in detail:
 - **The honest boundary** - why a plugin and the model cannot see context usage,
   trigger `/compact`, or start a new session (only the user can), so the design
   makes switching *unnecessary* rather than automatic.
-- **Delegate heavy runs to a subagent** - when a run is long, multi-phase, or
-  search-heavy, fork it (fresh context by construction) and return only the
-  structured result; which model tier each shape wants (read/search fan-out ->
-  Sonnet-tier at low effort; reviewer/verify delegations -> session model); the
+- **Delegate a bounded run to a subagent** - one loop is the default; fork
+  (fresh context by construction) only a sweep whose transcript is bloat,
+  independent parallel units, or a review that must stay independent, and
+  return only the structured result; connected multi-phase work stays in one
+  context; which model tier each shape wants (read/search fan-out ->
+  a cheaper model at lower effort; reviewer/verify delegations -> session model); the
   steer exemplars (`/steer-audit` -> `steer-reviewer`, `/steer-work --reviewed`)
   and when *not* to fork.
 - **Keep durable state in files** - what survives compaction (`/spec/**`, rules,
@@ -177,13 +183,13 @@ It covers, in detail:
   `architecture-diagram.md` so the two tiers compose. Includes the inert
   `diagrams:render` mise task and how to activate it.
 - **Drift discipline** - the diagram is updated in the same PR that reshapes the
-  system (living-docs rule `32`); on Tier 2 `architecture-diagram.md` is
+  system (the `30-spec` living-docs rule); on Tier 2 `architecture-diagram.md` is
   *generated* - edit the `.likec4` source, not the Mermaid.
 - **Tool choices considered** - why Mermaid + LikeC4 (diagram-as-code, git-diffable,
   Claude-authorable) over GUI/JSON tools (Excalidraw, draw.io) or diagram-editor
   libraries (ReactFlow).
 
-This backs the always-on living-docs rule `32` and the `spec/design/` layout.
+This backs the always-on `30-spec` living-docs rule and the `spec/design/` layout.
 
 ## artifacts
 
@@ -237,8 +243,8 @@ It covers, in detail:
 
 - **What the prompt changes - and what it does not.** A gate requires the deciding
   *human*, never a particular channel; the in-session prompt removes a round trip,
-  not the decision. `Decide later` reproduces today's behaviour exactly, so the
-  change is strictly additive.
+  not the decision. `Decide later` leaves everything untouched, so the prompt
+  never forces an answer.
 - **The three promptable gates** - ADR `Proposed -> Accepted`, intent
   `draft -> approved`, `--reviewed` plan sign-off - each keeping its existing owner,
   single writer, and preconditions (a failed blocking-question gate means the

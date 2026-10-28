@@ -37,7 +37,7 @@ Sweep the spine + tracker and report every disagreement:
 
 **Delivery state is never reconciled - there is nothing to reconcile.** A feature's
 progress lives only in its issue `steer:state`; the spec's `Status:` holds product
-state (`draft`/`approved`/`live`) and no longer mirrors it, so a merged PR, a close,
+state (`draft`/`approved`/`live`) and does not mirror it, so a merged PR, a close,
 or a reopen cannot leave a stale `Status`. Do not compare `Status:` against
 `in-progress`/`validate`/`done` and do not "fix" a spec that reads `approved` while
 its issue reads `done` - that pairing is correct (see the crosswalk in

@@ -1,6 +1,6 @@
 ---
 name: steer-doctor
-description: Internal prerequisite path - detect what a managed repo needs locally before bootstrap or dev (git, mise and the runtimes it manages, Docker), flagging a shadowed runtime; installs mise + runtimes on confirmation, GUI and `sudo` steps handed over.
+description: Detect and install missing local prerequisites (git, mise, runtimes, Docker), flagging a shadowed runtime.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup doctor - not a direct entry point.
+**When to use.** Reached via /steer-setup doctor.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

@@ -11,6 +11,14 @@
 #   volumes are unreachable by any task. WorktreeRemove fires while the worktree
 #   is still on disk, which is the only window in which the cleanup is cheap.
 #
+# WHEN IT FIRES - RARELY
+#   Only for a worktree a `WorktreeCreate` hook created (hooks reference, event
+#   table). Claude Code removes the git worktrees it creates itself - `claude
+#   --worktree`, `EnterWorktree`, `isolation: worktree` - so this never runs for
+#   them; check-worktree-orphans.sh reports their leftovers instead. It stays
+#   registered for repos where another plugin's `WorktreeCreate` hook makes the
+#   worktrees.
+#
 # WHY IT MAY REMOVE VOLUMES HERE AND NOT AT SessionEnd
 #   The harness has told us the checkout is being destroyed. The scaffold gives
 #   each worktree its own COMPOSE_PROJECT_NAME (scripts/worktree-env.sh), so the

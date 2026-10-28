@@ -1,0 +1,16 @@
+kind: Added
+body: |-
+    - **Added: guidance on how Claude Code's native delivery features fit the
+      standards.** `/steer:reference conventions` gains a section that
+      `/steer:work` and `/steer:setup worktrees` point to. `/batch` takes one
+      umbrella issue, and each unit PRs into a `batch/<slug>` branch with
+      `Refs #N`. `/autofix-pr` fits pr-flow and should be told to leave drift
+      flags to the human reviewer. Plan mode is an acceptable plan for a
+      Behavioral change, and `plansDirectory` stays unset (or points at a
+      git-ignored path) so plan files never become a second source of truth.
+      `claude --worktree "#<n>"` takes a pull request, not an issue, and
+      `/steer:work start` still cuts the `issue/<n>-<slug>` branch inside
+      any worktree.
+time: 2026-10-27T21:00:00.000000-04:00
+custom:
+    Slug: native-delivery-features

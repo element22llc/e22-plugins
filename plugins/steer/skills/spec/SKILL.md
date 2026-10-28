@@ -1,21 +1,16 @@
 ---
 name: spec
-description: "Spec-only brainstorm for a feature - author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. `questions` sweeps the whole spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document and `roadmap` lays unshipped intent on a release timeline. Ends at an approved intent, not a build."
+description: "Spec-only brainstorm for a feature - author intent.md (and contract.md where behavior demands it) WITHOUT writing any code. Ends at an approved intent, not a build."
 when_to_use: >-
-  Use to think a feature through before committing to implementation ("grill
-  me", "stress-test this"), shape acceptance criteria, or validate a spec's
-  question state. Works spec-only on
-  an unmanaged repo (lite mode) - no bootstrap required. `questions` works down
-  accumulated open questions; as `questions needs` it lists what the client
-  still owes before a wave (access, tooling, decisions), and as `questions
-  bundle` it hands a Product Owner every feature's questions at once as a
-  fillable questionnaire; `adr` records a
-  hard-to-reverse or cross-cutting choice (stack, database, auth, deployment,
-  tenancy) as a numbered ADR, and `adr accept <n>` is the only path from
-  Proposed to Accepted. `intake` absorbs a PO's new or re-sent spec, roadmap or
-  requirements document (docx/pptx/xlsx/pdf, a deck or a spreadsheet) by
-  diffing it against the last version to find what changed; `roadmap` turns
-  unshipped intent into a release timeline of milestones.
+  Use to think a feature through ("grill me", "stress-test this") or shape
+  acceptance criteria; works on an unmanaged repo too. `clarify` sweeps a
+  draft for gaps and edge cases, `approve` flips its Status, `validate` checks
+  consistency. `questions` works down open questions (`needs`: what the client
+  still owes before a wave; `bundle`: a fillable questionnaire for the PO).
+  `adr` records a hard-to-reverse or cross-cutting decision (stack, database,
+  auth, deployment, tenancy); `adr accept <n>` ratifies it. `intake` absorbs a
+  re-sent PO document (docx, pdf, deck, spreadsheet) and finds what changed.
+  `roadmap` lays unshipped intent on a release timeline of milestones.
 argument-hint: "[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all] | questions | adr | intake | roadmap]"
 ---
 <!-- steer:modes default,approve,clarify,validate,questions,adr,intake,roadmap -->
@@ -33,9 +28,9 @@ implementation.
 
 ## Modes
 
-The default mode is the brainstorm loop below. `questions` and `adr` **delegate**
-to the internal skill that owns the work - load it on entry and follow it; never
-restate its steps here.
+The default mode is the brainstorm loop below. `questions`, `adr`, `intake` and
+`roadmap` **delegate** to the internal skill that owns the work - load it on
+entry and follow it; never restate its steps here.
 
 | Mode | What it does | Owning skill |
 |---|---|---|
@@ -73,8 +68,8 @@ need a human answer. "Is this spec complete?" is `clarify`; "let's answer the
 open questions" is `questions`.
 
 **`adr accept <n>` and `approve <id>` are human gates** (rule `61-gates`), so
-they are never taken on your own initiative, and the sub-arguments do not appear
-in `argument-hint` - the table above is where they are discoverable.
+they are never taken on your own initiative. `adr accept <n>` is not in
+`argument-hint` - the table above is where it is discoverable.
 
 ## The defining guardrail - never builds
 
@@ -117,14 +112,13 @@ and surface no `/steer:setup` follow-up.
 
 **Lite mode does not extend to every mode.** The brainstorm loop, `clarify`,
 `approve` and `validate` all work on the one feature directory
-`/steer:spec-scaffold` creates, so they run. `questions` sweeps a spine that
-does not exist and `adr` writes `/spec/decisions/`, which decision capture
-presumes a bootstrap installed (rule `30-spec` § Durable decisions) - so both
-**stop and route to `/steer:setup`** on an unmanaged repo, which each owning
-skill gates on itself (`adr` step 1, `questions` step 0, `intake` step 1,
-`roadmap` step 2) - so the same thing
-happens when `/steer:issues` or `/steer:intake` reaches the sweep without coming
-through this door. Say which mode was asked for and why it needs the spine;
+`/steer:spec-scaffold` creates, so they run. `questions`, `adr`, `intake` and
+`roadmap` need the spine itself - `adr`, for one, writes `/spec/decisions/`,
+which decision capture presumes a bootstrap installed (rule `30-spec` -> Durable
+decisions) - so on an unmanaged repo each **stops and routes to
+`/steer:setup`**. Each owning skill gates on this itself (`adr` step 1,
+`questions` step 0, `intake` step 1, `roadmap` step 2), so the same thing
+happens when another skill reaches it without coming through this door. Say which mode was asked for and why it needs the spine;
 don't silently downgrade it to the brainstorm loop. `roadmap` carries a second
 precondition the others don't: it is GitHub-only, and says so and stops when
 `/spec/tracker.md` declares another tracker.

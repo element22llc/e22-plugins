@@ -1,6 +1,6 @@
 ---
 name: steer-sync
-description: Internal steady-state update - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
+description: Apply migrations and reconcile spine + scaffold after a plugin release, then land a PR; never clobbers.
 argument-hint: '[--check]'
 user-invocable: false
 ---
@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-setup sync - not a direct entry point.
+**When to use.** Reached via /steer-setup sync.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
@@ -236,7 +236,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    `/spec/history/` entry (what synced -
    `FROM -> TARGET`, which migrations applied, which templates reconciled, which
    capability gaps repaired - why, who asked, refs) - in a member, to the
-   workspace's ledger per rule `30-spec` § Living documentation; the member's own durable record
+   workspace's ledger per `/steer-reference polyrepo`; the member's own durable record
    is its `/spec/.version` stamp. Commit on `feat/sync`, then
    push and open the PR
    **against `BASE`** (the branch captured in step 1) without asking, announcing

@@ -55,7 +55,21 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   the whole pipeline on billed runner minutes, so a fix you could have found
   locally costs a full CI run. A push made before local gates are green (a WIP
   checkpoint, a backup) goes to a **draft** PR (`gh pr create --draft`), which
-  the shipped `ci.yml` does not run. **Capture what was learned** -
+  the shipped `ci.yml` does not run. **Then commit and run the code gate**
+  before the first push, unless the change is Trivial (rule
+  `80-change-class`, the heavier class when arguable; a `--hotfix` never is): a
+  fresh read-only reviewer subagent, never this context and not
+  `steer-reviewer` (no git), reads `git diff origin/<default>...HEAD` and
+  scores it against the code-gate rubric in
+  [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) §4. A later
+  `finish` on an open PR re-runs it on the commits since the last gate only.
+  Fix every high-severity finding, re-run the local gates, and re-review; stop
+  after 2 rounds or the first round with no high finding, and name any high
+  finding left open. Put each medium finding you leave, and each design
+  question with the decision taken, under the PR's *Notes for the reviewer* (in
+  solo-trunk, the trunk commit body), so the human confirms rather than
+  discovers. A skipped gate gets one line saying why.
+  **Capture what was learned** -
   if the work turned on reasoning that is non-obvious and absent from the final
   code, tests and docs, put it on the first rung of the enforcement ladder that
   can carry it: regression test -> lint rule or hook -> `contract.md` rule ->

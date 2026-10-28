@@ -214,7 +214,7 @@ Three orthogonal axes; do not collapse them into one another:
 
 ## Native issue fields & the Projects v2 compatibility boundary
 
-GitHub now ships **native issue fields** - typed metadata (single-select, text,
+GitHub **native issue fields** are typed metadata (single-select, text,
 number, date) defined org-wide and stored **on the issue itself**, distinct from
 Project-item fields. The org's default set pins **Priority, Effort, Start date,
 and Target date** to issue types. These are *not* labels and *not* in the issue
@@ -328,7 +328,7 @@ Because **markers are invisible to Projects** (it cannot read HTML comments):
 
 Direction of truth is fixed: the **issue and `/spec` are canonical; a Project is
 a derived view/overlay.** Planning fields that are **native issue fields**
-(priority, effort, start/target date) now live **on the issue** (the section
+(priority, effort, start/target date) live **on the issue** (the section
 above) - they are neither markers nor labels. The planning fields with **no home
 on the issue** - iteration, size, and any other custom Project-*item* single-select -
 live **only** on the Project item and are never mirrored back into the issue.

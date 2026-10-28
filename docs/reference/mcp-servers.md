@@ -33,7 +33,7 @@ server-by-server content is reconciled by hand against the source of truth.
 
 | Server | Transport | Auth | Purpose |
 | --- | --- | --- | --- |
-| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (keychain / `~/.claude/.credentials.json`) | Read issues, comment on PRs, inspect workflow runs. |
+| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (keychain / `~/.claude/.credentials.json`) | Read and write issues (the `context` and `issues` toolsets only). |
 | `context7` | HTTP (`mcp.context7.com/mcp`) | none (optional `CONTEXT7_API_KEY`) | Pull up-to-date, version-accurate library/API documentation on demand. |
 
 ## `github`
@@ -42,6 +42,15 @@ Wires the session to GitHub's hosted MCP server so tracker reads/writes can go
 through MCP rather than shelling out. It is the **preferred** path for
 [`/steer:tracker-sync`](skills.md), which falls back to the `gh` CLI and then a
 manual floor when no MCP tracker tool is present.
+
+The server is limited to two toolsets with the `X-MCP-Toolsets: context,issues`
+header: `issues` carries every tool steer calls (`issue_read`, `issue_write`,
+`list_issues`, `search_issues`, `sub_issue_write`, `add_issue_comment`), and
+`context` carries `get_me`. That cuts the server from about 50 tools to 14, so
+tool selection stays sharp. Pull requests, repositories and workflow runs go
+through the `gh` CLI, so a session whose only GitHub MCP server is steer's has
+no MCP tools for them. To get them for ad-hoc use, add your own GitHub server
+in a project or user `.mcp.json`.
 
 The config references `${user_config.github_pat}`, a **plugin user-config**
 value declared in the plugin manifest's `userConfig` block and marked

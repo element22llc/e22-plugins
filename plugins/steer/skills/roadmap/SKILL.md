@@ -1,7 +1,7 @@
 ---
 name: roadmap
-description: "Internal release timeline - turn the /spec spine's unshipped intent into issues grouped under release milestones, viewable as a GitHub Projects v2 roadmap (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Optionally renders an Artifact timeline."
-when_to_use: "Reached via /steer:spec roadmap - not a direct entry point."
+description: "Group unshipped intent into issues under release milestones; never fabricates dates."
+when_to_use: "Reached via /steer:spec roadmap."
 argument-hint: "[<no argument = read-only preview> | from-features | from-gap | sync]"
 # Internal timeline path behind `/steer:spec roadmap`. Model-callable, hidden
 # from the slash menu - see the note on `init`.
@@ -42,7 +42,7 @@ confirmation.
 1. **Read `/spec/tracker.md`.** Confirm `system: github`. On a non-GitHub tracker,
    say so and stop - there is no GitHub roadmap path; the manual flows in
    `/steer:tracker-sync` apply. Never fabricate tracker state.
-2. **Locate the spine.** If there is no `/spec`, redirect to `/steer:setup` (it
+2. **Locate the spine.** If `spec/.version` is absent, redirect to `/steer:setup` (it
    picks `init` or `adopt` from the repo state) and stop - there is no work-set
    to lay out yet.
 3. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
