@@ -231,9 +231,12 @@ or start a new session** - only you can. So `steer` will never silently compact 
 What it does instead (the context-hygiene standard; the router carries the
 two always-on lines, full prose via `/steer:reference context-hygiene`):
 
-- **Delegates heavy, multi-phase, or search-heavy runs to subagents**, which get a
-  fresh context window by construction and return only the result - so the heavy
-  intermediate context never lands in your main session. Read/search/summarize
+- **Delegates bounded runs to subagents** - a search sweep whose transcript is
+  bloat, independent parallel units, or a review that must stay independent. Each
+  gets a fresh context window by construction and returns only the result, so the
+  heavy intermediate context never lands in your main session. Connected
+  multi-phase work stays in one context, where later steps can use what earlier
+  ones found. Read/search/summarize
   fan-out delegations can run on a cheaper model at lower effort;
   reviewer/verify/judge delegations stay on the session model.
 - **Keeps durable run-state and task constraints in files** (`/spec/**`, sidecars),
