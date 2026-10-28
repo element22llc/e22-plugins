@@ -63,11 +63,11 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   it against the code-gate rubric in
   [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the
   general reviewer plus one per specialist lens the diff triggers, in one
-  message, then a fresh verifier per high finding (the refute pass). A later
+  message, then the refute pass on their high findings. A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
   Fix every confirmed high finding, re-run the local gates, and re-review; stop
   after 2 rounds or the first round with no confirmed high finding, and name
-  any high finding left open. Put each medium finding you leave, and each design
+  any high finding left open, unconfirmed ones as their own list. Put each medium finding you leave, and each design
   question with the decision taken, under the PR's *Notes for the reviewer* (in
   solo-trunk, the trunk commit body), so the human confirms rather than
   discovers. A skipped gate gets one line saying why.
