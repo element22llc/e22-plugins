@@ -4,7 +4,7 @@
 # steer hook helper - tear down a linked worktree's local backing services.
 #
 # WHY THIS EXISTS
-#   Rule `50-done` § End-of-session checklist asks the agent to stop the dev servers and watchers
+#   Rule `50-done` -> End-of-session checklist asks the agent to stop the dev servers and watchers
 #   it started, freeing their ports; the containers a worktree started are this
 #   helper's half of that. Asking is all a
 #   rule can do: it is prose in the always-on payload, it costs bytes every
@@ -28,7 +28,7 @@
 #   clean  `docker:clean` - down + volumes + orphans. Used at WorktreeRemove,
 #          where the checkout itself is about to be deleted and its per-worktree
 #          volumes are, by construction, unreachable afterwards. This is the
-#          command rule `45-delivery` § Parallel worktrees names for that moment.
+#          command rule `45-delivery` -> Parallel worktrees names for that moment.
 #
 #   Destroying volumes is only ever done on the `clean` path, and only when the
 #   harness has told us the worktree is being removed. Nothing here removes data

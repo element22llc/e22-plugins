@@ -44,7 +44,7 @@ ruleset.
 through one** (rule 53). It discovers, triages, drafts in an isolated worktree,
 runs the verify loop, has the change checked by an **independent reviewer** it did
 not author with (the code gate `/steer:work finish` runs, on the `REVIEW-LOOP.md`
-§4 rubric - rule 53's split-ideation-from-verification step; the drafting agent
+section 4 rubric - rule 53's split-ideation-from-verification step; the drafting agent
 never clears its own work), pushes its **own work branch**, and opens a **draft** PR -
 autonomous delivery up to the merge, exactly like an interactive session (Commit
 autonomy). It does **not** merge, deploy,
@@ -177,7 +177,7 @@ Report whether `.github/workflows/steer-loop.yml` exists and is wired:
   `issues: write`, `id-token: write`, `actions: read` - flag any broader grant;
 - the prompt contains no merge/deploy/push-to-`main` instruction (rule 53 - the
   loop pushes only its own work branches);
-- the prompt's review step names the code gate (`REVIEW-LOOP.md` §4); one that
+- the prompt's review step names the code gate (`REVIEW-LOOP.md` section 4); one that
   still names `steer-reviewer` predates it - offer to re-scaffold the prompt;
 - `ANTHROPIC_API_KEY` is present in `gh secret list`;
 - `policy/automation.yml` declares `loops: true` - without it the repo runs the

@@ -160,7 +160,7 @@ the org stack defaults in rule `10-stack`:
   `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack, and
   the session check reporting stacks deleted worktrees left behind.
 - **`STEER_WORKTREE_OFFSET`** - pin one worktree's host-port offset when two
-  draw the same one (rule `45-delivery` § Parallel worktrees), instead of editing shared files.
+  draw the same one (rule `45-delivery` -> Parallel worktrees), instead of editing shared files.
 - **`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** - Claude Code's own knob, not
   steer's: raises the `SessionEnd` budget above its 1.5s default so the teardown
   has time to finish (see [Hooks](hooks.md)).

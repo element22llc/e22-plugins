@@ -288,7 +288,7 @@ assert_eq "classify unknown" "$(steer_classify_path data.bin)" "unknown"
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
 assert_deny "version-pins: denied major denied" "${out}"
 
-# Floor-only policy: a supported-but-older major (≥ minimum_supported, not denied)
+# Floor-only policy: a supported-but-older major (>= minimum_supported, not denied)
 # is silent - there is no advisory "behind the target" tier.
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
 assert_no_deny "version-pins: above-floor not denied" "${out}"
@@ -3313,6 +3313,7 @@ printf '%s' "${out}" | grep -q 'spec/.version: #' && bad "snapshot: reported the
 assert_has "snapshot: feature status surfaced" "${out}" "checkout: status=draft contract=no"
 assert_has "snapshot: real open question surfaced" "${out}" "Q-001"
 assert_has "snapshot: question fields surfaced" "${out}" "impact: blocking"
+assert_has "snapshot: open-question summary carried from the hook" "${out}" "summary: \*\*1 open question"
 assert_has "snapshot: proposed ADR surfaced" "${out}" "0001-stack.md: Proposed"
 assert_has "snapshot: blockquote ADR status surfaced" "${out}" "0002-event-bus.md: Accepted"
 assert_has "snapshot: unfilled ADR template flagged" "${out}" "0003-unfilled.md: unresolved-template"
@@ -4552,15 +4553,21 @@ else
 		'\0342\0200\0222' '\0342\0200\0225' '\0342\0200\0230' '\0342\0200\0231' \
 		'\0342\0200\0234' '\0342\0200\0235' '\0342\0200\0246' '\0342\0200\0242' \
 		'\0302\0240' '\0342\0200\0257' '\0342\0200\0211' '\0342\0206\0222' \
-		'\0342\0206\0220' '\0342\0206\0224' '\0342\0207\0222'; do
+		'\0342\0206\0220' '\0342\0206\0224' '\0342\0207\0222' '\0342\0207\0224' \
+		'\0302\0267' '\0302\0247' '\0303\0227' '\0303\0267' '\0342\0210\0222' \
+		'\0342\0211\0245' '\0342\0211\0244' '\0342\0211\0240' '\0342\0211\0210' \
+		'\0342\0211\0241' '\0342\0210\0210' '\0342\0212\0206' '\0342\0204\0271' \
+		'\0342\0232\0240' '\0342\0234\0205' '\0342\0234\0223' '\0342\0234\0227' \
+		'\0342\0235\0214' '\0342\0235\0223' '\0357\0270\0217' '\0342\0224\0234' \
+		'\0342\0225\0277' '\0360\0237\0224\0264'; do
 		printf 'a %b b\n' "${_oct}" | LC_ALL=C grep -qIE -- "${ASCII_PAT}" ||
 			ASCII_PARITY="${ASCII_PARITY} ${_oct}"
 	done
 	[ -z "${ASCII_PARITY}" ] && ok ||
 		bad "check-ascii.sh bulk pattern misses characters the naming table knows:${ASCII_PARITY}"
-	# Accented Latin and guillemets must never match - non-English copy is out of scope.
+	# Accented Latin, Greek and guillemets must never match - non-English copy is out of scope.
 	ASCII_FP=""
-	for _oct in '\0303\0251' '\0303\0240' '\0302\0253' '\0302\0273'; do
+	for _oct in '\0303\0251' '\0303\0240' '\0302\0253' '\0302\0273' '\0303\0266' '\0316\0224'; do
 		printf 'a %b b\n' "${_oct}" | LC_ALL=C grep -qIE -- "${ASCII_PAT}" &&
 			ASCII_FP="${ASCII_FP} ${_oct}"
 	done

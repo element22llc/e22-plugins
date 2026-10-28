@@ -15,7 +15,7 @@ vendored* - its content is never copied here.
 ```mermaid
 flowchart LR
     subgraph MP["e22-plugins marketplace"]
-      STEER["steer plugin<br/>rules · skills · hooks · templates"]
+      STEER["steer plugin<br/>rules, skills, hooks, templates"]
       FD["frontend-design<br/>(re-listed, pinned SHA)"]
     end
     DEV["Developer / PO<br/>in Claude Code"] -->|installs| MP
@@ -44,7 +44,7 @@ flowchart LR
 
     Add the marketplace, install `steer`, and run it end to end once.
 
-    [Installation](getting-started/installation.md) ·
+    [Installation](getting-started/installation.md),
     [First workflow](getting-started/first-workflow.md)
 
 -   **Joining a team that uses it?**
@@ -61,7 +61,7 @@ flowchart LR
 
     Which surfaces run hooks, which only run skills, and what to verify before you announce it.
 
-    [Known limitations](reference/known-limitations.md) ·
+    [Known limitations](reference/known-limitations.md),
     [Launch checklist](team-rollout/launch-checklist.md)
 
 -   **Want the mental model?**
@@ -70,7 +70,7 @@ flowchart LR
 
     The spec spine, the lifecycle it drives, and how authorization is decided.
 
-    [Product spine](concepts/product-spine.md) ·
+    [Product spine](concepts/product-spine.md),
     [SDLC overview](concepts/sdlc.md)
 
 -   **Looking for a specific command?**
@@ -79,7 +79,7 @@ flowchart LR
 
     Every `/steer:<skill>`, every hook, and the repository contract they assume.
 
-    [Skills reference](reference/skills.md) ·
+    [Skills reference](reference/skills.md),
     [Hooks](reference/hooks.md)
 
 -   **Contributing to the plugin itself?**
@@ -88,7 +88,7 @@ flowchart LR
 
     The docs contract, the release flow, and the authoring guide for rules and skills.
 
-    [Contributing -> Documentation](contributing/documentation.md) ·
+    [Contributing -> Documentation](contributing/documentation.md),
     [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md)
 
 </div>

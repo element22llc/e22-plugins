@@ -54,7 +54,7 @@ For every remaining PR, spawn a **fresh read-only subagent** in the same message
 (waves of up to 10), each with one PR - not `steer-reviewer`, which audits
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
 read, and the code-gate rubric in
-[`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) §4 - the same one
+[`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the same one
 the author's `finish` ran. The local checkout may sit at the base, not the PR
 head: it serves the other-instances and peer passes, which look outside the
 diff. Ask it to return a compact **card**:
@@ -84,7 +84,7 @@ Sort every PR into a bucket and print them in this order, one line per PR
 | **Blocked** | draft, red CI, conflicting | no - the author's move |
 
 **`Look` never batch-approves.** A High-risk change or a flagged drift class
-needs line-by-line review and an explicit resolution (rule `50-done` § Drift
+needs line-by-line review and an explicit resolution (rule `50-done` -> Drift
 gates); offer to walk the human through each one after the batch.
 
 Then ask **once**, in plain text - a picker caps out at four options: reply

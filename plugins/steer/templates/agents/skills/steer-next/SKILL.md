@@ -180,8 +180,8 @@ fall back to sweeping the dimensions manually as specified below.
 - **Tracker issues** - read `spec/tracker.md` `system:`. If `github`, query issue
   lifecycle state via `/steer-tracker-sync` (MCP-first, `gh` fallback): the
   `<!-- steer:state=... -->` marker
-  (`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate ·
-  blocked · done · cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
+  (`inbox, exploring, ready-for-spec, ready-for-dev, in-progress, validate,
+  blocked, done, cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
   **say so** - never invent tracker state. Also read each candidate issue's native
   **Priority** field (`/steer-tracker-sync field-get`) and native **blocked-by**
   edges - they feed the within-level tie-break (the composite sort key below). Where
@@ -251,7 +251,7 @@ keep the technical detail for devs. Emit, in order:
    what you found (this is the navigator's value: it shows the basis for the
    recommendation). Mark clean / not-applicable dimensions explicitly.
 2. **`## Recommended next actions - /steer-next`** - the standard block per
-   NEXT-ACTIONS.md §5: the `###` category sections (omit empties), then
+   NEXT-ACTIONS.md section 5: the `###` category sections (omit empties), then
    `### Current recommended action` naming the single arbitrated action, with a
    `Suggested command:` line **only** when a real command performs it. A human gate still gets **no command for the
    decision itself** - but where the decision is answerable in-session (ADR
@@ -269,8 +269,8 @@ recommended action does not weaken that.
 
 End the readout with the handoff block and nothing after it - no invitation to
 correct the recommendation, no offer to file a report, no reassurance that the
-user need not know a skill name (rule `03-output` § Responses: no closing offer). The
+user need not know a skill name (rule `03-output` -> Responses: no closing offer). The
 block's heading already names this skill, which is what a user needs to say "that
-was the wrong route"; when they do, rule `00-router` § When steer itself misbehaves files it with
+was the wrong route"; when they do, rule `00-router` -> When steer itself misbehaves files it with
 `/steer-report`. A standing invitation on every readout buys nothing and crowds
 out the recommendation.

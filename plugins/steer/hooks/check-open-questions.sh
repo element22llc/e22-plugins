@@ -245,7 +245,7 @@ TOTAL=$((NOW + TRANS + BACKLOG + ATTN + LEGACY_Q))
 printf '<!-- steer: open questions outstanding -->\n'
 
 if [ -n "${LEGACY}" ]; then
-	printf '⚠ **Retired `spec/SPEC-QUESTIONS.md` present.** Open questions no longer '
+	printf '**Retired `spec/SPEC-QUESTIONS.md` present.** Open questions no longer '
 	printf 'live in a standalone file - they belong next to their context '
 	printf '(`vision.md` / each feature'"'"'s `intent.md` -> `## Open questions`). '
 	printf 'Run **/steer:spec questions** to migrate its questions into the right files and '
@@ -262,7 +262,7 @@ _add() { if [ -n "${_parts}" ]; then _parts="${_parts}, $1"; else _parts="$1"; f
 [ "${BACKLOG}" -gt 0 ] && _add "${BACKLOG} non-blocking"
 [ "${ATTN}" -gt 0 ] && _add "${ATTN} malformed"
 [ "${LEGACY_Q}" -gt 0 ] && _add "${LEGACY_Q} in the retired \`- [ ]\` format"
-printf 'ℹ **%s open question(s)** in %s spec file(s): %s.\n' "${TOTAL}" "${FILES}" "${_parts}"
+printf '**%s open question(s)** in %s spec file(s): %s.\n' "${TOTAL}" "${FILES}" "${_parts}"
 
 if [ "${TRACKER_IS_GITHUB}" = 1 ]; then
 	_how="promote (assign its owner via ${STEER_TRACKER_REL})"
@@ -294,9 +294,9 @@ if [ -n "${ITEMS}" ]; then
 		if [ "${_stale}" != 1 ]; then
 			_s=""
 		elif [ "${_owner}" = - ]; then
-			_s=" - ⚠ stale: set its \`owner:\`, then promote or defer"
+			_s=" - stale: set its \`owner:\`, then promote or defer"
 		else
-			_s=" - ⚠ stale: ${_how} or defer"
+			_s=" - stale: ${_how} or defer"
 		fi
 		printf -- '- `%s`%s (`%s`, %s, %s%s)%s\n' "${_qid}" "${_title}" "${_lbl}" "${_own}" "${_k}" "${_a}" "${_s}"
 	done
@@ -309,7 +309,7 @@ if [ "${ATTN}" -gt 0 ]; then
 	printf '\n%s malformed: a `### Q-NNN` block is missing `status:`/`impact:` - fix the metadata so its gate state is unambiguous.\n' "${ATTN}"
 fi
 if [ "${STALE}" -gt 0 ] 2>/dev/null; then
-	printf '\n🚨 **%s question(s) have rotted** - open past %sd (blocking) or %sd (non-blocking), not yet promoted. Promote or defer them in **/steer:spec questions**.\n' \
+	printf '\n**%s question(s) have rotted** - open past %sd (blocking) or %sd (non-blocking), not yet promoted. Promote or defer them in **/steer:spec questions**.\n' \
 		"${STALE}" "${STEER_QUESTION_STALE_DAYS}" "${STEER_QUESTION_STALE_NONBLOCKING_DAYS}"
 	if [ "${TRACKER_IS_GITHUB}" = 1 ]; then
 		printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `%s`.\n' "${STEER_TRACKER_REL}"

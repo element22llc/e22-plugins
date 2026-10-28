@@ -79,7 +79,7 @@ Empty output means the file is current as to headings and checklist items; the
 helper never emits **table rows**, so diff the `## Gap analysis` table by eye. Only then continue from the
 unchecked items. Full rules (anchor matching, over-reports handling) - the
 plugin-wide **Template reconciliation** convention:
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` -> "Template
 reconciliation".
 
 ## Phase 3 - Survey the codebase

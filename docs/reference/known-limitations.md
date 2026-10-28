@@ -330,12 +330,12 @@ raises a prompt. Be honest about the tiers:
   Cosmetic and non-blocking; it never rejects or reverts the write.
 - **`PostToolUse` -> `check-comment-density.sh`** notes a source or config file
   whose comment lines exceed a fifth of its non-blank lines (rule
-  `03-output` § Code comments). A once-per-file-per-session notice, not a gate - the write
+  `03-output` -> Code comments). A once-per-file-per-session notice, not a gate - the write
   already happened and is never reverted.
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that
   never got an issue. A report, not a gate - it cannot undo anything.
 - The **merge gate is not a hook at all** - it's a rule Claude follows
-  (`45-delivery`, `00-router` § You are not the gate). Nothing technically prevents a
+  (`45-delivery`, `00-router` -> You are not the gate). Nothing technically prevents a
   PR merge; a human reviewer is the real backstop.
 
 ## When hooks fail or don't run
@@ -357,7 +357,7 @@ there is no automatic retry. Mitigation:
     hooks share `hooks/lib/*.sh`, so one bad checkout takes out the whole set
     simultaneously (the v5.0.0 fault). It is **not** a case for
     `/steer:report`: it has a local, immediate answer. Run
-    [`/steer:setup doctor`](skills.md) - its **§0 plugin-integrity check** greps the
+    [`/steer:setup doctor`](skills.md) - its **section 0 plugin-integrity check** greps the
     installed `hooks/` and `scripts/` for CR before anything else and reports it
     as an install fault, with the repair. See
     [Windows setup -> Line endings](../getting-started/windows-setup.md#line-endings).

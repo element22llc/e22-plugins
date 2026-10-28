@@ -22,7 +22,7 @@ body:
     attributes:
       label: Where it happened
       description: The steer surface - skill, rule, hook, or template/script.
-      placeholder: "skill /steer:work · rule 36-issue-first · hook surface-faults.sh"
+      placeholder: "skill /steer:work, rule 36-issue-first, hook surface-faults.sh"
     validations:
       required: true
   - type: input

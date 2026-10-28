@@ -53,29 +53,29 @@ feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
 
 Flag each of these, citing the `Q-NNN` and file:
 
-- ✗ an **approved** intent (`Status: approved` or `live`)
+- **Error:** an **approved** intent (`Status: approved` or `live`)
   that still contains an `open` `blocking` question with
   `required_before: intent-approval` (later gates - `contract-approval`,
   `implementation`, ... - block their own gate, not the already-granted approval);
-- ✗ a `deferred` question missing `owner` or `required_before`;
-- ✗ a `resolved` question with no resolution folded into the spec's normative
+- **Error:** a `deferred` question missing `owner` or `required_before`;
+- **Error:** a `resolved` question with no resolution folded into the spec's normative
   prose (only a `_Resolution:_` line, or nothing);
-- ⚠ a question with a `tracker:` ref whose issue is **closed** but whose
+- **Warning:** a question with a `tracker:` ref whose issue is **closed** but whose
   `status:` is still `open` - the closed-issue / stale-spec trap;
-- ✗ a **promoted** question (an open `spec-question` issue references its
+- **Error:** a **promoted** question (an open `spec-question` issue references its
   `question-id`) with no `tracker:` ref back;
-- ✗ a `created:` field present but not a well-formed `YYYY-MM-DD` date (the
+- **Error:** a `created:` field present but not a well-formed `YYYY-MM-DD` date (the
   staleness clock can't read it);
-- ✗ a `kind:` field present but not `clarification` / `decision` / `access` /
+- **Error:** a `kind:` field present but not `clarification` / `decision` / `access` /
   `tooling` (absent is fine - it reads as `clarification`);
-- ⚠ an open question past its staleness threshold with no `tracker:` ref - not
+- **Warning:** an open question past its staleness threshold with no `tracker:` ref - not
   yet promoted: 14 days from `created:` for a `blocking` one, 60 for a
   `non-blocking` one (14 when the feature is `live`). This **warns**, it does
   not block: it mirrors the SessionStart hook's escalation, nudging you to
   promote (assign its owner via the tracker.md map) or defer with a reason;
-- ⚠ a bare `- [ ]` item under `## Open questions` - the retired format, which
+- **Warning:** a bare `- [ ]` item under `## Open questions` - the retired format, which
   `/steer-setup sync` converts to a `### Q-NNN` block;
-- ✗ an unfilled placeholder seed (`<!-- steer:placeholder -->` on the template's
+- **Error:** an unfilled placeholder seed (`<!-- steer:placeholder -->` on the template's
   bracketed `Q-001`) in a feature past `draft`, or beside real questions -
   delete it.
 
@@ -86,18 +86,18 @@ contributor, not just a session that runs this mode. Where that script exists,
 `sh scripts/ci-spec.sh` from the repo root is the quick way to run it here.
 
 **Cross-artifact analyze checks** - the pre-implementation consistency pass
-(intent <-> contract <-> tracker), run in the same sweep. All warnings (⚠): each
+(intent <-> contract <-> tracker), run in the same sweep. All warnings: each
 is a judgment call the human resolves, never a mechanical block:
 
-- ⚠ an acceptance criterion with no corresponding `contract.md` behavior where
+- **Warning:** an acceptance criterion with no corresponding `contract.md` behavior where
   a contract exists - the criterion can't be reviewed against anything
   testable;
-- ⚠ a `contract.md` behavior no acceptance criterion asks for - scope arrived
+- **Warning:** a `contract.md` behavior no acceptance criterion asks for - scope arrived
   in the contract without the PO's intent naming it (drift at birth);
-- ⚠ the linked tracker item (`> Tracker:` ref, read via `/steer-tracker-sync`
+- **Warning:** the linked tracker item (`> Tracker:` ref, read via `/steer-tracker-sync`
   when available) carries acceptance criteria or scope the intent doesn't -
   the copy-into-intent rule (`tracker.md` template) was skipped;
-- ⚠ an acceptance criterion failing the quality bar in the intent template's
+- **Warning:** an acceptance criterion failing the quality bar in the intent template's
   `## Acceptance criteria` guidance - not **testable** (no yes/no outcome),
   not **observable** (phrased as implementation), or not **bounded** (silent
   on the edge behavior the feature obviously has). Cite the criterion and say
@@ -108,14 +108,14 @@ requirement blocks (the template's `## Behavior rules` format), in the same
 sweep. Plain unnumbered rule bullets are the older format and stay valid -
 none of these fire on them:
 
-- ✗ a requirement ID used twice in one contract - the Spec delta and any test
+- **Error:** a requirement ID used twice in one contract - the Spec delta and any test
   citing it become ambiguous;
-- ⚠ a requirement with no Given/When/Then scenario bullet - nothing in it is
+- **Warning:** a requirement with no Given/When/Then scenario bullet - nothing in it is
   testable as written;
-- ⚠ a test that cites `<feature-id>/R-NNN` (in a test name or comment) for an ID
+- **Warning:** a test that cites `<feature-id>/R-NNN` (in a test name or comment) for an ID
   the contract no longer has - the requirement was removed but the test still
   claims to cover it. Search the test tree for the citation; cite the file;
-- ⚠ change-oriented wording in a contract - "now", "no longer", "as before",
+- **Warning:** change-oriented wording in a contract - "now", "no longer", "as before",
   "previously", "changed to" - a contract states current truth, and the change
   belongs in the PR's Spec delta. Cite the line; whether a hit actually narrates
   a change is the human's call.
@@ -161,7 +161,7 @@ exists a question with **all** of:
 
 - `impact: blocking`, **and**
 - `required_before: intent-approval`, **and**
-- `status` ∈ the unresolved set `{open, investigating, deferred}`.
+- `status` in the unresolved set `{open, investigating, deferred}`.
 
 A blocking-but-`deferred` question **still blocks** intent approval until its
 `impact:` is explicitly reclassified `non-blocking` - deferral is not resolution.

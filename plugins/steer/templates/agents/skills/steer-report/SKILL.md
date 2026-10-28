@@ -37,8 +37,8 @@ Two invariants, always:
   say so and stop.
 - **Scrub and dedupe, then auto-file.** You render the scrubbed body and file it
   without a confirmation step - the upstream `gh`/MCP create is **pre-approved**
-  in allowed-tools above. The safety floor is the scrub (§3) and the fingerprint
-  dedupe (§4), not a human prompt: if the scrub finds something it cannot safely
+  in allowed-tools above. The safety floor is the scrub (section 3) and the fingerprint
+  dedupe (section 4), not a human prompt: if the scrub finds something it cannot safely
   redact, it **omits** it (or drops the whole field) rather than asking.
 
 ## 1. Establish the report source
@@ -138,5 +138,5 @@ gh issue create --repo element22llc/e22-plugins \
   git-ignored scratch state, never a tracked product file.
 - Close with `## Recommended next actions - /steer-report` per
   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md` - on every exit:
-  filed, deduped onto an existing issue, the manual-filing fallback, or §1's
+  filed, deduped onto an existing issue, the manual-filing fallback, or section 1's
   "nothing to file" stop, where the action is the detail the user must supply.

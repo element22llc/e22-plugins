@@ -69,8 +69,8 @@ Each operation is MCP-first -> `gh` -> manual, and reports which path it took.
 
 | Operations | Read |
 |---|---|
-| `find` · `get` · `create` · `update-state` · `claim` · `comment` · `link-delivery` · `close`/`reopen` | **this file**, below |
-| `label` · `set-type` · `set-milestone` · `milestone-ensure` · `field-get` · `field-set` · `bootstrap-fields` · `link-parent` · `link-related` · `link-blocked-by` · `delivery-evidence` | [`OPERATIONS-GITHUB.md`](OPERATIONS-GITHUB.md) |
+| `find`, `get`, `create`, `update-state`, `claim`, `comment`, `link-delivery`, `close`/`reopen` | **this file**, below |
+| `label`, `set-type`, `set-milestone`, `milestone-ensure`, `field-get`, `field-set`, `bootstrap-fields`, `link-parent`, `link-related`, `link-blocked-by`, `delivery-evidence` | [`OPERATIONS-GITHUB.md`](OPERATIONS-GITHUB.md) |
 
 The boundary above binds every operation in both files - an op in the companion
 is no less bounded by it.

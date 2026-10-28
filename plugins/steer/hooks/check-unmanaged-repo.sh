@@ -69,7 +69,7 @@ if [ "${STATE}" = "openspec" ]; then
 	# repo is correctly set up and this hook has nothing to add.
 	if steer_openspec_migration_pending "${ROOT}"; then
 		printf '<!-- steer: openspec spine, pre-fold artifacts present -->\n'
-		printf '⚠ **This OpenSpec repo still carries steer artifacts at their old '
+		printf '**This OpenSpec repo still carries steer artifacts at their old '
 		printf 'location** (`spec/tracker.md` and/or `spec/decisions/`). They now '
 		printf 'live under `openspec/steer/`. Run **`/steer:setup sync`** to apply the '
 		printf 'migration - until then the tracker declaration being read may not '
@@ -106,7 +106,7 @@ fi
 # adoption once, softly, rather than the full greenfield bootstrap.
 if [ "${STATE}" = "foreign" ]; then
 	printf '<!-- steer: spec/ without spec-spine marker -->\n'
-	printf '⚠ **This repo has a `spec/` directory but no spec-spine marker (`spec/.version`).** '
+	printf '**This repo has a `spec/` directory but no spec-spine marker (`spec/.version`).** '
 	printf 'The org standards are loaded, but this is not a recognized spec spine. If this repo '
 	printf 'should be standards-managed, run **`/steer:setup adopt`** to reconstruct the spine '
 	printf 'from the code; otherwise ignore this notice.\n'
@@ -116,7 +116,7 @@ fi
 # A version-stamped spine is missing required files - repair rather than rebuild.
 if [ "${STATE}" = "damaged" ]; then
 	printf '<!-- steer: incomplete /spec spine -->\n'
-	printf '⚠ **This repo has an incomplete spec spine** (`spec/.version` is present but spine '
+	printf '**This repo has an incomplete spec spine** (`spec/.version` is present but spine '
 	printf 'files are missing). Run **`/steer:setup sync`** to reconcile it against the '
 	printf 'current templates before continuing feature work.\n'
 	exit 0

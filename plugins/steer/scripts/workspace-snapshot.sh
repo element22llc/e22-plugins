@@ -198,7 +198,7 @@ done
 # the detail above does not list) instead of re-deriving an order of its own.
 _oq_notice="$(printf '{"cwd":"%s"}' "${ROOT}" |
 	CLAUDE_PLUGIN_ROOT="${PLUGIN_ROOT}" sh "${PLUGIN_ROOT}/hooks/check-open-questions.sh" 2>/dev/null)"
-_oq_sum="$(printf '%s\n' "${_oq_notice}" | sed -n 's/^ℹ //p' | head -n 1)"
+_oq_sum="$(printf '%s\n' "${_oq_notice}" | grep '^\*\*[0-9][0-9]* open question' | head -n 1)"
 _oq_top="$(printf '%s\n' "${_oq_notice}" | grep '^- `Q-' | head -n 1 | sed 's/^- //')"
 [ -n "${_oq_sum}" ] && printf -- '- summary: %s\n' "${_oq_sum}"
 [ -n "${_oq_top}" ] && printf -- '- most urgent: %s\n' "${_oq_top}"

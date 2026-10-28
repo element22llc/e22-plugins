@@ -13,7 +13,7 @@ This is that ledger, on disk and in git. The audit reports only findings the
 ledger has never seen; anything already triaged is carried forward silently. A
 finding is triaged exactly once, by a human, and stays triaged.
 
-The state vocabulary follows SARIF 2.1.0's ``baselineState`` (OASIS, §3.27.19)
+The state vocabulary follows SARIF 2.1.0's ``baselineState`` (OASIS, section 3.27.19)
 rather than inventing one, so the file can be converted to SARIF for any tool
 that consumes it:
 

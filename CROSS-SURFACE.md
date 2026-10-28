@@ -13,7 +13,7 @@
 > steer therefore ships the **real skill bodies** to one cross-tool tree instead of
 > a capsule per surface - see [`docs/concepts/copilot-support.md`](docs/concepts/copilot-support.md)
 > -> "Skills on Copilot". The *hook* layer's analysis below is unaffected. See
-> [§6 Verification checklist](#6-verification-checklist) for what to confirm on the
+> [section 6 Verification checklist](#6-verification-checklist) for what to confirm on the
 > actual apps.
 
 ## 1. TL;DR
@@ -26,18 +26,18 @@ By mid-2026 "plugins" are a **cross-app concept**, not Claude Code-CLI-only. The
 **Claude Desktop app has three tabs - Chat, Cowork, and Code** - and they don't
 behave the same. The headline, validated against current docs and changelog:
 
-- **Support is tiered ([§3](#3-support-policy--per-surface-matrix)).** Targeted:
+- **Support is tiered ([section 3](#3-support-policy--per-surface-matrix)).** Targeted:
   **Claude Code** - the CLI and IDE extensions (VS Code, JetBrains). Intended: the
   Claude Desktop **Code tab** (full Claude Code engine). Best-effort: **Cowork**
   (PO/knowledge-work only - engineering work is **not** supported there; use Claude
   Code), **the Chat tab + claude.ai web chat** (skills only), and the shipped
   generated **GitHub Copilot** target (CLI + VS Code, prototype scope -
-  [§3](#3-support-policy--per-surface-matrix)).
+  [section 3](#3-support-policy--per-surface-matrix)).
 - **The hook-driven core (always-on rules + gates) runs wherever Claude Code runs** -
   including the Claude Desktop **Code tab**, which shares the CLI engine.
 - **Cowork is the _one_ chat-family surface where hooks run** - Anthropic's docs
   state *"hooks and sub-agents run only in Cowork."* (Plugin-scoped `SessionStart`
-  had 2026 bugs, since closed - [§4](#4-where-the-hook-layer-runs); reconfirm.)
+  had 2026 bugs, since closed - [section 4](#4-where-the-hook-layer-runs); reconfirm.)
 - **The Chat tab and claude.ai web chat do _not_ run hooks** (grayed out). Plugins
   install and **skills + MCP work**, but the always-on rules don't inject - load
   them by hand with `/steer:standards`.
@@ -47,7 +47,7 @@ behave the same. The headline, validated against current docs and changelog:
   wire MCP through their own **Connectors** - and **Cowork is a no-install sandbox**
   (no docker/mise/`gh`), so the shipped `github` server doesn't work
   there; GitHub triage needs the **built-in GitHub
-  connector** ([§4a](#4a-cowork-is-a-no-install-sandbox)).
+  connector** ([section 4a](#4a-cowork-is-a-no-install-sandbox)).
 
 > **What changed since the first draft:** earlier text (built on Jan-2026 data and
 > the repo's then-current `known-limitations.md`) said hooks "don't fire on Cowork
@@ -96,11 +96,11 @@ two CLI-only gates above. See
 - **Tier 3 - Best-effort.** None of these run in the per-release test matrix:
   - **Cowork - PO/knowledge-work only.** Cowork *does* run hooks + sub-agents (the
     one chat-family surface that does, per Anthropic's docs - reconfirm
-    *plugin-scoped* `SessionStart` on your build, [§4](#4-where-the-hook-layer-runs)),
+    *plugin-scoped* `SessionStart` on your build, [section 4](#4-where-the-hook-layer-runs)),
     so a PO opening a non-code folder gets the lean **knowledge-work** ruleset and
     the PO-facing skills, and repo-scoped GitHub **triage** works through the
     built-in connector. But Cowork is a **no-install sandbox** that doesn't read the
-    plugin `.mcp.json` ([§4a](#4a-cowork-is-a-no-install-sandbox)), so everything
+    plugin `.mcp.json` ([section 4a](#4a-cowork-is-a-no-install-sandbox)), so everything
     install-dependent - scaffold install (`init`/`adopt`), docker/mise builds, the
     `uvx`-based document conversion (`mise run convert:doc`), `gh`-CLI tracker
     flows, org-level issue fields -
@@ -123,27 +123,27 @@ two CLI-only gates above. See
 
 | Surface | Tier | Plugin install | Hooks (rules + gates) | Skills | MCP |
 |---|---|---|---|---|---|
-| Claude Code **CLI** | **1 - targeted** | ✅ | ✅ | ✅ | ✅ |
-| **IDE extensions** (VS Code, JetBrains) | **1 - targeted** | ✅ via CLI | ✅ via CLI | ✅ | ✅ |
-| Claude Desktop **Code tab** (Claude Code Desktop) | **2 - intended** | ✅ same engine as CLI | ✅ full engine | ✅ | ✅ |
-| Claude Desktop **Cowork tab** | **3 - best-effort (PO only)** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" - ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ (skills are install-free) - but **engineering work unsupported; use Claude Code** | ⚠️ **built-in connector only** - the plugin `.mcp.json` `github` server **doesn't work** in the no-install sandbox ([§4a](#4a-cowork-is-a-no-install-sandbox)) |
-| Claude Desktop **Chat tab** + **claude.ai** web chat | **3 - best-effort** | ✅ (chat) / ✅ as org Skills (web) | ❌ grayed out - use `/steer:standards` | ✅ | ⚠️ via the surface's own connector, not the plugin `.mcp.json` |
-| **OpenAI Codex** (CLI, app) | **3 - best-effort** | ✅ `codex plugin marketplace add element22llc/e22-plugins`, then `codex plugin add steer@e22-plugins` (`.codex-plugin/plugin.json`) | ✅ **injected** by a SessionStart hook (`hooks/codex-hooks.json`) once the user trusts it in `/hooks`; without the plugin, Codex reads the committed `.github/copilot-instructions.md` | ✅ plugin skills as `steer:<skill>` | ❌ no gates - only the rule injection is registered on Codex |
-| **GitHub Copilot** - **CLI** + **VS Code** | **3 - best-effort (prototype scope)** | ✅ CLI: `copilot plugin install steer@e22-plugins` (Copilot manifest) / VS Code: reads the committed `.github/` artifacts, no install | ⚠️ **generated, not guaranteed** - rules ship as committed `.github/copilot-instructions.md`; where the plugin is installed, the CLI and VS Code also run its `hooks.json` incidentally (no parity promise), which injects the live rules | ✅ CLI via the plugin manifest; VS Code (and Cursor / Gemini CLI / Codex) from the committed `.agents/skills/` tree as `/steer-<skill>`; `steer-reviewer` ported as a custom agent | ⚠️ Copilot's own MCP config - the plugin `.mcp.json` is Claude-Code-only |
+| Claude Code **CLI** | **1 - targeted** | yes | yes | yes | yes |
+| **IDE extensions** (VS Code, JetBrains) | **1 - targeted** | yes, via CLI | yes, via CLI | yes | yes |
+| Claude Desktop **Code tab** (Claude Code Desktop) | **2 - intended** | yes, same engine as CLI | yes, full engine | yes | yes |
+| Claude Desktop **Cowork tab** | **3 - best-effort (PO only)** | yes, from GitHub marketplace | yes, docs: "run only in Cowork" - caveat: reconfirm plugin scope ([section 4](#4-where-the-hook-layer-runs)) | yes (skills are install-free) - but **engineering work unsupported; use Claude Code** | caveat: **built-in connector only** - the plugin `.mcp.json` `github` server **doesn't work** in the no-install sandbox ([section 4a](#4a-cowork-is-a-no-install-sandbox)) |
+| Claude Desktop **Chat tab** + **claude.ai** web chat | **3 - best-effort** | yes (chat) / yes, as org Skills (web) | no, grayed out - use `/steer:standards` | yes | caveat: via the surface's own connector, not the plugin `.mcp.json` |
+| **OpenAI Codex** (CLI, app) | **3 - best-effort** | yes, `codex plugin marketplace add element22llc/e22-plugins`, then `codex plugin add steer@e22-plugins` (`.codex-plugin/plugin.json`) | yes, **injected** by a SessionStart hook (`hooks/codex-hooks.json`) once the user trusts it in `/hooks`; without the plugin, Codex reads the committed `.github/copilot-instructions.md` | yes, plugin skills as `steer:<skill>` | no, no gates - only the rule injection is registered on Codex |
+| **GitHub Copilot** - **CLI** + **VS Code** | **3 - best-effort (prototype scope)** | yes, CLI: `copilot plugin install steer@e22-plugins` (Copilot manifest) / VS Code: reads the committed `.github/` artifacts, no install | caveat: **generated, not guaranteed** - rules ship as committed `.github/copilot-instructions.md`; where the plugin is installed, the CLI and VS Code also run its `hooks.json` incidentally (no parity promise), which injects the live rules | yes, CLI via the plugin manifest; VS Code (and Cursor / Gemini CLI / Codex) from the committed `.agents/skills/` tree as `/steer-<skill>`; `steer-reviewer` ported as a custom agent | caveat: Copilot's own MCP config - the plugin `.mcp.json` is Claude-Code-only |
 
-Legend: ✅ works · ⚠️ works with a caveat / reconfirm · ❌ not available / does not fire.
+Legend: **yes** works, **caveat** works with a caveat / reconfirm, **no** not available / does not fire.
 
 > **Cowork is a no-install sandbox.** Cowork runs in an Anthropic-managed Linux
 > VM where you generally **cannot install docker, mise, language toolchains, or
 > `gh`**, and which doesn't read the CLI's plugin `.mcp.json`. GitHub access there
 > comes from Cowork's **built-in GitHub connector** (Customize -> Connectors), not
-> the plugin server - see [§4a](#4a-cowork-is-a-no-install-sandbox) and the
+> the plugin server - see [section 4a](#4a-cowork-is-a-no-install-sandbox) and the
 > authoritative [Known limitations -> Claude Cowork's sandbox](docs/reference/known-limitations.md#claude-coworks-sandbox-no-installs-connector-only-github).
 
 Org-wide deployment differs by surface: managed settings (the Claude Code
 surfaces), per-user install today with org-wide sharing "coming" (Cowork), and
 admin-provisioned Skills on Team/Enterprise (claude.ai web). See
-[§5](#5-recommendations-per-surface).
+[section 5](#5-recommendations-per-surface).
 
 ## 4. Where the hook layer runs
 
@@ -163,7 +163,7 @@ that surfaces `hookSpecificOutput.additionalContext` to the model; the
   chat."* Plugin-scoped `SessionStart` in Cowork was reported broken earlier in
   2026 (e.g. [#27398](https://github.com/anthropics/claude-code/issues/27398) -
   `--setting-sources user` excluding plugin scope), now **closed as duplicate with
-  no open canonical** - likely resolved, but "closed-as-duplicate" ≠ "verified," so
+  no open canonical** - likely resolved, but "closed-as-duplicate" != "verified," so
   reconfirm on your build before relying on auto-injected rules there.
 - **Does not run:** the Claude Desktop **Chat tab** and **claude.ai web chat** -
   hooks/sub-agents are grayed out by design. Skills + MCP still work.
@@ -188,7 +188,7 @@ connected folder Claude can read/write/run scripts, but the sandbox's filesystem
 and network are locked down, so in practice you **cannot install system tooling** -
 docker, mise, language toolchains, the `gh` CLI (validated June 2026). Two
 knock-on effects correct the earlier "MCP is surface-agnostic" optimism of
-[§2](#2-how-steer-is-built--the-coupling-map):
+[section 2](#2-how-steer-is-built--the-coupling-map):
 
 - **The plugin `.mcp.json` is not Cowork's MCP source.** MCP config isn't shared
   across surfaces - Cowork wires MCP through its own **Connectors**, not the CLI's
@@ -251,7 +251,7 @@ first wave is manual install.
 
 **No-install reality (do this before expecting tracker work).** Cowork's sandbox
 can't install docker/mise/`gh` and doesn't read the plugin `.mcp.json`
-([§4a](#4a-cowork-is-a-no-install-sandbox)), so the shipped `github`
+([section 4a](#4a-cowork-is-a-no-install-sandbox)), so the shipped `github`
 MCP server doesn't work there. For GitHub **issue triage** - the realistic Cowork
 tracker use case - enable the **built-in GitHub connector** (Customize ->
 Connectors); `/steer:tracker-sync` then takes its MCP path through that connector
@@ -277,7 +277,7 @@ manual-load is the graceful-degradation path wherever hooks don't run.
 ## 6. Verification checklist
 
 Run on each app and record results back into the
-[§3 matrix](#3-support-policy--per-surface-matrix):
+[section 3 matrix](#3-support-policy--per-surface-matrix):
 
 - [ ] **Code tab** - start a fresh session; ask "what engineering rules are
       active?" -> expect the `00-router` ruleset (hooks fired).
@@ -294,7 +294,7 @@ Run on each app and record results back into the
       user config not read by Cowork) and the `gh` fallback can't
       install - `tracker-sync` finds MCP issue tools **only** when the **built-in
       GitHub connector** is enabled (Customize -> Connectors). See
-      [§4a](#4a-cowork-is-a-no-install-sandbox). On the CLI both paths work as before.
+      [section 4a](#4a-cowork-is-a-no-install-sandbox). On the CLI both paths work as before.
 
 ## 7. Out of scope (this pass)
 
@@ -310,7 +310,7 @@ Gemini CLI and Codex all read from the same place (see
 ---
 
 ### Sources
-- **Surface × capability (current):**
+- **Surface x capability (current):**
   [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude)
   ("hooks and sub-agents run only in Cowork") and
   [Claude Desktop - Code tab](https://code.claude.com/docs/en/desktop) (the

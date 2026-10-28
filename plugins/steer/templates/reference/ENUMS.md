@@ -12,7 +12,7 @@ matching enum below (CI enforces this too).
 
 ## `feature_status` - a feature intent's product state
 
-`draft · approved · live`
+`draft, approved, live`
 
 **Three values, because the spec stores only what the tracker cannot express.**
 A materialized intent starts at **`draft`** (`/steer:work issues materialize`
@@ -34,7 +34,7 @@ the PO approve this scope?" or "can users see it?" read the spec. (See
 
 ## `question_status` - an open question's state
 
-`open · investigating · resolved · deferred · cancelled`
+`open, investigating, resolved, deferred, cancelled`
 
 `open`, `investigating`, and `deferred` are the **unresolved** set that can block
 a gate; `resolved` means the answer is folded into the spec's normative prose;
@@ -43,14 +43,14 @@ a gate; `resolved` means the answer is folded into the spec's normative prose;
 
 ## `question_impact` - whether a question blocks
 
-`blocking · non-blocking`
+`blocking, non-blocking`
 
 A `blocking` question whose `required_before` gate is reached, and whose status is
 still unresolved, blocks that gate.
 
 ## `question_kind` - what a question asks of whoever answers it
 
-`clarification · decision · access · tooling`
+`clarification, decision, access, tooling`
 
 **Optional**; an absent `kind:` reads as `clarification`. Orthogonal to
 `owner:` - `owner` is *who* decides, `kind` is *what* is being asked:
@@ -78,14 +78,14 @@ feature is `live`). When it is absent the hook falls back to the line's
 
 ## `required_before` - the gate a question must clear before
 
-`intent-approval · contract-approval · implementation · non-prod-validation · production-release`
+`intent-approval, contract-approval, implementation, non-prod-validation, production-release`
 
 `/steer:spec approve` is blocked only by a `blocking` question with
 `required_before: intent-approval`; later gates block their own transitions.
 
 ## `issue_kind` - the work shape (the `steer:kind` marker, not a label)
 
-`epic · feature · bug · task · finding · spec-question · spec-drift · audit-run`
+`epic, feature, bug, task, finding, spec-question, spec-drift, audit-run`
 
 Kind is the `steer:kind` marker + GitHub Issue Type, never a label. (See
 `ISSUE-SCHEMA.md`.)
@@ -103,7 +103,7 @@ the epic aggregator.
 
 ## `issue_state` - lifecycle state (the `steer:state` marker)
 
-`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate · blocked · done · cancelled`
+`inbox, exploring, ready-for-spec, ready-for-dev, in-progress, validate, blocked, done, cancelled`
 
 The base source of truth; a Project `Status` field mirrors it when Projects are
 enabled. `done` and `cancelled` are the two terminal states: **`done`** = closed
@@ -116,11 +116,11 @@ product state alone (see the crosswalk in `ISSUE-WORKFLOW.md`). (See
 
 ## `issue_source` - origin (the `steer:source` marker; the `source:*` label mirrors it)
 
-`human · adoption · audit · security-review · code-review · ci · dependency · implementation · spec`
+`human, adoption, audit, security-review, code-review, ci, dependency, implementation, spec`
 
 ## `issue_relationship` - how one issue relates to another
 
-`relates-to · depends-on · blocks · conflicts-with · supersedes · superseded-by`
+`relates-to, depends-on, blocks, conflicts-with, supersedes, superseded-by`
 
 The relationship vocabulary `/steer:work issues` uses when it surfaces a
 connection between issues during `brainstorm`/`capture` and records it (via
@@ -146,7 +146,7 @@ Duplicates are handled by `triage` close-as-duplicate, not a relationship word.
 
 ## `issue_priority` - relative urgency (a native GitHub **issue field**, not a label)
 
-`Urgent · High · Medium · Low`
+`Urgent, High, Medium, Low`
 
 The single-select **Priority** issue field (GitHub's default option set), read for
 ranking and **escalate-only** auto-set. It lives on the issue as a native field
@@ -167,14 +167,14 @@ field is omitted (capability degradation in `ISSUE-WORKFLOW.md`).
 
 ## `adr_status` - an ADR's state
 
-`Proposed · Accepted · Superseded · Deprecated`
+`Proposed, Accepted, Superseded, Deprecated`
 
 A `Proposed` ADR is a *Human decision required* next action (awaiting its
 Deciders). (See `SPEC-FRAMEWORK.md` -> Architecture Decision Records.)
 
 ## `next_action` - the `## Recommended next actions` categories
 
-`Blocking now · Human decision required · Required before initial production · Required before next production release · Urgent live-system remediation · Recommended · Complete`
+`Blocking now, Human decision required, Required before initial production, Required before next production release, Urgent live-system remediation, Recommended, Complete`
 
 The categories every workflow's `## Recommended next actions` block draws from.
 Release timing is **lifecycle-aware**: *Required before initial production*

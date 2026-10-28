@@ -20,7 +20,7 @@
 # OUTPUT (stdout)
 #   One leading fingerprint line:  os\t<darwin|linux|wsl2|windows|other>\t-
 #   Then one TAB-separated line per tool:  <tool>\t<status>\t<detail>
-#   status ∈ ok | missing | down | via-mise | unmanaged | shadowed | n/a
+#   status in ok | missing | down | via-mise | unmanaged | shadowed | n/a
 #     ok          installed (detail = version line where cheap to read)
 #     missing     not installed (a blocker for required tools)
 #     down        docker installed but the daemon is not running

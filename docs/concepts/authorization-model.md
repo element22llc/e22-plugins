@@ -3,7 +3,7 @@
 `steer` draws a deliberate line between actions that are **cheap and reversible**
 (done autonomously) and actions that are **outward-facing or hard to reverse**
 (gated on a human). This is codified in rule `45-delivery.md` (injected in any
-code repo) and reinforced by the always-on `00-router.md` § You are not the gate.
+code repo) and reinforced by the always-on `00-router.md` -> You are not the gate.
 
 ```mermaid
 flowchart TD
@@ -184,7 +184,7 @@ prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:setup i
 `/steer:status` and `/steer:audit`.
 The `doctor` skill behind `/steer:setup doctor` carries one grant that is
 deliberately *not* a helper script:
-`Bash(grep -rl *)`, for the §0 plugin-integrity check that greps the installed
+`Bash(grep -rl *)`, for the section 0 plugin-integrity check that greps the installed
 `hooks/` and `scripts/` for CR bytes. It is broader than the paths it serves - an
 unbounded-path filesystem read - and that is the point: the fault it detects
 (a CRLF checkout) is precisely what stops every bundled script from parsing, so a
@@ -323,7 +323,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
     anything that deploys stay gated exactly as before.
 
 !!! note "The local boundary is advisory - the server enforces it"
-    Rule `00-router.md` § You are not the gate is explicit that this in-session discipline cannot
+    Rule `00-router.md` -> You are not the gate is explicit that this in-session discipline cannot
     *stop* a direct push to `main`; it only governs how the agent behaves. The
     real wall is **GitHub branch protection**, which `/steer:setup protect` verifies
     against `policy/branch-protection.yml` and (on the dev's explicit

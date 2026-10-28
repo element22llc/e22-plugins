@@ -16,5 +16,5 @@ Each fixture states a multi-workflow `## Given` repository/spec/tracker state,
 the `## Expected highest-priority action` and its `## Expected category`, the
 `## Expected suggested command` (or `none`), and `## Must not recommend first`
 (the trap the precedence must avoid). Walk the `/steer:next` dimension table plus
-the shared safety precedence (NEXT-ACTIONS.md §2) by hand against each `Given`
+the shared safety precedence (NEXT-ACTIONS.md section 2) by hand against each `Given`
 and confirm the single arbitrated winner matches.

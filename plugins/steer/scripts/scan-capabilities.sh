@@ -27,7 +27,7 @@
 #   One TAB-separated line per capability:  <id>\t<status>\t<files>
 #   plus two fingerprint lines:             stack\t<node|python|polyglot|none>\t-
 #                                           profile\t<profile>\tCLAUDE.md
-#   status ∈ present-wired | absent | mis-wired | disabled | n/a
+#   status in present-wired | absent | mis-wired | disabled | n/a
 #     present-wired  file(s) present AND the wired-when marker holds
 #     absent         a required file is missing
 #     mis-wired      file present but the capability is not actually enabled
@@ -172,7 +172,7 @@ else
 fi
 
 # --- app-knowledge-docs - the app guide (how to use/operate the product) ---
-# The layout reference (CONVENTIONS.md), `rules/30-spec.md` § Living documentation,
+# The layout reference (CONVENTIONS.md), `rules/30-spec.md` -> Living documentation,
 # `50-done.md`, the PR
 # template, and the scaffold `ARCHITECTURE.md` all reference `/spec/app/`
 # UNCONDITIONALLY, but the guide is instantiated from a spec template

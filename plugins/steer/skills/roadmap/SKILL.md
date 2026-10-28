@@ -85,7 +85,7 @@ For each feature:
 ### `from-gap` - spec-vs-implemented gap -> timeline (the backlog you must still build)
 
 Run `/steer:audit spec` (read-only) to diff the as-built `/spec` against the intended
-spec, then take **only the expected-unbuilt units** - `🔴 Missing` / `🟠 Partial`
+spec, then take **only the expected-unbuilt units** - `Missing` / `Partial`
 whose tracker status is Backlog/To-Do, the "unbuilt roadmap" bucket `/steer:audit spec`
 already separates from **Done-but-Missing defects**. Do **not** put Done-but-Missing
 or Diverged findings on the roadmap - those are drift to resolve via

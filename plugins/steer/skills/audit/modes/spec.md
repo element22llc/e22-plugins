@@ -87,21 +87,21 @@ no pointer exists, search the repo and cite what you find.
 
 | Verdict | Meaning |
 |---|---|
-| ✅ **Matches** | The as-built spec captures the tracker-specified behavior. |
-| ⚠️ **Diverged** | The as-built behavior differs from what the tracker spec asked for. |
-| 🟠 **Partial** | The unit's acceptance criteria are split - some met by the as-built spec, others Missing or Diverged. Name which criteria fall on each side; don't let one verdict hide the gap. |
-| 🔴 **Missing** | Tracker spec'd it, but the as-built spec (the code) has no such behavior - not built. |
-| 🟡 **Unspecified** | As-built behavior with no backing tracker unit - built, but never asked for. |
-| ❓ **Ambiguous** | One side too vague to judge; needs clarification. |
+| **Matches** | The as-built spec captures the tracker-specified behavior. |
+| **Diverged** | The as-built behavior differs from what the tracker spec asked for. |
+| **Partial** | The unit's acceptance criteria are split - some met by the as-built spec, others Missing or Diverged. Name which criteria fall on each side; don't let one verdict hide the gap. |
+| **Missing** | Tracker spec'd it, but the as-built spec (the code) has no such behavior - not built. |
+| **Unspecified** | As-built behavior with no backing tracker unit - built, but never asked for. |
+| **Ambiguous** | One side too vague to judge; needs clarification. |
 
 **Assign a verdict per unit, not per epic.** An epic is a *rollup* of units with
 mixed verdicts - never collapse it to a single verdict (and never invent a
 compound like "Partial / Missing" at epic grain). If you summarize at epic grain,
 report the **verdict spread** across its child units; the single-verdict cell
-belongs to the units. `🟠 Partial` is the one verdict that *is* legitimate for a
+belongs to the units. `Partial` is the one verdict that *is* legitimate for a
 single unit - when that one story's acceptance criteria are themselves split.
 
-**Tracker state gates whether Missing is a defect or just roadmap.** A `🔴 Missing`
+**Tracker state gates whether Missing is a defect or just roadmap.** A `Missing`
 verdict means different things depending on the unit's tracker status (captured in
 Phase 1). Read the issue `steer:state` directly - it is the only lifecycle store,
 and the spec's `Status:` cannot answer "was this built?" (crosswalk in
@@ -119,8 +119,8 @@ Lead the report with the Done-but-Missing and Diverged findings; a tracker that
 is mostly open work will be mostly expected-Missing, so don't let that volume
 bury the few findings that are actual drift.
 
-**The verdict emoji denotes *kind*, not *severity*.** Don't reuse `🔴` to flag a
-"critical" Diverged finding - that collides with Missing. Convey severity in a
+**The verdict denotes *kind*, not *severity*.** Don't mark a "critical" Diverged
+finding with another verdict's label or color - that collides with Missing. Convey severity in a
 separate marker (e.g. a `[blocker]` tag or a severity column) so kind and
 severity stay independent.
 

@@ -126,14 +126,14 @@ precondition the others don't: it is GitHub-only, and says so and stops when
 
 0. **Resolve the spine first.** In a member (`spec/PRODUCT.md`) every feature's
    `intent.md` / `contract.md` lives in the **workspace**, not here. Resolve it
-   before step 1 by the two-test ladder in `/steer-reference polyrepo` §
+   before step 1 by the two-test ladder in `/steer-reference polyrepo` ->
    "Resolving the spine from a member", and author the feature spec **there**. A
    missing local `intent.md` means the workspace has not been read yet, never
    that the feature is unspecified - **never** author product-level spec files
    here to fill the gap.
 1. **Identify the feature.** Ask for a short kebab-case `[id]` (e.g.
    `export-csv`, `user-login`); a pause here still closes under `##
-   Recommended next actions - /steer-spec` (`NEXT-ACTIONS.md` §5). If `spec/features/[id]/` already exists,
+   Recommended next actions - /steer-spec` (`NEXT-ACTIONS.md` section 5). If `spec/features/[id]/` already exists,
    **resume** it - never clobber filled-in content; merge into it.
 2. **Scaffold the feature.** Run `/steer-spec-scaffold [id]` - it instantiates
    `intent.md` (+ `contract.md`) from the bundled templates, copying them in for a

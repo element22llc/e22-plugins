@@ -50,7 +50,7 @@ jobs:
             echo "${report}"
             echo "REPORT_EOF"
           } >> "$GITHUB_OUTPUT"
-          # rc: 0 floors current · 1 bumps applied · 2 config error (missing dep/file)
+          # rc: 0 floors current, 1 bumps applied, 2 config error (missing dep/file)
           [ "${rc}" = "2" ] && exit 1
           exit 0
 

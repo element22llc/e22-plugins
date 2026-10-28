@@ -15,12 +15,12 @@ One invariant holds the whole thing together:
 
 ```mermaid
 flowchart LR
-    B["0 · Bootstrap<br/>setup -> init/adopt/sync"] --> S["1 · Shape<br/>spec -> questions/adr/intake/roadmap"]
-    S --> P["2 · Plan<br/>issues backlog"]
-    P --> W["3 · Build<br/>work (--reviewed)"]
-    W --> V["4 · Verify<br/>Definition of Done · drift gates"]
-    V --> D["5 · Deliver<br/>merge -> deploy · protect"]
-    D --> M["6 · Maintain<br/>audit · next · sync · work tidy · loop · report"]
+    B["0, Bootstrap<br/>setup -> init/adopt/sync"] --> S["1, Shape<br/>spec -> questions/adr/intake/roadmap"]
+    S --> P["2, Plan<br/>issues backlog"]
+    P --> W["3, Build<br/>work (--reviewed)"]
+    W --> V["4, Verify<br/>Definition of Done, drift gates"]
+    V --> D["5, Deliver<br/>merge -> deploy, protect"]
+    D --> M["6, Maintain<br/>audit, next, sync, work tidy, loop, report"]
     M -.re-enters.-> P
 ```
 
@@ -28,13 +28,13 @@ flowchart LR
 
 | Phase | Skills | Produces | Gate that closes it |
 | --- | --- | --- | --- |
-| **0 · Bootstrap** | [`/steer:setup`](../workflows/index.md) -> `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | - (enablement, not a gate) |
-| **1 · Shape** | [`/steer:spec`](../workflows/spec.md) (with its `questions`, `adr`, `intake` and `roadmap` modes) | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` - blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
-| **2 · Plan** | [`/steer:work issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:setup sync` let the PR be the record |
-| **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change classification + high-risk scoping; **merge/deploy never implied** |
-| **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
-| **5 · Deliver** | merge -> [deploy](deployment.md); [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
-| **6 · Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `work tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | - (re-enters Plan) |
+| **0, Bootstrap** | [`/steer:setup`](../workflows/index.md) -> `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | - (enablement, not a gate) |
+| **1, Shape** | [`/steer:spec`](../workflows/spec.md) (with its `questions`, `adr`, `intake` and `roadmap` modes) | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` - blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
+| **2, Plan** | [`/steer:work issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:setup sync` let the PR be the record |
+| **3, Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change classification + high-risk scoping; **merge/deploy never implied** |
+| **4, Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
+| **5, Deliver** | merge -> [deploy](deployment.md); [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
+| **6, Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `work tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | - (re-enters Plan) |
 
 Non-technical owners enter through [`/steer:build`](../workflows/build.md), which
 folds Bootstrap + Shape into one guided interview and hands a working local app to
@@ -44,7 +44,7 @@ a dev for review.
 
 A production incident is high-risk *and* time-critical at once - the one case where
 the phases above genuinely conflict with the clock. [`/steer:work --hotfix`](../workflows/work.md)
-is the **only sanctioned speed lever** (rule `61-gates` § Hotfix): it opens only for a real
+is the **only sanctioned speed lever** (rule `61-gates` -> Hotfix): it opens only for a real
 incident on a deployed system, relaxes *ceremony and ordering* (issue filed
 after-the-fact on a `hotfix/<n>-slug` branch, single-reviewer) while keeping every human
 authority gate, and requires a **mandatory post-incident follow-up** - backfill the
@@ -140,10 +140,10 @@ Whenever a change crosses one of these classes, it is **flagged in the PR
 description** and the flag blocks merge until the reviewer explicitly resolves it
 (you may not waive your own flag):
 
-> intent drift · contract drift · undocumented behavior change · security-sensitive
-> · compliance-impacting · operational (deploy/CI/infra) · local setup or
-> deployment changed ·
-> app docs invalidated · architecture/stack drift
+> intent drift, contract drift, undocumented behavior change, security-sensitive,
+> compliance-impacting, operational (deploy/CI/infra), local setup or
+> deployment changed,
+> app docs invalidated, architecture/stack drift
 
 Periodic sweeps with [`/steer:audit`](../reference/skills.md) catch what slips
 past the per-PR flag.

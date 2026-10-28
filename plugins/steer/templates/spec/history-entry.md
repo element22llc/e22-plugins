@@ -2,7 +2,7 @@
 
 - **Why:** [one line - the problem or request driving it]
 - **Requested by:** [@po-handle | @dev-handle | tracker item | adoption/audit finding]
-- **Refs:** [tracker ref] · [spec/features/<id>/ or spec/decisions/000N] · [PR #]
+- **Refs:** [tracker ref], [spec/features/<id>/ or spec/decisions/000N], [PR #]
 - **Areas:** [apps/packages/infra touched, or "spec-only"]
 
 <!--

@@ -160,7 +160,7 @@ phase reconciles rather than duplicates.
   before implementing, on top of the code gate `finish` always runs on
   non-Trivial work. Triage trivial work out of the gates.
   -> procedure: [`modes/reviewed.md`](modes/reviewed.md)
-- **`--hotfix`** - the production-incident fast path (rule `61-gates` § Hotfix): a
+- **`--hotfix`** - the production-incident fast path (rule `61-gates` -> Hotfix): a
   `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
   mandatory traceability follow-up. Relaxes ceremony, never the human gates.
   **Only** for an active incident on a confirmed-deployed production; else normal flow.
@@ -251,7 +251,7 @@ invalid intermediate state, or the user explicitly asks for combined delivery -
 otherwise issue-first traceability degrades into many-issues-to-one-PR.
 
 Native `/batch`, `/autofix-pr`, plan mode and `claude --worktree` fit this flow
-as `/steer-reference conventions` § Native Claude Code delivery features lays
+as `/steer-reference conventions` -> Native Claude Code delivery features lays
 out - read it before driving one.
 
 ## Discovered work - bounded scope

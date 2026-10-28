@@ -889,11 +889,13 @@ Patterns:
   code to this rule regardless, and trim adjacent noise only where the change
   already touches those lines.
 - **ASCII everywhere.** Non-ASCII "typographic" characters - em/en dashes,
-  arrows, smart quotes, ellipsis, bullets, non-breaking spaces - do not appear
-  in anything we produce. Not in code, identifiers, config keys/values or any
-  string bound for an external API, and not in comments, specs, docs, commit
-  messages or PR text either. Use the ASCII equivalent (`-`, `->`, `"`, `'`,
-  `...`, `*`, a plain space); when you copy text in from anywhere, ASCII-clean
+  arrows, smart quotes, ellipsis, bullets and middle dots, non-breaking spaces,
+  section and math signs, box-drawing trees, check/cross/warning marks and
+  emoji - do not appear in anything we produce. Not in code, identifiers, config
+  keys/values or any string bound for an external API, and not in comments,
+  specs, docs, commit messages or PR text either. Use the ASCII equivalent (`-`,
+  `->`, `"`, `'`, `...`, `*`, `>=`, `x`, `|--`, a plain space, or a word such as
+  `yes`, `no`, `section 2`); when you copy text in from anywhere, ASCII-clean
   it first. Review is the enforcement - no hook denies the write - and a repo
   that wants a machine backstop can grep its own tracked files in CI.
   `steer:allow-typographic` in the content marks a genuine exception (a fixture

@@ -45,7 +45,7 @@ only its result to the caller. Fork only when one of these holds:
   that each need little from the rest, can run in parallel, and whose context is
   discarded once their result is in.
 - **The review must be independent** - a gate that must not see the reasoning
-  behind what it reviews (`REVIEW-LOOP.md` §2).
+  behind what it reviews (`REVIEW-LOOP.md` section 2).
 
 **Keep connected work in one context.** A multi-phase run whose later steps build
 on earlier results - investigate, then design, then implement - stays here,
@@ -92,7 +92,7 @@ model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
   a separate context given the plan, the restated requirements, and the steer rules
   as the rubric.
 - `/steer:work finish` spawns one for its code gate on every non-Trivial change,
-  given the branch diff and the `REVIEW-LOOP.md` §4 rubric.
+  given the branch diff and the `REVIEW-LOOP.md` section 4 rubric.
 - the `/steer:loop` scaffolded workflow spawns one **unconditionally** - rule
   `53-autonomous-loops` splits ideation from verification, so the reviewer that
   checks the loop's work is never the context that produced it.
@@ -164,7 +164,7 @@ heavy work *is* the current conversation), the only remaining lever is to
    and the exact constraints to carry across. A fresh session starts blind - the
    hand-off is what stops the constraints from being lost.
 
-Keep this rare. The default is silent: fork a sweep that qualifies (§1) and write
+Keep this rare. The default is silent: fork a sweep that qualifies (section 1) and write
 state to a file, so the nudge is seldom needed.
 
 **Concrete heuristics to include in the recommendation** - community-validated
@@ -192,10 +192,10 @@ unreliable -> flag/skip; simple plates will validate"), then regenerates parts.
   opens a fresh session, the "holes unreliable" constraint is lost and the run may
   fabricate geometry.
 - **With context hygiene:** the verdict step writes `regeneration_policy` into the
-  artifact (§2). The regeneration is delegated to a subagent (§1) seeded from that
+  artifact (section 2). The regeneration is delegated to a subagent (section 1) seeded from that
   policy, returning only the validated/flagged/skipped report. It qualifies because
   the policy file carries everything the regeneration needs, so the handoff loses
   nothing. The main context stays
   lean, the constraint travels with the data, and the user just approves - no fresh
   session, no re-typing. Only if the whole thread were already overloaded would you
-  fall back to recommending `/compact` with the policy path as the hand-off (§3).
+  fall back to recommending `/compact` with the policy path as the hand-off (section 3).

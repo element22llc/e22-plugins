@@ -77,7 +77,7 @@ sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
 Splice in only the genuinely-new `##` sections and checklist items it reports
 (unchecked), preserving everything already filled in; never re-add a placeholder the
 dev replaced. Full rules - the plugin-wide *Template reconciliation* convention:
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` -> "Template
 reconciliation". Then read the `intent.md` statuses and continue from the recorded
 step - don't restart the interview or re-ask settled questions. This makes new
 flow-state gates self-healing on the next `/steer:build` run.

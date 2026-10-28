@@ -20,7 +20,7 @@ while the subcommands below read an issue and deliver it.
 !!! warning "`--hotfix` - the production-incident fast-path"
     Add `--hotfix` **only** for a genuine production incident - a change to an
     already-deployed system with real users/data **and** an active outage or
-    regression (rule `61-gates` § Hotfix). "Urgent" feature work is not a hotfix, and
+    regression (rule `61-gates` -> Hotfix). "Urgent" feature work is not a hotfix, and
     "production is down" alone does not open it: the skill declines the lane
     when the `CLAUDE.md` delivery mode is `solo-trunk` or `policy/delivery.yml`
     rules production out, opens it on a `live` feature, and with neither asks
@@ -39,7 +39,7 @@ while the subcommands below read an issue and deliver it.
 ```mermaid
 flowchart TD
     START["/steer:work start #123"] --> VALIDATE[Read + validate the issue]
-    VALIDATE --> CLAIM[Claim it · self-assign · set in-progress]
+    VALIDATE --> CLAIM[Claim it, self-assign, set in-progress]
     CLAIM --> BRANCH[Create or reuse issue/* branch<br/>from the default branch + work marker]
     BRANCH --> SPEC[Load linked /spec]
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
@@ -48,9 +48,9 @@ flowchart TD
     FINISH --> GATES[Run local gates until green]
     GATES --> PR[Open PR]
     PR --> WATCH[Watch CI to conclusion]
-    WATCH -->|red| FIX[Reproduce + fix locally · push once · re-watch]
+    WATCH -->|red| FIX[Reproduce + fix locally, push once, re-watch]
     FIX --> WATCH
-    WATCH -->|green| STATE[Transition to validate · hand reviewer a green PR]
+    WATCH -->|green| STATE[Transition to validate, hand reviewer a green PR]
 ```
 
 ## Delivery mode

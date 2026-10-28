@@ -182,7 +182,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    scaffold overlay steps 5-6 compare against and which `/spec` paths are
    off-limits, so resolve them here and carry them forward. **Open
    [`RECONCILE.md`](RECONCILE.md) now** - its
-   §"What steps 4-6 may touch" carries the per-profile and per-role rules, and
+   -> "What steps 4-6 may touch" carries the per-profile and per-role rules, and
    steps 5-6 are in the same file.
 
 4. **Apply pending structural migrations.** Open the ledger at

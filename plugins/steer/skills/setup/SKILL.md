@@ -132,7 +132,7 @@ offer after a long scoping pass. Honor that:
   scoping the user expects folds into `init`'s own interview. Don't run a long free-form
   scoping conversation and *then* offer to set up.
 - **Durable decisions wait for the spine.** Design decisions surfaced during onboarding are
-  captured into `/spec` once it exists (`30-spec` § Durable decisions), never a memory- or chat-only
+  captured into `/spec` once it exists (`30-spec` -> Durable decisions), never a memory- or chat-only
   record.
 - **"Prototype" / "quick" / "throwaway" never waives bootstrap.** A prototype is greenfield: it
   still gets the bundled scaffold and a `/spec` spine. Those words change spec *depth* and

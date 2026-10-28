@@ -73,7 +73,7 @@ files inside an installed plugin directory is the dev's call, not the skill's.
 Say plainly that it is a workaround on an installed copy which `/plugin update`
 will overwrite, and that re-installing is the real fix.
 
-Silence here is the pass - say nothing about it and move to §1.
+Silence here is the pass - say nothing about it and move to section 1.
 
 ## 1. Detect - run the scan, don't eyeball
 
@@ -89,11 +89,11 @@ It prints an `os` fingerprint line, then one TAB line per tool -
 | status | meaning | what to do |
 |---|---|---|
 | `ok` | installed (detail = version) | nothing |
-| `missing` | not installed | resolve (§3) - a blocker for required tools |
-| `down` | docker present, daemon not running | start the daemon (§3) |
-| `via-mise` | runtime absent but mise present | one `mise install` provides it (§3) |
+| `missing` | not installed | resolve (section 3) - a blocker for required tools |
+| `down` | docker present, daemon not running | start the daemon (section 3) |
+| `via-mise` | runtime absent but mise present | one `mise install` provides it (section 3) |
 | `unmanaged` | runtime absent and mise absent | install mise first, then `mise install` |
-| `shadowed` | runtime present but a non-mise copy (nvm/asdf/volta/fnm/system) is masking mise's pinned one | advisory - surface it and fix activation (§3) |
+| `shadowed` | runtime present but a non-mise copy (nvm/asdf/volta/fnm/system) is masking mise's pinned one | advisory - surface it and fix activation (section 3) |
 | `n/a` | not used by this repo's stack | nothing |
 
 The `detail` column carries requiredness for `docker` (`required (compose.yaml)`
@@ -178,11 +178,11 @@ final scan.
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| §0 failed - the installed plugin has CRLF line endings | Blocking now | steer itself is broken, so nothing below was checked: re-install it (`/plugin uninstall steer@e22-plugins`, then re-install), or hand over the §0 in-place unblock |
-| A required tool still `missing`/`down`/`unmanaged` | Blocking now | Finish resolving it (§3), then re-scan |
+| section 0 failed - the installed plugin has CRLF line endings | Blocking now | steer itself is broken, so nothing below was checked: re-install it (`/plugin uninstall steer@e22-plugins`, then re-install), or hand over the section 0 in-place unblock |
+| A required tool still `missing`/`down`/`unmanaged` | Blocking now | Finish resolving it (section 3), then re-scan |
 | `os` = `windows` (Git Bash live) | Complete | Supported - hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan - or WSL2 for CLI/IDE dev |
-| A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (§3) - not a hard blocker, but the wrong, un-pinned version is in use |
+| A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (section 3) - not a hard blocker, but the wrong, un-pinned version is in use |
 | All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up - `/steer:setup` (dev) or `/steer:build` (PO) |
 | All green, repo already set up, and this run installed or repaired a tool | Recommended | Install the project's deps against the toolchain just fixed - `mise run dev:setup`, then start work |
 | All green, repo already set up, and this run installed or repaired nothing | Complete | `No action is currently required.` - optionally `mise run dev:setup` if the project's deps aren't installed yet |

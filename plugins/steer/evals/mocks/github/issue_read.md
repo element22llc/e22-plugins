@@ -24,8 +24,8 @@ Return `number`, `title`, `state`, `labels`, `url`
 No issue carries a `steer:*` marker or a `steer:state` line: this backlog
 predates the schema, and the triage case exists to observe exactly that.
 
-**#123** - `Cart total ignores line-item quantity` · open · labels `bug`,
-`checkout` · author `acme-po` · created `2026-02-03T09:14:00Z`
+**#123** - `Cart total ignores line-item quantity`, open, labels `bug`,
+`checkout`, author `acme-po`, created `2026-02-03T09:14:00Z`
 
 > A cart with 3 of the same item is charged for 1.
 >
@@ -41,25 +41,25 @@ predates the schema, and the triage case exists to observe exactly that.
 >
 > This is the approved one-page-checkout feature (acme/checkout#101).
 
-**#118** - `Guest checkout` · open · labels `epic` · author `acme-po` · created
+**#118** - `Guest checkout`, open, labels `epic`, author `acme-po`, created
 `2026-01-28T11:02:00Z`
 
 > Let shoppers pay without an account. Covers session carts, email receipts,
 > fraud limits, and the account-upgrade prompt afterwards. Needs breaking down
 > before anyone starts.
 
-**#117** - `Multi-currency support` · open · labels `epic` · author `acme-po` ·
+**#117** - `Multi-currency support`, open, labels `epic`, author `acme-po`,
 created `2026-01-28T10:55:00Z`
 
 > Charge in the shopper's currency. Touches pricing, the gateway, rounding
 > rules, refunds, and reporting. No acceptance criteria yet.
 
-**#109** - `Decline reason is not shown to the shopper` · open · labels `bug`,
-`checkout` · author `acme-po` · created `2026-01-22T16:40:00Z`
+**#109** - `Decline reason is not shown to the shopper`, open, labels `bug`,
+`checkout`, author `acme-po`, created `2026-01-22T16:40:00Z`
 
 > A declined card clears the cart and shows a generic error.
 
-**#101** - `One-page checkout` · open · labels `feature` · author `acme-po` ·
+**#101** - `One-page checkout`, open, labels `feature`, author `acme-po`,
 created `2026-01-12T09:30:00Z`
 
 > Tracking issue for the approved one-page-checkout intent in

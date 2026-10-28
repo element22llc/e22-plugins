@@ -148,7 +148,7 @@ See the [Hooks reference](../reference/hooks.md) and
 - **Every steer command fails at once** (`syntax error near unexpected token`) -
   that is not a missing tool, it is a corrupt install: on Windows the plugin can
   check out with CRLF line endings, and a CRLF shell script fails to *parse*.
-  **`/steer:setup doctor`** detects it first thing (§0) and tells you how to repair it;
+  **`/steer:setup doctor`** detects it first thing (section 0) and tells you how to repair it;
   see [Windows setup -> line endings](windows-setup.md#line-endings).
 - **steer itself misbehaves** (a skill does the wrong thing, a hook misfires) -
   say so, and Claude files a bug about the plugin upstream (`/steer:report`) so

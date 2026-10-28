@@ -22,7 +22,7 @@
 #
 # USAGE: check-policy-freshness.sh [--write] [policy-file]
 #        (default policy-file: the plugin-bundled copy)
-# EXIT:  0 floors current · 1 bumps due/applied · 2 config error (missing dep/file)
+# EXIT:  0 floors current, 1 bumps due/applied, 2 config error (missing dep/file)
 
 set -u
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"

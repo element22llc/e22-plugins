@@ -26,18 +26,18 @@ without giving up steer's breadth.
 |---|---|---|
 | SessionStart rules injection | ~60 KB (~15k tokens) every session | ~62 KB reached; deeper cuts rejected (see Phase 1 close-out) |
 | `rules/*.md` total | 69 KB across 24 files | 61,786 B end-state; ratchet 62,500 |
-| Skill frontmatter descriptions (always-on for routing) | ~1-3.6 KB each, ~25-30 KB total | ≤ 400 B each, ≤ 10 KB total |
-| Largest SKILL.md bodies | issues 26 KB, audit 24 KB, sync 21 KB, work 21 KB, build 21 KB | ≤ 12 KB slim front + on-demand reference |
+| Skill frontmatter descriptions (always-on for routing) | ~1-3.6 KB each, ~25-30 KB total | <= 400 B each, <= 10 KB total |
+| Largest SKILL.md bodies | issues 26 KB, audit 24 KB, sync 21 KB, work 21 KB, build 21 KB | <= 12 KB slim front + on-demand reference |
 | SessionStart hook scripts | 7 separate `sh` processes per startup | 1 orchestrator, < 1 s wall time |
 | Skills exposed to users | 24 user-invocable | 5-7 "front door", rest reached via router/front doors |
-| Time to first approved spec on a fresh repo | requires init/adopt first | ≤ 5 min, no scaffold required (lite mode) |
+| Time to first approved spec on a fresh repo | requires init/adopt first | <= 5 min, no scaffold required (lite mode) |
 
 Every phase lands as normal `feat/*` PRs with `CHANGELOG.md` `[Unreleased]`
 entries per repo policy; version bump happens once at release.
 
 ---
 
-## Phase 0 - Instrument before optimizing (1 PR) - ✅ DONE
+## Phase 0 - Instrument before optimizing (1 PR) - DONE
 
 The repo has fixtures + hooktests but no token or latency budget. Landed:
 
@@ -64,9 +64,9 @@ The repo has fixtures + hooktests but no token or latency budget. Landed:
 Why first: Phases 1-2 aggressively cut always-on prose; without these gates we
 can't tell "leaner" from "broken".
 
-## Phase 1 - Faster & more efficient: cut the always-on weight (3-4 PRs) - ✅ DONE
+## Phase 1 - Faster & more efficient: cut the always-on weight (3-4 PRs) - DONE
 
-Pass 1 landed: skill listing 17,950 -> 10,867 chars (−39%, item 3 essentially
+Pass 1 landed: skill listing 17,950 -> 10,867 chars (-39%, item 3 essentially
 done - ceiling re-armed at 11,500); top-5 rules trimmed to imperatives
 (69,335 -> 65,508 B, ceiling re-armed at 66,500). Item 4 landed: the five
 startup/resume session checks now run through one `session-checks.sh`
@@ -86,7 +86,7 @@ housekeeping, practices, living-docs) to 61,786 B total (ceiling re-armed at
 
 **The 30 KB rules target is retired - Phase 1 closes at the measured
 end-state.** Two trim passes over every compressible rule landed at 61,786 B
-(−11% from 69,335, zero behavior change); the surviving prose is
+(-11% from 69,335, zero behavior change); the surviving prose is
 imperative-dense, so further wording cuts would drop constraints, not fat.
 Demoting whole rules from always-on to on-demand was then investigated for
 the candidates (`88-artifacts`, `24-worktrees`, `26-context-hygiene`,
@@ -137,7 +137,7 @@ anything.
    repeat navigation is a file read, not a re-derivation, and tracker reads go
    through `/steer:tracker-sync` with `minimal_output` + batched calls.
 
-## Phase 2 - Easier to use: progressive disclosure (2-3 PRs) - ✅ DONE
+## Phase 2 - Easier to use: progressive disclosure (2-3 PRs) - DONE
 
 Steer's 24-skill surface is its biggest learning-curve liability; the router
 offsets it but the surface still leaks (help output, docs, frontmatter).
@@ -162,7 +162,7 @@ offsets it but the surface still leaks (help output, docs, frontmatter).
    prints a 5-line "what steer is, the 3 things you can say" card instead of
    the full standards preamble; detail stays in `/steer:help`.
 
-## Phase 3 - Better results: adopt Spec Kit's per-spec rigor (2 PRs) - ✅ DONE (v3.20.0)
+## Phase 3 - Better results: adopt Spec Kit's per-spec rigor (2 PRs) - DONE (v3.20.0)
 
 Spec Kit's differentiators are `/clarify` (structured de-ambiguation before
 planning) and `/analyze` (cross-artifact consistency check). Steer has partial
@@ -182,7 +182,7 @@ analogues; make them first-class.
    `templates/spec/intent.md` (testable, observable, bounded - the checklist
    Spec Kit ships in its templates), enforced as warnings by the validate pass.
 
-## Phase 4 - Keep honest: evals and feedback loop (1 PR, then ongoing) - ✅ DONE
+## Phase 4 - Keep honest: evals and feedback loop (1 PR, then ongoing) - DONE
 
 - Run the Phase 0 routing eval + budgets in CI permanently (`mise run ci`).
 - Add a before/after token report to release PRs (the release skills already

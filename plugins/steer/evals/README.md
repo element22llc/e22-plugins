@@ -118,8 +118,8 @@ byte for byte (below), those failures split four ways:
 |---|---|---|---|
 | `spec` run 0, 15-49 | 3-0 FAIL | 1/9 PASS | correct, and reproducible: it never names `/steer:spec`. Not variance. |
 | `triage` run 1, 15-26 | 3-0 FAIL | 2/9 PASS | reproducible. `--mode rationale` blames its closing `Current recommended action: /steer:work start #123`, read as *starting* delivery. Looked like a criteria collision; two rewrites say otherwise, below. |
-| `triage` run 2, 15-26 · `client-status` run 0, 13-34 | 3-0, 2-1 FAIL | 7/9, 9/9 PASS | the boundary itself: conformant text the judge splits on. |
-| `client-status` run 1, 13-34 · `next` run 1, 15-40 | 3-0 FAIL each | 8/9, 9/9 PASS | **not variance, and still open.** A 3-0 FAIL on a text this replay passes 8 or 9 times of 9 is not a draw from the same distribution, twice over. Something still differs, and the one known difference is the environment `system-reminder` `claude -p` appends as a second message - a candidate, not a finding. Settling it needs the judge called without that message. |
+| `triage` run 2, 15-26, `client-status` run 0, 13-34 | 3-0, 2-1 FAIL | 7/9, 9/9 PASS | the boundary itself: conformant text the judge splits on. |
+| `client-status` run 1, 13-34, `next` run 1, 15-40 | 3-0 FAIL each | 8/9, 9/9 PASS | **not variance, and still open.** A 3-0 FAIL on a text this replay passes 8 or 9 times of 9 is not a draw from the same distribution, twice over. Something still differs, and the one known difference is the environment `system-reminder` `claude -p` appends as a second message - a candidate, not a finding. Settling it needs the judge called without that message. |
 
 `--threshold 0.6` is exactly the `routed` weight for the third row: a case at
 0.73 or 0.87 with `routed` 3/3 has routed correctly.
@@ -238,14 +238,14 @@ either that skill or the public door it now lives behind.
 
 | Skill | Case |
 |---|---|
-| `setup` | `routes-greenfield-bootstrap-to-init` · `routes-vibe-coded-app-to-adopt` · `routes-openspec-behind-to-sync` |
+| `setup` | `routes-greenfield-bootstrap-to-init`, `routes-vibe-coded-app-to-adopt`, `routes-openspec-behind-to-sync` |
 | `spec` | `routes-think-feature-through-to-spec` |
-| `work` | `routes-fix-issue-to-work` · `routes-triage-backlog-to-issues` |
+| `work` | `routes-fix-issue-to-work`, `routes-triage-backlog-to-issues` |
 | `audit` | `routes-repo-health-to-audit` |
 | `status` | `routes-client-status-to-status` |
 | `next` | `routes-lost-user-to-next` |
 | `build` | `routes-po-idea-to-build` |
-| (none) | `routes-explain-code-to-none` · `routes-general-knowledge-to-none` |
+| (none) | `routes-explain-code-to-none`, `routes-general-knowledge-to-none` |
 
 Beyond the public doors, every **mode** - an internal skill or a lane reached
 through one - has one case of its own, tagged `mode` (`--tag mode` runs only
@@ -255,11 +255,11 @@ that hands off to it, the same rule as the front-door cases above.
 
 | Mode | Case |
 |---|---|
-| `doctor` · `protect` · `worktrees` | `routes-missing-mise-to-doctor` · `routes-protect-main-to-protect` · `routes-orca-worktrees-to-worktrees` |
-| `adr` · `intake` · `questions` · `roadmap` | `routes-postgres-decision-to-adr` · `routes-requirements-resent-to-intake` · `routes-open-questions-to-questions` · `routes-release-timeline-to-roadmap` |
-| `work --hotfix` · `promote` · `review` · `tidy` | `routes-production-down-to-work` · `routes-promote-merged-to-work` · `routes-pr-queue-to-work` · `routes-loose-documents-to-tidy` |
-| `explain` · `help` | `routes-stakeholder-page-to-explain` · `routes-what-can-steer-do-to-help` |
-| `standards` · `report` · `reference` · `loop` | `routes-web-chat-to-standards` · `routes-steer-crashed-to-report` · `routes-load-conventions-to-reference` · `routes-nightly-loop-to-loop` |
+| `doctor`, `protect`, `worktrees` | `routes-missing-mise-to-doctor`, `routes-protect-main-to-protect`, `routes-orca-worktrees-to-worktrees` |
+| `adr`, `intake`, `questions`, `roadmap` | `routes-postgres-decision-to-adr`, `routes-requirements-resent-to-intake`, `routes-open-questions-to-questions`, `routes-release-timeline-to-roadmap` |
+| `work --hotfix`, `promote`, `review`, `tidy` | `routes-production-down-to-work`, `routes-promote-merged-to-work`, `routes-pr-queue-to-work`, `routes-loose-documents-to-tidy` |
+| `explain`, `help` | `routes-stakeholder-page-to-explain`, `routes-what-can-steer-do-to-help` |
+| `standards`, `report`, `reference`, `loop` | `routes-web-chat-to-standards`, `routes-steer-crashed-to-report`, `routes-load-conventions-to-reference`, `routes-nightly-loop-to-loop` |
 
 Two of these assert a *correct decline*, not a happy path: the managed repo has
 nothing deployed, so the hotfix lane's objective condition fails and the skill
@@ -351,7 +351,7 @@ takes no discriminating argument.
 responder it returned issue #123 for every call, and the v6.1.0 runs noticed:
 they spent turns probing `#117` / `#118` / `#101` / `sub_issues` / `comments`,
 concluded "a defect in steer's bundled MCP server", and offered to file it with
-`/steer:report` - a fixture bug that rule `00-router` § When steer itself misbehaves faithfully converted
+`/steer:report` - a fixture bug that rule `00-router` -> When steer itself misbehaves faithfully converted
 into a false upstream report. The responder body now describes the whole backlog
 plus the `comments` / `sub_issues` / `labels` projections, so a wrong number gets
 a real not-found and the empty sub-issue lists stay the reason the triage case
