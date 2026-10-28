@@ -39,7 +39,7 @@ New ADRs default to **Proposed** - the fixture suite asserts this. An ADR become
 
 That decision is **answerable in-session**. `/steer:spec adr accept <n>` is the single
 writer of `Proposed -> Accepted`: it offers the three-option gate prompt
-(**Approve · Reject · Decide later**) carrying the ADR's rejected alternatives and
+(**Approve / Reject / Decide later**) carrying the ADR's rejected alternatives and
 negative consequences, then stamps `> Ratified by:` / `> Ratified at:` /
 `> Ratified via:` (`in-session` or `offline-review`) and writes one
 `/spec/history/` entry file. `Decide later` changes nothing, so an undecided ADR is

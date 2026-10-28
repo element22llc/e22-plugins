@@ -361,12 +361,15 @@ field's choices live under `.options`). Then write via **either**:
   `multiSelectOptionIds` as the field's type dictates (never assume Effort's
   type - read it). Set `delete: true` on an element to clear it. One mutation can
   carry several elements.
-- **REST** - `gh api --method POST /repos/{owner}/{repo}/issues/{n}/issue-field-values
-  -H "X-GitHub-Api-Version: 2026-03-10" -f issue_field_values='[{"field_id":<id>,"value":"High"}]'`.
+- **REST** - send the array as a JSON body, not with `-f` (which sends a
+  string): `printf '%s' '{"issue_field_values":[{"field_id":<id>,"value":"High"}]}' |
+  gh api --method POST /repos/{owner}/{repo}/issues/{n}/issue-field-values
+  -H "X-GitHub-Api-Version: 2026-03-10" --input -`.
   Here `value` is the option **name** (e.g. `High`), **not** its id - unlike the
-  GraphQL `singleSelectOptionId`. **Use POST** to add/update one field; **never
-  `PUT`** - `PUT` *replaces all* of the issue's field values, silently clearing
-  Effort/dates you didn't pass.
+  GraphQL `singleSelectOptionId`. **Use POST** to add/update one field, and never
+  with an empty array, which clears every field value. **Never `PUT`** - `PUT`
+  *replaces all* of the issue's field values, silently clearing Effort/dates you
+  didn't pass.
 
 **Never reach for the Projects API for these fields** - a same-named Projects board
 column is a read-only projection (`updateProjectV2Field` / `gh project item-edit`

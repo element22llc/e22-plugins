@@ -23,7 +23,9 @@ Two invariants underpin everything:
 ## Operating model (local-first, issue-first)
 
 1. **Local interactive Claude Code is the primary worker.** Unattended GitHub
-   Actions execution is out of scope and would require a separate explicit signal.
+   Actions execution runs only in a repo that declared the automation opt-in
+   (`policy/automation.yml` -> `loops: true`), through `/steer:loop` and rule
+   `53-autonomous-loops`.
 2. **High-risk work and the six value cases have a GitHub issue first** - in a
    GitHub-adopted repo (`/spec/tracker.md` -> `system: github`), reuse the issue
    the user names or create one before the first mutation when the work is
@@ -278,9 +280,9 @@ Do **not** encode status, release, or **kind** as labels - state is the
 `ISSUE-SCHEMA.md`).
 
 **Issue Types - capability-degrading.** The standard org Types are
-`Feature · Bug · Task`, but Issue Types are an **org-level** feature whose
-defaults can be renamed, disabled, or deleted, and Issue Forms remain a GitHub
-public preview. So:
+`Feature`, `Bug`, `Task`, but Issue Types are an **org-level** feature whose
+defaults can be renamed, disabled, or deleted, and Issue Forms are a GitHub
+public preview (as of 2026-10). So:
 
 - **Type available** -> set the configured Type (per the Type×kind×source table in
   `ISSUE-SCHEMA.md`) **and** keep `steer:kind` as the standards contract.
@@ -297,8 +299,10 @@ is not a feature), warn, and do **not** invent an `epic` label. The epic's meani
 still reaches a board through its native sub-issue links, which are Type-independent.
 
 **Issue fields - capability-degrading.** Native issue fields (Priority, Effort,
-Start/Target date) are an **org-level** GitHub feature, currently public preview,
-reachable only via GraphQL (not `gh` REST, not the manual floor). So:
+Start/Target date) are an **org-level** GitHub feature (generally available
+since 2026-07), reachable through the GitHub MCP server, GraphQL, or REST via
+`gh api` - not through a `gh issue` subcommand and not on the manual floor
+(recipes in `ISSUE-SCHEMA.md`). So:
 
 - **Fields available** -> read them for ranking; escalate-only auto-set Priority;
   write dates under human confirmation (`/steer:spec roadmap`). Their option sets are
@@ -377,8 +381,8 @@ run is filed via `/steer:work issues publish-audit`, which keys off the markers
 Per finding, on the next run:
 
 - **Same `finding-key` still present** -> update the existing issue's managed
-  block (refresh evidence/impact). Don't reopen if a human closed it as
-  `resolution:false-positive`.
+  block (refresh evidence/impact). Don't reopen it if a human closed it as a
+  false positive.
 - **`finding-key` gone (no longer reproduces)** -> **comment with the evidence and
   close**, but gate the auto-close on confidence: only **`resolution_mode:
   deterministic`** findings (a check that objectively no longer fires) may
@@ -386,7 +390,9 @@ Per finding, on the next run:
   "unclear module responsibility") are proposed-for-close and need a human yes.
 - **Evidence changed substantially, same key** -> update evidence only.
 - **New `finding-key`** -> create.
-- **False positive** -> close with `resolution:false-positive`; it stays closed.
+- **False positive** -> close with closure reason `rejected` (-> `cancelled`)
+  and say why in the closing comment; the all-states dedup search keeps it
+  closed.
 
 **Audit-run records are immutable history.** Each run files one `audit-run`
 parent stamped with its own `audit-id` (`<iso-timestamp>-<short-sha>`); never

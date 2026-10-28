@@ -97,10 +97,13 @@ overall score: three runs per case leave one run's variance visible.
 Recorded on the installed steer 7.14.0 (Claude Code 2.1.312), before the rule
 diets and listing trims after it:
 
-- **`/doctor prompt-audit`** (Opus 5.5 target): no dated prompting in steer - no
-  pressure language, no retired idioms or model names. Steer was scanned at grep
-  level only; the line-by-line findings were all in this repo's own `CLAUDE.md`
-  and `.claude/skills/` (stale counts, history narratives), which ship nothing.
+- **`/doctor prompt-audit`** (Opus 5.5 target): no retired idioms or model
+  names in steer. That scan was grep-level and never read `rules/`; its
+  line-by-line findings were in this repo's own `CLAUDE.md` and
+  `.claude/skills/` (stale counts, history narratives), which ship nothing. The
+  full prompt audit of steer on 2026-10-28 (PRs #826, #827) did find dated
+  prompting - pressure language in the write-time hook notices and rule 40 -
+  plus contradictions the rule trims left behind.
 - **`/skill-doctor`**: the 29 steer skills cost about 4,510 tok of listing every
   turn. Largest: `spec` ~520, `work` ~470, `setup` ~380, `status` ~210, `next`
   ~200. Most used on this machine: `work` (122), `tracker-sync` (60), `spec`

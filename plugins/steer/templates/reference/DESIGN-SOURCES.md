@@ -106,15 +106,16 @@ buttons. Choose against those unless the PO or `DESIGN.md` asks for one:
   `steer` (`/plugin install frontend-design@e22-plugins`). Its skill
   activates automatically on frontend work and supplies the craft layer:
   intentional typography, a committed color system, motion, considered layout,
-  and an explicit list of generic-AI anti-patterns to avoid (Inter/Roboto
-  defaults, purple-on-white gradients, cookie-cutter sections).
-- **Scope it deliberately.** `frontend-design` defaults to "pick the most extreme
-  aesthetic." For a financial-services context, keep the *discipline*
+  and its own list of the looks AI-generated design clusters around.
+- **Scope it deliberately.** `frontend-design` pushes for a distinctive point of
+  view and "one real aesthetic risk you can justify", spent on a single
+  signature element. For a financial-services context, keep the *discipline*
   (intentional, cohesive, non-generic, accessible) but default to a
-  professional/enterprise register unless the PO asks otherwise. Build in the
-  standard stack - Next.js + TypeScript + Tailwind - not the plugin's example
-  HTML/CSS. The cookbook it links
-  (`prompting_for_frontend_aesthetics`) is the deeper reference.
+  professional/enterprise register unless the PO asks otherwise - the skill
+  itself defers to the brief where it pins a direction. It names no stack:
+  build in the standard stack - Next.js + TypeScript + Tailwind. The cookbook
+  its README links (`prompting_for_frontend_aesthetics`) is the deeper
+  reference.
 - **A committed export still wins where it exists.** `frontend-design` fills the
   *gap* - it does not override a screen the PO actually designed. Realize the
   export for the screens it covers; design the rest deliberately around it so the

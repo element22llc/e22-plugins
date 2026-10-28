@@ -7,7 +7,7 @@ your own initiative. The promptable gates: ADR `Proposed -> Accepted` (its
 `/steer:spec approve <id>`), and the `--reviewed` plan sign-off (who asked;
 implement).
 
-Ask once, three options - **Approve · Reject · Decide later** - showing the
+Ask once, three options - **Approve / Reject / Decide later** - showing the
 tradeoff (rejected alternatives, negative consequences, locked scope), never
 just a title, and never pre-selected. Only an unambiguous answer *to the
 decision presented* ratifies it; ambient agreement ("ok", "thanks", silence, or

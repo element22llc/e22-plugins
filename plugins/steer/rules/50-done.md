@@ -35,9 +35,9 @@ Drift - any mismatch along intent <-> spec <-> contract <-> tracker <-> app docs
 <-> tests <-> delivered behavior - is resolved by **explicit human review, never
 silently**: you surface it before merge, the reviewer resolves it. Flag these
 classes in the PR the moment you notice one (its template carries the
-checklist): **intent drift · contract drift · undocumented
-behavior change · security-sensitive · compliance-impacting · operational
-(deploy/CI/infra) · local setup or deployment changed · app docs invalidated ·
+checklist): **intent drift, contract drift, undocumented
+behavior change, security-sensitive, compliance-impacting, operational
+(deploy/CI/infra), local setup or deployment changed, app docs invalidated,
 architecture/stack drift (`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer resolves it - you may not waive your own flag. The advisory
 `spec-drift` CI check warns when behavior changes without its `contract.md`; a

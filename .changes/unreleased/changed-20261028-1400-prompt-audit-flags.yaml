@@ -1,0 +1,15 @@
+kind: Changed
+body: |-
+    - **Changed: rules 00, 30, 50 and 61 settle conflicts the prompt audit
+      flagged.** Rule 30 now agrees with rule 80 that a planned feature's intent
+      is PO-approved before its code, with the contract before or alongside it.
+      Rule 00 asks the dev about scope in the session when they are present,
+      and in a PR comment only otherwise. The gate prompt reads `Approve /
+      Reject / Decide later` and the drift classes are comma-separated, so the
+      always-on rules carry no middle dots; the explain and artifact
+      references show scope as In / Out lists rather than check and cross
+      glyphs. `ISSUE-WORKFLOW.md` says unattended GitHub Actions runs exist
+      behind the automation opt-in rather than calling them out of scope.
+time: 2026-10-28T14:00:00.000000-04:00
+custom:
+    Slug: prompt-audit-flags-rules

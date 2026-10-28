@@ -154,7 +154,7 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 | Unresolved `blocking` question on the item | Blocking now | `/steer-spec questions` |
 | Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline - `/steer-spec roadmap` |
 | `epic` in `exploring`, child features identified | Recommended | Link them - `/steer-work issues epic #E --add ...` |
-| `epic` whose child features are all terminal (≥1 `done`) | Human decision required | PO confirms the epic outcome (no command) |
+| `epic` whose child features are all terminal (at least one `done`) | Human decision required | PO confirms the epic outcome (no command) |
 | Nothing queued | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. Read-only and idempotent -

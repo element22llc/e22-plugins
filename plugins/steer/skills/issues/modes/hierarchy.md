@@ -17,9 +17,7 @@ at the **same** derivation is deliberate: they can never disagree.
 
 Use native GitHub parent/sub-issue links when available; else fall back to
 `Parent: #N` + `<!-- steer:parent-issue=N -->` and a generated checklist in the
-parent. Each child uses the `technical-task` body. `--prototype` is the **only**
-way to decompose before approval, and those tasks are clearly marked
-non-production.
+parent. Each child uses the `technical-task` body.
 
 **If `#N` is `kind=epic`**, this is the wrong tier - redirect to
 `/steer:issues epic` (an epic groups *features*; it has no `contract.md` to
@@ -50,11 +48,11 @@ Verbs:
   checklist in its managed block.
 
 **Gate:** unlike `decompose`'s contract-readiness gate (a *feature* derivation),
-an epic only needs **its scope agreed + ≥1 child feature identified** - a
+an epic only needs **its scope agreed + at least one child feature identified** - a
 deliberately different, product-level bar, so the two tiers never share a
 derivation. State (`inbox -> exploring -> in-progress -> validate -> done`) follows the
 epic path in `ISSUE-WORKFLOW.md`; completion is the **child rollup** (all children
-terminal, ≥1 `done`, PO confirms) - the agent proposes `done`, never auto-closes.
+terminal, at least one `done`, PO confirms) - the agent proposes `done`, never auto-closes.
 
 ## `status [#N|feature-id]`
 
@@ -80,6 +78,6 @@ on `steer:kind`; the feature/task shape above is unchanged. Example shape:
 ```
 Epic billing-revamp
 Issue: #98 - In-progress (Type: Epic)
-Child features: 4 linked - 1 done · 1 validate · 2 in-progress
+Child features: 4 linked - 1 done, 1 validate, 2 in-progress
 Eligible to close: no (2 features not yet terminal)
 ```

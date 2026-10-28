@@ -3,8 +3,10 @@
 Create the artifact when the trigger fires - don't defer it:
 
 - **Starting a user-facing feature** -> `/spec/features/[id]/intent.md` +
-  `contract.md` (`[id]` a kebab-case slug), before or alongside the code, via
-  **`/steer:spec`** (**`/steer:build`** for a PO).
+  `contract.md` (`[id]` a kebab-case slug), via **`/steer:spec`**
+  (**`/steer:build`** for a PO). A planned feature's intent is PO-approved
+  before its code (Change classification); the contract comes before or
+  alongside it.
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
   deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:spec adr`**).
   **The bar is reversal cost, not novelty** - a pattern used once is a

@@ -144,8 +144,11 @@ wrong approach is costly to unwind and you want an adversarial, rubric-scored
 check.
 
 **steer does not configure it for you, by design.** `advisorModel` is a
-per-developer, cost- and account-dependent preference, it is experimental, and it
-runs on the Anthropic API only - not portable across Bedrock/Vertex - so it stays
+per-developer, cost- and account-dependent preference, documented as
+experimental (as of 2026-10), and it needs the Anthropic API - it is unavailable
+on Amazon Bedrock, Google Cloud, Microsoft Foundry and Claude Platform on AWS,
+and behind an LLM gateway only if the gateway forwards it intact - so it stays
 out of the scaffold's checked-in `settings.json`, which would silently override
 each teammate's choice. Enable it yourself with `/advisor <model>` (e.g.
-`/advisor opus`) or `claude --advisor opus` for one session.
+`/advisor opus`, saved to your user settings) or `claude --advisor opus` for one
+session.

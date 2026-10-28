@@ -10,10 +10,12 @@ intervene.
 A Claude Code plugin (hooks, rules, skills) and the model itself operate under hard
 limits here. Designing around them keeps the guidance truthful:
 
-- **No context-window visibility.** No hook event and no environment variable
-  exposes token count or percentage of the budget consumed. Only the user can see
-  it, by running `/context`. steer therefore cannot *detect* that the window is
-  getting heavy.
+- **No running context-window visibility.** No hook event fires as the window
+  fills. The fill percentage reaches only the user's status line
+  (`context_window.used_percentage`) and `/context`, and a plugin cannot ship the
+  main status line; token counts reach hook input only at a resume, a fork or a
+  model switch (Claude Code docs, as of 2026-10). steer therefore cannot
+  *detect* that the window is getting heavy.
 - **No trigger.** Hooks communicate only through stdout/stderr/exit codes - they
   cannot invoke `/` commands. Neither a hook **nor the model** can start a
   `/compact` or open a new session. Both are strictly user-initiated.
@@ -168,9 +170,9 @@ state to a file, so the nudge is seldom needed.
 **Concrete heuristics to include in the recommendation** - community-validated
 rules of thumb the user acts on (you cannot):
 
-- **Quality drops well before the window is full.** Practitioners treat ~40%
-  context fill as the onset of degradation and act at or below it; `/context`
-  is where the user reads the number.
+- **A focused context answers better.** `/clear` between unrelated tasks; to
+  compact earlier than the default, `/autocompact <tokens>` sets the threshold,
+  and `/context` shows the current fill.
 - **Rewind beats correcting.** Rolling back (double-Esc / `/rewind`) to just
   before a failed attempt and re-prompting outperforms leaving the failed
   attempt plus its correction in the window.
