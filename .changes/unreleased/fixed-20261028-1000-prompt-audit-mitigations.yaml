@@ -1,0 +1,31 @@
+kind: Fixed
+body: |-
+    - **Fixed: skills and references no longer contradict each other or the
+      rules.** A prompt audit of steer found pointers left behind by the
+      September and October rule trims, and a few conflicting instructions.
+      `/steer:setup adopt` now accepts a repo with a `spec/` steer never wrote
+      instead of sending it back to `/steer:init`. `/steer:setup doctor` gives
+      its real reason for asking before an install, and the init guardrail no
+      longer asks for approval of each batch. `/steer:loop` no longer scaffolds
+      onto an unprotected `main`, matching rule 53. Stale citations now point at
+      the reference that holds the text: the trunk-push gate in `/steer:reference
+      gates`, the Greenfield flow in `SPEC-FRAMEWORK.md`, the Windows setup and
+      design sources in their references, and milestones in
+      `/spec/tracker.md`. The product `CLAUDE.md` template stops claiming that
+      design sources and anti-patterns are injected, and says that `/steer:setup
+      protect` flips the delivery-mode marker itself. Solo trunk is detected by
+      the marker rather than prose, and the version-policy text says that a
+      repo's own `policy/versions.yml` is not refreshed. The invocation matrix
+      gains the skills it was missing.
+    - **Changed: hook notices, rule 40 and worked examples written for older
+      models.** The write-time scaffold, spine and issue-first notices lose
+      their capitalised pressure words, and the spine notice routes to
+      `/steer:spec` rather than the internal `spec-scaffold`. Rule 40 drops its
+      capitalised MUST. The `mise.toml` examples in the conventions reference
+      stop carrying the narrating comments a model copies into consumer files.
+      The design-sources reference names the stock looks to avoid instead of
+      saying "generic AI UI". The next-actions example no longer suggests a
+      command that does not perform its action.
+time: 2026-10-28T10:00:00.000000-04:00
+custom:
+    Slug: prompt-audit-mitigations

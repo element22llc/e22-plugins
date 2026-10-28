@@ -95,8 +95,8 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 > run`, or destructive git (`push --force` flag-first, `reset --hard`, `clean -fdx`,
 > `branch -D`) - merge and approval stay human; tracker I/O routes through
 > `/steer-tracker-sync`.
-> Two hooks can still ask (rule 45): the trunk-push gate in an ungraduated
-> solo-trunk repo, and the stacked-PR gate.
+> Two hooks can still ask: the trunk-push gate in an ungraduated solo-trunk
+> repo (`/steer-reference gates`), and the stacked-PR gate (rule 45).
 
 ## Delivery mode
 
@@ -116,7 +116,7 @@ modes**; they differ only in the branch/PR ceremony.
   Closing ref). Everything else - validation, managed-block
   progress, closure-reason semantics - is identical. While a graduation signal
   stands and no waiver is recorded, the trunk-push hook surfaces the session's
-  first push for a human yes (rule 45).
+  first push for a human yes (`/steer-reference gates`).
 
 ## Subcommands (distinct, idempotent)
 

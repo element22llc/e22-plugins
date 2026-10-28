@@ -65,12 +65,14 @@ denied**; anything at or above the floor is allowed silently. There is **no
 advisory "behind the target" tier** - what to pin is the live rule's job, not the
 floor's, so the file never carries a `recommended` value that could silently rot.
 
-- **The floor tracks upstream EOL automatically.** A scheduled workflow
-  (`version-policy-refresh.yml`) is the *only* thing that consults endoflife.date:
-  weekly it raises any floor that has fallen behind to the lowest cycle still
-  supported upstream and opens a **human-reviewed PR**. Enforcement never makes
-  that call. The floor may be deliberately *stricter* than upstream EOL - the
-  refresh only ever raises it, never lowers it.
+- **The plugin default floor is refreshed upstream, not your copy.** A scheduled
+  workflow in the plugin repo is the *only* thing that consults endoflife.date:
+  weekly it raises any plugin-default floor that has fallen behind to the lowest
+  cycle still supported upstream, through a **human-reviewed PR**. Enforcement
+  never makes that call. A repo's own `policy/versions.yml` takes precedence over
+  the plugin default and is seeded once, so it moves only when the product raises
+  it in a reviewed change. A floor may be deliberately *stricter* than upstream
+  EOL - the refresh only ever raises, never lowers.
 - **Deliberate older pins are allowed** (deploy-target/RDS parity, Node LTS
   policy): record an ADR and append `# steer:allow-pin <reason>` (legacy alias:
   `# pin-ok: <reason>`) on the same line as the pin; enforcement then passes it.
@@ -248,12 +250,12 @@ carries no `dev:api`, no `uv`, and no `concurrently` cross-stack runner:
 ```toml
 # mise.toml - mise is the polyglot entry point; web stays in package.json
 [tasks."dev:web"]
-run = "pnpm --filter web dev"            # delegates to apps/web/package.json
+run = "pnpm --filter web dev"
 [tasks."dev:api"]
 run = "uv run uvicorn app.main:app --reload --port ${API_PORT:-8000}"
 [tasks.dev]
 description = "Run the full app locally (web + api)"
-depends = ["dev:*"]                       # both servers in parallel; mise is the single entry point
+depends = ["dev:*"]
 ```
 
 ```jsonc
@@ -284,14 +286,14 @@ steps already satisfied, and doesn't fail fast):
 run = "docker compose up -d --wait"
 
 [tasks."db:migrate"]
-depends = ["docker:up"]   # runs first; if it fails, db:migrate does not run
+depends = ["docker:up"]
 run = "pnpm --recursive --if-present run db:migrate"
 
 [tasks."db:seed"]
 depends = ["db:migrate"]
 
 [tasks."dev:setup"]
-depends = ["db:seed"]     # transitively pulls docker:up -> db:migrate -> db:seed
+depends = ["db:seed"]
 ```
 
 - **`depends`** - dependencies run **before** the task, in dependency order;
@@ -313,9 +315,9 @@ providers** that install workspace deps automatically before any `mise run` /
 experimental = true        # [deps] auto-install is gated experimental in mise
 
 [deps.pnpm]
-auto = true                # `pnpm install` - runs only when pnpm-lock.yaml changed
+auto = true
 [deps.uv]
-auto = true                # `uv sync`     - runs only when uv.lock changed
+auto = true
 ```
 
 - Each provider is **content-hashed against its lockfile** and runs **only when

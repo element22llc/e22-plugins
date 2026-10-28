@@ -35,16 +35,17 @@ allowed-tools:
 # Build a working app from a PO's idea
 
 This is the PO-facing path through the standard Greenfield flow
-(`Spec workflow` rules): interview -> spec -> PO approval -> build -> demo -> dev
-handoff (a v0 PR in PR flow, or graduation off the trunk in solo trunk).
+(`SPEC-FRAMEWORK.md` -> "Greenfield flow"): interview -> spec -> PO approval ->
+build -> demo -> dev handoff (a v0 PR in PR flow, or graduation off the trunk
+in solo trunk).
 The PO personally installs only **Claude Code, `git` and Docker Desktop**, on a
 supported machine - **macOS, Linux, or Windows** (WSL2 for CLI/IDE work; on the
-Claude Desktop Code tab, Git for Windows is enough - see the `Stack` rule and
-`/steer:setup doctor`). You verify and drive everything
-else yourself: install the supported local toolchain (mise, then pnpm/uv)
-where the OS permits, and handle GitHub auth for the eventual PR - never hand the
-PO commands. Speak plainly throughout - no git/stack jargon (see the
-"Who you are working with" rule).
+Claude Desktop Code tab, Git for Windows is enough - see `/steer:reference
+conventions` -> "Windows: use WSL" and `/steer:setup doctor`). You verify and
+drive everything else yourself: install the supported local toolchain (mise,
+then pnpm/uv) where the OS permits, and handle GitHub auth for the eventual PR -
+never hand the PO commands. Speak plainly throughout - no git/stack jargon (see
+the "Who you are working with" rule).
 
 Set expectations up front, in plain language: *"I'll ask you questions, write
 down what we agree, you approve it, then I build and run the app on your
@@ -236,5 +237,5 @@ only where one truly applies. Read-only - it recommends, the PO/dev decides.
 
 ## When not to use this
 
-A developer driving a Greenfield product doesn't need this skill - follow the
-Greenfield steps in the Spec-workflow rules directly.
+A developer driving a Greenfield product doesn't need this skill - bootstrap
+with `/steer:setup`, then spec each feature with `/steer:spec`.

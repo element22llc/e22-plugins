@@ -2456,7 +2456,7 @@ printf '%s' "${out}" | grep -q 'no /spec spine' &&
 # /steer:setup"; naming it inside the explicit warn-off sentence is the point.
 printf '%s' "${out}" | grep -q 'Run /steer:setup:' &&
 	bad "nudge: openspec repo must never be told to Run /steer:setup" || ok
-oq_grep "nudge: openspec scaffold text warns off the bootstrap modes" 'do NOT run /steer:setup init or /steer:setup adopt' "${out}"
+oq_grep "nudge: openspec scaffold text warns off the bootstrap modes" 'do not run /steer:setup init or /steer:setup adopt' "${out}"
 
 # The native repo keeps the native text.
 WN_NAT="$(new_repo wn_nat)"

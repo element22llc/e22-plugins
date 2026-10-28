@@ -65,13 +65,13 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
 2. **Read `/spec/tracker.md`.** The loop triages the tracker; this skill assumes
    `system: github`. If the tracker is something else, say the loop's
    issue-triage half won't apply and confirm before scaffolding a CI-only loop.
-3. **PR flow only (rule 53).** A loop routes unattended work through the merge
-   review, so the repo must run pr-flow with a protected `main`. In a
-   **solo-trunk** repo (`CLAUDE.md` delivery-mode marker), do not scaffold -
-   recommend graduating via `/steer:setup protect` first. If `main` declares pr-flow
-   but is unprotected, scaffold, but name the missing wall as a required
-   follow-up (`/steer:setup protect apply`) - an unattended loop must not be the thing
-   that discovers the gate was honor-system.
+3. **PR flow with a protected `main` (rule 53).** A loop routes unattended work
+   through the merge review, so the repo must run pr-flow with `main` already
+   protected. In a **solo-trunk** repo (`CLAUDE.md` delivery-mode marker), do
+   not scaffold - recommend graduating via `/steer:setup protect` first. If
+   `main` declares pr-flow but is unprotected, do not scaffold either:
+   recommend `/steer:setup protect apply` and stop - an unattended loop must
+   not be the thing that discovers the gate was honor-system.
 4. **`ANTHROPIC_API_KEY` must be available to Actions.** Check
    `gh secret list` for it. If absent, scaffold anyway but report it as a
    **required human follow-up** - the workflow no-ops without it (never set the
@@ -122,7 +122,6 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    `/spec/history/` entry naming the decider, the date, and the schedule. The scheduled loop only arms once that PR merges, so the human
    decision to run a loop at all is the merge itself.
 6. **Report the follow-ups honestly:** the `ANTHROPIC_API_KEY` secret if missing,
-   branch protection if missing (`/steer:setup protect apply`),
    the chosen schedule, the scope, and that the loop delivers up to the PR and
    never merges. Point at rule
    53 for the boundary and note the workflow can be triggered on demand from the
@@ -210,5 +209,5 @@ it). A cloud scheduled task is the dev's to delete; the removal PR says so.
   loop. This skill doesn't itself run the sweep - invoke `/steer:audit` /
   `/steer:next` directly for a one-off.
 - **Not branch protection.** Requiring review on the draft PRs the loop opens is
-  `/steer:setup protect`'s job - name it as the companion follow-up so an autonomous
-  loop can't land unreviewed.
+  `/steer:setup protect`'s job, and a precondition here (step 3), so an
+  autonomous loop can't land unreviewed.

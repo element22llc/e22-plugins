@@ -60,8 +60,8 @@ Two invariants underpin everything:
    - **Re-granted per skill via `allowed-tools`** - `/steer:tracker-sync` re-grants
      both write tools; `/steer:report` re-grants only `issue_write`, never
      `sub_issue_write`. A grant applies **only while that skill is the invoked
-     one**, which splits the two cases: `/steer:report` is a direct entry point, so
-     its re-grant takes effect, but `tracker-sync` is `user-invocable: false` and is
+     one**, which splits the two cases: the model invokes `/steer:report` itself
+     through the Skill tool, so its re-grant takes effect, but `tracker-sync` is
      always reached transitively from a front door - so its grants do **not** take
      effect, and where the write lands then depends on the transport. The gateway is
      MCP-first, so its primary path falls back under `ask` and **does** prompt; only

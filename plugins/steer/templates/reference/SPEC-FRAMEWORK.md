@@ -13,7 +13,7 @@ rules state only *when* to create artifacts.
 | Spec | `/spec` | Dev or PO (via `/steer:build`) writes; PO approves intent; dev approves the PR | Durable |
 | Implementation | `/apps` + `/packages` | Dev | Must conform to spec |
 | Non-prod validation | Non-prod environment | PO validates, Dev supports | Working but not production |
-| Production | AWS | Dev | Deployed |
+| Production | The production environment `policy/delivery.yml` declares | Dev | Deployed |
 
 The spec is the only artifact that persists across exploration, implementation,
 validation, and operation. Treat it as infrastructure.

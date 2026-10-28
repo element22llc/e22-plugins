@@ -140,11 +140,10 @@ system, and **asking is not authorization**:
   no in-session answer substitutes for it (rule `45`).
 
 **Not on this list: the ungraduated solo-trunk trunk push.** While a local
-graduation signal stands, rule `45-delivery` stops trunk pushes being
-*silent* - the session's **first** one waits for a human yes, and repeats carry a
-non-blocking reminder - and `check-bash-actions.sh` surfaces
-that first push as a PreToolUse **`ask`**, deliberately never a deny. A yes there
-**does** authorize that push; the gate clears for good by graduating
+graduation signal stands, `check-bash-actions.sh` stops trunk pushes being
+*silent*: the session's **first** one surfaces as a PreToolUse **`ask`**,
+deliberately never a deny, and repeats carry a non-blocking reminder. A yes
+there **does** authorize that push; the gate clears for good by graduating
 (`/steer:setup protect`) - or by recording a **graduation waiver** (`/steer:setup protect
 waive`) when the repo deliberately stays single-dev on trunk and the local
 signals are expected; the waiver is a recorded decision the shared detector

@@ -16,11 +16,9 @@ human-owned. Required steps, in order:
    synthesizing, run **`/steer-tracker-sync find`** across **open *and*
    closed** issues for the topic, the systems/components named, and adjacent
    decisions - don't reason only about the one issue you were handed. Search by
-   the obvious keywords *and* their alternatives (e.g. an issue about "Cognito
-   hosting" must also search `auth`, `authentication`, `better-auth`,
-   `login`, `identity`). The goal is to catch the issue that the current one
-   **overlaps, depends on, or - most importantly - silently conflicts with**
-   (a hosting choice that a pending auth-migration issue would invalidate).
+   the obvious keywords and their alternatives. The goal is to catch the issue
+   that the current one **overlaps, depends on, or - most importantly -
+   silently conflicts with**.
 3. **Surface every relationship you find** in the AI-synthesis comment: name
    the issue (`#N`), the `issue_relationship` (`ENUMS.md`), and one line of
    why. Call out **conflicts and supersessions explicitly** as a decision a

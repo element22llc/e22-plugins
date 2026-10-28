@@ -274,11 +274,3 @@ block's heading already names this skill, which is what a user needs to say "tha
 was the wrong route"; when they do, rule `00-router` § When steer itself misbehaves files it with
 `/steer-report`. A standing invitation on every readout buys nothing and crowds
 out the recommendation.
-
-## Golden fixtures
-
-`https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/reference/next-fixtures/` pins the intended
-**cross-workflow** arbitration as prose scenarios (not executable tests) - each
-gives a multi-workflow `## Given` state and the single `## Expected
-highest-priority action`. Walk the classification table in `CLASSIFY.md` plus
-the shared safety precedence by hand against each fixture to confirm the winner.

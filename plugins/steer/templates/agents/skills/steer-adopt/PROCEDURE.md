@@ -14,9 +14,11 @@ whole-repo brownfield adoption) before the survey, per rule `00-router`'s
 run that is interrupted has at least said where it was going.
 
 Then answer this phase **from the repo alone** (guardrail: read the repo before
-the plugin). There's no `/spec` spine, no `mise.toml`/standard layout, and the
-repo was not forked from the template. If it *was* forked (placeholders, existing
-`/spec`), redirect to `/steer-init` and stop. Detect the stack from the repo itself
+the plugin). Adoption fits a repo with substantial working code and no
+steer-written spine - spine state `unmanaged`, or `foreign` (a `spec/` steer
+never wrote); `/steer-setup`'s routing table is canonical. If template
+placeholders are present (a legacy template fork), redirect to `/steer-init`
+and stop. Detect the stack from the repo itself
 (`package.json` / `pyproject.toml`, frameworks, database, auth). **Also infer the
 repo profile** from the same survey and **confirm it with the dev**: `infra`
 (`*.tf`/`*.hcl`, `ansible.cfg`/`site.yml`/`roles/`, `Pulumi.yaml`/`terragrunt.hcl`),
@@ -40,8 +42,8 @@ autonomy).
 adoption and **the whole phase is a no-op: skip to Phase 3 without opening the
 migrations ledger.** Nothing in the ledger can fire on a repo that has no spine
 to migrate, and the checklist is created from the current bundled template in
-Phase 8. This ordering is deliberate - the ledger is a large read, and paying for
-it on every fresh adoption is what starved the survey.
+Phase 8. This ordering is deliberate: the ledger is a large read, and the survey
+needs that context more.
 
 Everything below runs **only** when one of those two files exists.
 

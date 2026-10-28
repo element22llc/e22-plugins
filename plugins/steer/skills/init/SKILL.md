@@ -78,8 +78,9 @@ code, or this skill greenfield - never `/steer:sync`.
 
 Never clobber working code or overwrite a value the dev already filled in.
 Never commit secrets - `.env`/`.env.local` stay git-ignored, names documented in
-`.env.example`. Propose batches for approval; don't commit to `main` (except in
-solo trunk mode - see step 1).
+`.env.example`. Pause for the dev only on an unmade decision or an edit that
+would overwrite filled-in content; commits, the push and the PR follow Commit
+autonomy. Don't commit to `main` (except in solo trunk mode - see step 1).
 
 ## Path A - legacy template fork
 

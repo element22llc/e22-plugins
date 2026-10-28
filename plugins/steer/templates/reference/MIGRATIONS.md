@@ -247,8 +247,9 @@ Name the file and say what to carry forward.
 
   No output => already migrated, the file is absent, or the repo rewrote the step
   => no-op.
-  Superseded once the entry *Dependabot auto-merge moves into `ci.yml`* fires:
-  skip this one then.
+  Superseded by the entry *Dependabot auto-merge moves into `ci.yml`*, whose
+  precondition fires whenever this one does: skip this one. The re-take source
+  named below no longer ships.
 - **Action:** a **section re-take**. Replace the step from its `- name: Wait for
   every check, approve, merge (patch/minor)` line up to the next `- name:` with the
   step from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
@@ -327,8 +328,9 @@ Name the file and say what to carry forward.
 
   No output => already migrated, the file is absent, or the repo rewrote the step
   => no-op.
-  Superseded once the entry *Dependabot auto-merge moves into `ci.yml`* fires:
-  skip this one then.
+  Superseded by the entry *Dependabot auto-merge moves into `ci.yml`*, whose
+  precondition fires whenever this one does: skip this one. The re-take source
+  named below no longer ships.
 - **Action:** a **section re-take**. Replace the step from its `- name: Approve,
   wait for CI, merge (patch/minor)` line up to the next `- name:` with the step
   from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/dependabot-auto-merge.yml`,
@@ -555,8 +557,6 @@ Name the file and say what to carry forward.
   false. **No history entry is earned** - this records existing behaviour.
 
 ### v6.5.0 - `policy/delivery.yml` declares how the repo delivers
-
-(Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
 
 - **What & why:** rule `45-delivery` § Deployment & environments used to *impose* one delivery model - AWS,
   `non-prod`/`prod`, branch-driven promotion - on every managed repo, so a repo

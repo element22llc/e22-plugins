@@ -49,6 +49,10 @@ an unrelated question.
 | `/steer:spec questions` | Resolves open questions, folding decisions into the spec. |
 | `/steer:spec roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
 | `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
+| `/steer:setup worktrees` | Checks worktrees another tool manages; writes trust, port and boot-file fixes on confirmation. |
+| `/steer:work promote` | Cuts the consumer changelog and opens the production promotion PR; stops at the merge. |
+| `/steer:work review` | Batches the PR review queue. |
+| `/steer:work walkthrough <feature>` | Records a captioned demo video; commits a re-recordable script and a `mise run demo:record` task. |
 
 ## Tier 3 - internal orchestration only
 
@@ -65,6 +69,9 @@ Not a user's first move.
 | `/steer:init` | Greenfield bootstrap (scaffold + spine). Reached only through `/steer:setup init`. |
 | `/steer:adopt` | Brownfield adoption - reverse-engineers the spec, scaffolds an existing repo. Reached only through `/steer:setup adopt`. |
 | `/steer:sync` | Steady-state update - ledger migrations, spine/scaffold reconcile, lands a PR. Reached only through `/steer:setup sync`. |
+| `/steer:worktrees` | The worktree checker. Reached only through `/steer:setup worktrees`. |
+| `/steer:walkthrough` | The demo-video recorder. Reached only through `/steer:work walkthrough <feature>`. |
+| `/steer:weekly-update` | Applies a week's work to an Artifact-hosted project tracker. Reached from rule 00 for a weekly tracker update. |
 | `/steer:reference <topic>` | The reference-prose loader - conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo. Reached from a rule or a skill that names the topic it needs; the user describes the question instead. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. **Auto-files** with no confirmation step, which is why the model owns the channel: the user reports the misbehaviour in plain language. |
 | `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. Reached when a dev asks for a scheduled sweep in plain language, and named by rule 53, which a repo carries only once it declared the automation opt-in (`policy/automation.yml`). A repo that never opted in is refused by the skill's first step, not by the marker. |
