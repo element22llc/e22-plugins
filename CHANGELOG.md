@@ -3,6 +3,388 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.15.0
+
+- **Fixed: volumes left by deleted Claude Code worktrees are now reported.**
+  Claude Code removes the worktrees it creates itself, and `WorktreeRemove`
+  fires only for worktrees a `WorktreeCreate` hook created, so steer's
+  `docker:clean` teardown never ran for `claude --worktree`,
+  `EnterWorktree` or `isolation: worktree` and their volumes were orphaned.
+  A new session check in the primary checkout now names the Compose stacks
+  deleted worktrees left behind, including ones where only volumes remain,
+  and points to `/steer:setup worktrees`, which removes them on a yes. The
+  worktrees scan reports Claude Code worktrees as `teardown swept` instead
+  of `hooked`, and the `WorktreeRemove` hook stays registered for repos
+  whose worktrees another tool's `WorktreeCreate` hook makes.
+- **Fixed: commit autonomy now states that it overrides the harness
+  default.** The Claude Code CLI and web system prompts say to commit,
+  push or open a PR only when asked, which contradicted rule
+  `45-delivery`, and sessions resolved the two inconsistently. The rule
+  now says it deliberately overrides that surface default, and the
+  scaffold's `CLAUDE.md` `## Delivery mode` section carries the same line,
+  where the harness treats it as overriding its defaults. Repos adopted
+  earlier get the rule line; the `CLAUDE.md` line reaches new scaffolds.
+- **Fixed: a team's `AGENTS.md` keeps reaching Claude Code after
+  adoption.** Claude Code now reads `AGENTS.md` natively, but only when
+  no `CLAUDE.md` exists, so the `CLAUDE.md` that `/steer:setup adopt`
+  creates silenced a team's existing file. When `AGENTS.md` has content
+  outside steer's block, init and adopt now end `CLAUDE.md` with an
+  `@AGENTS.md` import, and a new `agents-md-imported` capability makes
+  `/steer:setup sync` propose it for repos adopted earlier. The
+  `AGENTS.md` pointer block now tells any agent whose context already
+  holds the injected standards not to read
+  `.github/copilot-instructions.md` again, and to invoke `/steer:<skill>`
+  where it exists rather than opening the `.agents/skills/` copy; sync
+  refreshes the block in place.
+- **Fixed: stale facts and dated phrasing across the prompt surface.** A
+  prompt audit against Claude Opus 5.5 found little old-model prompting but
+  many references the plugin's own refactors had left behind. `intake`,
+  `roadmap` and `questions bundle` now test for a spine by `spec/.version`
+  like the rest of the skills, not by a bare `spec/`; `init` drops
+  `compose.yaml` only for `infra`, `library` and `cli` repos, matching the
+  scaffold manifest; the Stop hook's hotfix notice cites rule `61`, not a
+  rule `62` that does not exist; and pointers to rules folded away in 7.0
+  (`living-docs`, `drift-gates`, `user-facing-copy`, `95-not-the-gate`,
+  Coverage, layout, housekeeping) now name their current homes. The retired
+  Copilot CLI "silent allow" premise, the retired comment-density block
+  tier, a pinned model ID in the triage example, eval-run and version
+  archaeology, and "now / no longer / today's behaviour" phrasing are gone.
+  The template-drift notice no longer tells the agent to drop everything
+  before it, and the subagent digest no longer carries an unexpanded
+  `${CLAUDE_PLUGIN_ROOT}`.
+- **Changed: the always-on Spec workflow rule is 40% shorter.** Rule
+  `30-spec` drops from 5,524 to 3,307 characters, the first slice of the
+  always-on rule triage. Its triggers, durable-decision capture,
+  living-documentation routing, history entries and the internal-ids ban
+  stay injected (and in the Copilot instructions). Detail already carried
+  elsewhere leaves the rule: the full routing table and the polyrepo
+  member destinations live in `/steer:reference traceability` and
+  `/steer:reference polyrepo`, design-export handling in
+  `/steer:reference design-sources`, and the members' own session note
+  already names the workspace spine. Skills that cited the rule for a
+  member's history entry now cite `/steer:reference polyrepo`.
+- **Changed: the always-on delivery rule is 40% shorter.** Rule
+  `45-delivery` drops from 5,208 to 3,209 characters, the second slice of
+  the always-on rule triage. Commit autonomy, the two delivery modes, the
+  merge and deploy gate, the deployment baselines and the worktree
+  service and trust rules stay injected (and in the Copilot instructions).
+  Detail carried elsewhere leaves the rule: the stacked-PR rationale is in
+  the stacked-PR hook's prompt, the solo-trunk graduation gate in
+  `/steer:reference gates`, the delivery model and worktree mechanics in
+  `/steer:reference conventions`, and deploy-pipeline scoping in the
+  High-risk areas rule. The conventions reference now carries the
+  empty-`observability` flag the rule used to state.
+- **Changed: the `spec`, `work` and `setup` skill listings are much
+  shorter.** Their `description` + `when_to_use` drop from 1,365 / 1,417 /
+  1,140 to 850 / 741 / 788 characters as rendered, taking steer's whole
+  skill listing from 13,329 to 11,786 characters. Every mode keeps a
+  trigger phrase, and every routing fixture signal and guardrail stays
+  (`--hotfix` is still "never ordinary urgent work"); restated detail now
+  lives only in the skill bodies. On a 200K-context model the listing is
+  still over Claude Code's 8,000-character budget, so the harness keeps
+  dropping the least-used descriptions there; this is the first step of
+  #788.
+- **Added: a scaffold `REVIEW.md`, so automated PR reviews rank findings
+  by the standards.** Claude Code Review and Copilot code review both read
+  `REVIEW.md` but never receive the SessionStart rules. The new file
+  calibrates them: a bug fix with no regression test, a behavior change
+  without its contract update, an unflagged drift class, an unscoped
+  high-risk change, a committed secret or an unjustified
+  `steer:allow-pin` is Important; style is Nit at most, capped at five;
+  generated files and what CI already checks are not reported. It names
+  `.github/copilot-instructions.md` for the standards in prose rather
+  than as an `@` include, which Code Review skips for a subdirectory
+  path. `/steer:setup init` and `/steer:setup adopt` install it, and a
+  new `review-calibration` capability makes `/steer:setup sync` create it
+  in repos adopted earlier. Claude Code Review needs a Team or Enterprise
+  plan and honors the file's exclusions and Nit cap only from a protected
+  default branch; Copilot code review reads it from the PR's head branch.
+- **Changed: the always-on stack and commands rules are 43% shorter.**
+  Rules `10-stack` and `15-commands` drop from 5,001 to 2,856 characters
+  together, the third slice of the always-on rule triage. The default
+  stack, its ADR triggers, the `context7` version check, the local-services
+  rules a reviewer can check in a diff, the deployed secret-store default,
+  the patterns' default-stack instances and the setup / develop / test
+  commands stay injected (and in the Copilot instructions). Detail the
+  conventions reference already carries leaves the rules: VS Code and WSL2
+  setup, the Secrets Manager exception, the dependency auto-install
+  mechanics and the PATH-shadowing diagnosis. The conventions reference
+  now also says to confirm each app's deploy target and that CI builds an
+  app's `Dockerfile` when present.
+- **Changed: the 21 internal skills list in one line each.** Each entry is
+  now a one-line purpose plus the door that reaches it (`Reached via
+  /steer:setup adopt.`), keeping a guardrail only where no other entry
+  carries it. Internal entries drop from 7,095 to 3,207 characters and
+  steer's whole skill listing from 11,786 to 7,898 - under Claude Code's
+  8,000-character budget on a 200K-context model when steer is the only
+  plugin, so the harness no longer drops the internal skills' descriptions
+  there. Every routing fixture signal stays; mode detail lives in the
+  doors' listings and the skill bodies. Second step of #788.
+- **Changed: the always-on gates rule is 22% shorter.** Rule `61-gates`
+  drops from 2,586 to 2,027 characters, the fourth slice of the always-on
+  rule triage. The three promptable gates and their commands, the
+  Approve / Reject / Decide later prompt with its no-ambient-agreement
+  rule, the recording duty, the never-promptable list (verbatim) and the
+  hotfix lane's opening condition and follow-up stay injected (and in the
+  Copilot instructions). The rationale for recording self-ratification and
+  the hotfix lane's single-reviewer and deploy-permission detail leave the
+  rule; `/steer:reference gates` and `/steer:work --hotfix` already carry
+  them.
+- **Changed: the always-on output rule is 16% shorter.** Rule `03-output`
+  drops from 3,527 to 2,980 characters, the fifth slice of the always-on
+  rule triage. The response shape, the no-closing-offer rule, the
+  never-echo-machinery rule with its attribution exception, the formatting
+  rules and the whole Code comments section stay injected (and in the
+  Copilot instructions). Rhetoric and the compact-contract-blocks bullet
+  leave the rule: the next-actions block, the end-of-session checklist and
+  the gate prompt keep the shapes their own rules and references set.
+- **Changed: the bundled GitHub MCP server exposes a narrow toolset.** The
+  plugin's MCP config (`.claude-plugin/mcp.json`) now sends
+  `X-MCP-Toolsets: context,issues`, which cuts the server from 49 tools to
+  17: every issue tool steer calls, `get_me`, and the three pull-request
+  tools `/steer:work finish` falls back to. Fewer tool definitions keep
+  tool selection sharp. Steer itself loses nothing, since repositories,
+  workflow runs and the rest of the pull-request surface already go
+  through `gh`, but a session whose only GitHub MCP server is steer's no
+  longer has MCP tools for them; add your own server in a project or user
+  `.mcp.json` to get them back. The scaffold's `.vscode/mcp.json` carries
+  the same headers. `/steer:setup sync` never rewrites `.vscode/`, so an
+  existing repo keeps the full toolset in VS Code until it merges the
+  header by hand.
+- **Changed: `/steer:work finish` now runs an independent code review
+  before the first push.** On every Behavioral or High-risk change, a fresh
+  read-only reviewer subagent reviews the branch after the local gates are
+  green. High-severity findings are fixed, the local gates re-run, and the
+  branch re-reviewed, capped at 2 rounds. Medium findings left open and
+  design questions go under the PR's *Notes for the reviewer*, with the
+  decision taken. Trivial changes skip the gate; a `--hotfix` always
+  runs it, an incident fix being High-risk whatever its size. Before
+  this, the code gate ran only under `--reviewed`, so a High-risk PR got
+  no independent review unless the dev opted in. `--reviewed` now adds
+  only the plan gate and the plan sign-off.
+- **Changed: the code-gate rubric reads the repo, not just the diff.**
+  `REVIEW-LOOP.md` section 4 now defines five passes:
+  - correctness and fidelity to the requirement;
+  - other instances of the bug fixed or pattern changed;
+  - consistency with sibling files (pins, lockfiles, shared config);
+  - risk the change introduces;
+  - completeness of the docs the diff touched.
+  It reports design questions apart from findings. `/steer:work review`
+  hands its reviewers the same rubric, so the author's gate runs the
+  review the human's agent will run. These passes target what a
+  diff-only `/code-review` misses: an unfixed sibling module, a missing
+  lockfile, a half-updated doc. Where `/code-review` is available it
+  still runs alongside, for correctness depth.
+- **Changed: the autonomous loop reviews with the same code gate.** Rule
+  `53-autonomous-loops`, `/steer:loop` and the scaffolded `steer-loop.yml`
+  prompt route the loop's independent review through the code gate and
+  its rubric instead of `steer-reviewer`, which has no git and cannot
+  read a diff. The draft PR now carries the review's open findings and
+  design questions. `/steer:loop verify` flags an installed prompt that
+  still names `steer-reviewer` and offers to re-scaffold it.
+- **Added: guidance on how Claude Code's native delivery features fit the
+  standards.** `/steer:reference conventions` gains a section that
+  `/steer:work` and `/steer:setup worktrees` point to. `/batch` takes one
+  umbrella issue, and each unit PRs into a `batch/<slug>` branch with
+  `Refs #N`. `/autofix-pr` fits pr-flow and should be told to leave drift
+  flags to the human reviewer. Plan mode is an acceptable plan for a
+  Behavioral change, and `plansDirectory` stays unset (or points at a
+  git-ignored path) so plan files never become a second source of truth.
+  `claude --worktree "#<n>"` takes a pull request, not an issue, and
+  `/steer:work start` still cuts the `issue/<n>-<slug>` branch inside
+  any worktree.
+- **Added: `/steer:loop` can hand over a cloud scheduled task instead of
+  the Actions workflow.** The GitHub Actions workflow stays the default:
+  it needs no Claude plan, works for every client, and lives in the repo.
+  A Claude Code cloud scheduled task (`/schedule`, formerly routines) is
+  offered only where the org delivers steer through server-managed
+  settings, because a cloud session installs neither the repo's
+  `enabledPlugins` nor local plugins and would otherwise run with no
+  rules, skills or hooks. On that path the skill takes the same opt-in,
+  hands the dev the template's prompt to create the task themselves,
+  requires branch protection the dev's identity cannot bypass, and
+  records the task in `/spec/history/`. Rule `53-autonomous-loops` now
+  uses the current name.
+- **Fixed: GitHub MCP pre-approvals now match steer's own server.** The
+  plugin's bundled GitHub server surfaces its tools as
+  `mcp__plugin_steer_github__<tool>`, but `/steer:tracker-sync`,
+  `/steer:status` and `/steer:report` granted only `mcp__github__<tool>`,
+  which matches a server the user configured themselves. Every MCP tracker
+  call in those skills prompted, and `/steer:status` could not read issues
+  headless. The three skills and the scaffold `.claude/settings.json` now
+  list both forms, with the write tools still under `ask`; `/steer:setup
+  sync` adds the new entries to an existing settings file.
+- **Changed: hook notices, rule 40 and worked examples written for older
+  models.** The write-time scaffold, spine and issue-first notices lose
+  their capitalised pressure words, and the spine notice routes to
+  `/steer:spec` rather than the internal `spec-scaffold`. Rule 40 drops its
+  capitalised MUST. The `mise.toml` examples in the conventions reference
+  stop carrying the narrating comments a model copies into consumer files.
+  The design-sources reference names the stock looks to avoid instead of
+  saying "generic AI UI". The next-actions example no longer suggests a
+  command that does not perform its action.
+- **Fixed: skills and references no longer contradict each other or the
+  rules.** A prompt audit of steer found pointers left behind by the
+  September and October rule trims, and a few conflicting instructions.
+  `/steer:setup adopt` now accepts a repo with a `spec/` steer never wrote
+  instead of sending it back to `/steer:init`. `/steer:setup doctor` gives
+  its real reason for asking before an install, and the init guardrail no
+  longer asks for approval of each batch. `/steer:loop` no longer scaffolds
+  onto an unprotected `main`, matching rule 53. Stale citations now point at
+  the reference that holds the text: the trunk-push gate in `/steer:reference
+  gates`, the Greenfield flow in `SPEC-FRAMEWORK.md`, the Windows setup and
+  design sources in their references, and milestones in
+  `/spec/tracker.md`. The product `CLAUDE.md` template stops claiming that
+  design sources and anti-patterns are injected, and says that `/steer:setup
+  protect` flips the delivery-mode marker itself. Solo trunk is detected by
+  the marker rather than prose, and the version-policy text says that a
+  repo's own `policy/versions.yml` is not refreshed. The invocation matrix
+  gains the skills it was missing.
+- **Fixed: the shipped `claude.yml` passes zizmor 1.31.** zizmor 1.31
+  flags the `issue_comment` trigger as `dangerous-triggers` (high), which
+  failed the template security gate. The trigger now carries an inline
+  ignore with its reason: `anthropics/claude-code-action` refuses any
+  actor without write access to the repo, and the template does not
+  widen that with `allowed_non_write_users`. Repos that copied the
+  workflow and run zizmor 1.31 need the same one-line ignore.
+- **Changed: subagents are the exception, not the primary lever.** The
+  context-hygiene reference (`/steer:reference context-hygiene`) now keeps
+  one loop as the default and forks only for a sweep whose transcript is
+  bloat, independent parallel units, or a review that must stay
+  independent. Connected multi-phase work stays in one context, since each
+  handoff returns a lossy summary. The one-loop default follows Anthropic's
+  "When to fold subagents into your main agent loop" (2026-10-22). Every
+  subagent steer spawns already met these conditions, so no skill changes
+  (#824).
+- **Changed: the `/steer:work finish` code gate is adversarial, adds
+  specialist reviewers from the diff, and refutes its own high findings.**
+  Every reviewer is told to find the reason the PR must not merge and to
+  name what it tried when it finds nothing. A database, UI or security
+  specialist joins the general reviewer when the diff enters that domain
+  (a migration or query code, a component or style, a rule
+  `60-high-risk` area), at most three, so a change outside them still
+  pays for one reviewer; the general reviewer names any lens it thinks
+  was missed. One fresh verifier per reviewer with high findings then
+  tries to disprove them: refuted findings are dropped and handed to
+  round 2 so they need new evidence to return, unsure ones stay high but
+  unconfirmed and go to the human in the PR notes, and only confirmed
+  ones keep the 2-round fix loop open. `/steer:work review` applies the
+  framing and lenses inside its one reviewer per PR and runs one
+  verifier per PR with a high finding. The `/steer:loop` prompt and rule
+  `53-autonomous-loops` name the same gate, so an unattended run now
+  spends on the specialists and verifiers too. The rubric is in
+  `REVIEW-LOOP.md` section 4.
+- **Changed: rules 00, 30, 50 and 61 settle conflicts the prompt audit
+  flagged.** Rule 30 now agrees with rule 80 that a planned feature's intent
+  is PO-approved before its code, with the contract before or alongside it.
+  Rule 00 asks the dev about scope in the session when they are present,
+  and in a PR comment only otherwise. The gate prompt reads `Approve /
+  Reject / Decide later` and the drift classes are comma-separated, so the
+  always-on rules carry no middle dots; the explain and artifact
+  references show scope as In / Out lists rather than check and cross
+  glyphs. `ISSUE-WORKFLOW.md` says unattended GitHub Actions runs exist
+  behind the automation opt-in rather than calling them out of scope.
+- **Fixed: third-party facts and broken instructions in the references.**
+  Issue fields are generally available and writable over REST, MCP and
+  GraphQL, not "public preview, GraphQL only", and the REST recipe now sends
+  its array as a JSON body (the `-f` form sent a string) and warns that an
+  empty array clears every field. An audit false positive closes with the
+  `rejected` closure reason instead of a `resolution:false-positive` label
+  that does not exist. The polyrepo guide and workspace scaffold now set
+  `[monorepo].lockfile = false`, which mise accepts from 2026.7.0 and needs
+  before 2026.12.0 starts warning. The advisor, Cowork and context-window
+  notes match current Claude docs, dated, and the unsourced "~40% context
+  fill" heuristic is gone. The design-sources reference stops attributing
+  lines to `frontend-design` that its pinned version does not contain.
+  `decompose --prototype`, which nothing defined, is dropped, and the intake
+  pipeline's step-5 link resolves again.
+- **Fixed: the GitHub MCP server connects on the Copilot CLI.** The CLI
+  loads a plugin-root `.mcp.json` ahead of any manifest field, so it read
+  Claude's config and sent the unresolved `${user_config.github_pat}`:
+  every session recorded "Authorization header is badly formatted" and had
+  none of steer's issue tools. Claude's servers move to
+  `.claude-plugin/mcp.json`, named by the Claude manifest's `mcpServers`.
+  The Copilot manifest names a generated `.github/mcp.json` with the PAT
+  header dropped, and the CLI signs in with the user's GitHub account and
+  loads the same toolset Claude Code gets. Claude Code behaves as before.
+  `check_copilot_mcp.py` gates the new copy and fails if a plugin-root
+  `.mcp.json` comes back.
+- **Fixed: the TypeScript and Python language servers load on the Copilot
+  CLI.** Without an `lspServers` block of its own, the CLI fell back to the
+  Claude manifest's. It rejected that block ("fileExtensions is required")
+  and logged an error every session. The Copilot manifest now declares both
+  servers in Copilot's `fileExtensions` form, and `check_plugin.py` keeps
+  them in step with the Claude manifest.
+- **Changed: `/steer:work finish` opens the PR as a draft and stops.** It
+  runs the local gates to green, opens or updates the PR as a draft
+  (`gh pr create --draft`, or MCP `create_pull_request` with
+  `draft: true`), moves the issue to `validate`, and no longer runs
+  `gh pr ready` or watches CI. The shipped `ci.yml` skips drafts, so CI
+  runs once, when the author has read the PR and marked it ready, and
+  that run is theirs. Once a PR is ready, a red build is fixed through
+  `/steer:work resume`, which pushes once and watches CI as before. Rules
+  `45-delivery` and `50-done` say who watches CI on a draft, and the
+  next-action tables in `/steer:work`, `/steer:next` and
+  `/steer:work issues` name the author's move. Unchanged: `--hotfix` and
+  `promote` still open their PR ready, solo-trunk still watches the
+  trunk push, and `review --mine` readies the author's own drafts on
+  request. (#834)
+- **Changed: the scaffold's product `CLAUDE.md` is stored as
+  `CLAUDE.template.md`.** Under its real name, Claude Code loaded it -
+  `[Product Name]` placeholders included - into any session in the plugin
+  repo that read the scaffold directory. `MANIFEST.md` maps it to
+  `CLAUDE.md`, so `/steer:setup` installs the same file under the same name
+  in a product repo; nothing changes for consumers.
+- **Changed: rule 85 (ASCII everywhere) now names middle dots, section and
+  math signs, box drawing, check marks and emoji alongside dashes, quotes
+  and arrows, and the plugin no longer carries any of them.** References,
+  skills and spec templates write `section 2` or `-> "Heading"` instead of
+  a section sign, separate enum lists with commas, and draw directory trees
+  as `|--`. Visible output changes in three places: the SessionStart
+  notices from the open-question, unmanaged-repo and self-fault hooks lose
+  their leading warning and info glyphs; `/steer:audit spec` labels
+  verdicts by name only, with no colored emoji; `/steer:spec validate`
+  marks findings `Error:` / `Warning:`. The scaffolded `ci.yml` lint
+  summary separates its counts with commas.
+- **Fixed: a direct "merge it" got a PR merged through the GitHub MCP tool.**
+  Rules 45 and 61 say the merge is never promptable, but nothing enforced
+  it on the MCP path, and a Sonnet session merged on request in 3 of 3 eval
+  runs. `check-bash-actions.sh` now hard-denies every PR merge path, in
+  every repo: `gh pr merge`, a `gh api` merge (the REST `PUT` or the
+  `mergePullRequest` / `enablePullRequestAutoMerge` mutations), and any MCP
+  `*merge_pull_request` tool, whose name the hook's matcher now includes.
+  The deny tells the agent to report the PR's state and leave the merge to
+  the reviewer. Local `git merge` and quoted prose that mentions a merge
+  stay untouched.
+- **Added: `/steer:work` opens the PR through MCP when `gh` is not
+  authenticated.** A session with a shell but no `gh` login could commit
+  and push but not open the PR. `finish` now probes `gh auth status` and
+  falls back to the github MCP server's `list_pull_requests`,
+  `create_pull_request` and `update_pull_request`, then to printing the
+  compare URL, and says which path ran. The bundled server adds just those
+  three tools (`X-MCP-Tools`), 17 in all: `merge_pull_request` and the
+  review tools stay unexposed. The CI watch stays on `gh`; without it, a
+  ready PR's or trunk push's CI is reported as not watched.
+- **Changed: the worktree services guidance moves out of rule 45 into a new
+  rule 47 (Worktree services), injected only where the repo has a root
+  Compose file (`compose.yaml`, `compose.yml` or a legacy
+  `docker-compose.*`).** Repos without a Compose file no longer
+  receive "start services via `mise run`, never a bare `docker compose up`
+  or a hardcoded port, clean up with `mise run docker:clean`". Rule 45
+  keeps Parallel worktrees for what applies to every mise repo: inherit
+  `mise trust` only from a trusted primary checkout, never create it, and
+  run `/steer:setup worktrees` for worktrees another tool manages. The
+  Copilot instructions file carries rule 47 with a sentence saying when it
+  applies.
+- **Changed: the GitHub Issues guidance moves out of rules 35 and 50 into
+  rule 36 (Issue-first), injected only where the tracker declaration says
+  `system: github`.** Repos on another tracker, or none, no longer receive
+  the `/steer:work issues` / `/steer:tracker-sync` paragraph or the
+  end-of-session checklist item about the active issue and the PR's
+  closing relation; rule 35 keeps "a tracker other than GitHub Issues uses
+  the manual export". The checklist also drops its `mise run
+  docker:clean` clause, which rule 47 already carries for Compose repos.
+
 ## 7.14.0
 
 - **Added: `/steer:work walkthrough <feature>` records a captioned
