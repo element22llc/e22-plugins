@@ -1,6 +1,35 @@
 {
   "name": "steer",
-  "description": "Engineering standards for GitHub Copilot (CLI and VS Code). This manifest loads steer's skills; .github/copilot-instructions.md (installed by /steer:init) carries the always-on rules, alongside the cross-tool .agents/skills/ tree in the open Agent Skills format. Hook enforcement is guaranteed on Claude Code only - the Copilot CLI and Copilot Chat in VS Code run the plugin's Claude hooks.json directly and pick it up incidentally, with no parity promise.",
+  "description": "Engineering standards for GitHub Copilot (CLI and VS Code). This manifest loads steer's skills, its MCP servers (.github/mcp.json, signed in with your GitHub account) and its language servers; .github/copilot-instructions.md (installed by /steer:init) carries the always-on rules, alongside the cross-tool .agents/skills/ tree in the open Agent Skills format. Hook enforcement is guaranteed on Claude Code only - the Copilot CLI and Copilot Chat in VS Code run the plugin's Claude hooks.json directly and pick it up incidentally, with no parity promise.",
   "version": "7.14.0",
-  "skills": "skills/"
+  "skills": "skills/",
+  "mcpServers": ".github/mcp.json",
+  "lspServers": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": [
+        "--stdio"
+      ],
+      "fileExtensions": {
+        ".ts": "typescript",
+        ".tsx": "typescriptreact",
+        ".mts": "typescript",
+        ".cts": "typescript",
+        ".js": "javascript",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".cjs": "javascript"
+      }
+    },
+    "python": {
+      "command": "pyright-langserver",
+      "args": [
+        "--stdio"
+      ],
+      "fileExtensions": {
+        ".py": "python",
+        ".pyi": "python"
+      }
+    }
+  }
 }

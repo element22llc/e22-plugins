@@ -25,6 +25,7 @@
       "sensitive": true
     }
   },
+  "mcpServers": "./.claude-plugin/mcp.json",
   "lspServers": {
     "typescript": {
       "command": "typescript-language-server",

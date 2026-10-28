@@ -1,6 +1,6 @@
 # MCP servers
 
-The **steer plugin** ships an `.mcp.json` (source: `plugins/steer/.mcp.json`)
+The **steer plugin** ships an MCP config (source: `plugins/steer/.claude-plugin/mcp.json`)
 that wires **local Claude Code sessions** to a small set of
 [Model Context Protocol](https://modelcontextprotocol.io) servers. Because they
 ship with the plugin rather than the scaffold, every repo that enables steer
@@ -9,12 +9,12 @@ per-repo `.mcp.json` to scaffold, drift, or reconcile. Each server still goes
 through Claude Code's per-server approval the first time it connects, and a repo
 may add its own project `.mcp.json` for product-specific servers (it merges
 additively with the plugin's). This page is kept in sync with the plugin's
-`.mcp.json` and the scaffold `README.md` by `/plugin-docs`; the nav/orphan check
+MCP config and the scaffold `README.md` by `/plugin-docs`; the nav/orphan check
 in `scripts/validate_docs.py` guards that it stays linked, but its
 server-by-server content is reconciled by hand against the source of truth.
 
 !!! info "Local sessions only - not CI"
-    The plugin's `.mcp.json` configures the Claude Code **you run on your
+    The plugin's MCP config configures the Claude Code **you run on your
     machine**. GitHub Actions does *not* read it - the in-CI agent loads steer
     and its tools through the action's inputs instead (see
     [GitHub Actions integration](github-integration.md)). Interactively
@@ -22,7 +22,7 @@ server-by-server content is reconciled by hand against the source of truth.
     [Known limitations](known-limitations.md)).
 
 !!! warning "Claude Cowork doesn't use this file - MCP config isn't shared across surfaces"
-    This `.mcp.json` is read by the Claude Code **CLI / Code tab**, not by the
+    This config is read by the Claude Code **CLI / Code tab**, not by the
     **Cowork** or **Chat** tabs, which wire MCP through their own **Connectors**.
     Cowork reads neither this file nor the plugin's `userConfig`, so the `github`
     server can't authenticate there - for GitHub work in Cowork, enable the
@@ -161,7 +161,7 @@ tier works out of the box.
     them, get a key from [context7.com](https://context7.com), export it from your
     shell, and add it via your own project `.mcp.json` (which merges additively
     with the plugin's) as an `Authorization` header - don't edit the
-    plugin-managed `.mcp.json`, which refreshes on `/plugin update`.
+    plugin-managed MCP config, which refreshes on `/plugin update`.
 
 !!! warning "Hosted service - queries leave your machine"
     Like the `github` server, context7 is a third-party hosted service: the

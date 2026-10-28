@@ -82,7 +82,7 @@ run = [
   "uv run python scripts/check_agent_skills.py",
   # The committed Copilot custom-agent artifacts must stay in sync with agents/.
   "uv run python scripts/check_copilot_agents.py",
-  # The VS Code MCP scaffold must mirror the plugin's .mcp.json servers.
+  # The Copilot MCP copies must mirror the plugin's .claude-plugin/mcp.json servers.
   "uv run python scripts/check_copilot_mcp.py",
   # The Copilot hook manifest must stay wired to real, shared hooks.json scripts.
   # Every Copilot generator/gate must be wired into gen:copilot / plugin-check.
@@ -225,7 +225,7 @@ description = "Show the always-on ruleset a real session receives (which rules i
 run = ["sh scripts/rules-preview.sh"]
 
 [tasks."gen:copilot"]
-description = "Regenerate the non-Claude surface artifacts: Copilot instructions + path-scoped instructions (from rules/), the cross-tool .agents/skills tree (from skills/), Copilot custom agents (from agents/), the VS Code MCP mirror (from .mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"
+description = "Regenerate the non-Claude surface artifacts: Copilot instructions + path-scoped instructions (from rules/), the cross-tool .agents/skills tree (from skills/), Copilot custom agents (from agents/), the VS Code and Copilot CLI MCP copies (from .claude-plugin/mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"
 run = [
   "uv run python scripts/gen_copilot_instructions.py --write",
   "uv run python scripts/gen_agent_skills.py --write",

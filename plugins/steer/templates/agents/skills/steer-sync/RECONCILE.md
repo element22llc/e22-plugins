@@ -111,7 +111,7 @@ is visible rather than silent.
    opt-off is preserved.
 
    **No `.mcp.json` reconcile.** The `github` and `context7` MCP
-   servers ship with the **plugin** (`plugins/steer/.mcp.json`), not the scaffold - so they
+   servers ship with the **plugin** (`plugins/steer/.claude-plugin/mcp.json`), not the scaffold - so they
    refresh with the `/plugin update` in step 2 and are **not** part of scaffold
    reconciliation; there is no scaffold template to diff a repo `.mcp.json`
    against. A repo bootstrapped before v2.11.0 still has the old repo-local
