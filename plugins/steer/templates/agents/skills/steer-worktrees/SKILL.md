@@ -68,6 +68,10 @@ without `--run-hooks`.
 through the repo's delivery mode like any change (rule `45-delivery` § Commit
 autonomy). Trust and copied env files are local state and commit nothing.
 
+Worktrees from `claude --worktree`, subagent `isolation: worktree` and `/batch`
+need nothing beyond these rows; how they fit delivery is in
+`/steer-reference conventions` § Native Claude Code delivery features.
+
 ## 3. Verify
 
 Re-run the scan and report what is still open. Close with

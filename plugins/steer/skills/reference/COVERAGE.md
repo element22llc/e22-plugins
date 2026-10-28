@@ -34,6 +34,10 @@ It covers, in detail:
   standalone `apps/api` or the Python/FastAPI switch is warranted (ADR either way).
 - **Local services** - Docker Compose from the template `compose.yaml`, the
   same-engine-as-deployed rule, and how `dev:setup` ties in.
+- **Native Claude Code delivery features** - `/batch` (one umbrella issue,
+  unit PRs into `batch/<slug>`), `/autofix-pr` (pushes, leaves drift flags to
+  the human), plan mode and `plansDirectory`, `claude --worktree "#<n>"` (a PR,
+  not an issue) and subagent worktrees.
 - **Monorepo layout** - `/apps`, `/packages`, `/configs`; polyrepo across
   products, monorepo within one.
 - **Workspace tooling** - pnpm (Node), uv (Python).
