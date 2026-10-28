@@ -364,10 +364,7 @@ stakeholder or research input, or could outlive the session - then put the ref
 in the question's `tracker:` field. The issue is the decision *workflow*; the
 spec or an ADR is the durable *record*.
 
-On **GitHub Issues**, **`/steer:work issues`** is the lifecycle workflow and
-**`/steer:tracker-sync`** the gateway it routes all reads and writes through.
-Agent-authored issues follow the machine-readable contract (stable headings,
-hidden markers). Other trackers use the manual export.
+A tracker other than GitHub Issues uses the manual export.
 
 
 ## Issue-first (GitHub-adopted repos)
@@ -387,7 +384,10 @@ Everything else - a Trivial change, an ordinary Behavioral fix nobody is
 tracking, `/spec` edits, documentation, generated output, lockfiles - needs no
 issue: **the PR is the work record**. Reuse the issue the user names, else
 find-or-create one through `/steer:tracker-sync`; an explicit "fix / implement /
-add" request needs no confirmation to create it.
+add" request needs no confirmation to create it. **`/steer:work issues`** is the
+lifecycle workflow and **`/steer:tracker-sync`** the gateway for every issue read
+and write; agent-authored issues follow the machine-readable contract (stable
+headings, hidden markers).
 
 - **Capture-only and ambiguous language do not auto-create.** "Note this" / "we
   should eventually..." is captured deliberately, never inferred into a batch; a
@@ -399,8 +399,10 @@ add" request needs no confirmation to create it.
   issue is the audit-evidence anchor.
 - **Discovered out-of-scope work** gets its own linked issue, not silent scope
   creep in the current one. The issue's `steer:state` reflects reality - work in
-  progress is `validate`, never `done` - and the PR references it with the
-  correct closing relation.
+  progress is `validate`, never `done`.
+- **The End-of-session checklist gains one item:** does the active issue reflect
+  progress, blockers and validation, and does the PR reference it with the
+  right closing relation?
 - A tracker write your host blocks is a **host-permission gate, not a missing
   issue**: don't loop retrying; confirm with the user, or have them run
   `!gh issue create ...` themselves, then continue.
@@ -544,8 +546,7 @@ item can't be satisfied, say so rather than implying the work is complete.
 
 - [ ] The five Definition of Done items hold for every change this session?
 - [ ] Unfinished work and known gaps surfaced explicitly?
-- [ ] Dev servers and watchers you started stopped, and `mise run docker:clean` run if a worktree is closing?
-- [ ] GitHub-adopted repo: the active issue reflects progress, blockers and validation; unrelated findings filed as linked issues; the PR references it with the right closing relation?
+- [ ] Dev servers and watchers you started stopped?
 - [ ] Scaffold placeholders flagged or resolved?
 - [ ] Everything finished committed, and a complete change pushed with its draft PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
 - [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?

@@ -2335,6 +2335,9 @@ printf 'system: github\n' >"${CRI_GH}/spec/tracker.md"
 out="$(run_inject "$(session_json "${CRI_GH}" cri_gh)")"
 oq_grep "inject: github repo includes issue-first rule" 'Issue-first (GitHub-adopted repos)' "${out}"
 oq_grep "inject: always-on router present (github repo)" 'You are the router' "${out}"
+# GitHub-only tracker prose lives in 36, not in the code-project rules 35 and 50.
+oq_grep "inject: github repo gets the issue lifecycle line" 'lifecycle workflow and' "${out}"
+oq_grep "inject: github repo gets the issue checklist item" 'End-of-session checklist gains one item' "${out}"
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped from output" || ok
 
@@ -2345,6 +2348,9 @@ printf 'system: jira\n' >"${CRI_JIRA}/spec/tracker.md"
 out="$(run_inject "$(session_json "${CRI_JIRA}" cri_jira)")"
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: non-github repo must omit issue-first rule" || ok
+printf '%s' "${out}" | grep -q -e 'lifecycle workflow and' -e 'End-of-session checklist gains one item' &&
+	bad "inject: non-github repo must omit the GitHub issue lifecycle and checklist item" || ok
+oq_grep "inject: non-github repo keeps the manual-export line" 'uses the manual export' "${out}"
 oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${out}"
 
 # /infra present -> the infra-stack fragment is injected (has-iac), and the
