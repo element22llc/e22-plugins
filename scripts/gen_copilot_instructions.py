@@ -100,6 +100,11 @@ SCOPE_PRECONDITIONS: dict[str, str] = {
         "another pack skips this section and follows the vendor-neutral core rules, "
         "which name no product."
     ),
+    "has-compose": (
+        "**Applies only to a repo with a Compose file at its root** - `compose.yaml`, "
+        "`compose.yml`, `docker-compose.yaml` or `docker-compose.yml`. Skip this "
+        "section in a repo with none."
+    ),
     "automation-optin": (
         "**Applies only to a repo that has declared the automation opt-in** - "
         "`policy/automation.yml` with `loops: true`. A repo without that file runs "

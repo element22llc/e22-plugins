@@ -2385,6 +2385,16 @@ printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 oq_grep "inject: always-on router present (bare repo)" 'You are the router' "${out}"
 printf '%s' "${out}" | grep -q 'OpenSpec backend' &&
 	bad "inject: repo without openspec/ must omit the OpenSpec spec-workflow rule" || ok
+printf '%s' "${out}" | grep -q 'Worktree services' &&
+	bad "inject: repo without a Compose file must omit the worktree-services rule" || ok
+oq_grep "inject: worktree trust stays unscoped (bare repo)" 'never create trust' "${out}"
+
+# Root compose.yaml -> 47-worktree-services injected (has-compose).
+CRI_COMPOSE="$(new_repo cri_compose)"
+printf 'services: {}\n' >"${CRI_COMPOSE}/compose.yaml"
+out="$(run_inject "$(session_json "${CRI_COMPOSE}" cri_compose)")"
+oq_grep "inject: compose repo includes the worktree-services rule" 'Worktree services' "${out}"
+oq_grep "inject: worktree trust present (compose repo)" 'never create trust' "${out}"
 
 # openspec/ present -> 33-spec-workflow-openspec injected (has-openspec). The
 # native rule 30 is UNMARKED by design and must still arrive: rule 33 overrides
@@ -2582,6 +2592,10 @@ printf '{}\n' >"${TRAITS_APP}/package.json"
 printf 'services:\n' >"${TRAITS_APP}/compose.yaml"
 steer_inject_when_ok has-apps "${TRAITS_APP}" && ok || bad "scope: has-apps true with package.json"
 steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compose true with compose.yaml"
+TRAITS_LEGACY_COMPOSE="$(new_repo traits_legacy_compose)"
+printf 'services:\n' >"${TRAITS_LEGACY_COMPOSE}/docker-compose.yml"
+steer_inject_when_ok has-compose "${TRAITS_LEGACY_COMPOSE}" && ok || bad "scope: has-compose true with legacy docker-compose.yml"
+steer_inject_when_ok has-compose "${TRAITS_ANSIBLE}" && bad "scope: has-compose false without a compose file" || ok
 steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
 
 # automation-optin is the one FAIL-CLOSED predicate: rule 53 governs machinery a
@@ -4287,6 +4301,7 @@ mkdir -p "${IF_MAXREPO}/infra" "${IF_MAXREPO}/apps" "${IF_MAXREPO}/spec" \
 # without the file 53-autonomous-loops is legitimately absent and this block's
 # every-heading-delivered sweep would read that as a dropped rule.
 printf 'loops: true\n' >"${IF_MAXREPO}/policy/automation.yml"
+printf 'services: {}\n' >"${IF_MAXREPO}/compose.yaml"
 # The fixture carries openspec/, so the tracker that DECIDES sits at the
 # namespaced path - writing it to spec/tracker.md would leave tracker-github
 # false and silently drop 36-issue-first from this "every predicate" shape.

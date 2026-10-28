@@ -13,8 +13,9 @@ allowed-tools:
 
 # Worktree handling (`/steer:setup worktrees`)
 
-Rule `45-delivery` -> Parallel worktrees assumes every worktree inherits trust,
-runs its own Compose stack and is cleaned up when it goes. steer delivers
+Rules `45-delivery` -> Parallel worktrees and `47-worktree-services` assume
+every worktree inherits trust, runs its own Compose stack and is cleaned up
+when it goes. steer delivers
 trust and ports wherever the worktree lives, but **no tool tells steer a worktree
 is being deleted**: Claude Code removes its own without raising `WorktreeRemove`,
 and Orca, Conductor or a plain `git worktree remove` do the same. A deleted
