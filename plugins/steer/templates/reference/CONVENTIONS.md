@@ -606,6 +606,47 @@ committed `compose.yaml`, so local matches deployed:
   `orca.yaml` `scripts.archive` from `templates/worktrees/`) and sweeps the
   stacks deleted worktrees left behind.
 
+## Native Claude Code delivery features
+
+Claude Code ships its own delivery tools. Each one fits the standards as below,
+and none of them moves the merge or deploy gate.
+
+- **`/batch`** splits one large change into 5-30 units. Each unit runs as a
+  background subagent in its own worktree, which publishes its change. The
+  batch takes **one umbrella issue**, not one per unit. Cut `batch/<slug>` off
+  the default branch and push it. Then say in the `/batch` instruction that
+  each unit opens its PR against `batch/<slug>` and references the umbrella
+  with `Refs #N`, never `Closes`. The docs do not say which base a unit's PR
+  targets, so check the first one. The unit PRs are siblings (rule
+  `45-delivery`). The single `batch/<slug>` -> default PR closes the umbrella
+  and carries the changelog fragment.
+- **`/autofix-pr`** starts a cloud session that watches the current branch's
+  PR and pushes fixes for CI failures and review comments. It fits pr-flow
+  because it only pushes to the PR branch. The docs describe no merge step, so
+  treat it as a tool that does not merge. It posts its review-thread replies
+  under your GitHub account. A drift flag blocks merge until a human reviewer
+  resolves it (rule `50-done`), so leave flags out of its scope:
+  `/autofix-pr fix CI failures and code review comments; leave drift flags and
+  product questions to me`. It needs the Claude GitHub App on the repo and
+  does not react to merge conflicts.
+- **Plan mode** produces an acceptable plan for a Behavioral change (rule
+  `80-change-class`). Leave `plansDirectory` unset. A plan file is a working
+  note, like a chat summary. Its decisions go into `intent.md`, `contract.md`
+  or an ADR, and a plan worth sharing goes in the issue or the PR description.
+  If a team wants plan files beside the code, point `plansDirectory` at a
+  git-ignored path. A committed plan becomes a second, unreviewed source of
+  truth.
+- **Worktrees.** `claude --worktree "#<n>"` takes a **pull request**, not an
+  issue. It fetches that PR's head into `.claude/worktrees/pr-<n>` so you can
+  review or fix the PR. To start an issue, run `/steer:work start #N` in any
+  worktree. It cuts `issue/<n>-<slug>` from the default branch and writes the
+  work marker, even when the worktree opened on a `worktree-<name>` branch.
+  `--worktree` and subagent worktrees (`isolation: worktree`) branch from the
+  default branch unless `worktree.baseRef` is `head`. That default already
+  satisfies rule `45-delivery`'s "off the default branch", so leave
+  `worktree.baseRef` unset. Trust inheritance, the port offset and the
+  teardown gap in Local services above apply to every one of these worktrees.
+
 ## Internal monorepo layout
 
 Code lives at the repo root in three top-level directories:

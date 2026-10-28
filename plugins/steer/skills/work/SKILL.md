@@ -265,6 +265,10 @@ when one issue explicitly depends on the other, separating them would produce an
 invalid intermediate state, or the user explicitly asks for combined delivery -
 otherwise issue-first traceability degrades into many-issues-to-one-PR.
 
+Native `/batch`, `/autofix-pr`, plan mode and `claude --worktree` fit this flow
+as `/steer:reference conventions` § Native Claude Code delivery features lays
+out - read it before driving one.
+
 ## Discovered work - bounded scope
 
 While implementing, if you find an unrelated bug, tech debt, a missing test, a
