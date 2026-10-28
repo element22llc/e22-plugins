@@ -192,6 +192,22 @@ offers `claude --resume <id>` (and the transcript path) so you can re-enter that
 conversation for context. These session ids are local-only breadcrumbs - they
 stay in the git-ignored marker and never reach the tracker.
 
+## Native Claude Code delivery features
+
+Claude Code's own delivery tools fit this flow without moving the merge gate.
+`/steer:reference conventions` has the detail:
+
+- **`/batch`** takes one umbrella issue. Each unit opens its PR against a
+  `batch/<slug>` branch cut from the default branch, with `Refs #N`, and the
+  single `batch/<slug>` -> default PR closes the umbrella.
+- **`/autofix-pr`** pushes CI and review fixes to the PR branch. Tell it to
+  leave drift flags to the human reviewer.
+- **Plan mode** produces an acceptable plan for a Behavioral change. Leave
+  `plansDirectory` unset, or point it at a git-ignored path, so plan files
+  stay out of the spine.
+- **`claude --worktree "#<n>"`** opens a pull request, not an issue. To start
+  an issue, run `start` inside any worktree.
+
 ## Rules it follows
 
 - **One issue per branch/PR** by default (in solo-trunk, **one trunk commit per
