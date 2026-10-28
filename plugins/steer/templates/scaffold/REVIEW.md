@@ -43,4 +43,4 @@ Report at most five Nits per review.
 
 ## Always check
 
-[Replace with this product's own checks, or delete the section.]
+[Replace with this product's own checks, or with "None yet."]
