@@ -5,7 +5,7 @@ A change is done when **all five** of these hold:
 
 - [ ] **Intent understood** - you can state what the change is for, and it is the change that was asked for.
 - [ ] **Appropriately tested** - Testing rules; a bug fix carries a regression test that fails before and passes after.
-- [ ] **CI green** - watched to conclusion after push, not assumed.
+- [ ] **CI green** - watched to conclusion, not assumed; on a draft PR it runs once its author marks it ready.
 - [ ] **The contracts and docs this change actually affected are updated** - the ones this diff made wrong, not a survey of every artifact.
 - [ ] **Merge and deploy went through the required human gates.**
 
@@ -59,5 +59,5 @@ item can't be satisfied, say so rather than implying the work is complete.
 - [ ] Dev servers and watchers you started stopped, and `mise run docker:clean` run if a worktree is closing?
 - [ ] GitHub-adopted repo: the active issue reflects progress, blockers and validation; unrelated findings filed as linked issues; the PR references it with the right closing relation?
 - [ ] Scaffold placeholders flagged or resolved?
-- [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk - with CI watched to green?
+- [ ] Everything finished committed, and a complete change pushed with its draft PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
 - [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?

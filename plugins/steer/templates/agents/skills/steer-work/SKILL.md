@@ -38,9 +38,9 @@ These hold for the whole run, in every mode.
   human (see `ISSUE-WORKFLOW.md`). **Asking** that human in-session is how you
   obtain their answer (rule `61-gates`), never a licence to supply one.
 - **The merge is the human gate** (rule 45), and not promptable in any mode -
-  push and open the PR yourself; never merge or deploy. Watching CI to
-  conclusion and fixing a red build is **finishing the work**, not crossing that
-  gate. In solo-trunk the trunk commit *is* delivery (Delivery mode below);
+  push and open the PR yourself, as a draft; never mark it ready, merge or
+  deploy. Watching CI to conclusion and fixing a red build, once a PR is ready
+  or on a trunk push, is **finishing the work**, not crossing that gate. In solo-trunk the trunk commit *is* delivery (Delivery mode below);
   deploy stays human-gated all the same.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.
@@ -110,8 +110,8 @@ canonical in **rule 45 (Commit autonomy)**, the trunk-push gate in
 modes**; they differ only in the branch/PR ceremony.
 
 - **pr-flow** (default) - the flow described throughout: claim -> `issue/<n>`
-  branch + `spec/.work` marker -> implement -> push -> open PR -> CI green ->
-  transition. On declared-but-unprotected `main`, run it unchanged, note the
+  branch + `spec/.work` marker -> implement -> push -> open a draft PR ->
+  `validate`; its author marks it ready, which runs CI. On declared-but-unprotected `main`, run it unchanged, note the
   missing wall and recommend `/steer-setup protect`.
 - **solo-trunk** - substitute the trunk commit wherever a step says *branch*,
   *marker* or *PR*; still claim the issue, and close it from that commit
@@ -128,7 +128,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
-| **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
+| **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
@@ -199,7 +199,7 @@ Inspect it before transitioning a closed issue; keep delivery state as independe
 evidence (a merged PR - or, in solo-trunk, the closing trunk commit - is
 necessary for `done`, not sufficient on its own).
 
-- Opening a PR -> `validate` (never `done`). **(Solo-trunk has no PR - the
+- Opening the draft PR, local gates green -> `validate` (never `done`). **(Solo-trunk has no PR - the
   trunk commit that closes the issue is the delivery; go straight to the closure
   reasons below.)**
 - Closed as **`completed`** (delivered - PR merged or trunk commit landed - **and**

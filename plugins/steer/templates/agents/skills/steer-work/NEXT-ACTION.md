@@ -20,10 +20,10 @@ without redefining the subcommands in `SKILL.md`:
 | Acceptance criteria not yet met | Blocking now (next transition) | Continue - `/steer-work resume #N` |
 | Required validation failing | Blocking now | Fix failures, then `/steer-work finish #N` |
 | Implemented, PR not opened | Blocking now (next transition) | `/steer-work finish #N` |
-| PR open but still a **draft** | Blocking now (next transition) | `gh pr ready` first - the shipped `ci.yml` skips every job on a draft, and a skipped check reads as green |
-| PR open, CI running | Blocking now (next transition) | Watch to conclusion - `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
-| PR open, CI red | Blocking now | Reproduce and fix locally until the local gates are green, then push once and re-watch |
-| PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR - several waiting: `/steer-work review` |
+| Draft PR open, in `validate` | Human decision required | Its author reads the PR, then marks it ready, which runs CI (no command - a draft's skipped checks are not green) |
+| Ready PR, CI running | Blocking now | Watch to conclusion - `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
+| Ready PR, CI red | Blocking now | `/steer-work resume #N` - reproduce and fix locally until the local gates are green, then push once and re-watch |
+| Ready PR, CI green, awaiting review | Human decision required | A reviewer reviews the PR - several waiting: `/steer-work review` |
 | PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed - a merged PR is necessary, not sufficient (`/steer-work resume #N`) |
 | Issue `done` | Complete | Optional: start another ready issue - `/steer-work start #N`, else `No action is currently required.` |
 
@@ -31,7 +31,7 @@ Choose one `Current recommended action` by precedence. The block recommends only
 it never merges, deploys, or auto-advances state.
 
 In **solo-trunk**, read the PR rows as the trunk commit: "PR not opened" -> "change
-not yet committed to `main`"; "PR open, CI running/red" -> the same, watched via
+not yet committed to `main`"; there is no draft row; "Ready PR, CI running/red" -> the same, watched via
 `gh run watch` on the trunk push; there is **no awaiting-review row** - a green
 trunk commit that closes the issue with acceptance accepted is `done` (deploy
 still excluded).

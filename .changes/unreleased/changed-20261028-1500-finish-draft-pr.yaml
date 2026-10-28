@@ -1,0 +1,19 @@
+kind: Changed
+body: |-
+    - **Changed: `/steer:work finish` opens the PR as a draft and stops.** It
+      runs the local gates to green, opens or updates the PR as a draft
+      (`gh pr create --draft`, or MCP `create_pull_request` with
+      `draft: true`), moves the issue to `validate`, and no longer runs
+      `gh pr ready` or watches CI. The shipped `ci.yml` skips drafts, so CI
+      runs once, when the author has read the PR and marked it ready, and
+      that run is theirs. Once a PR is ready, a red build is fixed through
+      `/steer:work resume`, which pushes once and watches CI as before. Rules
+      `45-delivery` and `50-done` say who watches CI on a draft, and the
+      next-action tables in `/steer:work`, `/steer:next` and
+      `/steer:work issues` name the author's move. Unchanged: `--hotfix` and
+      `promote` still open their PR ready, solo-trunk still watches the
+      trunk push, and `review --mine` readies the author's own drafts on
+      request. (#834)
+time: 2026-10-28T15:00:00.000000-04:00
+custom:
+    Slug: finish-draft-pr

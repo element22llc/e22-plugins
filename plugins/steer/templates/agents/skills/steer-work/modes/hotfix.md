@@ -52,7 +52,8 @@ What changes versus the normal flow:
   does - a red CI round-trip is slower than a local run - and its code gate,
   whatever the diff's size: an incident fix is High-risk, and one expedited
   human reviewer is exactly when an independent pass matters. Open the PR ready
-  for review rather than as a draft.
+  for review rather than as the draft `finish` opens, and watch its CI to
+  conclusion yourself.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under `45-delivery` ->
   "Deployment & environments" (validate in non-prod where feasible - rule
   `60-high-risk`) - but, exactly as everywhere else, deploy is **never
