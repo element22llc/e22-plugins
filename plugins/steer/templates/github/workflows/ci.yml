@@ -265,7 +265,7 @@ jobs:
             def spread: (group_by(.rule) | map(.[0])) as $first | $first + (. - $first);
             ["warning", "notice"][] as $level
             | [.diagnostics[] | select(level == $level)] | spread | .[:10][]
-            | "::\($level) file=\(.filePath | prop),line=\(.line | pos),col=\(.column | pos),title=\(.severity | prop), \(.rule | prop)::\(.message | esc)"
+            | "::\($level) file=\(.filePath | prop),line=\(.line | pos),col=\(.column | pos),title=\(.severity | prop) - \(.rule | prop)::\(.message | esc)"
           ' aislop.json
 
       - name: Re-raise a failed advisory check
