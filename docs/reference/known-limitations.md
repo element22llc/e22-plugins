@@ -316,9 +316,12 @@ raises a prompt. Be honest about the tiers:
   sticky - it re-fires on each new feature file while the repo has no root
   `mise.toml`, since the bundled scaffold is product-independent and shouldn't be
   silently skipped (it still never blocks).
-- **`PreToolUse` -> `check-version-pins.sh`** is the only hard **`deny`** - it
+- **`PreToolUse` -> `check-version-pins.sh`** is a hard **`deny`** - it
   blocks image/runtime pins below the supported floor.
-- **`PreToolUse` -> `check-bash-actions.sh`** is an **`ask`**, never a deny: in a
+- **`PreToolUse` -> `check-bash-actions.sh`** hard-**`deny`**s a PR merge
+  (`gh pr merge`, a `gh api` merge, the MCP `merge_pull_request` tool) - the
+  merge is never promptable, so a deny stalls nothing an agent may do. Its other
+  gates are an **`ask`**: in a
   `solo-trunk` repo that has outgrown pre-MVP, the first `git push` to trunk of a
   session raises a permission prompt (approving it pushes anyway; the gate clears
   by graduating via `/steer:setup protect`). The same script also carries an advisory

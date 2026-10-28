@@ -3,15 +3,22 @@
 #
 # WHY ONE SCRIPT
 #   This hook is matched on EVERY Bash call (plus the MCP issue tools) - the
-#   hottest PreToolUse path. Its two checks lived in separate hooks
+#   hottest PreToolUse path. Checks 1 and 2 lived in separate hooks
 #   (check-trunk-push.sh, check-issue-create-contract.sh), each re-reading
 #   stdin, re-sourcing the libs, and re-extracting the same JSON fields on
 #   every call; one process halves that per-call overhead. Each check keeps
 #   its own doc block below and bails cheaply when its command shape doesn't
-#   match. Precedence: the trunk-push gate emits first - a permission ask
-#   outranks a nudge, so a compound command that both pushes and creates an
-#   issue surfaces the push ask (the contract guard's marker stays unset, so
-#   the next raw create still nudges).
+#   match. Precedence: the merge gate's deny comes first, then the trunk-push
+#   gate - a permission ask outranks a nudge, so a compound command that both
+#   pushes and creates an issue surfaces the push ask (the contract guard's
+#   marker stays unset, so the next raw create still nudges).
+#
+# CHECK 0 - MERGE GATE (Bash + MCP merge_pull_request)
+#   Merging a PR is the human's step and is never promptable (rules 45, 61):
+#   a direct "merge it" does not authorize it. Hard deny, every time, in
+#   every repo: `gh pr merge`, a `gh api` merge (REST PUT or the GraphQL
+#   mutations), and any MCP `*merge_pull_request` tool. Local `git merge` is
+#   untouched. Quoted prose (--body, -m) is blanked before matching.
 #
 # CHECK 1 - TRUNK-PUSH GRADUATION GATE (Bash only)
 #   Under the two-state delivery model, delivery autonomy is keyed to the repo's
@@ -105,6 +112,48 @@ STEER_INPUT="$(cat)"
 TOOL="$(steer_tool)"
 CMD="$(steer_field command)"
 
+# A branch name or subcommand holds no whitespace, so a quoted string that does
+# (--title, --body, -m) is blanked: prose that mentions `-B x` or `gh pr merge`
+# is neither a flag nor a command.
+steer_strip_quoted() {
+	printf '%s' "$1" | awk 'BEGIN { RS = "\001" } {
+	for (i = 1; i <= length($0); i++) {
+		c = substr($0, i, 1)
+		if (q == "") { if (c == "\"" || c == "\047") { q = c; b = "" } else o = o c; continue }
+		if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
+		if (c != q) { b = b c; continue }
+		o = o q (b ~ /[[:space:]]/ ? "" : b) q; q = ""
+	}
+	printf "%s", o
+}'
+}
+
+# ---------------------------------------------------------------------------
+# Check 0 - merge gate. Hard deny; needs no repo, so it runs before any git work.
+# ---------------------------------------------------------------------------
+MERGE=""
+case "$(printf '%s' "${TOOL}" | tr '[:upper:]' '[:lower:]')" in
+mcp__*merge_pull_request*) MERGE="the ${TOOL} tool" ;;
+esac
+if [ -z "${MERGE}" ] && [ "${TOOL}" = "Bash" ] &&
+	printf '%s' "${CMD}" | grep -q 'gh[[:space:]]' &&
+	printf '%s' "${CMD}" | grep -q '[Mm]erge'; then
+	_bare="$(steer_strip_quoted "${CMD}")"
+	if printf '%s' "${_bare}" |
+		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+pr[[:space:]]+merge([[:space:]]|$)'; then
+		MERGE="gh pr merge"
+	elif printf '%s' "${_bare}" | grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+api([[:space:]]|$)' &&
+		printf '%s' "${CMD}" | grep -Eq 'mergePullRequest|enablePullRequestAutoMerge|/pulls/[0-9]+/merge' &&
+		printf '%s' "${CMD}" | grep -Eq 'graphql|(-X|--method)[[:space:]=]*PUT'; then
+		MERGE="a gh api merge"
+	fi
+fi
+if [ -n "${MERGE}" ]; then
+	REASON="$(steer_json_safe "Merge gate (rules 45, 61): ${MERGE} merges a pull request, and the merge is the human's step - never promptable, so a direct ask to merge does not authorize it. Do not retry by another route. Report the PR's state (checks, reviews, what is left) and leave the merge to the reviewer in GitHub. Local git merge is unaffected; if this command only mentions a merge in text (a heredoc or an unquoted message), pass that text from a file instead.")"
+	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${REASON}"
+	exit 0
+fi
+
 # ---------------------------------------------------------------------------
 # Check 1 - trunk-push graduation gate. Emits (ask or reminder) and exits when
 # it matches; falls through to check 2 otherwise.
@@ -173,19 +222,8 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 		DEFAULT="$(git -C "${ROOT}" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"
 		DEFAULT="${DEFAULT#origin/}"
 		[ -n "${DEFAULT}" ] || DEFAULT="main"
-		# Last occurrence wins, matching how gh resolves a repeated flag. A branch
-		# name holds no whitespace, so a quoted string that does (--title, --body)
-		# is blanked first - a body that mentions `-B scratch` is not the base.
-		_CMD_BARE="$(printf '%s' "${CMD}" | awk 'BEGIN { RS = "\001" } {
-			for (i = 1; i <= length($0); i++) {
-				c = substr($0, i, 1)
-				if (q == "") { if (c == "\"" || c == "\047") { q = c; b = "" } else o = o c; continue }
-				if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
-				if (c != q) { b = b c; continue }
-				o = o q (b ~ /[[:space:]]/ ? "" : b) q; q = ""
-			}
-			printf "%s", o
-		}')"
+		# Last occurrence wins, matching how gh resolves a repeated flag.
+		_CMD_BARE="$(steer_strip_quoted "${CMD}")"
 		_flag() {
 			printf '%s' "${_CMD_BARE}" |
 				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1

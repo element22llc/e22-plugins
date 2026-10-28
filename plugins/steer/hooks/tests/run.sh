@@ -3186,6 +3186,45 @@ assert_ask "stacked-pr: main is a work branch when origin/HEAD says trunk" "${ou
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" sp14 'gh pr create --base feat/a')")"
 assert_empty "stacked-pr: no repo silent" "${out}"
 
+# --- merge gate of check-bash-actions.sh (PreToolUse, Bash + MCP) ---
+# Hard deny on every PR merge path, in every repo; local git merge and prose
+# that mentions a merge stay silent.
+for mt in mcp__plugin_steer_github__merge_pull_request mcp__github__merge_pull_request; do
+	out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg1 "${mt}" '')")"
+	assert_deny "merge-gate: ${mt} denied" "${out}"
+done
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg1 mcp__github__merge_pull_request '')")"
+assert_deny "merge-gate: denies again in the same session" "${out}"
+assert_has "merge-gate: reason leaves the merge to the human" "${out}" "leave the merge to the reviewer"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg2 'gh pr merge 45 --squash')")"
+assert_deny "merge-gate: gh pr merge denied" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg3 'gh pr checks 45 && gh pr merge 45 --auto')")"
+assert_deny "merge-gate: compound gh pr merge denied" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" mg4 'git push && gh pr merge')")"
+assert_deny "merge-gate: deny outranks the trunk-push ask" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg5 'gh api -X PUT repos/o/r/pulls/45/merge')")"
+assert_deny "merge-gate: REST merge denied" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6 'gh api graphql -f query="mutation { mergePullRequest(input: {pullRequestId: \"x\"}) { clientMutationId } }"')")"
+assert_deny "merge-gate: GraphQL merge denied" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" mg7 'gh pr merge 45')")"
+assert_deny "merge-gate: denied outside a repo" "${out}"
+MG_PLUGIN="$(new_repo mg_plugin)"
+mkdir -p "${MG_PLUGIN}/.claude-plugin"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_PLUGIN}" mg8 'gh pr merge 45')")"
+assert_deny "merge-gate: denied in the plugin source repo" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg9 'git merge origin/main')")"
+assert_empty "merge-gate: local git merge silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg10 'gh api repos/o/r/pulls/45/merge')")"
+assert_empty "merge-gate: REST merged-check (GET) silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg11 'git commit -m "deny gh pr merge in the hook"')")"
+assert_empty "merge-gate: commit message mentioning gh pr merge silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg12 'gh pr create --title t --body "merge waits for review: gh pr merge is human"')")"
+assert_empty "merge-gate: PR body mentioning gh pr merge silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg13 'gh pr view 45 --json mergeable')")"
+assert_empty "merge-gate: read-only pr command silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg14 mcp__github__pull_request_read '')")"
+assert_empty "merge-gate: other MCP PR tools silent" "${out}"
+
 # ---------------------------------------------------------------------------
 # check-template-drift.sh - root-anchored spec/template drift detector
 # (SessionStart; emits plain markdown wrapped as additionalContext by the harness.

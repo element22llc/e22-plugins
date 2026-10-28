@@ -1,0 +1,15 @@
+kind: Fixed
+body: |-
+    - **Fixed: a direct "merge it" got a PR merged through the GitHub MCP tool.**
+      Rules 45 and 61 say the merge is never promptable, but nothing enforced
+      it on the MCP path, and a Sonnet session merged on request in 3 of 3 eval
+      runs. `check-bash-actions.sh` now hard-denies every PR merge path, in
+      every repo: `gh pr merge`, a `gh api` merge (the REST `PUT` or the
+      `mergePullRequest` / `enablePullRequestAutoMerge` mutations), and any MCP
+      `*merge_pull_request` tool, whose name the hook's matcher now includes.
+      The deny tells the agent to report the PR's state and leave the merge to
+      the reviewer. Local `git merge` and quoted prose that mentions a merge
+      stay untouched.
+time: 2026-10-28T20:00:00.000000-04:00
+custom:
+    Slug: merge-gate-deny
