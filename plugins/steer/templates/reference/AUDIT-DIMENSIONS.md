@@ -30,7 +30,7 @@ so in the report.
    lacks branch protection (the real PR gate) - route to `/steer:setup protect` to
    verify/apply against `policy/branch-protection.yml`; do not query or change
    settings here (audit is read-only code-health). **Exception:** if `CLAUDE.md`
-   declares `Delivery mode: solo trunk (pre-MVP)`, an unprotected `main` is
+   carries `<!-- steer:delivery-mode=solo-trunk -->`, an unprotected `main` is
    intentional - *not* drift. But check whether the repo has **outgrown**
    solo-trunk: a second collaborator (`gh api repos/{owner}/{repo}/collaborators
    --jq 'length'` > 1), a `prod`/`production` branch, or a deploy target (a deploy

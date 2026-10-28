@@ -96,7 +96,11 @@ of the export is not a reason to serve it as-is.
 
 This is the common path - a `/steer:build` idea with no mockup, a feature the PO
 described in prose, or an export that covers one screen but not the five around
-it. Do **not** fall back to generic, default-looking AI UI. Build deliberately:
+it. Build deliberately: left without direction, generated UI lands on a few
+stock looks - a warm cream background with a serif display and a terracotta
+accent, one italic or colored accent word in the headline, numbered 01 / 02 / 03
+section labels where nothing is a sequence, monospace data labels, pill-shaped
+buttons. Choose against those unless the PO or `DESIGN.md` asks for one:
 
 - The marketplace re-lists Anthropic's **`frontend-design`** plugin alongside
   `steer` (`/plugin install frontend-design@e22-plugins`). Its skill

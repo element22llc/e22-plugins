@@ -54,10 +54,11 @@ What changes versus the normal flow:
   human reviewer is exactly when an independent pass matters. Open the PR ready
   for review rather than as a draft.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under `45-delivery` ->
-  "Deployment & environments" (validate in non-prod where feasible) - but, exactly as everywhere
-  else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening
-  the PR are autonomous (Commit autonomy), while `gh pr merge` and any deploy
-  stay human-gated (this skill does not pre-approve them).
+  "Deployment & environments" (validate in non-prod where feasible - rule
+  `60-high-risk`) - but, exactly as everywhere else, deploy is **never
+  auto-executed**: pushing the `hotfix/` branch and opening the PR are
+  autonomous (Commit autonomy), while `gh pr merge` and any deploy stay
+  human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up.** Once the fire is out, restore traceability:
   backfill/finish the issue, write the spec/ADR if a durable decision was made,
   put the incident's root cause on the enforcement ladder (`finish` in

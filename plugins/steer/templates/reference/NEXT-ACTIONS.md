@@ -238,7 +238,7 @@ the whole block is four lines:
 - PR #42 awaits review; merge is the dev's call.
 
 ### Current recommended action
-Review and merge PR #42. Suggested command: `gh pr checks 42 --watch`
+Review and merge PR #42.
 ```
 
 ### Rules

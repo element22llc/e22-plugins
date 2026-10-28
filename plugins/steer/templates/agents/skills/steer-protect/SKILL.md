@@ -42,16 +42,17 @@ marker correct and the wall missing.
 **Be honest in every report:** this configures the GitHub-side gate. It does not
 change anything about the local session and cannot prevent a local commit or push.
 
-**This is the graduation gate for solo trunk mode.** A repo whose `CLAUDE.md` declares
-`Delivery mode: solo trunk (pre-MVP)` runs with `main` intentionally unprotected
-(Commit autonomy). Running `apply` here **is** the graduation: it raises the PR wall and
-ends trunk mode. After applying in that case, also update the product `CLAUDE.md`
-`## Delivery mode` section to `PR flow` - both the prose **and** the machine-readable
-marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so the
-steer hooks resume the per-feature branch/PR flow (the mode is over - the server wall
-now enforces it) - and write a graduation entry under `/spec/history/`. **In a
-member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
-graduation entry goes to the workspace's ledger per `/steer-reference polyrepo`.
+**This is the graduation gate for solo trunk mode.** A repo whose `CLAUDE.md`
+carries `<!-- steer:delivery-mode=solo-trunk -->` runs with `main` intentionally
+unprotected (Commit autonomy). Running `apply` here **is** the graduation: it
+raises the PR wall and ends trunk mode. After applying in that case, also update
+the product `CLAUDE.md` `## Delivery mode` section to `PR flow` - both the prose
+**and** the machine-readable marker on its first line, flipped to
+`<!-- steer:delivery-mode=pr-flow -->` so the steer hooks resume the per-feature
+branch/PR flow (the mode is over - the server wall now enforces it) - and write
+a graduation entry under `/spec/history/`. **In a member** the `CLAUDE.md`
+marker is this repo's own and is flipped here; the graduation entry goes to the
+workspace's ledger per `/steer-reference polyrepo`.
 
 **A one-person repo graduates with the `solo` profile.** GitHub will not let a
 PR's author approve it, so the policy's default 1-approval rule would leave a
@@ -252,10 +253,13 @@ confirmation.
   repo already governs the branch via a ruleset, report it as compliant rather
   than forcing a second mechanism.
 - This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
-  changes repo **settings** via `gh api`, and - when the apply ends solo-trunk
-  mode - the two local files that record the graduation: the `CLAUDE.md`
-  `## Delivery mode` section (prose + the `steer:delivery-mode` marker the hooks
-  read) and `/spec/history/`. Nothing else. `verify` writes nothing at all.
+  changes repo **settings** via `gh api`; `apply --solo` / `--team` sets
+  `profile:` in the repo's own `policy/branch-protection.yml` (`APPLY.md` step
+  0); and - when the apply ends solo-trunk mode - it writes the two local files
+  that record the graduation: the `CLAUDE.md` `## Delivery mode` section (prose
+  + the `steer:delivery-mode` marker the hooks read) and `/spec/history/`.
+  `waive` writes the same two files (`WAIVE.md`). Nothing else. `verify`
+  writes nothing at all.
 - **Polyrepo: one run protects one repo.** A product spanning several repos needs
   protection on the workspace **and every member**, and this skill only ever
   governs the repo it runs in. So when `spec/workspace.yml` or `spec/PRODUCT.md`

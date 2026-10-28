@@ -1,8 +1,8 @@
 # Claude Operating Manual - [Product Name]
 
-The org-wide engineering standards (stack defaults, monorepo layout,
-spec workflow, testing rules, Definition of Done, high-risk areas, secrets
-handling, change classification, baseline patterns/anti-patterns, design sources)
+The org-wide engineering standards (stack defaults, spec workflow, testing
+rules, Definition of Done, high-risk areas, secrets handling, change
+classification, baseline patterns)
 are **injected automatically every session** by the **`steer`** plugin
 from the `e22-plugins` marketplace - see `.claude/settings.json`. They are maintained
 centrally in [`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins)
@@ -66,8 +66,8 @@ Definition of Done are unchanged. **Graduate** to `PR flow` - run
 works, you first deploy, or a second contributor joins, whichever comes first
 (once you deploy or add a `prod` branch, the steer trunk-push hook stops silent
 trunk pushes until you graduate; a new contributor is caught on demand by
-`/steer:setup protect`/`/steer:audit`, not at push time); then
-set this marker and the prose to `PR flow`. If instead this repo will **stay
+`/steer:setup protect`/`/steer:audit`, not at push time); protect flips this
+marker and the prose to `PR flow` itself. If instead this repo will **stay
 single-dev on trunk** with its infra or deploy target as part of the plan, record
 that once with `/steer:setup protect waive` - the graduation nudge and push prompt stop,
 and only a second contributor reopens the question.
@@ -107,5 +107,6 @@ lives in `spec/learnings/`; promote it here once it recurs.
 
 ## Things to avoid
 
-The baseline anti-patterns are injected by the plugin. Add only
-product-specific ones discovered here.
+The baseline anti-patterns live in the plugin's reference prose
+(`/steer:reference conventions`). Add only product-specific ones discovered
+here.

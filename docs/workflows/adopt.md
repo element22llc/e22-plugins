@@ -4,8 +4,10 @@ Reverse-engineer a `/spec` spine from an existing codebase and add the bundled
 scaffold, leaving the repo working spec-first.
 
 !!! info "When to use"
-    Use when a repo has working code but no `/spec` spine and no `mise.toml`, or
-    when asked to adopt or onboard an existing app onto the standards.
+    Use when a repo has working code but no steer-written spine - no `/spec` at
+    all, or a `spec/` steer never wrote (the `foreign` state) - or when asked to
+    adopt or onboard an existing app onto the standards. A legacy template fork
+    goes to `/steer:setup init` instead.
 
 ## What it does
 

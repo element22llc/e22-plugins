@@ -119,11 +119,11 @@ and what you're about to do.
 
 ## 3. Resolve - offer to install, gated on confirmation
 
-Install scriptable tools **only after the user says yes** (Commit-autonomy
-applies to system changes too). GUI/host steps are always handed over as
-instructions - never automated. Use the `os` line to pick the right command;
-these mirror the scaffold README quickstart (the static source of the same
-commands).
+Install scriptable tools **only after the user says yes** - an install changes
+the dev's machine, outside the repo the PR review covers. GUI/host steps are
+always handed over as instructions - never automated. Use the `os` line to
+pick the right command; these mirror the scaffold README quickstart (the static
+source of the same commands).
 
 - **`mise` missing** - the gateway; resolve this first.
   - macOS: `brew install mise`

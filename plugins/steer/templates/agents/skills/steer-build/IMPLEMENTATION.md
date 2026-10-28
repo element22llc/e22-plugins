@@ -7,25 +7,26 @@ the PO-mode guardrails - which apply throughout everything below. Steps 8-10
 
 5. **Scaffold the real app.** `apps/` starts **empty** - the bundled scaffold
    deliberately ships no starter app (`templates/scaffold/MANIFEST.md` ->
-   "Deliberately not bundled"), and step 1 bootstrapped this repo through
-   `/steer-init` **Path B**. So this step *creates* the first app on the default
-   stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`); there is
-   no placeholder to replace. (A repo that *is* a legacy template fork does carry
-   one - swapping it is `LEGACY-TEMPLATE-FORK.md`'s job, on `/steer-init` Path A,
-   not this step's.) Then generate and commit `pnpm-lock.yaml` and resolve the root
-   `packageManager` placeholder to the mise-pinned pnpm version, per `/steer-init`
-   step 5 ("Pin the toolchain and lock the workspace"), which is written for exactly
-   this moment - "once the first real app/workspace exists". Add the app's
-   `apps/<app>/Dockerfile` from the plugin's
-   `templates/docker/` reference (`Dockerfile.node`, or `Dockerfile.python` for a
-   Python service) plus the repo-root `.dockerignore`, adapting the base image to
-   the pinned runtime - CI builds it once present. Draft the initial stack ADR
-   yourself via `/steer-adr` - the PO
-   approves intent, not ADR prose. **This is the change that establishes the
-   stack and layout, so fill the root living docs in it** (Living-docs rule):
-   populate `ARCHITECTURE.md` - the tech-stack table from `mise.toml` /
-   `package.json` / `compose.yaml`, and the apps/packages map from the real
-   layout (every `apps/*` and `packages/*` you just created) - and edit
+   "Deliberately not bundled"), and step 1 bootstrapped this repo from the
+   bundled scaffold itself (the PO-adapted form of `/steer-init` **Path B**,
+   not an `/steer-init` run). So this step *creates* the first app on the
+   default stack (Next.js + TypeScript + Tailwind; PostgreSQL via
+   `compose.yaml`); there is no placeholder to replace. (A repo that *is* a
+   legacy template fork does carry one - swapping it is
+   `LEGACY-TEMPLATE-FORK.md`'s job, on `/steer-init` Path A, not this step's.)
+   Then generate and commit `pnpm-lock.yaml` and resolve the root
+   `packageManager` placeholder to the mise-pinned pnpm version, per
+   `/steer-init` step 5 ("Pin the toolchain and lock the workspace"), which is
+   written for exactly this moment - "once the first real app/workspace exists".
+   Add the app's `apps/<app>/Dockerfile` from the plugin's `templates/docker/`
+   reference (`Dockerfile.node`, or `Dockerfile.python` for a Python service)
+   plus the repo-root `.dockerignore`, adapting the base image to the pinned
+   runtime - CI builds it once present. Draft the initial stack ADR yourself via
+   `/steer-adr` - the PO approves intent, not ADR prose. **This is the change
+   that establishes the stack and layout, so fill the root living docs in it**
+   (Living-docs rule): populate `ARCHITECTURE.md` - the tech-stack table from
+   `mise.toml` / `package.json` / `compose.yaml`, and the apps/packages map from
+   the real layout (every `apps/*` and `packages/*` you just created) - and edit
    `apps/README.md` so it no longer claims the folder "starts empty" once a real
    app exists. These are doc upkeep applying a decision already made, not new
    decisions - no PO sign-off, and the PO never sees them (they're for the dev
@@ -73,4 +74,5 @@ the PO-mode guardrails - which apply throughout everything below. Steps 8-10
    the visual identity you actually implement - swap the placeholder product
    name and `#000000` colors for the product's real name and tokens, and
    promote a token or component once the same choice recurs in 3+ places
-   (`Design sources` rule). Don't leave the stub for the dev reviewer.
+   (`/steer-reference design-sources`). Don't leave the stub for the dev
+   reviewer.

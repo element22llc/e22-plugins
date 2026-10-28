@@ -138,8 +138,9 @@ step-by-step procedure for every phase lives in
 [`PROCEDURE.md`](PROCEDURE.md)** - read the
 phase you are on there before executing it.
 
-1. **Confirm it's an adoption case** - no `/spec`, no `mise.toml`, not a template
-   fork; detect the stack; branch `feat/adopt`. -> PROCEDURE Phase 1
+1. **Confirm it's an adoption case** - substantial code, no steer-written spine
+   (`unmanaged` or `foreign`), not a template fork; detect the stack; branch
+   `feat/adopt`. -> PROCEDURE Phase 1
 2. **Reconcile the adoption checklist (resume safety)** - apply pending structural
    migrations from the ledger, then run the template-reconcile diff and splice in
    new sections. **Do this FIRST on a resume** - and on a *fresh* adoption the
