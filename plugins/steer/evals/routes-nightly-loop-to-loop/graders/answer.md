@@ -30,5 +30,6 @@ Fail the response if it:
   scaffold that never names one fails, however good it reads. That is the
   no-plugin answer this case exists to tell apart;
 - does the **wrong** workflow's work instead - hand-rolling a cron workflow or
-  Routine outside `/steer:loop`, or one that merges or deploys on its own;
+  cloud scheduled task outside `/steer:loop`, or one that merges or deploys on
+  its own;
 - restates the ask back without identifying an owner or a next step.

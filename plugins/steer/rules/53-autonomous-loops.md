@@ -1,9 +1,9 @@
 <!-- steer:inject-when=automation-optin -->
 ## Autonomous loops - automate the navigation, never the authority
 
-An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)
-that wakes on its own, discovers work - CI failures, open issues, drift - and
-drives it through steer's skills unattended. It removes the prompting, **not**
+An **autonomous loop** is a scheduled automation (a cron workflow, a cloud
+scheduled task) that wakes on its own, discovers work - CI failures, open
+issues, drift - and drives it through steer's skills unattended. It removes the prompting, **not**
 the responsibility: still ship code you *confirmed* works (Definition of done).
 
 - **A loop closes only up to a human gate - never through one.** It may

@@ -155,6 +155,12 @@ unattended and expect the approvals to happen - `/steer:loop` is the sanctioned
 scheduled/headless path precisely because it stops at those gates (it never
 merges).
 
+A **cloud scheduled task** (`/schedule`) runs without steer unless the org
+delivers the plugin through server-managed settings: cloud sessions install
+neither a repo's `enabledPlugins` nor the plugins on your machine. That is why
+`/steer:loop` keeps the Actions workflow as its default and offers the cloud
+task only where the org has done so.
+
 ## GitHub auth / `gh`
 
 Anything that touches the tracker or GitHub needs an authenticated path. Tracker

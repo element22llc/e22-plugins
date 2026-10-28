@@ -1,0 +1,17 @@
+kind: Added
+body: |-
+    - **Added: `/steer:loop` can hand over a cloud scheduled task instead of
+      the Actions workflow.** The GitHub Actions workflow stays the default:
+      it needs no Claude plan, works for every client, and lives in the repo.
+      A Claude Code cloud scheduled task (`/schedule`, formerly routines) is
+      offered only where the org delivers steer through server-managed
+      settings, because a cloud session installs neither the repo's
+      `enabledPlugins` nor local plugins and would otherwise run with no
+      rules, skills or hooks. On that path the skill takes the same opt-in,
+      hands the dev the template's prompt to create the task themselves,
+      requires branch protection the dev's identity cannot bypass, and
+      records the task in `/spec/history/`. Rule `53-autonomous-loops` now
+      uses the current name.
+time: 2026-10-27T22:00:00.000000-04:00
+custom:
+    Slug: cloud-scheduled-loop
