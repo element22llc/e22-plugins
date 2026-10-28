@@ -53,6 +53,12 @@ allowed-tools:
   - mcp__github__list_issues
   - mcp__github__add_issue_comment
   - mcp__github__sub_issue_write
+  - mcp__plugin_steer_github__issue_write
+  - mcp__plugin_steer_github__issue_read
+  - mcp__plugin_steer_github__search_issues
+  - mcp__plugin_steer_github__list_issues
+  - mcp__plugin_steer_github__add_issue_comment
+  - mcp__plugin_steer_github__sub_issue_write
   - Bash(gh issue create:*)
   - Bash(gh issue edit:*)
   - Bash(gh issue comment:*)

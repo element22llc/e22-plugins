@@ -1,0 +1,14 @@
+kind: Fixed
+body: |-
+    - **Fixed: GitHub MCP pre-approvals now match steer's own server.** The
+      plugin's bundled GitHub server surfaces its tools as
+      `mcp__plugin_steer_github__<tool>`, but `/steer:tracker-sync`,
+      `/steer:status` and `/steer:report` granted only `mcp__github__<tool>`,
+      which matches a server the user configured themselves. Every MCP tracker
+      call in those skills prompted, and `/steer:status` could not read issues
+      headless. The three skills and the scaffold `.claude/settings.json` now
+      list both forms, with the write tools still under `ask`; `/steer:setup
+      sync` adds the new entries to an existing settings file.
+time: 2026-10-28T09:00:00.000000-04:00
+custom:
+    Slug: github-mcp-plugin-tool-names

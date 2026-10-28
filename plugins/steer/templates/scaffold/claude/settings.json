@@ -44,6 +44,10 @@
       "mcp__github__add_issue_comment",
       "mcp__github__list_issues",
       "mcp__github__search_issues",
+      "mcp__plugin_steer_github__issue_read",
+      "mcp__plugin_steer_github__add_issue_comment",
+      "mcp__plugin_steer_github__list_issues",
+      "mcp__plugin_steer_github__search_issues",
       "Bash(git push)",
       "Bash(git push origin:*)",
       "Bash(git push -u origin:*)",
@@ -55,7 +59,9 @@
       "Bash(git rm:*)",
       "Bash(gh pr merge:*)",
       "mcp__github__issue_write",
-      "mcp__github__sub_issue_write"
+      "mcp__github__sub_issue_write",
+      "mcp__plugin_steer_github__issue_write",
+      "mcp__plugin_steer_github__sub_issue_write"
     ],
     "deny": [
       "Bash(git push*--force*)",
