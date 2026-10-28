@@ -19,7 +19,7 @@ The Zensical toolchain lives in the `docs` dependency-group (`pyproject.toml`), 
 
 ```mermaid
 flowchart LR
-    SRC["Source of truth<br/>skills · rules · hooks"] --> SKILL["/plugin-docs skill"]
+    SRC["Source of truth<br/>skills, rules, hooks"] --> SKILL["/plugin-docs skill"]
     SKILL -->|regenerate + reconcile| DOCS[docs/]
     SKILL -->|deep review| AGENT[documentation-reviewer agent]
     AGENT -->|findings| SKILL

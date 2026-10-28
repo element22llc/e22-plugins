@@ -558,7 +558,7 @@ Name the file and say what to carry forward.
 
 ### v6.5.0 - `policy/delivery.yml` declares how the repo delivers
 
-- **What & why:** rule `45-delivery` § Deployment & environments used to *impose* one delivery model - AWS,
+- **What & why:** rule `45-delivery` -> Deployment & environments used to *impose* one delivery model - AWS,
   `non-prod`/`prod`, branch-driven promotion - on every managed repo, so a repo
   that deploys elsewhere, or nowhere, read a rule that was simply false about it
   and had no way to say so. The model is now **declared** in
@@ -950,10 +950,10 @@ Name the file and say what to carry forward.
   `spec/AUDIT-REPORT.md`), and inside any GitHub Actions workflow - a repo may use a
   same-named CI secret, which this change does not touch.
 
-### v5.0.0 - `feature_status` narrows to `draft · approved · live`
+### v5.0.0 - `feature_status` narrows to `draft, approved, live`
 
 - **What & why:** a feature's spec `> Status:` used to carry five values
-  (`draft · approved · implemented · validated · live`) and was declared *derived*
+  (`draft, approved, implemented, validated, live`) and was declared *derived*
   from the issue `steer:state` - but it was stored in `intent.md` and hand-edited, so
   it was a derived value nobody recomputed. Seven of the crosswalk's nine rows added
   no information the issue did not already hold, while every merge, close, and reopen
@@ -1037,7 +1037,7 @@ Name the file and say what to carry forward.
   **Two greps, because the stale token is not the same string in every file.** Four of
   the seven surfaces name the full path `spec/HISTORY.md`; the other three do not, and a
   single pattern silently skipped them - `CLAUDE.md` and `spec/PRODUCT.md` carry a bare
-  `` `HISTORY.md` `` and `spec/sources/*/source.md` carries `[HISTORY entry · ...]`. That
+  `` `HISTORY.md` `` and `spec/sources/*/source.md` carries `[HISTORY entry, ...]`. That
   mattered because the shape check goes quiet as soon as step 1 creates the directory, so
   a partially-applied step 3 would converge to "already migrated" with the stale prose
   still in place - and a **polyrepo member** has no local `spec/HISTORY.md` at all, which
@@ -1080,7 +1080,7 @@ Name the file and say what to carry forward.
      | `README.md` | the "Action history" link target: `./spec/HISTORY.md` -> `./spec/history/`. |
      | `CLAUDE.md` | the `/spec/**` pointer listing `HISTORY.md` -> `spec/history/`. |
      | `spec/tracker.md` | the traceability bullet - "every `/spec/HISTORY.md` entry lists the tracker ref" -> "every `/spec/history/` entry". |
-     | `spec/sources/*/source.md` | the absorbed-versions table's `[HISTORY entry · ...]` cell -> `[history entry · ...]`. One file per tracked source - `/steer:spec intake` instantiates the source-manifest template as `spec/sources/<source-id>/source.md`, never as a root `spec/source-manifest.md`. |
+     | `spec/sources/*/source.md` | the absorbed-versions table's `[HISTORY entry, ...]` cell -> `[history entry, ...]`. One file per tracked source - `/steer:spec intake` instantiates the source-manifest template as `spec/sources/<source-id>/source.md`, never as a root `spec/source-manifest.md`. |
      | `spec/PRODUCT.md` | (polyrepo members only) the ownership row listing `HISTORY.md` among the workspace-owned artifacts -> `spec/history/`. |
 
      **Leave `.github/copilot-instructions.md` and `.agents/skills/*` alone** - they are
@@ -1288,7 +1288,7 @@ Name the file and say what to carry forward.
   shadows any member that does not define that name itself. Unprefixed, `mise run
   dev` inside a member booted the **whole product**, and `mise run docker:clean` in a
   member that ships no `compose.yaml` dropped **every** member's volumes - the
-  cleanup rule `45-delivery` § Parallel worktrees tells every agent to run before removing a worktree.
+  cleanup rule `45-delivery` -> Parallel worktrees tells every agent to run before removing a worktree.
   The workspace profile therefore renamed its whole-product tasks: `dev` -> `ws:dev`
   and `docker:up` / `docker:down` / `docker:clean` -> `ws:docker:*` (`convert:doc` is
   the one deliberate exception). The always-on rules moved with it - rule
@@ -1589,7 +1589,7 @@ Name the file and say what to carry forward.
   `"context7@claude-plugins-official"` key from `enabledPlugins`, preserving
   every other entry and value. The plugin-shipped context7 server keeps
   providing the same capability, so behavior is unchanged whether the key was
-  `true` (duplicate removed) or `false` (absent ≡ disabled; the plugin copy is
+  `true` (duplicate removed) or `false` (absent == disabled; the plugin copy is
   governed by enabling steer itself).
 
   Idempotent: once the key is gone the precondition is empty, so re-running is

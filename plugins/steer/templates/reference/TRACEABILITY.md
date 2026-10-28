@@ -57,7 +57,7 @@ normally.
 - **Proposals, not stealth edits.** Updating an *approved* intent or a
   ratified decision is itself a change - propose it and get the owning
   human's yes (PO for intent, dev for contracts/ADRs).
-- **Declined ≠ dropped.** If the human declines an update, record the
+- **Declined != dropped.** If the human declines an update, record the
   divergence as an open question so it stays visible.
 
 ### Two audiences, two registers
@@ -123,7 +123,7 @@ spec/history/YYYY-MM-DD-HHMM-<slug>.md
 
 - **Why:** vendor search outgrew the in-memory index; reversing this once reports depend on it would mean redoing them
 - **Requested by:** @pat-po
-- **Refs:** PROJ-214 · spec/decisions/0004-postgres-for-vendor-search.md · PR #87
+- **Refs:** PROJ-214, spec/decisions/0004-postgres-for-vendor-search.md, PR #87
 - **Areas:** apps/web, packages/core
 ```
 
@@ -304,7 +304,7 @@ change* class - pure shell and git, no stack and no Python, so it runs anywhere:
   routine path for a behavior change. A dated `spec/history/` entry also clears
   the filter, and a repo mid-migration still clears it with `spec/HISTORY.md`,
   but neither is the routine path: an ordinary merged change writes no history
-  entry at all (§2). The directory's `README.md` format doc does **not** clear it -
+  entry at all (section 2). The directory's `README.md` format doc does **not** clear it -
   the filter matches date-named entries only.
 - It runs **on PRs and on push to `main`**, which makes it the *only* spec-drift
   signal in solo-trunk mode, where there is no PR to carry a flag.

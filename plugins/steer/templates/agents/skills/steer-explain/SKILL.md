@@ -87,7 +87,7 @@ stale the moment the spec changes - regenerate to refresh.
   `adopt` from the repo state) and **stop**; there is nothing to render yet.
 - **In a polyrepo member** (`spec/PRODUCT.md` present), `spec/features/**` is
   absent **by design** - it lives once in the workspace. Resolve the workspace
-  first by the two-test ladder in `/steer-reference polyrepo` § "Resolving the
+  first by the two-test ladder in `/steer-reference polyrepo` -> "Resolving the
   spine from a member", and read the feature from **there**, saying which repo
   you rendered. **`Bash` is disallowed here, so this skill has only that
   ladder's step 1** - the local `workspace.path` + `spec/workspace.yml` test; the
@@ -247,7 +247,7 @@ from a **different** session needs that URL anyway - steer does not store it. Th
 ## Recommended next action
 
 After rendering, surface the single most useful follow-up under `## Recommended
-next actions - /steer-status feature <id>` (the door, per `NEXT-ACTIONS.md` §5 -
+next actions - /steer-status feature <id>` (the door, per `NEXT-ACTIONS.md` section 5 -
 the caller relays this heading with the page), and stop:
 
 - Spec `Status:` still `draft`/unapproved -> offer `/steer-spec approve <id>`.

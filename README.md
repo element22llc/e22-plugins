@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧭 e22-plugins
+# e22-plugins
 
 ### Org-wide engineering standards for Claude Code - edited once, propagated everywhere
 
@@ -43,13 +43,13 @@ rules at session start and the skills pull the latest templates on demand.
 
 ```mermaid
 flowchart LR
-    subgraph src["📦 e22-plugins · this repo · single source of truth"]
+    subgraph src["e22-plugins: this repo, single source of truth"]
         direction TB
         rules["Always-on rules<br/>rules/*.md"]
         skills["Skills<br/>/steer:*"]
         scaffold["Repo scaffold<br/>+ spec templates"]
     end
-    mp(["🛒 Marketplace<br/>steer@e22-plugins"])
+    mp(["Marketplace<br/>steer@e22-plugins"])
     subgraph repos["Product repos"]
         direction TB
         r1["repo A"]
@@ -92,7 +92,7 @@ flowchart TD
     detect -->|existing app, no /spec| adopt["adopt mode<br/>adopt a vibe-coded repo"]
     detect -->|bootstrapped, behind plugin| sync["sync mode<br/>reconcile scaffold drift"]
     build(["/steer:build<br/>non-technical PO: describe the idea"]) --> init
-    init --> ready(["✅ Repo working spec-first"])
+    init --> ready(["Repo working spec-first"])
     adopt --> ready
     sync --> ready
 ```
@@ -122,13 +122,13 @@ the production gate.
 
 ```mermaid
 flowchart LR
-    idea["💡 Idea / feature"] --> spec["/steer:spec<br/>intent + contract"]
+    idea["Idea / feature"] --> spec["/steer:spec<br/>intent + contract"]
     spec --> issues["/steer:work issues<br/>GitHub lifecycle"]
     issues --> work["/steer:work<br/>execute end-to-end"]
-    work --> pr["🔀 Pull request"]
-    pr --> gate{"Drift gate<br/>intent · contract · docs · security · ops"}
+    work --> pr["Pull request"]
+    pr --> gate{"Drift gate<br/>intent, contract, docs, security, ops"}
     gate -->|drift found| work
-    gate -->|clean| merge(["✅ Merge<br/>dev approval = prod gate"])
+    gate -->|clean| merge(["Merge<br/>dev approval = prod gate"])
 ```
 
 ## Migrating from `repository-template`
@@ -159,9 +159,9 @@ don't behave the same:
 
 | Surface | Rules auto-inject | `PreToolUse` gates | Skills | Use for |
 |---|:---:|:---:|:---:|---|
-| **Claude Code** (CLI, IDE extensions, Desktop **Code** tab) | ✅ | ✅ | ✅ | The supported path - all engineering work. |
-| **Cowork** tab | ⚠️ | ⚠️ | ✅ | PO/knowledge-work only - specs, question sweeps, repo-scoped GitHub triage. No install/build. |
-| **Desktop *Chat* tab & claude.ai web chat** | ❌ | ❌ | ✅ | Skills only - rules not injected, gates don't run. |
+| **Claude Code** (CLI, IDE extensions, Desktop **Code** tab) | yes | yes | yes | The supported path - all engineering work. |
+| **Cowork** tab | caveat | caveat | yes | PO/knowledge-work only - specs, question sweeps, repo-scoped GitHub triage. No install/build. |
+| **Desktop *Chat* tab & claude.ai web chat** | no | no | yes | Skills only - rules not injected, gates don't run. |
 
 - **Claude Code** - the CLI, the IDE extensions (VS Code / JetBrains), and the
   Desktop **Code** tab - **runs hooks fully**: the always-on rules inject, the
@@ -251,7 +251,7 @@ PR that bumps the pin.
 
 ## Documentation
 
-📖 **Full documentation site: [ai.element-22.com](https://ai.element-22.com/)**
+**Full documentation site: [ai.element-22.com](https://ai.element-22.com/)**
 
 Concepts, workflows, and a generated skills/hooks reference (with mermaid
 diagrams) live under [`docs/`](./docs/) and are built with

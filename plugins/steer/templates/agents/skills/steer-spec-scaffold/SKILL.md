@@ -55,7 +55,7 @@ feature, using the canonical templates bundled with this plugin.
    intent/contract content or re-add a placeholder the dev replaced. Full rules -
    the plugin-wide **Template reconciliation** convention (over-reports handling,
    anchor matching, additive-only):
-   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` -> "Template
    reconciliation".
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any

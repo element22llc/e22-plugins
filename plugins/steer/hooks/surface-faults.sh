@@ -52,9 +52,9 @@ esac
 NEW=$((TOTAL - SURFACED))
 
 printf '<!-- steer: self-fault notice -->\n'
-printf '⚠ **steer recorded %s self-fault(s)** during recent sessions - the plugin ' "${NEW}"
+printf '**steer recorded %s self-fault(s)** during recent sessions - the plugin ' "${NEW}"
 printf 'itself misbehaved, not your code. The unreported faults:\n\n'
-# Show only the not-yet-surfaced tail; one bullet per fault (version · source · signature).
+# Show only the not-yet-surfaced tail; one bullet per fault (version, source, signature).
 tail -n "${NEW}" "${LOG}" 2>/dev/null | while IFS='|' read -r _ver _src _sig; do
 	printf -- '- `%s` in **%s** - %s\n' "${_ver}" "${_src}" "${_sig}"
 done

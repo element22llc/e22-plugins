@@ -26,7 +26,7 @@ channel** beside the flipped field. `Decide later` leaves the artifact
 reviewer are the same person; requiring them to leave the session to ratify their
 own decision buys no independent judgement - it only loses context and time. What
 must not happen is self-ratification that leaves **no trace of having been a
-decision** (§4).
+decision** (section 4).
 
 ---
 
@@ -113,7 +113,7 @@ record all four of:
    are not the same evidence, and the record should not blur them.
 
 Plus **one** `/spec/history/` entry - a ratified decision is a notable event, one
-of the cases rule `30-spec` § Living documentation still requires an entry for (what / why / who
+of the cases rule `30-spec` -> Living documentation still requires an entry for (what / why / who
 asked / refs). One entry, not one per field.
 
 On `Reject`, record the reason where a future reader will find it: for an ADR,
@@ -129,11 +129,11 @@ No prompt in any mode authorizes these. They require a human acting in the real
 system, and **asking is not authorization**:
 
 - **PR merge** - the reviewed merge is the delivery gate (rule
-  `45-delivery`, `00-router` § You are not the gate). Never `gh pr merge`. The reviewer
+  `45-delivery`, `00-router` -> You are not the gate). Never `gh pr merge`. The reviewer
   reads the diff on the PR; an in-session "yes" is not that review, because the
   diff is not what was shown.
 - **Deploy** - including a hotfix whose deploy is policy-permitted (rule
-  `61-gates` § Hotfix). Permitted ≠ auto-executed.
+  `61-gates` -> Hotfix). Permitted != auto-executed.
 - **Real secrets and credentials**, and **`/infra`** - never relaxed, not even
   pre-production (rule `60-high-risk`).
 - **Pushing to a protected branch** - the server-side wall is the authorization;
@@ -151,7 +151,7 @@ honours, not a way to skip the prompt for one push. The ask fires once per
 session, so a declined push must not be retried in the hope of a quieter
 second attempt - graduate or waive instead. So it is answerable -
 but it is not one of the three gates in
-§2 either: it is a push-time permission decision the harness raises once, with no
+section 2 either: it is a push-time permission decision the harness raises once, with no
 `/spec` field to record and no three-option prompt.
 
 The boundary is the point of the rule: gates become **answerable**, never
@@ -170,6 +170,6 @@ bookkeeping rather than on judgement.
 
 The failure it must not introduce: rubber-stamping. A prompt fired immediately
 after the agent drafts its own proposal invites a reflexive "yes" without the
-deliberation the ADR gate exists to force. §3's tradeoff requirement and §4's
+deliberation the ADR gate exists to force. section 3's tradeoff requirement and section 4's
 channel stamp are what hold that line - the human sees what they are accepting,
 and the record shows how they accepted it.

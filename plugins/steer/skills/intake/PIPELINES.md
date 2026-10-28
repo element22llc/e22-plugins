@@ -129,7 +129,7 @@ in that single entry, in the template's exact bold-key format
 
 - **Why:** absorbed <source-id> <version>
 - **Requested by:** <PO handle> via intake
-- **Refs:** spec/sources/<id>/versions/<v>/ · spec/features/<id>/ · #issue
+- **Refs:** spec/sources/<id>/versions/<v>/, spec/features/<id>/, #issue
 - **Areas:** spec-only (or the areas touched)
 ```
 

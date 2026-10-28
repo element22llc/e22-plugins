@@ -94,7 +94,7 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first - before you answer
    anything.** If that file exists (a fork from a pre-1.25.0 template revision),
    healing it is a **hard gate before gathering**: read
-   [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §1 and apply
+   [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) section 1 and apply
    it, then sweep the migrated copies below.
 
 2. **Gather.** Collect every open question across the spine. Questions live in
@@ -118,7 +118,7 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    **before** gathering, with the ledger's converter - a `- [ ]` line
    **outside** that section is a **PO gate** that converting or resolving would
    destroy, and the converter is what knows the difference. The moment you see
-   any, read [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §2.
+   any, read [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) section 2.
 
    **In a member** all three of those paths are absent by design, so the grep
    returns nothing - that is **not** a clean sweep. Resolve the workspace by the
@@ -169,13 +169,13 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    [`QUESTION-ROUNDS.md`](${CLAUDE_PLUGIN_ROOT}/templates/reference/QUESTION-ROUNDS.md)
    before the first round and follow it.
 
-6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
+6. **Fold each answer back into the spec - by tier** (rule `30-spec` -> Living documentation:
    *applying a decision already made is not a new decision*).
    - **Auto-apply, no per-edit yes** - answers that decide nothing new: a
      **code-fact** grounded from the code (step 4), or a human-decision the
      PO/dev *just made* this session. Write the spec edit (plus any docs that
      must stay consistent - a `CLAUDE.md` one-liner, a superseding ADR) in the
-     same change; the **PR is the gate** (rule `00-router` § You are not the gate).
+     same change; the **PR is the gate** (rule `00-router` -> You are not the gate).
    - **Ask first** - a genuine product/policy/architecture decision *not yet
      made*, or anything under **High-risk areas** (rule `60-high-risk`): never
      blind-write it; route it (step 5) and apply only once the human answers.
@@ -276,7 +276,7 @@ Pick one `Current recommended action` by precedence. **A sweep that found
 nothing open ends at `Complete`** - `/steer:spec validate` re-checks the gate
 against *edits this run made*, so recommending it over an untouched spine
 contradicts the body's own "nothing to resolve" finding and manufactures
-busywork the block must not invent (`NEXT-ACTIONS.md` §3).
+busywork the block must not invent (`NEXT-ACTIONS.md` section 3).
 
 ## Bundle mode (`bundle`)
 

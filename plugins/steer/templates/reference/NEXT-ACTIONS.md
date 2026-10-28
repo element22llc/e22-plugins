@@ -126,7 +126,7 @@ than inventing a parallel one:
   **Urgent live-system remediation** when the live system is actively exposing
   data, breaching users, or losing integrity *now*;
 - issue lifecycle states (`inbox ... ready-for-dev ... in-progress ... validate ...
-  done · cancelled`);
+  done, cancelled`);
 - ADR `Proposed | Accepted | Superseded | Deprecated` (a `Proposed` ADR is a
   **Human decision required**).
 
@@ -252,7 +252,7 @@ Review and merge PR #42.
   body already reported (what was built, what was checked, which gate ran) is
   not repeated here; the reader scrolled past it a moment ago.
 - **`Current recommended action` is the canonical field - an *action*, not a
-  command.** It names exactly one concrete next step, chosen by precedence (§2),
+  command.** It names exactly one concrete next step, chosen by precedence (section 2),
   or the literal sentence `No action is currently required.`
 - **`Suggested command` is optional.** Include it on its own line *only* when a
   real, applicable plugin (or built-in) command advances the action. Omit it when the

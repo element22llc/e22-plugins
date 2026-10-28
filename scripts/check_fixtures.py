@@ -69,7 +69,7 @@ def _registry() -> dict[str, list[str]]:
 
 _REG = _registry()
 
-# NEXT-ACTIONS.md §1 categories - derived from the registry (next_action).
+# NEXT-ACTIONS.md section 1 categories - derived from the registry (next_action).
 VALID_CATEGORIES = set(_REG.get("next_action", []))
 
 # ISSUE-WORKFLOW.md issue lifecycle states - derived from the registry (issue_state).

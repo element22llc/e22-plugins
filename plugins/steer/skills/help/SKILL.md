@@ -87,7 +87,7 @@ check exists to prevent.
 
 Open the menu with one heading naming its door - `## What steer can do -
 /steer:next capabilities` - which is this skill's attribution (`NEXT-ACTIONS.md`
-§5); it carries no handoff block, and the bare `/steer:next` names the navigator,
+section 5); it carries no handoff block, and the bare `/steer:next` names the navigator,
 not this menu.
 
 For each entry render one compact line: the **plain-language goal** first (from
@@ -113,10 +113,10 @@ at `<tempdir>/steer-capabilities-menu.html`.
 End the menu with the last journey group and nothing after it - no line inviting
 correction, no offer to file a report, and no line telling the user they need not
 type these commands or can just describe a goal: the *More* fold's label already
-says that once (rule `03-output` § Responses: no closing offer). The one line that
+says that once (rule `03-output` -> Responses: no closing offer). The one line that
 may follow is this phase's own: the Markdown-fallback note where the `Artifact`
 tool is unavailable, or the one-line offer of the shareable version where it is. A
-user who wants to flag a misroute says so, and rule `00-router` § When steer itself misbehaves files it
+user who wants to flag a misroute says so, and rule `00-router` -> When steer itself misbehaves files it
 then; a standing invitation on every menu is tail nobody reads.
 
 ## Zooming in (optional argument)

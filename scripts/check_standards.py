@@ -288,7 +288,7 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
         modes = set(_parse_modes(marker.group(1)))
         declared[name] = modes
         body = text[marker.end() :]
-        # direction A: argument-hint subcommands ⊆ declared
+        # direction A: argument-hint subcommands subset of declared
         for sub in sorted(hint_subs - modes):
             errors.append(
                 f"{skill_md}: argument-hint subcommand '{sub}' not in declared "
@@ -675,7 +675,7 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
     # CROSS-SURFACE.md: rule count, skill count, skill buckets, and SessionStart
     # hook roster all match disk. The counts/roster are hand-maintained numbers in
     # an advisory strategy doc; only the mechanically-derivable facts are gated
-    # here (the prose analysis stays a judgement call). See the §5 bucket check
+    # here (the prose analysis stays a judgement call). See the section 5 bucket check
     # below for why the count alone is not enough.
     if CROSS_SURFACE.is_file():
         text = CROSS_SURFACE.read_text(encoding="utf-8")
@@ -691,7 +691,7 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
                 f"CROSS-SURFACE.md: skill count says ({skill_m.group(1)}) "
                 f"but skills/ has {len(skills)}"
             )
-        # §5 support matrix sorts every skill into exactly one of two buckets.
+        # section 5 support matrix sorts every skill into exactly one of two buckets.
         # A count check alone misses the case where the number is right but a
         # skill is in the wrong bucket or none, so partition the buckets against
         # disk: every skill named once, no bucket naming a non-skill, no overlap.
@@ -703,23 +703,23 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
             bm = re.search(pat, text, re.DOTALL)
             buckets[label] = set(re.findall(r"`([a-z][a-z-]*)`", bm.group(1))) if bm else set()
         listed = buckets["PO-appropriate"] | buckets["Engineer-oriented"]
-        if listed:  # only enforce when the §5 buckets are present
+        if listed:  # only enforce when the section 5 buckets are present
             unlisted = skills - listed
             unknown = listed - skills
             overlap = buckets["PO-appropriate"] & buckets["Engineer-oriented"]
             if unlisted:
                 errors.append(
-                    f"CROSS-SURFACE.md: §5 skill buckets omit {sorted(unlisted)} "
+                    f"CROSS-SURFACE.md: section 5 skill buckets omit {sorted(unlisted)} "
                     f"(every skill must appear in exactly one bucket)"
                 )
             if unknown:
                 errors.append(
-                    f"CROSS-SURFACE.md: §5 skill buckets name non-skills "
+                    f"CROSS-SURFACE.md: section 5 skill buckets name non-skills "
                     f"{sorted(unknown)} (renamed or removed?)"
                 )
             if overlap:
                 errors.append(
-                    f"CROSS-SURFACE.md: §5 skill buckets list {sorted(overlap)} in "
+                    f"CROSS-SURFACE.md: section 5 skill buckets list {sorted(overlap)} in "
                     f"both PO-appropriate and Engineer-oriented (pick one)"
                 )
         missing_hooks = {h for h in _sessionstart_hook_basenames() if h not in text}

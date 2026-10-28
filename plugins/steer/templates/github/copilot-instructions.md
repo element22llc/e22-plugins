@@ -566,7 +566,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   delivery has no gate at all.
 - **Split ideation from verification.** The drafting agent never clears its own
   change - route it through the test harness and the code gate `/steer:work
-  finish` runs, a fresh reviewer subagent on the `REVIEW-LOOP.md` §4 rubric.
+  finish` runs, a fresh reviewer subagent on the `REVIEW-LOOP.md` section 4 rubric.
 - **Keep durable state outside the model.** A loop's memory is the tracker +
   `/spec/**` (issues, `/spec/history/`), not chat context - record what it did and
   what's left so the next run resumes instead of repeating.
@@ -716,8 +716,10 @@ prose: `/steer:reference conventions`.
   lockfile in the same change; a plausible-looking undeclared package name is a
   hallucinated dependency that breaks in a clean environment.
 - **ASCII everywhere** - em/en dashes, curly quotes, ellipsis, arrows, bullets
-  and non-breaking spaces appear in nothing you produce: not code, config,
+  and middle dots, non-breaking spaces, section and math signs, box drawing,
+  check marks and emoji appear in nothing you produce: not code, config,
   identifiers or strings bound for an API, and not comments, specs, docs, commit
-  messages, PR text or chat. Write `-`, `'`, `"`, `...`, `*`, `->`. Accented
+  messages, PR text or chat. Write `-`, `'`, `"`, `...`, `*`, `->`, `>=`, `x`,
+  `|--`, or a word (`yes`, `no`, `section 2`). Accented
   letters and other non-English text are unaffected; the apostrophe is `'` in
   every language, French included.

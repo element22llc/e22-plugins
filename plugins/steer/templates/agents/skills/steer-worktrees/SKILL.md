@@ -21,7 +21,7 @@ user-invocable: false
 
 # Worktree handling (`/steer-setup worktrees`)
 
-Rule `45-delivery` § Parallel worktrees assumes every worktree inherits trust,
+Rule `45-delivery` -> Parallel worktrees assumes every worktree inherits trust,
 runs its own Compose stack and is cleaned up when it goes. steer delivers
 trust and ports wherever the worktree lives, but **no tool tells steer a worktree
 is being deleted**: Claude Code removes its own without raising `WorktreeRemove`,
@@ -65,12 +65,12 @@ policy must allow the shared `orca.yaml` script, and `orca worktree rm` skips it
 without `--run-hooks`.
 
 `.worktreeinclude`, `.gitignore` and `orca.yaml` are committed files: land them
-through the repo's delivery mode like any change (rule `45-delivery` § Commit
+through the repo's delivery mode like any change (rule `45-delivery` -> Commit
 autonomy). Trust and copied env files are local state and commit nothing.
 
 Worktrees from `claude --worktree`, subagent `isolation: worktree` and `/batch`
 need nothing beyond these rows; how they fit delivery is in
-`/steer-reference conventions` § Native Claude Code delivery features.
+`/steer-reference conventions` -> Native Claude Code delivery features.
 
 ## 3. Verify
 

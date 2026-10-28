@@ -531,8 +531,13 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 ## Cross-cutting conventions
 
 - **ASCII only, in every file.** No em/en dashes, curly quotes, ellipsis
-  characters, bullets, arrows, non-breaking or thin spaces - anywhere, including
-  prose. Write `-`, `'`, `"`, `...`, `*`, `->`. This is the repo's own house
+  characters, bullets or middle dots, arrows, non-breaking or thin spaces,
+  section or math signs, box drawing, check/cross/warning marks or emoji -
+  anywhere, including prose. Write `-`, `'`, `"`, `...`, `*`, `->`, `>=`, `x`,
+  `|--`, or a word. The set is enumerated, not "any non-ASCII": a new symbol is
+  added to `scripts/typographic.sh` and the bulk pattern together. Released
+  changelog files and `presentation/` are exempt by path (reasons in
+  `scripts/check-ascii.sh`). This is the repo's own house
   style *and* the standard it ships (rule 85), enforced by `mise run check-ascii`
   and a pre-commit hook; `scripts/check-ascii.sh` uses the repo-local
   `scripts/typographic.sh` table (which lived under the plugin's `hooks/lib/`

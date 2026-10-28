@@ -20,7 +20,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   delivery has no gate at all.
 - **Split ideation from verification.** The drafting agent never clears its own
   change - route it through the test harness and the code gate `/steer:work
-  finish` runs, a fresh reviewer subagent on the `REVIEW-LOOP.md` §4 rubric.
+  finish` runs, a fresh reviewer subagent on the `REVIEW-LOOP.md` section 4 rubric.
 - **Keep durable state outside the model.** A loop's memory is the tracker +
   `/spec/**` (issues, `/spec/history/`), not chat context - record what it did and
   what's left so the next run resumes instead of repeating.

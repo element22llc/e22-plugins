@@ -23,9 +23,9 @@ source of truth.
 | Marker | Meaning | On |
 |---|---|---|
 | `<!-- steer:schema=2 -->` | **Schema-version marker** - the contract version this body was written against. Required on every agent issue. | all |
-| `<!-- steer:kind=... -->` | Closed enum (work shape): `epic` · `feature` · `bug` · `task` · `finding` · `spec-question` · `spec-drift` · `audit-run`. | all |
-| `<!-- steer:state=... -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project **Status** field may *mirror* this (derived, one-directional); the marker stays canonical - see *Native issue fields & the Projects v2 compatibility boundary* below. | all |
-| `<!-- steer:source=... -->` | Origin (canonical): `human` · `adoption` · `audit` · `security-review` · `code-review` · `ci` · `dependency` · `implementation` · `spec`. The `source:*` label is derived from this. | all |
+| `<!-- steer:kind=... -->` | Closed enum (work shape): `epic`, `feature`, `bug`, `task`, `finding`, `spec-question`, `spec-drift`, `audit-run`. | all |
+| `<!-- steer:state=... -->` | Lifecycle state (base source of truth): `inbox`, `exploring`, `ready-for-spec`, `ready-for-dev`, `in-progress`, `validate`, `blocked`, `done`, `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project **Status** field may *mirror* this (derived, one-directional); the marker stays canonical - see *Native issue fields & the Projects v2 compatibility boundary* below. | all |
+| `<!-- steer:source=... -->` | Origin (canonical): `human`, `adoption`, `audit`, `security-review`, `code-review`, `ci`, `dependency`, `implementation`, `spec`. The `source:*` label is derived from this. | all |
 | `<!-- steer:feature-id=... -->` | Owning feature slug (kebab-case), when one exists. | feature, task, spec-question, spec-drift |
 | `<!-- steer:spec-path=... -->` | Path to the owning spec artifact (e.g. `spec/features/<id>/intent.md`). | feature, task, spec-question, spec-drift |
 | `<!-- steer:question-id=Q-NNN -->` | The stable question ID this issue tracks (see `SPEC-FRAMEWORK.md`). | spec-question |
@@ -103,23 +103,23 @@ blocks fail closed.
 Inside the managed block, use these headings exactly (skip ones that don't
 apply; never rename them). Per kind:
 
-- **epic** - `Outcome` · `Goal / theme` · `Child features` · `Out of scope` ·
-  `Spec references` · `Related issues` · `Validation`. `Child features` is a
+- **epic** - `Outcome`, `Goal / theme`, `Child features`, `Out of scope`,
+  `Spec references`, `Related issues`, `Validation`. `Child features` is a
   checklist of `- [ ] #N - <feature title>`, maintained as features are linked;
   an epic has **no `Acceptance criteria` of its own** - acceptance rolls up from its
   child features, and `Validation` describes the epic-level product acceptance.
-- **feature / task** - `Outcome` · `User value` · `Scope` · `Out of scope` ·
-  `Acceptance criteria` · `Open questions` · `Spec references` · `Related issues` ·
-  `Delivery` · `Validation`.
-- **bug** - `Problem` · `Observed behavior` · `Expected behavior` ·
-  `Reproduction` · `Evidence` · `Acceptance criteria` · `Technical findings` ·
-  `Spec references` · `Related issues` · `Delivery` · `Validation`.
-- **finding** - `Finding` · `Evidence` · `Standard missed` · `Impact` ·
-  `Suggested remediation` · `Origin`.
-- **spec-question** - `Question` · `Why this matters` · `Affected specifications`
-  · `Decision needed from` · `Resolution`.
-- **audit-run** - `Scope` · `Run metadata` · `Summary` · `Report`.
-- **spec-drift** - `Spec says` · `Implementation does` · `Evidence` ·
+- **feature / task** - `Outcome`, `User value`, `Scope`, `Out of scope`,
+  `Acceptance criteria`, `Open questions`, `Spec references`, `Related issues`,
+  `Delivery`, `Validation`.
+- **bug** - `Problem`, `Observed behavior`, `Expected behavior`,
+  `Reproduction`, `Evidence`, `Acceptance criteria`, `Technical findings`,
+  `Spec references`, `Related issues`, `Delivery`, `Validation`.
+- **finding** - `Finding`, `Evidence`, `Standard missed`, `Impact`,
+  `Suggested remediation`, `Origin`.
+- **spec-question** - `Question`, `Why this matters`, `Affected specifications`,
+  `Decision needed from`, `Resolution`.
+- **audit-run** - `Scope`, `Run metadata`, `Summary`, `Report`.
+- **spec-drift** - `Spec says`, `Implementation does`, `Evidence`,
   `Human decision required`.
 
 The body templates in [`../github/issue-bodies/`](../github/issue-bodies/) are
@@ -146,7 +146,7 @@ parent/sub-issue. Example:
 The section lives **inside the managed block**, so it is rewritten idempotently
 like any other managed heading. It is **omitted entirely when there are no related
 issues** - never emit an empty `Related issues` stub. Parent/sub-issue
-relationships do **not** go here (they use native links / `Spec references` ·
+relationships do **not** go here (they use native links / `Spec references`,
 `Parent: #N`); a `conflicts-with` line is **surfaced for a human**, never treated
 as resolved.
 
@@ -170,7 +170,7 @@ lives only in an invisible marker:
   or when the blob base can't be resolved, fall back to the bare code-fenced path.
 - **The delivering PR/branch is visible, not just a marker.** The
   `steer:pull-request` / `steer:branch` markers are invisible HTML comments, so an
-  implementable issue (feature · task · bug) also carries a **`Delivery`** heading
+  implementable issue (feature, task, bug) also carries a **`Delivery`** heading
   inside the managed block that mirrors them as a human-visible, clickable line -
   `PR: #NN` (GitHub auto-links `#NN`) and `Branch: \`<branch>\``. It is **omitted
   until a branch/PR exists** and is maintained from the markers by
@@ -178,11 +178,11 @@ lives only in an invisible marker:
   the line is a derived, one-directional view (like `steer:state` <-> a Project
   Status mirror) - never re-read as the source of truth.
 
-## Taxonomy - Type × kind × source
+## Taxonomy - Type x kind x source
 
 Three orthogonal axes; do not collapse them into one another:
 
-- **GitHub Issue Type** (`Feature` · `Bug` · `Task`, plus `Epic` where the org
+- **GitHub Issue Type** (`Feature`, `Bug`, `Task`, plus `Epic` where the org
   defines it) - the org-level classification, set when the repo supports Issue
   Types (see capability degradation in `ISSUE-WORKFLOW.md`). `Epic` is org-defined
   and may be absent even when the standard three exist; when absent the epic keeps
@@ -267,7 +267,7 @@ escalation, or set with no ledger at all) and the agent records
 from the ledger plus a `field-get` read - it needs **no** field-change-actor read
 (the gateway exposes none). `field-set` is a separate mutation with **no
 managed-block concurrency guard**, so this ledger comparison *is* the concurrency
-story for fields: a concurrent human edit shows up as `value ≠ ledger` and
+story for fields: a concurrent human edit shows up as `value != ledger` and
 suppresses. Where the org has not enabled issue fields, they are omitted and
 ranking treats Priority as unset (capability degradation in `ISSUE-WORKFLOW.md`).
 
@@ -284,7 +284,7 @@ escalate-only (`max(current, floor)` under the provenance guard above); the
 | `risk:security` finding / committed-secret remediation | `Urgent` |
 | Open `impact: blocking` question gating a `required_before` gate on this issue | `High` |
 | `spec-drift` on a live/deployed feature | `High` |
-| Native blocked-by: this issue blocks ≥1 `ready-for-dev` issue | `Medium` |
+| Native blocked-by: this issue blocks >=1 `ready-for-dev` issue | `Medium` |
 | none of the above | *no floor - leave unset for the PO* |
 
 Keep the table **closed** - adding a "this feature looks important" row would be
@@ -305,8 +305,8 @@ field. The plugin **never writes those into an issue body**; a Project-side tool
 owns them.
 
 What the issue *does* expose to Projects, and what steer already sets, are its
-**native attributes**: the GitHub **Issue Type**, **labels** (`source:*` ·
-`needs:*` · `risk:*`), **assignees**, the **milestone**, **native
+**native attributes**: the GitHub **Issue Type**, **labels** (`source:*`,
+`needs:*`, `risk:*`), **assignees**, the **milestone**, **native
 parent/sub-issue links**, and the **native issue fields** above (Priority, Effort,
 dates). A board or roadmap groups, filters, and lays out items from exactly these -
 so steer issues are **Projects-v2-compatible by construction**, with no

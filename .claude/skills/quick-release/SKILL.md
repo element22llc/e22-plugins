@@ -62,11 +62,11 @@ safety net this skill removes.
 
 | Pre-release check | `/release` | `/quick-release` |
 | --- | --- | --- |
-| Computed preconditions (`release_preflight.py`: tree, base, bullets, manifests, anchor, ledger, docs freshness, validator-compat) | ✅ | ✅ |
-| `mise run ci` (full deterministic gate) | ✅ | ✅ |
-| `mise run docs:build` (strict Zensical build) | ✅ | ✅ |
-| `pre-release-audit` workflow (CHANGELOG<->diff, cross-ref, brand, payload, behavioral, docs accuracy) | ✅ | ❌ skipped |
-| Phase B cut (`release_cut.py`, re-gate, PR) | ✅ | ✅ (identical) |
+| Computed preconditions (`release_preflight.py`: tree, base, bullets, manifests, anchor, ledger, docs freshness, validator-compat) | yes | yes |
+| `mise run ci` (full deterministic gate) | yes | yes |
+| `mise run docs:build` (strict Zensical build) | yes | yes |
+| `pre-release-audit` workflow (CHANGELOG<->diff, cross-ref, brand, payload, behavioral, docs accuracy) | yes | no, skipped |
+| Phase B cut (`release_cut.py`, re-gate, PR) | yes | yes (identical) |
 
 The skipped workflow is pure **human-judgment** review - it catches *coherence*
 drift (a description that no longer matches its body, a bullet that overstates a

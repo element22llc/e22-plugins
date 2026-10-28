@@ -79,7 +79,7 @@ Empty output means the file is current as to headings and checklist items; the
 helper never emits **table rows**, so diff the `## Gap analysis` table by eye. Only then continue from the
 unchecked items. Full rules (anchor matching, over-reports handling) - the
 plugin-wide **Template reconciliation** convention:
-`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` -> "Template
 reconciliation".
 
 ## Phase 3 - Survey the codebase

@@ -26,7 +26,7 @@ additively** - never remove the prior profile's files (clobber-free).
 **Establish the polyrepo role** from step 1's `scan-spine-state.sh` output
 (`- polyrepo role:`) before reconciling anything under `/spec` - the
 product-level artifacts a **member** lacks are absent by design, not damaged
-(`/steer-reference polyrepo` § "Where each artifact lives" enumerates them).
+(`/steer-reference polyrepo` -> "Where each artifact lives" enumerates them).
 In a member, **never reinstall them here**: reconcile only its own surface
 (scaffold, CI, `mise.toml`, `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp
 `/spec/.version` as usual. "Repairing" a member as a damaged spine recreates
@@ -62,7 +62,7 @@ is visible rather than silent.
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention
-   (`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   (`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` -> "Template
    reconciliation") across the copied-in files this repo has -
    `PRODUCTIONIZATION.md`, each feature's `intent.md` / `contract.md`,
    `tracker.md`, `app/README.md`, and the scaffold files

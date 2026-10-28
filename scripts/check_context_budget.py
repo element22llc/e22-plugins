@@ -470,7 +470,7 @@ def tokens(byte_count: int) -> int:
 # RAISED a fifth time, 67,300 -> 68,400, to fund the **Tiny** ceremony exemption in
 # rule `80-change-size` and its two consumers. Unlike the fourth raise this is new
 # capability, not a correction, so it took the explicit decision this note demands.
-# Rule 80 already said a Tiny change (≈<20 lines, no behavior change) could "just
+# Rule 80 already said a Tiny change (~<20 lines, no behavior change) could "just
 # open a PR", but that was advisory prose with no authority: rule 36's Issue-first
 # exemptions were content-typed, never size-typed, and rule 50's Definition of Done
 # applied unconditionally - so a typo fix still cost an issue, a branch, a spec
@@ -480,7 +480,7 @@ def tokens(byte_count: int) -> int:
 # exempted are the ones a session reads. Traded out first, as the default here
 # requires: rule 55's `spec-drift` mechanics moved to reference prose, and the
 # per-change `/spec/history/` obligation left rules 30, 55 and 99 outright
-# (−136 B) - the same PR that shrinks a
+# (-136 B) - the same PR that shrinks a
 # per-change duty pays part of its own cost. Net +511 B. Re-armed at the measured
 # total (67,758 B across 35 files) plus ~1%, keeping real headroom rather than the
 # 5-to-16-byte margins this note blames for making earlier raises inevitable.
@@ -511,7 +511,7 @@ def tokens(byte_count: int) -> int:
 #     time - the block was added by dffdde7 and refined by 8d639fc/8fadb86 later
 #     in this same release, so this is a move to a target that only later caught
 #     up, not a de-duplication;
-#   - 45 (-188): GATES.md §5 already owned the ungraduated-trunk-push mechanics;
+#   - 45 (-188): GATES.md section 5 already owned the ungraduated-trunk-push mechanics;
 #     the only text ADDED there was the Copilot-CLI no-retry clause;
 #   - 50 (-298) and 99 (-280): stopped restating each other's checklist items;
 #   - 62 (-118): the Claude-Code-specific branch-prefix clause. hotfix.md states
@@ -519,7 +519,7 @@ def tokens(byte_count: int) -> int:
 #     carry it by convention" half is simply gone.
 #
 # One imperative DID leave the always-on rules: rule 45's "don't retry a declined
-# push - graduate instead" is in no rules/*.md. It survives in GATES.md §5 AND in
+# push - graduate instead" is in no rules/*.md. It survives in GATES.md section 5 AND in
 # check-bash-actions.sh's repeat-reminder text, so a Claude session still meets it
 # at the moment it matters; on the Copilot CLI, where that repeat is a silent
 # allow, it is on-demand only. A deliberate trade, but it means "no rule lost an

@@ -73,7 +73,7 @@ status and materialize modes do not - the delivery path is core-only.
   GraphQL `issueFieldValues` connection (else the MCP github tool if it exposes
   issue fields, else report the capability is unavailable). Read-only; never
   confirms. Concrete query shape + typed value variants + the
-  `viewerCanSetFields` capability probe: **`ISSUE-SCHEMA.md` §"Reading & writing
+  `viewerCanSetFields` capability probe: **`ISSUE-SCHEMA.md` -> "Reading & writing
   issue fields"**.
 
 - **`field-set #N <field> <value>`** - set one native issue field via the GraphQL
@@ -88,7 +88,7 @@ status and materialize modes do not - the delivery path is core-only.
   (the field is the only home). **Never reach for the Projects API** - a same-named
   board column is a read-only projection with no writable option ids. Concrete
   mutation + REST recipes, option-**id**-vs-**name**, and the POST-not-`PUT` trap:
-  **`ISSUE-SCHEMA.md` §"Reading & writing issue fields"**.
+  **`ISSUE-SCHEMA.md` -> "Reading & writing issue fields"**.
 
 - **`bootstrap-fields`** - verify/reconcile the **org-level** issue-field
   definitions `steer` relies on (Priority + the default Effort / Start date /
@@ -117,7 +117,7 @@ parent per issue), which holds for every hop of the chain.
 
 - **`link-related #N <other> <relationship>`** - record a non-hierarchical
   connection between two issues. `<relationship>` is an `issue_relationship` value
-  (`relates-to` · `depends-on` · `blocks` · `conflicts-with` · `supersedes` ·
+  (`relates-to`, `depends-on`, `blocks`, `conflicts-with`, `supersedes`,
   `superseded-by` - see `ENUMS.md`); reject anything outside the enum. For
   **`depends-on`/`blocks`**, prefer the native relationship via `link-blocked-by`
   (below) when available - it is board-visible and feeds ranking. Otherwise (and

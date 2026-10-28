@@ -145,7 +145,7 @@ outside issues, say the report covers tracked issues only - don't guess at the r
 4. **Determine report scope** from `- polyrepo role:` in
    `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"`. A single-repo
    product covers itself - nothing to say. In a **polyrepo** this report goes to
-   a client, so apply `/steer:reference polyrepo` § "Reporting across members"
+   a client, so apply `/steer:reference polyrepo` -> "Reporting across members"
    in full, with the uncovered ones under a **Not covered** heading. From a
    **member**, say plainly that the report covers one repo of several and point
    at the workspace.

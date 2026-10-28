@@ -36,7 +36,7 @@ The loop degrades into theater without all three.
 1. **Independence.** Each gate is a *fresh subagent* that never saw the rationale
    for the choices it reviews. A context that produced an artifact is anchored to
    its own reasoning and will confirm it. This is why each gate is a *separate*
-   fresh general reviewer subagent - not "re-read your own work." §3 says what
+   fresh general reviewer subagent - not "re-read your own work." section 3 says what
    else the code gate may add, and why `steer-reviewer` cannot do the plan gate.
 2. **Explicit rubric.** The reviewer scores against the **restated requirements**
    (what success means, spelled out) plus the **relevant steer rules** - not a
@@ -58,7 +58,7 @@ The loop degrades into theater without all three.
 - **Code gate** reviews the *diff in its repo*: correctness, regressions,
   fidelity to the requirement, and what the diff alone hides - the sibling code
   the change should also have touched, the peers it should match, the risk it
-  introduces. A fresh read-only subagent runs it against the §4 rubric; where the
+  introduces. A fresh read-only subagent runs it against the section 4 rubric; where the
   client has `/code-review`, run it alongside for a deeper correctness sweep.
   `steer-reviewer` is `Read`/`Grep`/`Glob`-only and has no git access, so it can
   check the **on-disk result against standards** but never "the diff" - keep

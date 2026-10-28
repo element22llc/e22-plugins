@@ -9,13 +9,13 @@ in `plugins/steer/templates/scaffold/` and mapped to install paths by its
 
 ```mermaid
 flowchart TD
-    ROOT[Repo root] --> SPEC["/spec spine<br/>intent · contract · vision · glossary · history/ · tracker · ADRs · design · sources · .version"]
+    ROOT[Repo root] --> SPEC["/spec spine<br/>intent, contract, vision, glossary, history/, tracker, ADRs, design, sources, .version"]
     ROOT --> MISE[mise.toml<br/>toolchain + tasks]
     ROOT --> CI[.github/ workflows + PR template]
     ROOT --> COMPOSE[compose.yaml]
     ROOT --> CLAUDE[CLAUDE.md<br/>product-specific context only]
     ROOT --> ARCH[ARCHITECTURE.md<br/>as-built system model]
-    ROOT --> CODE[/apps · /packages - implementation/]
+    ROOT --> CODE[/apps, /packages - implementation/]
 ```
 
 | Element | Source | Notes |
@@ -33,7 +33,7 @@ flowchart TD
 | `CLAUDE.md` | product | **Only** product-specific context - standards prose is never duplicated here. Carries the `<!-- steer:profile=... -->` marker (see Repo profiles). |
 | `REVIEW.md` | scaffold | **PR review calibration** for Claude Code Review and Copilot code review, which run without the injected standards: what counts as Important (a bug fix with no regression test, an unflagged drift class, a high-risk change without scoping), a Nit cap, and paths not to report. It names `.github/copilot-instructions.md` for the standards in prose, never as an `@` include. Claude reads it from the base or default branch (protect it so exclusions and the Nit cap apply; needs a Team or Enterprise plan); Copilot reads it from the PR head on any plan. Team-owned; `/steer:setup sync` creates it when missing. |
 | `/apps`, `/packages` | product | **Empty at bootstrap - the scaffold ships no starter app.** The bundled scaffold deliberately carries no placeholder to delete: the *first real app* is created for the chosen stack, by `/steer:build` step 5 in a PO build or by the dev following the spec-first loop. `pnpm dev` / `db:migrate` / `db:seed` no-op harmlessly until it exists, and `apps/README.md` says the folder starts empty until the app that fills it lands. The one exception is a fork of the retired static `repository-template`, which does carry `apps/web` + `packages/core` - `/steer:setup init` **Path A** swaps or removes it. |
-| `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root - narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Its staleness is checked by `/steer:audit code` (the DX & docs dimension), not by `/steer:audit spec` - that mode is spec-vs-spec, diffing the as-built `/spec` spine against the tracker spec export and reading neither the code nor this file. Required at the root by rule `30-spec` § Living documentation (and the layout conventions in `/steer:reference conventions`), and allowlisted there by the housekeeping standard (`HOUSEKEEPING.md`) so `/steer:work tidy` never proposes relocating it. |
+| `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root - narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Its staleness is checked by `/steer:audit code` (the DX & docs dimension), not by `/steer:audit spec` - that mode is spec-vs-spec, diffing the as-built `/spec` spine against the tracker spec export and reading neither the code nor this file. Required at the root by rule `30-spec` -> Living documentation (and the layout conventions in `/steer:reference conventions`), and allowlisted there by the housekeeping standard (`HOUSEKEEPING.md`) so `/steer:work tidy` never proposes relocating it. |
 
 ## Repo profiles
 
@@ -335,7 +335,7 @@ Finally the migration logs itself as the directory's first entry, which both sat
 the living-docs rule for the migration PR and proves the new path works.
 
 The entry keyed **5.0.0** narrows a feature's spec
-`> Status:` from five values to **`draft · approved · live`**. `implemented` and
+`> Status:` from five values to **`draft, approved, live`**. `implemented` and
 `validated` are retired - they were pure mirrors of the issue's `validate`/`done`,
 a derived value stored in a second file that nobody recomputed. The entry applies
 only if some `spec/features/*/intent.md` still carries a retired value or still

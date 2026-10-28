@@ -511,7 +511,7 @@ the standards in `.github/copilot-instructions.md`.
   Copilot session started in *or* entered into a linked worktree does **not**
   inherit the primary checkout's trust, and its first `mise run ...` fails on
   *trust*, not on the task - the cost a polyrepo pays per member per feature. The
-  standards carry the remedy instead of a hook: rule `45-delivery` § Parallel worktrees tells the agent
+  standards carry the remedy instead of a hook: rule `45-delivery` -> Parallel worktrees tells the agent
   to run `mise trust` in the worktree before its first `mise run ...` - only when
   the primary checkout is already trusted, the same condition the hook applies -
   and otherwise to ask the human to run `mise trust && mise install` there, so no
@@ -522,7 +522,7 @@ the standards in `.github/copilot-instructions.md`.
   `WorktreeRemove` -> `docker:clean`), and neither event exists on a Copilot
   surface - so Copilot gets neither. This is exactly the trap this
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
-  Rules `45-delivery` § Parallel worktrees and `50-done` § End-of-session checklist therefore scope the hook claim to
+  Rules `45-delivery` -> Parallel worktrees and `50-done` -> End-of-session checklist therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
   else. (On Claude Code neither half is dependable: `WorktreeRemove` fires only
   for worktrees a `WorktreeCreate` hook created, and the `SessionEnd` half is
@@ -535,12 +535,12 @@ the standards in `.github/copilot-instructions.md`.
   Beyond the worktree check above, three always-on *notices* used to tell the
   agent a SessionStart hook would flag a condition: a missing `/spec` spine
   (rule `00-router`), an in-progress `spec/BUILD-STATUS.md` (rule `05-roles`),
-  and recorded hook faults (`00-router` § When steer itself misbehaves - two of
+  and recorded hook faults (`00-router` -> When steer itself misbehaves - two of
   the three now live in the router, which absorbed the self-report rule in 6.6). Copilot's `sessionStart` ignores
   stdout, so the notice never comes - and its *absence* reads as "condition not
   present," which is worse than no promise at all. Each rule now scopes the flag to
   Claude Code and, where there is something a reader could look for themselves
-  (rules `00-router` and `05-roles`), says to do that instead; rule `00-router` § When steer itself misbehaves
+  (rules `00-router` and `05-roles`), says to do that instead; rule `00-router` -> When steer itself misbehaves
   only scopes, because recorded hook faults exist on no other surface.
   Likewise rule `10-stack` no longer claims a hook **denies** stale image-major
   pins without qualification: the ported gate only *asks* on the Copilot CLI (VS
@@ -551,7 +551,7 @@ the standards in `.github/copilot-instructions.md`.
   plugin, which the Copilot marketplace does not list, so it was scoped to Claude
   Code inline (the rule has since left the always-on payload for
   `DESIGN-SOURCES.md`, which carries the same qualification). Two others no longer need scoping because the surface-specific
-  detail left the rule entirely: rule `61-gates` § Hotfix is now surface-neutral about the
+  detail left the rule entirely: rule `61-gates` -> Hotfix is now surface-neutral about the
   `hotfix/<n>-slug` prefix (the reconciliation it used to name is the `Stop` hook
   `reconcile-issue-first.sh`, which is not ported - no `Stop` hook is, so on
   Copilot the prefix carries the convention alone), and rule

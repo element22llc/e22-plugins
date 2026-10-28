@@ -21,7 +21,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   default branch as usual and open the PR with `--base batch/<slug>` - a
   sibling, not a stack - and **write the local work marker**
   `spec/.work/<branch>.md` (slashes -> underscores) in the format `WORK-MARKER.md`
-  defines (§ Marker format), so
+  defines (section "Marker format"), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
   load linked specs (`steer:spec-path`, acceptance criteria); **pick up the
@@ -37,7 +37,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
   branch that no longer exists, a PR that merged/closed while away). **If the
-  marker's session list (`WORK-MARKER.md` § Claude Code sessions) has a head
+  marker's session list (`WORK-MARKER.md` -> Claude Code sessions) has a head
   session different from the current
   one, surface it as a context source** - offer `claude --resume <id>` to re-enter
   that conversation, and (if present) the transcript located by globbing
@@ -61,7 +61,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   fresh read-only reviewer subagent, never this context and not
   `steer-reviewer` (no git), reads `git diff origin/<default>...HEAD` and
   scores it against the code-gate rubric in
-  [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) §4. A later
+  [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4. A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
   Fix every high-severity finding, re-run the local gates, and re-review; stop
   after 2 rounds or the first round with no high finding, and name any high

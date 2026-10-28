@@ -9,7 +9,7 @@ Read this file when you reach Phase 2, with Phase 1's snapshot in hand. Phase 0
 Map every reconstructed state to exactly one of the categories using this
 workspace-level table - `/steer:next`'s own domain (cross-workflow arbitration),
 keyed by reconstruction dimension, derived from the same vocabulary. The
-parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
+parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md section 2).
 
 | Reconstructed state | Category (safety level) | Routes to |
 |---|---|---|

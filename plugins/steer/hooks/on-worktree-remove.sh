@@ -2,8 +2,8 @@
 # steer WorktreeRemove hook - full teardown before a worktree is deleted.
 #
 # WHY THIS EXISTS
-#   Rule `45-delivery` § Parallel worktrees names `mise run docker:clean` (down + volumes + orphans)
-#   as the thing to run before removing a worktree, and rule `50-done` § End-of-session checklist
+#   Rule `45-delivery` -> Parallel worktrees names `mise run docker:clean` (down + volumes + orphans)
+#   as the thing to run before removing a worktree, and rule `50-done` -> End-of-session checklist
 #   repeats it as a checklist item. Both are prose: they ask, and the ask is
 #   easily missed at exactly the moment it stops being recoverable - once the
 #   checkout is gone, its per-worktree compose project is orphaned with no
@@ -39,7 +39,7 @@
 #   its JSON output fields and logs failures in debug mode only. (Contrast
 #   SessionEnd, whose stderr on an `exit 2` IS shown to the user - the two events
 #   are not the same on this point; see lib/worktree-lifecycle.sh.)
-#   This exits 0 regardless: steer is not the gate (rule `00-router` § You are not the gate), and
+#   This exits 0 regardless: steer is not the gate (rule `00-router` -> You are not the gate), and
 #   least of all the gate on someone else's cleanup. It also never removes the
 #   worktree itself; declining to do so is what leaves Claude Code's own git handling in
 #   charge.

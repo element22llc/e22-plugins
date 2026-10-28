@@ -22,31 +22,31 @@ validation, and operation. Treat it as infrastructure.
 
 ```text
 /spec
-├── vision.md                   # Why this product exists - plus an `## Open questions` section for product-level ambiguities
-├── users.md                    # Who uses it and what they need
-├── glossary.md                 # Shared vocabulary - PO, devs, and Claude all read this
-├── history/                    # Action history - one immutable file per entry: YYYY-MM-DD-HHMM-<slug>.md (see /steer:reference traceability)
-│   └── README.md               # Format doc: naming, immutability, why it is a directory
-├── tracker.md                  # Which issue tracker this product uses + reference conventions (client-agnostic)
-├── BUILD-STATUS.md             # PO builds only - /steer:build flow state (step, per-feature progress, handoff gate)
-├── PRODUCTIONIZATION.md        # Dev's hardening brief - gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)
-├── app/                        # App knowledge docs - usage, workflows, roles, configuration, troubleshooting, release notes
-│   └── README.md
-├── design/                     # Design-export home + the living architecture diagram
-│   ├── README.md
-│   ├── source.md               # Product-level design-source provenance (Greenfield only)
-│   └── architecture-diagram.md # Living global architecture diagram (Mermaid by default; opt-in LikeC4) - linked from the root ARCHITECTURE.md
-├── sources/                    # Versioned home for recurring PO source documents, maintained by /steer:spec intake
-│   └── README.md
-├── reference/                  # Durable one-off source/research material feeding the spec (inventories, vendor metadata, DDL dumps, discovery docs) - created on demand by /steer:work tidy, no shipped README
-├── features/
-│   └── [feature-id]/
-│       ├── intent.md           # The what and why - PO-facing
-│       └── contract.md         # Behavior rules, API/data model, owning app(s)/package(s)
-├── decisions/
-│   └── 000N-[slug].md          # Architecture decisions worth remembering
-└── learnings/                  # Non-obvious lessons no test, lint rule, contract or `CLAUDE.md` pattern could carry - created on first use
-    └── [slug].md
+|-- vision.md                   # Why this product exists - plus an `## Open questions` section for product-level ambiguities
+|-- users.md                    # Who uses it and what they need
+|-- glossary.md                 # Shared vocabulary - PO, devs, and Claude all read this
+|-- history/                    # Action history - one immutable file per entry: YYYY-MM-DD-HHMM-<slug>.md (see /steer:reference traceability)
+|   `-- README.md               # Format doc: naming, immutability, why it is a directory
+|-- tracker.md                  # Which issue tracker this product uses + reference conventions (client-agnostic)
+|-- BUILD-STATUS.md             # PO builds only - /steer:build flow state (step, per-feature progress, handoff gate)
+|-- PRODUCTIONIZATION.md        # Dev's hardening brief - gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)
+|-- app/                        # App knowledge docs - usage, workflows, roles, configuration, troubleshooting, release notes
+|   `-- README.md
+|-- design/                     # Design-export home + the living architecture diagram
+|   |-- README.md
+|   |-- source.md               # Product-level design-source provenance (Greenfield only)
+|   `-- architecture-diagram.md # Living global architecture diagram (Mermaid by default; opt-in LikeC4) - linked from the root ARCHITECTURE.md
+|-- sources/                    # Versioned home for recurring PO source documents, maintained by /steer:spec intake
+|   `-- README.md
+|-- reference/                  # Durable one-off source/research material feeding the spec (inventories, vendor metadata, DDL dumps, discovery docs) - created on demand by /steer:work tidy, no shipped README
+|-- features/
+|   `-- [feature-id]/
+|       |-- intent.md           # The what and why - PO-facing
+|       `-- contract.md         # Behavior rules, API/data model, owning app(s)/package(s)
+|-- decisions/
+|   `-- 000N-[slug].md          # Architecture decisions worth remembering
+`-- learnings/                  # Non-obvious lessons no test, lint rule, contract or `CLAUDE.md` pattern could carry - created on first use
+    `-- [slug].md
 ```
 
 The canonical templates are shipped by this plugin. Use `/steer:spec <id>`
@@ -191,7 +191,7 @@ Readiness is reported as `ready | incomplete | missing` - **never** `approved`.
 
 2. **Specs are organized by user-facing feature, not by code layout.** Code lives in `/apps` and `/packages`, organized however the stack wants. A single feature may span several apps and packages. The link between a spec feature and its code is the optional pointer section in `contract.md` - at most a hint naming the owning app(s)/package(s), not a folder-mirroring rule or a maintained index. If it's stale or absent, find the code by searching the repo.
 
-3. **Spec and code change together.** A PR that changes behavior should also update the relevant `contract.md`. The scaffold's advisory `spec-drift` CI check flags the mismatch but never fails the build (rule `50-done` § Drift gates), so acting on it is still on the dev opening the PR and the dev reviewing it - and in solo trunk, where there is no reviewer, that check is the only backstop.
+3. **Spec and code change together.** A PR that changes behavior should also update the relevant `contract.md`. The scaffold's advisory `spec-drift` CI check flags the mismatch but never fails the build (rule `50-done` -> Drift gates), so acting on it is still on the dev opening the PR and the dev reviewing it - and in solo trunk, where there is no reviewer, that check is the only backstop.
 
 4. **Specs describe behavior, not incidental implementation.**
 

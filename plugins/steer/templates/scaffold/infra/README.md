@@ -23,26 +23,26 @@ Terragrunt 1.0+ defaults to invoking the `tofu` binary on `PATH`, so no explicit
 
 ```text
 /infra
-├── README.md
-├── mise.toml                       # pins opentofu + terragrunt for this folder
-├── live/                           # infrastructure-live: deployable units
-│   ├── root.hcl                    # remote_state, provider generation,
-│   │                               # terraform_binary = "tofu"
-│   ├── _envcommon/                 # per-component shared config,
-│   │                               # included by leaf units
-│   ├── nonprod/
-│   │   ├── env.hcl                 # env-scoped variables
-│   │   └── <region>/<category>/<component>/terragrunt.hcl
-│   └── prod/
-│       ├── env.hcl
-│       └── <region>/<category>/<component>/terragrunt.hcl
-├── modules/                        # OpenTofu modules used by /live
-│   └── <component>/
-│       ├── main.tf
-│       ├── variables.tf
-│       └── outputs.tf
-└── scripts/
-    └── deploy.sh
+|-- README.md
+|-- mise.toml                       # pins opentofu + terragrunt for this folder
+|-- live/                           # infrastructure-live: deployable units
+|   |-- root.hcl                    # remote_state, provider generation,
+|   |                               # terraform_binary = "tofu"
+|   |-- _envcommon/                 # per-component shared config,
+|   |                               # included by leaf units
+|   |-- nonprod/
+|   |   |-- env.hcl                 # env-scoped variables
+|   |   `-- <region>/<category>/<component>/terragrunt.hcl
+|   `-- prod/
+|       |-- env.hcl
+|       `-- <region>/<category>/<component>/terragrunt.hcl
+|-- modules/                        # OpenTofu modules used by /live
+|   `-- <component>/
+|       |-- main.tf
+|       |-- variables.tf
+|       `-- outputs.tf
+`-- scripts/
+    `-- deploy.sh
 ```
 
 The layout follows the Gruntwork *infrastructure-live* convention: `live/` holds Terragrunt units that describe **what to deploy where**, and `modules/` holds the OpenTofu modules that describe **how to deploy each thing**.
@@ -135,7 +135,7 @@ aren't available on this plan): the gate is the required PR review on `prod`.
    exercise the change there.
 2. **PR merged to `main`** -> the change **auto-deploys to non-prod**; the review
    app is torn down.
-3. **PO validates** the change on non-prod and signals readiness (e.g. `👍 ready
+3. **PO validates** the change on non-prod and signals readiness (e.g. `ready
    to ship` on the issue/PR).
 4. **Promotion PR `main` -> `prod`** is opened and **approved** by a reviewer. This
    approval is the production gate - no direct pushes to `prod` (enforced by

@@ -123,10 +123,10 @@ again and again on a repo that already has one.
 Both modes sweep **one tree**. When
 `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"` reports a
 `- polyrepo role:` other than `none`, scope the report per
-`/steer:reference polyrepo` § "Reporting across members" - an audit silently
+`/steer:reference polyrepo` -> "Reporting across members" - an audit silently
 scoped to one member reads as a clean bill of health for the product. Two limits
 to state rather than paper over: drift that crosses the repo edge (a member's
 contract change invalidating a sibling's assumption) is **not** detected by
-`spec` mode, and the `50-done` § Drift gates CI backstop cannot see sibling repos at
+`spec` mode, and the `50-done` -> Drift gates CI backstop cannot see sibling repos at
 all. In a member, resolve the intended spec from the workspace before reporting
 any feature as undocumented - the intent is probably there, not missing.

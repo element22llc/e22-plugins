@@ -13,8 +13,8 @@
 [What is wrong, conceptually - the durable defect, not the line numbers. The
 `finding-key` marker above is the stable identity used to reconcile this finding
 across runs; it is never line-based. Set `steer:source` to the origin -
-`audit` · `adoption` · `security-review` · `code-review` · `ci` ·
-`dependency` · `implementation`.]
+`audit`, `adoption`, `security-review`, `code-review`, `ci`,
+`dependency`, `implementation`.]
 
 ## Evidence
 

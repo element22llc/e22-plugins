@@ -30,55 +30,55 @@ sessions - `MANIFEST.md` maps the install paths; keep it in sync when adding sca
 ```text
 .claude-plugin/marketplace.json     # lists steer
 plugins/steer/
-├── .claude-plugin/plugin.json      # name + version (bumped once per release by `changie merge`)
-├── .codex-plugin/plugin.json       # Codex plugin manifest
-├── .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
-├── .mcp.json                       # plugin MCP servers (github, context7)
-├── agents/                         # subagents (steer-reviewer - driven by /steer:audit,
-│                                   #   /steer:work --reviewed, and the /steer:loop workflow)
-├── hooks/                          # SessionStart hooks -> inject rules/*.md + orientation;
-│                                   #   PreToolUse/PostToolUse/Stop gates;
-│                                   #   CwdChanged/SessionEnd/WorktreeRemove lifecycle hooks
-│                                   #   (worktree trust + Docker teardown);
-│                                   #   register.tsx - read-only status-band mod
-├── policy/                         # org policy data (branch-protection.yml, versions.yml)
-├── scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} -
-│                                   #   mostly POSIX sh (e.g. template-reconcile.sh - read-only
-│                                   #   template diff) plus Python (scaffold_reconcile.py)
-├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
-├── skills/                         # on-demand, invoked as /steer:<skill>:
-│                                   #   public: setup, spec, work, audit, status, next, build,
-│                                   #           standards
-│                                   #   internal (user-invocable:false, reached via a front
-│                                   #   door or a caller): init, adopt, sync, doctor, protect,
-│                                   #           worktrees (-> setup); questions, adr, intake, roadmap
-│                                   #           (-> spec); issues, tidy, walkthrough (-> work); explain
-│                                   #           (-> status); help (-> next); spec-scaffold,
-│                                   #           tracker-sync (gateways, called by many
-│                                   #           skills); reference, report, loop,
-│                                   #           weekly-update (reached by a rule; loop
-│                                   #           behind the automation opt-in)
-│                                   # (no commands/ - see "invocation syntax" below)
-└── templates/
-    ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,
-    │                               #   vision/users/glossary, history, tracker, app-docs, ...)
-    ├── reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, ...)
-    ├── docker/                     # on-demand Dockerfile refs (Node/Python) - instantiated per
-    │                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
-    ├── demo/                       # on-demand walkthrough-video skeletons (Node/Python) -
-    │                               #   instantiated per feature by /steer:work walkthrough,
-    │                               #   NOT bootstrapped
-    ├── worktrees/                  # on-demand worktree-tool hooks (orca.yaml) - installed by
-    │                               #   /steer:setup worktrees only where that tool is used
-    ├── github/                     # GitHub templates - single source of truth (issue forms,
-    │                               #   workflows/ ci.yml + claude.yml + ...,
-    │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
-    │                               #   (copilot-instructions.md, agents/, instructions/ -
-    │                               #    via `mise run gen:copilot`)
-    ├── agents/skills/              # GENERATED cross-tool skill surface (all 29 skills in the
-    │                               #   open Agent Skills format) - consumers install it as
-    │                               #   .agents/skills/; via `mise run gen:copilot`
-    └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, ...)
+|-- .claude-plugin/plugin.json      # name + version (bumped once per release by `changie merge`)
+|-- .codex-plugin/plugin.json       # Codex plugin manifest
+|-- .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
+|-- .mcp.json                       # plugin MCP servers (github, context7)
+|-- agents/                         # subagents (steer-reviewer - driven by /steer:audit,
+|                                   #   /steer:work --reviewed, and the /steer:loop workflow)
+|-- hooks/                          # SessionStart hooks -> inject rules/*.md + orientation;
+|                                   #   PreToolUse/PostToolUse/Stop gates;
+|                                   #   CwdChanged/SessionEnd/WorktreeRemove lifecycle hooks
+|                                   #   (worktree trust + Docker teardown);
+|                                   #   register.tsx - read-only status-band mod
+|-- policy/                         # org policy data (branch-protection.yml, versions.yml)
+|-- scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} -
+|                                   #   mostly POSIX sh (e.g. template-reconcile.sh - read-only
+|                                   #   template diff) plus Python (scaffold_reconcile.py)
+|-- rules/                          # always-on ruleset (numeric-prefixed, lexical order)
+|-- skills/                         # on-demand, invoked as /steer:<skill>:
+|                                   #   public: setup, spec, work, audit, status, next, build,
+|                                   #           standards
+|                                   #   internal (user-invocable:false, reached via a front
+|                                   #   door or a caller): init, adopt, sync, doctor, protect,
+|                                   #           worktrees (-> setup); questions, adr, intake, roadmap
+|                                   #           (-> spec); issues, tidy, walkthrough (-> work); explain
+|                                   #           (-> status); help (-> next); spec-scaffold,
+|                                   #           tracker-sync (gateways, called by many
+|                                   #           skills); reference, report, loop,
+|                                   #           weekly-update (reached by a rule; loop
+|                                   #           behind the automation opt-in)
+|                                   # (no commands/ - see "invocation syntax" below)
+`-- templates/
+    |-- spec/                       # spec artifacts skills instantiate (intent, contract, adr,
+    |                               #   vision/users/glossary, history, tracker, app-docs, ...)
+    |-- reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, ...)
+    |-- docker/                     # on-demand Dockerfile refs (Node/Python) - instantiated per
+    |                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
+    |-- demo/                       # on-demand walkthrough-video skeletons (Node/Python) -
+    |                               #   instantiated per feature by /steer:work walkthrough,
+    |                               #   NOT bootstrapped
+    |-- worktrees/                  # on-demand worktree-tool hooks (orca.yaml) - installed by
+    |                               #   /steer:setup worktrees only where that tool is used
+    |-- github/                     # GitHub templates - single source of truth (issue forms,
+    |                               #   workflows/ ci.yml + claude.yml + ...,
+    |                               #   pull_request_template.md) + the GENERATED Copilot artifacts
+    |                               #   (copilot-instructions.md, agents/, instructions/ -
+    |                               #    via `mise run gen:copilot`)
+    |-- agents/skills/              # GENERATED cross-tool skill surface (all 29 skills in the
+    |                               #   open Agent Skills format) - consumers install it as
+    |                               #   .agents/skills/; via `mise run gen:copilot`
+    `-- scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, ...)
                                     #   - see its MANIFEST.md for the install map
 ```
 

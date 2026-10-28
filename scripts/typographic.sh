@@ -5,9 +5,10 @@
 # table; that tier retired (the rule stands, reviewers catch strays), so the
 # table moved here with the only caller that remains. It ships nothing.
 #
-# The set is exactly rule 85's - dashes, curly quotes, ellipsis, bullet, arrows,
-# non-breaking and thin spaces - and nothing else. Accented Latin letters,
-# guillemets, CJK and emoji are deliberately absent: they are legitimate
+# The set is exactly rule 85's, enumerated: dashes, curly quotes, ellipsis,
+# bullets and middle dots, arrows, non-breaking and thin spaces, section and math
+# signs, box drawing, check/cross/warning marks and emoji. Accented Latin
+# letters, guillemets and CJK are deliberately absent: they are legitimate
 # content, and flagging them would break non-English copy.
 #
 # There is no comment-stripping step. An earlier version scanned only value
@@ -17,8 +18,10 @@
 # POSIX sh; source this file.
 
 # _steer_typo_hit <bytes> <codepoint-hex> <label> - append <label> once when
-# either the raw bytes or the \uXXXX text spelling is present. Reads/writes the
-# caller's _tn_in / _tn_u / _tn_bs / _tn_out.
+# either the raw bytes or the \uXXXX text spelling is present. A block entry
+# (box drawing, emoji) passes a lead-byte prefix and an empty codepoint, which
+# skips the escape spelling. Reads/writes the caller's _tn_in / _tn_u / _tn_bs /
+# _tn_out.
 #
 # The escape spelling is matched against a haystack whose backslashes have been
 # folded to a sentinel, because a backslash inside a `case` pattern keeps its
@@ -26,11 +29,13 @@
 # literal backslash-u pattern silently matches the bare hex instead. Folding
 # sidesteps that without a grep subprocess per character on the write path.
 _steer_typo_hit() {
+	case "${_tn_out}" in *"$3"*) return ;; esac
 	case "${_tn_in}" in *"$1"*)
 		_tn_out="${_tn_out}${_tn_out:+; }$3"
 		return
 		;;
 	esac
+	[ -n "$2" ] || return 0
 	case "${_tn_u}" in *"${_tn_bs}u$2"*) _tn_out="${_tn_out}${_tn_out:+; }$3" ;; esac
 }
 
@@ -67,6 +72,30 @@ steer_typographic_names() {
 	_steer_typo_hit "$(printf '%b' '\0342\0206\0220')" '2190' 'left arrow U+2190 -> <-'
 	_steer_typo_hit "$(printf '%b' '\0342\0206\0224')" '2194' 'left-right arrow U+2194 -> <->'
 	_steer_typo_hit "$(printf '%b' '\0342\0207\0222')" '21d2' 'double right arrow U+21D2 -> =>'
+	_steer_typo_hit "$(printf '%b' '\0342\0207\0224')" '21d4' 'left-right double arrow U+21D4 -> <=>'
+	_steer_typo_hit "$(printf '%b' '\0302\0267')" '00b7' 'middle dot U+00B7 -> , or /'
+	_steer_typo_hit "$(printf '%b' '\0302\0247')" '00a7' 'section sign U+00A7 -> "section N", or -> before a heading'
+	_steer_typo_hit "$(printf '%b' '\0303\0227')" '00d7' 'multiplication sign U+00D7 -> x'
+	_steer_typo_hit "$(printf '%b' '\0303\0267')" '00f7' 'division sign U+00F7 -> /'
+	_steer_typo_hit "$(printf '%b' '\0342\0210\0222')" '2212' 'minus sign U+2212 -> -'
+	_steer_typo_hit "$(printf '%b' '\0342\0211\0245')" '2265' 'greater-than or equal U+2265 -> >='
+	_steer_typo_hit "$(printf '%b' '\0342\0211\0244')" '2264' 'less-than or equal U+2264 -> <='
+	_steer_typo_hit "$(printf '%b' '\0342\0211\0240')" '2260' 'not equal U+2260 -> !='
+	_steer_typo_hit "$(printf '%b' '\0342\0211\0210')" '2248' 'almost equal U+2248 -> ~'
+	_steer_typo_hit "$(printf '%b' '\0342\0211\0241')" '2261' 'identical to U+2261 -> =='
+	_steer_typo_hit "$(printf '%b' '\0342\0210\0210')" '2208' 'element of U+2208 -> in'
+	_steer_typo_hit "$(printf '%b' '\0342\0212\0206')" '2286' 'subset of or equal U+2286 -> subset of'
+	_steer_typo_hit "$(printf '%b' '\0342\0204\0271')" '2139' 'information sign U+2139 -> drop it, or Note:'
+	_steer_typo_hit "$(printf '%b' '\0342\0232\0240')" '26a0' 'warning sign U+26A0 -> drop it, or Warning:'
+	_steer_typo_hit "$(printf '%b' '\0342\0234\0205')" '2705' 'check mark U+2705 -> yes'
+	_steer_typo_hit "$(printf '%b' '\0342\0234\0223')" '2713' 'check mark U+2713 -> yes'
+	_steer_typo_hit "$(printf '%b' '\0342\0234\0227')" '2717' 'ballot x U+2717 -> no'
+	_steer_typo_hit "$(printf '%b' '\0342\0235\0214')" '274c' 'cross mark U+274C -> no'
+	_steer_typo_hit "$(printf '%b' '\0342\0235\0223')" '2753' 'question mark ornament U+2753 -> ?'
+	_steer_typo_hit "$(printf '%b' '\0357\0270\0217')" 'fe0f' 'variation selector U+FE0F -> delete it'
+	_steer_typo_hit "$(printf '%b' '\0342\0224')" '' 'box drawing U+2500-257F -> |-- `-- |'
+	_steer_typo_hit "$(printf '%b' '\0342\0225')" '' 'box drawing U+2500-257F -> |-- `-- |'
+	_steer_typo_hit "$(printf '%b' '\0360\0237')" '' 'emoji U+1F000-1FFFF -> a word'
 
 	printf '%s' "${_tn_out}"
 }

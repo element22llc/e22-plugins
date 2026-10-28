@@ -195,7 +195,7 @@ def test_enumeration_drift_catches_missing_subcheck(monkeypatch, tmp_path: Path)
 
 
 def test_enumeration_drift_skill_count_and_buckets_clean(monkeypatch, tmp_path: Path):
-    # CROSS-SURFACE.md carries a **Skills** (N) count and a §5 PO/Engineer bucket
+    # CROSS-SURFACE.md carries a **Skills** (N) count and a section 5 PO/Engineer bucket
     # partition; both must agree with the skills on disk.
     _patch_enum_sources(
         monkeypatch,

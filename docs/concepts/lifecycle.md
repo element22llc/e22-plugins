@@ -5,7 +5,7 @@ The canonical set lives in `plugins/steer/templates/reference/enums.registry`
 (`issue_state`) and is enforced by the fixture checks:
 
 ```text
-inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate · blocked · done · cancelled
+inbox, exploring, ready-for-spec, ready-for-dev, in-progress, validate, blocked, done, cancelled
 ```
 
 ```mermaid

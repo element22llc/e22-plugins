@@ -26,7 +26,7 @@ stopping rules: [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22ll
   your own plan.
 - **Human plan sign-off - answerable in-session.** Present the vetted plan before a
   significant change (`--reviewed` is the caller opting into gates; rule
-  `00-router` § You are not the gate) as a three-option prompt - **Approve / Reject / Decide later**
+  `00-router` -> You are not the gate) as a three-option prompt - **Approve / Reject / Decide later**
   (rule `61-gates`; protocol `/steer-reference gates`). The prompt shows what
   changes and where, the **high-severity reviewer findings and how they were
   resolved**, and the residual risk - not just "approve the plan?". `Approve`
@@ -43,7 +43,7 @@ stopping rules: [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22ll
 - **Code gate and bounded fix loop - the ones `finish` already runs.** The flag
   adds nothing to them but the approved plan, which joins the restated
   requirement in the reviewer's rubric (`modes/subcommands.md` -> `finish`;
-  `REVIEW-LOOP.md` §4). In spec/standards-sensitive repos additionally invoke
+  `REVIEW-LOOP.md` section 4). In spec/standards-sensitive repos additionally invoke
   `steer-reviewer` to check the on-disk result against the standards (read-only,
   no git access - it reviews state, not the diff).
 - **Report.** One line per gate - what it checked and its verdict - plus any

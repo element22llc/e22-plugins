@@ -39,7 +39,7 @@
 #
 # OUTPUT (stdout) - one TAB-separated line PER problem occurrence (clean repo = silent):
 #   <file>\t<lineno>\t<found>\t<class>\t<suggested-fix>
-#   class ∈ legacy-e22 | reference-mode | absorbed-mode | noncallable-gateway | unknown
+#   class in legacy-e22 | reference-mode | absorbed-mode | noncallable-gateway | unknown
 #     legacy-e22           /e22-<skill> pre-rebrand prefix; <skill> resolves
 #                          -> fix /steer:<skill>. Also the compound forms
 #                          /e22-standards:e22-<skill> and /e22-standards:<skill>

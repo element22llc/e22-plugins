@@ -26,12 +26,12 @@ read either.
 
 Eleven standards dimensions, anchored to the baseline (`rules/85-practices.md`,
 Definition of Done, the high-risk rule) - **not** a generic checklist:
-**1** spec conformance & coverage *(needs `/spec`)* · **2** architecture &
-boundaries · **3** data layer · **4** input validation & config · **5** error
-handling & escape hatches · **6** testing · **7** toolchain & dependency health
-(incl. the branch-protection / solo-trunk graduation check) · **8** design
-consistency *(UI repos only)* · **9** DX & docs · **10** comment noise (the
-Code comments rule) · **11** learning upkeep *(needs `spec/learnings/`)*.
+**1** spec conformance & coverage *(needs `/spec`)*, **2** architecture &
+boundaries, **3** data layer, **4** input validation & config, **5** error
+handling & escape hatches, **6** testing, **7** toolchain & dependency health
+(incl. the branch-protection / solo-trunk graduation check), **8** design
+consistency *(UI repos only)*, **9** DX & docs, **10** comment noise (the
+Code comments rule), **11** learning upkeep *(needs `spec/learnings/`)*.
 Skip any dimension that doesn't apply to the repo and say so. The full catalogue - what each dimension looks for -
 is [`AUDIT-DIMENSIONS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/AUDIT-DIMENSIONS.md);
 load it before fanning out reviewers.
@@ -88,7 +88,7 @@ it's real.
 
 ## Phase 3 - Rank by leverage
 
-Score each surviving finding by **leverage = impact ÷ effort × confidence**:
+Score each surviving finding by **leverage = impact / effort x confidence**:
 
 - **impact** - how much it reduces risk or future cost (a raw-SQL injection
   surface outranks a missing `mise` task).
@@ -163,7 +163,7 @@ of dimension.
 
    Every row carries its **category**, because that is what makes the pick
    derivable rather than a matter of taste - the categories map onto the shared
-   safety precedence in NEXT-ACTIONS.md §2, and the highest level present wins.
+   safety precedence in NEXT-ACTIONS.md section 2, and the highest level present wins.
 
    | Audit observation | Category | Action |
    |---|---|---|
@@ -197,5 +197,5 @@ when deterministic; judgment calls need a human yes), false positives stay
 closed, and each run's `audit-run` parent is immutable history. The canonical
 full lifecycle - both identities, the per-finding transition rules, `audit-id`
 immutability - lives in
-[`ISSUE-WORKFLOW.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md) §"Audit &
+[`ISSUE-WORKFLOW.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md) -> "Audit &
 drift"; `/steer-issues publish-audit` implements it (markers: `ISSUE-SCHEMA.md`).

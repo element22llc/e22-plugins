@@ -81,8 +81,8 @@ Two invariants underpin everything:
    are never implied.**
 5. **Base lifecycle state is the `steer:state` marker** (see State model) - the
    single source of truth for where an issue sits in the lifecycle.
-6. **Taxonomy is three orthogonal axes** - GitHub Issue **Type** × `steer:kind`
-   (work shape) × `source:*` (origin). The `steer:source` marker is canonical; the
+6. **Taxonomy is three orthogonal axes** - GitHub Issue **Type** x `steer:kind`
+   (work shape) x `source:*` (origin). The `steer:source` marker is canonical; the
    label is derived. See the table in [`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md).
 7. **Original human Issue-Form content is immutable** - agents append a managed
    block, never rewrite form responses (see `ISSUE-SCHEMA.md`).
@@ -158,7 +158,7 @@ normative copy.
 The **base source of truth is the `steer:state` issue-body marker**. The
 closed enum (no standalone `ready`):
 
-`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate · blocked · done · cancelled`
+`inbox, exploring, ready-for-spec, ready-for-dev, in-progress, validate, blocked, done, cancelled`
 
 `done` and `cancelled` are the two terminal states, and **which one a closed
 issue lands in is decided by its closure reason, not by the mere fact of
@@ -228,7 +228,7 @@ everywhere else it proposes and waits for the named human.
 
 **The two do not mirror each other, and that is the point.** The issue
 `steer:state` marker (above) is the **single lifecycle store**. A feature spec's
-`> Status:` line (`feature_status` enum - `draft · approved · live`) holds only
+`> Status:` line (`feature_status` enum - `draft, approved, live`) holds only
 the two facts the issue state cannot express: **the PO approved this scope**, and
 **users can see it**. Nothing else is copied into the spec, so there is no derived
 value to keep in step.
@@ -267,12 +267,12 @@ spec at `live` whose feature was never released is (see Audit & drift).
 ## Labels (small, deliberate set)
 
 - **source:** mirrors the canonical `steer:source` marker (label is *derived*) -
-  `source:human` · `source:adoption` · `source:audit` · `source:security-review`
-  · `source:code-review` · `source:ci` · `source:dependency` ·
-  `source:implementation` · `source:spec`.
-- **needs:** `needs:triage` · `needs:product-decision` ·
-  `needs:technical-decision` · `needs:spec` · `needs:validation`
-- **risk:** `risk:high` · `risk:security` · `risk:data`
+  `source:human`, `source:adoption`, `source:audit`, `source:security-review`,
+  `source:code-review`, `source:ci`, `source:dependency`,
+  `source:implementation`, `source:spec`.
+- **needs:** `needs:triage`, `needs:product-decision`,
+  `needs:technical-decision`, `needs:spec`, `needs:validation`
+- **risk:** `risk:high`, `risk:security`, `risk:data`
 
 Do **not** encode status, release, or **kind** as labels - state is the
 `steer:state` marker and kind is the `steer:kind` marker + GitHub Issue Type.
@@ -284,7 +284,7 @@ Do **not** encode status, release, or **kind** as labels - state is the
 defaults can be renamed, disabled, or deleted, and Issue Forms are a GitHub
 public preview (as of 2026-10). So:
 
-- **Type available** -> set the configured Type (per the Type×kind×source table in
+- **Type available** -> set the configured Type (per the Typexkindxsource table in
   `ISSUE-SCHEMA.md`) **and** keep `steer:kind` as the standards contract.
 - **Type unavailable/unknown** -> continue on `steer:kind` alone, emit a
   non-blocking capability warning, and **do not** reintroduce duplicate

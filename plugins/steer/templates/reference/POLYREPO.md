@@ -141,7 +141,7 @@ never read as "nothing there".
 
 ## Drift crosses the repo edge; the gates do not
 
-Rule `50-done` § Drift gates and `/steer:audit spec` compare as-built against intended
+Rule `50-done` -> Drift gates and `/steer:audit spec` compare as-built against intended
 **within one tree**. A contract change in one member that invalidates another
 member's assumption is invisible to both. No gate catches this for you.
 
@@ -176,12 +176,12 @@ member stays a normal repo you branch and push from directly.
 
 ```text
 acme-workspace/
-├── spec/                  THE product spine (+ workspace.yml)
-├── mise.toml              ws:* tasks only, monorepo config_roots
-├── compose.yaml           include: one entry per member that runs services
-├── scripts/ws.sh          the member driver behind the ws:* tasks
-├── .gitignore             /frontend/ /backend/ *.code-workspace
-└── frontend/ backend/     git-ignored clones - NOT submodules
+|-- spec/                  THE product spine (+ workspace.yml)
+|-- mise.toml              ws:* tasks only, monorepo config_roots
+|-- compose.yaml           include: one entry per member that runs services
+|-- scripts/ws.sh          the member driver behind the ws:* tasks
+|-- .gitignore             /frontend/ /backend/ *.code-workspace
+`-- frontend/ backend/     git-ignored clones - NOT submodules
 ```
 
 Member ignore lines are anchored with a leading slash (`/frontend/`) so a member
@@ -217,7 +217,7 @@ Unprefixed, that turned two ordinary commands into cross-repo surprises:
   **whole product's** aggregated Compose stack.
 - `mise run docker:clean` in a member that ships no `compose.yaml` (a library or cli
   member, which the core scaffold lets you strip) tore down **every** member's
-  containers *and volumes* - while rule `45-delivery` § Parallel worktrees tells every agent to run
+  containers *and volumes* - while rule `45-delivery` -> Parallel worktrees tells every agent to run
   exactly that command before removing a worktree.
 
 `ws:`-prefixing removes the fall-through by construction: no member scaffold defines
