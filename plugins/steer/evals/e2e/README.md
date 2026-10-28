@@ -92,5 +92,33 @@ runs per case, macOS): overall score 0.90, $6.21, 4 minutes.
 Compare a change (#786, #788) case by case against this table, not against the
 overall score: three runs per case leave one run's variance visible.
 
+### Static baseline
+
+Recorded on the installed steer 7.14.0 (Claude Code 2.1.312), before the rule
+diets and listing trims after it:
+
+- **`/doctor prompt-audit`** (Opus 5.5 target): no dated prompting in steer - no
+  pressure language, no retired idioms or model names. Steer was scanned at grep
+  level only; the line-by-line findings were all in this repo's own `CLAUDE.md`
+  and `.claude/skills/` (stale counts, history narratives), which ship nothing.
+- **`/skill-doctor`**: the 29 steer skills cost about 4,510 tok of listing every
+  turn. Largest: `spec` ~520, `work` ~470, `setup` ~380, `status` ~210, `next`
+  ~200. Most used on this machine: `work` (122), `tracker-sync` (60), `spec`
+  (37), `issues` (34), `adr` (28). Nine were never invoked: `build`, `doctor`,
+  `help`, `reference`, `roadmap`, `standards`, `walkthrough`, `weekly-update`,
+  `worktrees`. That is one machine's history, so it is a lead for #788, not a
+  verdict.
+
+`check_context_budget.py --report`, at 7.14.0 (2026-10-25) and on `main` once
+the first diets and trims landed (2026-10-27, `c8fe0fd8`):
+
+| Surface | 7.14.0 | `main` |
+|---|---|---|
+| Injected payload, typical product repo | 41,072 ch / 11,737 tok | 33,657 ch / 9,619 tok |
+| Injected payload, code-max | 48,515 ch / 13,864 tok | 41,205 ch / 11,775 tok |
+| `rules/*.md` on disk (18 files) | 50,127 B | 42,869 B |
+| Skill listing (29 skills) | 13,514 ch | 7,890 ch |
+| Largest rendered skill (`questions`) | 19,368 ch | 19,346 ch |
+
 `ledger.py` is the routing suite's (it reads a with/without delta); read a
 sweep's per-case scores from its `aggregate-result.json` instead.
