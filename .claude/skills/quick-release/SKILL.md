@@ -176,7 +176,7 @@ only:
   the plan (the version file changie would write, the manifest transitions, and
   the migration-ledger diff), then run it without `--dry-run`. It batches the
   pending fragments into `.changes/vX.Y.Z.md`, reassembles `CHANGELOG.md`, bumps
-  all three manifests, renames migration-ledger entries inside `## Entries`
+  all four manifests, renames migration-ledger entries inside `## Entries`
   (never the stub), and validates. If it refuses, the refusal is the finding.
 - **B4 - Validate the release invariant:** `uv run python scripts/check_changelog.py`.
 - **B5 - Re-gate after the bump:** `mise run ci` - the full gate, not `mise run

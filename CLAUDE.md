@@ -29,7 +29,8 @@ install paths; keep it in sync when adding scaffold files.
 ```text
 .claude-plugin/marketplace.json     # lists steer
 plugins/steer/
-├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
+├── .claude-plugin/plugin.json      # name + version (bumped once per release by `changie merge`)
+├── .codex-plugin/plugin.json       # Codex plugin manifest
 ├── .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
 ├── .mcp.json                       # plugin MCP servers (github, context7)
 ├── agents/                         # subagents (steer-reviewer - driven by /steer:audit,
@@ -113,16 +114,14 @@ capture. Read it before your first PR here. The essentials, condensed:
 - Any change to plugin behavior needs a **changelog fragment** - one YAML file
   per change under `.changes/unreleased/`, written by hand (`mise run
   changelog:new`, or the file directly for multi-line prose). Because each
-  change is its own path, concurrent PRs **never conflict** - which is what
-  retired the old `CHANGELOG.md merge=union` driver; union is line-based, and
-  the multi-line entries this repo writes are the shape it splices together
-  wrongly. **`CHANGELOG.md` itself is generated** - `changie merge` assembles it
+  change is its own path, concurrent PRs **never conflict**.
+  **`CHANGELOG.md` itself is generated** - `changie merge` assembles it
   from `.changes/`, so never edit it by hand (`check_changelog.py` fails when it
   drifts). Between releases it shows only *released* versions; pending entries
   live unassembled in `.changes/unreleased/`, and running `changie merge -u` in
   a feature PR would reintroduce the conflict. Implementation PRs do **not**
   bump `plugins/steer/.claude-plugin/plugin.json`: the `version` bump happens
-  **once**, at release, written by `changie merge` across all three manifests -
+  **once**, at release, written by `changie merge` across all four manifests -
   so a stream of PRs cuts one coherent release instead of a bump each. See
   `AUTHORING.md` -> "CHANGELOG & versioning".
 - **Releases publish themselves.** When a release PR (the `plugin.json` version
@@ -134,10 +133,8 @@ capture. Read it before your first PR here. The essentials, condensed:
   followed by GitHub's auto-generated
   "What's Changed" (merged-PR list + contributors + compare link) via
   `--generate-notes`. It is idempotent and re-runnable via
-  `workflow_dispatch`. History predating the workflow was backfilled once (a
-  one-shot script, since removed), so every prior `vX.Y.Z` already has a tag +
-  Release. These live outside `plugins/steer/`, so they ship nothing and need no
-  changelog entry.
+  `workflow_dispatch`. Every prior `vX.Y.Z` has a tag + Release. These live
+  outside `plugins/steer/`, so they ship nothing and need no changelog entry.
 - `rules/*.md` is **always-on** context injected every session - keep it lean and
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.
@@ -148,9 +145,8 @@ capture. Read it before your first PR here. The essentials, condensed:
 - **Invocation syntax - skills are plugin-namespaced.** A skill named `<skill>`
   is invoked as **`/steer:<skill>`** (e.g. `/steer:spec`), never
   bare `/<skill>` - Claude Code always namespaces plugin skills to avoid
-  cross-plugin collisions. There is no `commands/` directory: the legacy thin
-  command shims were removed (they duplicated skill semantics and only ever
-  produced the same namespaced invocation). When writing docs, rules, or skill
+  cross-plugin collisions. There is no `commands/` directory; skills are the
+  only invocation surface. When writing docs, rules, or skill
   cross-references, always use the `/steer:` prefix; a bare `/e22-*` in
   prose is a bug the validation suite flags.
 - Hook commands in `hooks.json` invoke their scripts via an explicit `sh` prefix,
@@ -166,7 +162,8 @@ capture. Read it before your first PR here. The essentials, condensed:
 The dev loop is driven by `mise` (run `mise tasks` to list everything):
 
 - **Before every commit - fast gate:** `mise run check` (lint + typecheck +
-  plugin-check + actionlint + actions-security + shell + docs:check). This is a
+  plugin-check + actions + actions-security + shell + docs:check + check-ascii +
+  tasks-validate). This is a
   strict superset of the installed pre-commit hooks - a green `check` is never
   followed by a rejected `git commit`. The pre-commit tier runs only the lighter
   hygiene checks (ruff, `ty`, `check_plugin.py`, `claude plugin validate

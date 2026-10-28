@@ -17,7 +17,7 @@ One or two sentences. Link the issue if there is one.
 
 Check every class this PR touches.
 
-- [ ] **Plugin behavior** - `plugins/steer/{skills,rules,hooks,templates,scripts,policy}/`, or any of the three version-bearing manifests (incl. the root `.github/plugin/marketplace.json`) -> needs a changelog fragment
+- [ ] **Plugin behavior** - `plugins/steer/{skills,rules,hooks,templates,scripts,policy}/`, or any of the four version-bearing manifests (incl. the root `.github/plugin/marketplace.json`) -> needs a changelog fragment
 - [ ] **Repo tooling** - `scripts/`, `mise.toml`, `.github/workflows/`, `tests/`
 - [ ] **Docs / repo prose** - `docs/`, `CLAUDE.md`, `.claude/`, root Markdown -> ships nothing, no changelog entry
 - [ ] **Convention change** - how this repo works (see Scope below)

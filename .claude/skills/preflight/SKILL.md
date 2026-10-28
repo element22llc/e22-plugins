@@ -20,26 +20,17 @@ validation logic; it just runs the gates and summarizes them. See
 ## Steps
 
 1. **Pick the depth:**
-   - Default / before push or PR -> `mise run ci` (full: lint, plugin-check,
-     actions, fixtures, test, shell, hooktests, version-scan).
-   - `--fast` or before a local commit -> `mise run check` (lint, plugin-check,
-     actions only).
+   - Default / before push or PR -> `mise run ci` (the full gate).
+   - `--fast` or before a local commit -> `mise run check` (the fast gate).
+   Read the gate names off the run, or `mise tasks`; the `depends` arrays in
+   `mise.toml` are the source of truth for what each level runs.
 
 2. **Run it** and capture output.
 
-3. **Report a per-gate summary** - one line per gate with ✅/❌. For any
+3. **Report a per-gate summary** - one line per gate with `PASS`/`FAIL`. For any
    failure, give the single command to reproduce just that gate:
-
-   | Failed gate | Re-run |
-   | --- | --- |
-   | lint | `uv run ruff check . && uv run ruff format --check .` |
-   | plugin-check | `uv run python scripts/check_plugin.py` (then `check_standards.py`, `check_changelog.py`) |
-   | fixtures | `uv run python scripts/check_fixtures.py` |
-   | test | `uv run pytest` |
-   | shell | `shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh ...` |
-   | hooktests | `sh plugins/steer/hooks/tests/run.sh` |
-   | actions | `actionlint` |
-   | version-scan | `sh plugins/steer/scripts/scan-version-pins.sh .` |
+   `mise run <task>` for the failed task. Where the task runs several
+   scripts (`plugin-check` does), name the one that failed.
 
 4. **If everything passed,** say so plainly and state which gate level ran
    (`check` vs `ci`). Do not claim `ci`-level confidence after only running
