@@ -33,7 +33,7 @@ server-by-server content is reconciled by hand against the source of truth.
 
 | Server | Transport | Auth | Purpose |
 | --- | --- | --- | --- |
-| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (keychain / `~/.claude/.credentials.json`) | Read and write issues (the `context` and `issues` toolsets only). |
+| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (keychain / `~/.claude/.credentials.json`) | Read and write issues (the `context` and `issues` toolsets), plus three PR tools as the delivery fallback. |
 | `context7` | HTTP (`mcp.context7.com/mcp`) | none (optional `CONTEXT7_API_KEY`) | Pull up-to-date, version-accurate library/API documentation on demand. |
 
 ## `github`
@@ -46,11 +46,23 @@ manual floor when no MCP tracker tool is present.
 The server is limited to two toolsets with the `X-MCP-Toolsets: context,issues`
 header: `issues` carries every tool steer calls (`issue_read`, `issue_write`,
 `list_issues`, `search_issues`, `sub_issue_write`, `add_issue_comment`), and
-`context` carries `get_me`. That cuts the server from about 50 tools to 14, so
-tool selection stays sharp. Pull requests, repositories and workflow runs go
-through the `gh` CLI, so a session whose only GitHub MCP server is steer's has
-no MCP tools for them. To get them for ad-hoc use, add your own GitHub server
-in a project or user `.mcp.json`.
+`context` carries `get_me`. The `X-MCP-Tools` header adds three single tools
+from the `pull_requests` toolset: `create_pull_request`, `update_pull_request`
+and `list_pull_requests`. That is 17 tools instead of about 50, so tool
+selection stays sharp.
+
+Pull requests go through the `gh` CLI first; the three PR tools are
+`/steer:work finish`'s fallback when `gh` is not authenticated. The rest of the
+`pull_requests` toolset, `merge_pull_request` and the review tools included, is
+deliberately not exposed: the merge stays the human's step. The CI watch,
+repositories and workflow runs stay on `gh`. To get more GitHub tools for ad-hoc
+use, add your own GitHub server in a project or user `.mcp.json` (a merge tool
+there is still denied by the `check-bash-actions.sh` merge gate).
+
+!!! warning "Tool names must exist"
+    The hosted server rejects `initialize` with HTTP 400 when `X-MCP-Tools`
+    names a tool it does not have, so a typo there disconnects `github` for
+    every install. Check a change against the live server's `tools/list`.
 
 The config references `${user_config.github_pat}`, a **plugin user-config**
 value declared in the plugin manifest's `userConfig` block and marked

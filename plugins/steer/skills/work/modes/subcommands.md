@@ -114,6 +114,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   opened.** If you have stepped away, the in-turn watch blocks the turn; re-enter
   monitoring via the harness `/loop` over `gh pr checks` or a background watch -
   steer ships no background poller.
+  **No authenticated `gh`?** Probe `gh auth status` before the PR step; when it
+  fails, open-or-update the PR through the github MCP server:
+  `list_pull_requests` (`head: <owner>:<branch>`) finds an open one,
+  `create_pull_request` opens it, `update_pull_request` edits it or marks it
+  ready (`draft: false`). With no MCP server either, print the compare URL
+  (`https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1`) for
+  the human. Say which path ran. The CI watch stays `gh`-only: without it,
+  report CI as **not watched** and leave the issue's state alone - an unwatched
+  run never reaches `validate`.
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
