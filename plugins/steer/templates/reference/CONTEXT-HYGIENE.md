@@ -36,20 +36,27 @@ only its result to the caller. Fork only when one of these holds:
 
 - **The transcript is bloat** - a search or read sweep whose only useful output is
   its conclusion (locate code, grep-and-summarize, a broad audit, a regeneration
-  pass), and which would otherwise fill this context.
+  pass), and which would otherwise fill this context. You cannot measure the
+  window (above), so judge by the output: little that comes back, much read to
+  get it.
 - **The units are independent** - N pieces (per-dimension, per-feature, per-PR)
   that each need little from the rest, can run in parallel, and whose context is
   discarded once their result is in.
 - **The review must be independent** - a gate that must not see the reasoning
-  behind what it reviews (`REVIEW-LOOP.md` §1).
+  behind what it reviews (`REVIEW-LOOP.md` §2).
 
 **Keep connected work in one context.** A multi-phase run whose later steps build
 on earlier results - investigate, then design, then implement - stays here,
 however long: split it and each handoff drops the detail the next phase needed.
-Split by context, never by problem type. This follows Anthropic's [When to fold
-subagents into your main agent
+Split by context, never by problem type.
+
+The default, the lossy-handoff cost and the split-by-context rule follow
+Anthropic's [When to fold subagents into your main agent
 loop](https://claude.com/resources/articles/building-agents-when-to-fold-subagents-into-your-main-agent-loop)
-(2026-10-22).
+(2026-10-22). It keeps subagents for context bloat, parallel discardable tasks,
+and an agent confused by too many tools or conflicting instructions; steer meets
+the last case with on-demand skills instead. The review case is its black-box
+verification advice.
 
 **What to bring back.** Return only the **structured result** (findings with
 evidence fingerprints, a verdict, a path to a written artifact) - never the full
@@ -184,7 +191,9 @@ unreliable -> flag/skip; simple plates will validate"), then regenerates parts.
   fabricate geometry.
 - **With context hygiene:** the verdict step writes `regeneration_policy` into the
   artifact (§2). The regeneration is delegated to a subagent (§1) seeded from that
-  policy, returning only the validated/flagged/skipped report. The main context stays
+  policy, returning only the validated/flagged/skipped report. It qualifies because
+  the policy file carries everything the regeneration needs, so the handoff loses
+  nothing. The main context stays
   lean, the constraint travels with the data, and the user just approves - no fresh
   session, no re-typing. Only if the whole thread were already overloaded would you
   fall back to recommending `/compact` with the policy path as the hand-off (§3).

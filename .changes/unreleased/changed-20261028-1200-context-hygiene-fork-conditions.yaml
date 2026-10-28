@@ -5,9 +5,10 @@ body: |-
       one loop as the default and forks only for a sweep whose transcript is
       bloat, independent parallel units, or a review that must stay
       independent. Connected multi-phase work stays in one context, since each
-      handoff returns a lossy summary. This follows Anthropic's "When to fold
-      subagents into your main agent loop" (2026-10-22). Every subagent steer
-      spawns already met these conditions, so no skill changes (#824).
+      handoff returns a lossy summary. The one-loop default follows Anthropic's
+      "When to fold subagents into your main agent loop" (2026-10-22). Every
+      subagent steer spawns already met these conditions, so no skill changes
+      (#824).
 time: 2026-10-28T12:00:00.000000-04:00
 custom:
     Slug: context-hygiene-fork-conditions
