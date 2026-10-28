@@ -81,22 +81,12 @@ user-invocable skill under one explicit *"More (you can also just describe any
 of these):"* fold, grouped by journey in this order - map each remaining skill
 to its group; omit an empty group:
 
-- **Start** - empty, and omitted. `init`, `adopt`, `sync`, `doctor` and
-  `protect` are all `setup`'s modes, not skills a user types, so they never
-  appear here as entries of their own.
-- **Spec & backlog** - empty, and omitted. Capturing and sequencing the backlog
-  is `work`'s `issues` mode; absorbing a PO document, laying out a release
-  timeline, sweeping open questions and recording a decision are `spec`'s
-  `intake`, `roadmap`, `questions` and `adr` modes. None is a skill a user
-  types.
 - **Ship & respond** - the emergency door: `/steer-work --hotfix` for a
   production incident on a deployed system (from `work`'s `argument-hint`).
 - **Track & automate** - repo health and drift (`audit`); the tidy-up itself is
-  `/steer-work tidy`, the backlog `/steer-work issues`. Scaffolding a scheduled
-  loop is machinery a repo opts into, not a menu entry, so `loop` is not one.
+  `/steer-work tidy`, the backlog `/steer-work issues`.
 - **Govern & plumbing** - load the manual on a chat-only surface where no hook
-  runs (`standards`). Filing a steer defect and loading reference prose are
-  Claude's own moves (`report`, `reference`), so neither is an entry here.
+  runs (`standards`).
 
 **Completeness check before you render.** The groups above are placement
 guidance, not the source of truth: the skill listing is. After grouping, confirm

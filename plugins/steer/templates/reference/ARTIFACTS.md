@@ -300,7 +300,7 @@ way:
 - Render the **same content as Markdown, printed inline** in the session. Keep the
   at-a-glance shape - a status pipeline as an inline arrow chain
   (`draft -> **approved** -> ...`), an acceptance meter as a checklist with its
-  "N of M" count, a journey as a numbered list, scope as two ✓ / ✗ lists, a report
+  "N of M" count, a journey as a numbered list, scope as two In / Out lists, a report
   as a table.
 - For a **fillable** page, the Markdown *is* the return document itself, so the
   user can send it to the stakeholder and route the filled copy back through the

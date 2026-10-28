@@ -71,8 +71,8 @@ sweep.
 
 You have no path-based permission boundary in a managed product repo - propose
 changes anywhere. The dev reviewing the PR is the hard gate and catches an
-out-of-scope or risky edit. Unsure about scope? Ask in a PR comment before
-making sweeping changes.
+out-of-scope or risky edit. Unsure about scope? Ask the dev before making
+sweeping changes - in the session when they are present, else in a PR comment.
 
 ### When steer itself misbehaves, report it upstream
 

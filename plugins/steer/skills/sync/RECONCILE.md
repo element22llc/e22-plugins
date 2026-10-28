@@ -204,7 +204,7 @@ is visible rather than silent.
    | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer:setup protect (solo-trunk: at graduation - not an action while the mode stands or a waiver is recorded) |
    | line-ending-normalization | .gitattributes | absent | create from scaffold (proposed, needs a yes); future writes only, no renormalize |
    | changelog-fragments | .changie.yaml, .changes/unreleased/ | absent | create from scaffold (proposed); an existing hand-written CHANGELOG.md is renamed to CHANGELOG-archive.md, never parsed |
-   | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker ≠ github) |
+   | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker != github) |
    ```
 
    **Under `--check`**, don't branch or write - continue to step 6.5 (invocation

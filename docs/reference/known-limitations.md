@@ -101,19 +101,19 @@ surface. This is an environment boundary, not a steer bug.
 Two consequences follow, and together they explain why "the GitHub connector
 isn't working" in Cowork even though it works in the CLI.
 
-**1. The plugin's `.mcp.json` is a Claude Code mechanism - Cowork doesn't use it.**
-[MCP config is not shared across surfaces](mcp-servers.md): Cowork wires MCP
-through its own **Connectors**, not the plugin-shipped
-`plugins/steer/.mcp.json` that the CLI reads. So of the two servers steer
+**1. Cowork loads only the plugin MCP servers it can configure.**
+[MCP config is not shared across surfaces](mcp-servers.md): Cowork connects a
+plugin's fixed-URL server from the plugin's **Connectors** tab, but skips one
+that references `${user_config.*}` without a default, because it does not
+prompt for user config (Claude docs, as of 2026-10). So of the two servers steer
 ships, one does **not** survive Cowork - and the no-install rule separately
 takes out document conversion:
 
 - **`github`** authenticates with `Authorization: Bearer
   ${user_config.github_pat}`, resolved from the **plugin's user config** (prompted
   at install, held in the macOS Keychain or `~/.claude/.credentials.json`).
-  Cowork reads neither the CLI `.mcp.json`
-  nor that config store, so the plugin's GitHub server appears to "try to connect
-  like Claude Code" and fails to authenticate. **Do not rely on it in Cowork.**
+  `github_pat` has no default, so Cowork skips the server. **Do not rely on it
+  in Cowork.**
 - **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one
   that does work if the surface routes it - nothing to install, no shell secret.
 - **Office-document conversion is not a server at all** - it is the

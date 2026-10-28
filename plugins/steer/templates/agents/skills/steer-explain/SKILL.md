@@ -177,7 +177,7 @@ chart. Map the intent's own sections to these visuals:
   single biggest "don't make me read five pages" win. Steps are the intent's own,
   in order.
 - **Scope -> an in/out board.** In-scope and out-of-scope as two visually distinct
-  columns (✓ / ✗) so the boundary reads instantly.
+  columns headed In and Out so the boundary reads instantly.
 - **Key concepts & data -> a light relationship diagram.** Each concept a node;
   draw an edge **only where the intent explicitly states a "belongs to" / relates-to
   link** - never infer one. Omit the diagram entirely if the intent lists no
@@ -208,7 +208,8 @@ to this skill**:
   built", sign-off "2 of 4"), then: status as a small drawn pipeline
   `draft -> approved -> live` with the recorded stage marked; sign-off and the
   acceptance criteria as two plain lists with their counts - each item prefixed
-  ✓ or ✗ as the spec records it, never as tick boxes a reader could flip; the
+  `done` or `open` as the spec records it, never as tick boxes a reader could
+  flip; the
   journey as a numbered list; scope as a two-column in/out table; a concept
   diagram only where the intent states the links; open questions as a table of
   key, question, status and blocking; the provenance footer last. The fork
@@ -221,7 +222,7 @@ to this skill**:
   inline pipeline (`draft -> **approved** -> live`),
   sign-off as a checklist with its "N of 4" count, the acceptance criteria as
   a second checklist with their own count, the journey as a numbered list,
-  scope as two ✓ / ✗ lists, the provenance footer last. Print it inline; never write it to a file under the
+  scope as two In / Out lists, the provenance footer last. Print it inline; never write it to a file under the
   repo (that would be the drifting second copy of the spec this skill avoids).
 
 ## Updating a previously shared page

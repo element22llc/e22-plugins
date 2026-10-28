@@ -91,14 +91,16 @@ shell escaping. Detect capability **in this order, every run**:
 4. **Else** -> manual paste/path export, same as `/steer-audit spec`. Say which path you
    took so the user knows whether issues were actually touched.
 
-**Sandboxed chat surfaces (Claude Cowork).** Cowork does **not** read the
-plugin's `.mcp.json` or the `github_pat` user config it authenticates from, and
-its no-install sandbox has no `gh` CLI - so steps 2-3 only succeed when the user has enabled Cowork's
-**built-in GitHub connector** (Customize -> Connectors), which exposes the
-repo-scoped issue tools the MCP path probes for. With it on, triage works; without
-it, you land on the manual floor (step 4) - the `gh` fallback is unavailable.
-The connector is **repo-scoped**, so org-level ops (`set-type` Issue Types,
-`field-get`/`field-set` native fields) degrade per their own capability checks.
+**Sandboxed chat surfaces (Claude Cowork).** Cowork skips the plugin's `github`
+server: it references `${user_config.github_pat}`, which has no default, and
+Cowork does not prompt for user config. Its sandbox had no `gh` CLI when tested
+(2026-06), and installing one depends on the org's egress allowlist. So steps
+2-3 succeed only when the user has enabled Cowork's **built-in GitHub
+connector** (Customize -> Connectors), which exposes the issue tools the MCP
+path probes for. With it on, triage works; without it, you land on the manual
+floor (step 4). Treat org-level ops (`set-type` Issue Types,
+`field-get`/`field-set` native fields) as capability-checked: they degrade per
+their own checks if the connector does not reach org scope.
 See [Known limitations -> Claude Cowork's sandbox](https://github.com/element22llc/e22-plugins/blob/main/docs/reference/known-limitations.md).
 
 ## Issue operations (the gateway)

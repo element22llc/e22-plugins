@@ -259,10 +259,10 @@ get right:
   line above `[settings]`; uncomment it in place.
 - List the member dirs in `[monorepo].config_roots` **explicitly** - filesystem
   auto-discovery of subdirectory configs is deprecated upstream.
-- Leave `[monorepo].lockfile` **unset** unless your mise release accepts it: the
-  current release rejects the key (`unknown field: monorepo.?.lockfile`) and warns on
-  every invocation. Per-member locks - what a polyrepo wants, since a member must
-  stay buildable standalone - are today's default. When you do set it, set `false`.
+- Set `[monorepo].lockfile = false` explicitly: a polyrepo wants per-member
+  locks, since a member must stay buildable standalone. mise accepts the key from
+  2026.7.0; left unset it warns from 2026.12.0 and switches to a root lockfile
+  from 2027.6.0 (mise docs, as of 2026-10).
 
 **Compose `include:` does not merge on a name collision** - it warns and takes one
 side, so two members that both ship a service called `postgres` give you one

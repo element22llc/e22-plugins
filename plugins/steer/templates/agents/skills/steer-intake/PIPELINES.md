@@ -189,7 +189,7 @@ step 6 (record) - replacing the git-diff (steps 3-4) with:
 3. **Route** every unit into the reference's three buckets, from a worklist
    the human confirms in a **single pass** - they correct wrong rows, never
    dictate question IDs. Bucket 1 hands the fold to `/steer-questions` via the
-   [step-5 answers row](#5-reconcile--non-clobbering-human-gated) - intake
+   [step-5 answers row](#5-reconcile---non-clobbering-human-gated) - intake
    writes only the durable `pending /steer-questions fold` annotation, never
    the resolution; bucket 2 routes through the other step-5 rows; bucket 3 is
    surfaced for the human, **never guessed**. The hard floor is **no silent

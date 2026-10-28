@@ -4,10 +4,12 @@
 # steer:allow-comments the density here is the commented-out [monorepo] block plus traps about task-name resolution
 
 # Monorepo mode - uncomment once a member is cloned. `monorepo_root` is a TOP-LEVEL key:
-# it must stay ABOVE [settings]; uncomment in place. Leave `[monorepo].lockfile` unset.
+# it must stay ABOVE [settings]; uncomment in place. `lockfile = false` keeps per-member
+# locks and needs mise 2026.7.0+.
 # monorepo_root = true
 
 # [monorepo]
+# lockfile = false
 # config_roots = [
 #   "frontend",
 #   "backend",

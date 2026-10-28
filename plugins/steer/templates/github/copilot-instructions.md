@@ -75,8 +75,8 @@ sweep.
 
 You have no path-based permission boundary in a managed product repo - propose
 changes anywhere. The dev reviewing the PR is the hard gate and catches an
-out-of-scope or risky edit. Unsure about scope? Ask in a PR comment before
-making sweeping changes.
+out-of-scope or risky edit. Unsure about scope? Ask the dev before making
+sweeping changes - in the session when they are present, else in a PR comment.
 
 ### When steer itself misbehaves, report it upstream
 
@@ -228,8 +228,10 @@ tool or a wrong version means run **`/steer:setup doctor`**.
 Create the artifact when the trigger fires - don't defer it:
 
 - **Starting a user-facing feature** -> `/spec/features/[id]/intent.md` +
-  `contract.md` (`[id]` a kebab-case slug), before or alongside the code, via
-  **`/steer:spec`** (**`/steer:build`** for a PO).
+  `contract.md` (`[id]` a kebab-case slug), via **`/steer:spec`**
+  (**`/steer:build`** for a PO). A planned feature's intent is PO-approved
+  before its code (Change classification); the contract comes before or
+  alongside it.
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
   deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:spec adr`**).
   **The bar is reversal cost, not novelty** - a pattern used once is a
@@ -513,9 +515,9 @@ Drift - any mismatch along intent <-> spec <-> contract <-> tracker <-> app docs
 <-> tests <-> delivered behavior - is resolved by **explicit human review, never
 silently**: you surface it before merge, the reviewer resolves it. Flag these
 classes in the PR the moment you notice one (its template carries the
-checklist): **intent drift · contract drift · undocumented
-behavior change · security-sensitive · compliance-impacting · operational
-(deploy/CI/infra) · local setup or deployment changed · app docs invalidated ·
+checklist): **intent drift, contract drift, undocumented
+behavior change, security-sensitive, compliance-impacting, operational
+(deploy/CI/infra), local setup or deployment changed, app docs invalidated,
 architecture/stack drift (`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer resolves it - you may not waive your own flag. The advisory
 `spec-drift` CI check warns when behavior changes without its `contract.md`; a
@@ -626,7 +628,7 @@ your own initiative. The promptable gates: ADR `Proposed -> Accepted` (its
 `/steer:spec approve <id>`), and the `--reviewed` plan sign-off (who asked;
 implement).
 
-Ask once, three options - **Approve · Reject · Decide later** - showing the
+Ask once, three options - **Approve / Reject / Decide later** - showing the
 tradeoff (rejected alternatives, negative consequences, locked scope), never
 just a title, and never pre-selected. Only an unambiguous answer *to the
 decision presented* ratifies it; ambient agreement ("ok", "thanks", silence, or

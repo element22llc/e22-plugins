@@ -59,7 +59,7 @@ the product repo, from the bundled template.
 
 A `Proposed` ADR blocks everything downstream, and the person who can unblock it
 is usually the one in the session. So having drafted it, **present the tradeoff
-and ask** - one question, three options: **Approve · Reject · Decide later**
+and ask** - one question, three options: **Approve / Reject / Decide later**
 (rule `61-gates`; full protocol `/steer-reference gates`).
 
 The prompt must show the **Decision**, the **rejected alternatives with their

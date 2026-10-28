@@ -117,8 +117,9 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 ## Delivery mode
 
 The two-state delivery model - pr-flow vs solo-trunk, the `CLAUDE.md`
-delivery-mode marker (absent -> pr-flow), what each mode authorizes, and every
-gate - is canonical in **rule 45 (Commit autonomy)**; determine the mode once at
+delivery-mode marker (absent -> pr-flow) and what each mode authorizes - is
+canonical in **rule 45 (Commit autonomy)**, the trunk-push gate in
+`/steer:reference gates`; determine the mode once at
 `start` / `finish` and apply it, don't re-derive it. **Issue-first holds in both
 modes**; they differ only in the branch/PR ceremony.
 

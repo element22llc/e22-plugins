@@ -249,7 +249,7 @@ It covers, in detail:
   `draft -> approved`, `--reviewed` plan sign-off - each keeping its existing owner,
   single writer, and preconditions (a failed blocking-question gate means the
   prompt is never offered).
-- **Prompt shape** - `Approve · Reject · Decide later`, and the per-gate minimum
+- **Prompt shape** - `Approve / Reject / Decide later`, and the per-gate minimum
   the prompt must show (an ADR's rejected alternatives and negative consequences;
   an intent's criteria and locked scope; a plan's residual risk). Never pre-select,
   never infer approval from ambient agreement, never bundle two decisions.
