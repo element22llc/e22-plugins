@@ -177,6 +177,37 @@ def check_copilot_version_sync(root: Path, errors: list[str]) -> None:
                     )
 
 
+def check_copilot_lsp_sync(root: Path, errors: list[str]) -> None:
+    """The Copilot manifest must declare the same language servers as Claude's.
+
+    The Copilot CLI wants ``fileExtensions`` where Claude Code wants
+    ``extensionToLanguage``; handed the Claude manifest's block, it rejects every
+    server ("fileExtensions is required"). So the Copilot manifest carries its own
+    ``lspServers``, and this check keeps it to the same servers, commands,
+    arguments and extension map.
+    """
+    try:
+        claude = json.loads((root / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+        copilot_manifest = root / ".github" / "plugin" / "plugin.json"
+        copilot = json.loads(copilot_manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return  # A missing or malformed manifest is reported by the checks that own it.
+    want = {
+        name: (s.get("command"), s.get("args"), s.get("extensionToLanguage"))
+        for name, s in (claude.get("lspServers") or {}).items()
+    }
+    have = {
+        name: (s.get("command"), s.get("args"), s.get("fileExtensions"))
+        for name, s in (copilot.get("lspServers") or {}).items()
+    }
+    if want != have:
+        errors.append(
+            f"{copilot_manifest}: lspServers differ from "
+            f"{root / '.claude-plugin' / 'plugin.json'} (same servers, command, args; "
+            f"fileExtensions must equal extensionToLanguage)"
+        )
+
+
 def _check_comment_truncation(path: Path, text: str, errors: list[str]) -> None:
     """Flag a plain frontmatter scalar that YAML silently truncates at ``#``.
 
@@ -444,6 +475,7 @@ def run_checks(
         return [f"{root}: plugin root directory not found"]
     check_plugin_json(root, errors)
     check_copilot_version_sync(root, errors)
+    check_copilot_lsp_sync(root, errors)
     check_migration_versions(root, errors)
     check_skills(root, errors, require_when_to_use)
     check_agents(root, errors)

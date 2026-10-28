@@ -1,5 +1,5 @@
 {
-  // Generated from the steer plugin's .mcp.json: the MCP servers Claude Code gets,
+  // Generated from the steer plugin's MCP config: the MCP servers Claude Code gets,
   // mirrored for Copilot in VS Code. You own this copy: merge it additively and
   // drop servers you do not use; /steer:sync never rewrites .vscode/.
   // Plugin repo: regenerate with `mise run gen:copilot`.
