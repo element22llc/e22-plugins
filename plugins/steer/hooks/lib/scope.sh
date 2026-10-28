@@ -323,7 +323,8 @@ steer_inject_when_one() {
 	has-infra) [ -d "$2/infra" ] ;;
 	has-iac) steer_repo_does_iac "$2" ;;
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
-	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
+	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ||
+		[ -f "$2/docker-compose.yaml" ] || [ -f "$2/docker-compose.yml" ] ;;
 	has-openspec) steer_has_openspec "$2" ;;
 	automation-optin) steer_automation_optin "$2" ;;
 	org-e22) [ "$(steer_org_pack "$2")" = "e22" ] ;;

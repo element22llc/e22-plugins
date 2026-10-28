@@ -480,7 +480,7 @@ ask the human. Worktrees another tool manages (Orca, Conductor) need
 
 ### Worktree services
 
-> **Applies only to a repo with a Compose file at its root** - `compose.yaml` or `compose.yml`. Skip this section in a repo with neither.
+> **Applies only to a repo with a Compose file at its root** - `compose.yaml`, `compose.yml`, `docker-compose.yaml` or `docker-compose.yml`. Skip this section in a repo with none.
 
 Start services only via `mise run ...`, never a bare `docker compose up` or a
 hardcoded port, so each worktree keeps its own stack and ports. Clean up with

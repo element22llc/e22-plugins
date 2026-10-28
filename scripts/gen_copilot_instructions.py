@@ -101,8 +101,9 @@ SCOPE_PRECONDITIONS: dict[str, str] = {
         "which name no product."
     ),
     "has-compose": (
-        "**Applies only to a repo with a Compose file at its root** - `compose.yaml` "
-        "or `compose.yml`. Skip this section in a repo with neither."
+        "**Applies only to a repo with a Compose file at its root** - `compose.yaml`, "
+        "`compose.yml`, `docker-compose.yaml` or `docker-compose.yml`. Skip this "
+        "section in a repo with none."
     ),
     "automation-optin": (
         "**Applies only to a repo that has declared the automation opt-in** - "

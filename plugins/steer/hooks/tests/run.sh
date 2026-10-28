@@ -2592,6 +2592,10 @@ printf '{}\n' >"${TRAITS_APP}/package.json"
 printf 'services:\n' >"${TRAITS_APP}/compose.yaml"
 steer_inject_when_ok has-apps "${TRAITS_APP}" && ok || bad "scope: has-apps true with package.json"
 steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compose true with compose.yaml"
+TRAITS_LEGACY_COMPOSE="$(new_repo traits_legacy_compose)"
+printf 'services:\n' >"${TRAITS_LEGACY_COMPOSE}/docker-compose.yml"
+steer_inject_when_ok has-compose "${TRAITS_LEGACY_COMPOSE}" && ok || bad "scope: has-compose true with legacy docker-compose.yml"
+steer_inject_when_ok has-compose "${TRAITS_ANSIBLE}" && bad "scope: has-compose false without a compose file" || ok
 steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
 
 # automation-optin is the one FAIL-CLOSED predicate: rule 53 governs machinery a

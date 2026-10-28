@@ -2,7 +2,8 @@ kind: Changed
 body: |-
     - **Changed: the worktree services guidance moves out of rule 45 into a new
       rule 47 (Worktree services), injected only where the repo has a root
-      `compose.yaml` or `compose.yml`.** Repos without a Compose file no longer
+      Compose file (`compose.yaml`, `compose.yml` or a legacy
+      `docker-compose.*`).** Repos without a Compose file no longer
       receive "start services via `mise run`, never a bare `docker compose up`
       or a hardcoded port, clean up with `mise run docker:clean`". Rule 45
       keeps Parallel worktrees for what applies to every mise repo: inherit

@@ -101,12 +101,13 @@ only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker - they self-gate on filesystem
 **traits** and on what `policy/` declares, via the `inject-when` mechanism, so
-the injected rule context always matches what is on disk. Seven expressions gate a
+the injected rule context always matches what is on disk. Eight expressions gate a
 shipped rule today:
 
 | Expression | Rules |
 |---|---|
 | `code-project` | the code-loop rules, enumerated in [Configuration & rules](configuration.md#the-ruleset) |
+| `code-project\|advisory` | `40-testing`, `80-change-class`, `85-practices` |
 | `org-e22` | `10-stack`, `15-commands` |
 | `has-iac&org-e22` | `12-stack-infra` |
 | `has-openspec` | `33-spec-workflow-openspec` |
@@ -118,9 +119,8 @@ shipped rule today:
 `has-workspace-manifest` and `has-product-pointer`, all of which are
 **available but carry no rule today** - the polyrepo topology is deliberately
 delivered by a SessionStart note rather than an always-on rule, so the existence
-of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. Nor is
-any shipped rule currently composed with `|`; the one composite in use is the
-`&` above.
+of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. The
+composites in use are the `&` and `|` above.
 
 A monorepo that *also* has a nested `/infra` dir stays profile `app` and gets
 the infra-stack rule when it is on the e22 org pack, since `has-iac` holds and
