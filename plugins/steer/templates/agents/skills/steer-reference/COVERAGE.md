@@ -146,9 +146,11 @@ It covers, in detail:
 - **The honest boundary** - why a plugin and the model cannot see context usage,
   trigger `/compact`, or start a new session (only the user can), so the design
   makes switching *unnecessary* rather than automatic.
-- **Delegate heavy runs to a subagent** - when a run is long, multi-phase, or
-  search-heavy, fork it (fresh context by construction) and return only the
-  structured result; which model tier each shape wants (read/search fan-out ->
+- **Delegate a bounded run to a subagent** - one loop is the default; fork
+  (fresh context by construction) only a sweep whose transcript is bloat,
+  independent parallel units, or a review that must stay independent, and
+  return only the structured result; connected multi-phase work stays in one
+  context; which model tier each shape wants (read/search fan-out ->
   a cheaper model at lower effort; reviewer/verify delegations -> session model); the
   steer exemplars (`/steer-audit` -> `steer-reviewer`, `/steer-work --reviewed`)
   and when *not* to fork.

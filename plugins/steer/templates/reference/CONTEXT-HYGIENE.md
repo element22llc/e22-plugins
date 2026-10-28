@@ -23,35 +23,53 @@ limits here. Designing around them keeps the guidance truthful:
 So "steer notices the window is full and switches sessions for you" is impossible.
 The mechanisms below make that switch *unnecessary* instead.
 
-## 1. Delegate heavy runs to a subagent (the primary lever)
+## 1. Delegate a bounded run to a subagent
+
+The default is **one loop**: this context plans the work, runs it, and keeps every
+result where the next step can use it. Skills and `/steer:reference` already load
+procedure on demand, so a long task rarely needs a second context to stay lean.
+Every fork has a price: the caller gets a summary back, not what the subagent saw,
+and waits on a nested loop.
 
 A subagent runs with its **own fresh context window by construction** and returns
-only its result to the caller. That is the "fresh session" - automatic, invisible,
-and requiring no decision from the user.
+only its result to the caller. Fork only when one of these holds:
 
-**When to fork.** Delegate when a run is:
+- **The transcript is bloat** - a search or read sweep whose only useful output is
+  its conclusion (locate code, grep-and-summarize, a broad audit, a regeneration
+  pass), and which would otherwise fill this context. You cannot measure the
+  window (above), so judge by the output: little that comes back, much read to
+  get it.
+- **The units are independent** - N pieces (per-dimension, per-feature, per-PR)
+  that each need little from the rest, can run in parallel, and whose context is
+  discarded once their result is in.
+- **The review must be independent** - a gate that must not see the reasoning
+  behind what it reviews (`REVIEW-LOOP.md` §2).
 
-- **long or multi-phase** - many steps, each producing intermediate output the final
-  answer doesn't need (a broad audit, a migration sweep, a regeneration pass); or
-- **search-heavy** - would otherwise fill this context with grep/read transcript; or
-- **fan-out-shaped** - N independent units (per-dimension, per-feature, per-file)
-  that can each be reviewed in isolation.
+**Keep connected work in one context.** A multi-phase run whose later steps build
+on earlier results - investigate, then design, then implement - stays here,
+however long: split it and each handoff drops the detail the next phase needed.
+Split by context, never by problem type.
 
-Below that bar, run inline - the coordination overhead of a subagent isn't worth it
-for a short, interactive task.
+The default, the lossy-handoff cost and the split-by-context rule follow
+Anthropic's [When to fold subagents into your main agent
+loop](https://claude.com/resources/articles/building-agents-when-to-fold-subagents-into-your-main-agent-loop)
+(2026-10-22). It keeps subagents for context bloat, parallel discardable tasks,
+and an agent confused by too many tools or conflicting instructions; steer meets
+the last case with on-demand skills instead. The review case is its black-box
+verification advice.
 
 **What to bring back.** Return only the **structured result** (findings with
 evidence fingerprints, a verdict, a path to a written artifact) - never the full
 transcript of the sweep. The point of forking is that the heavy intermediate context
 stays in the subagent and dies with it.
 
-**Which model.** The delegated subagent's model is a cost lever, and the two
-delegation shapes above want different tiers:
+**Which model.** The delegated subagent's model is a cost lever, and the fork
+reasons above want different tiers:
 
-- **Read/search/summarize fan-out** (the *search-heavy* and *fan-out-shaped* runs -
-  locate code, grep-and-summarize, gather per-file facts, then return a conclusion) ->
-  run on a **cheaper model at lower effort** where the delegation lets you pick
-  one. Its failure mode - occasionally missing a file - is cheap for the vetting
+- **Read/search/summarize fan-out** (a bloat sweep, or independent units that
+  only read - locate code, grep-and-summarize, gather per-file facts, then return a
+  conclusion) -> run on a **cheaper model at lower effort** where the
+  delegation lets you pick one. Its failure mode - occasionally missing a file - is cheap for the vetting
   caller to catch, and the read volume is the same either way, so this cuts
   *cost*, not token count.
 - **Reviewer / verify / judge delegations** (the examples below) -> keep on the
@@ -144,8 +162,8 @@ heavy work *is* the current conversation), the only remaining lever is to
    and the exact constraints to carry across. A fresh session starts blind - the
    hand-off is what stops the constraints from being lost.
 
-Keep this rare. The default is silent: fork the heavy run and write state to a file,
-so the nudge is seldom needed.
+Keep this rare. The default is silent: fork a sweep that qualifies (§1) and write
+state to a file, so the nudge is seldom needed.
 
 **Concrete heuristics to include in the recommendation** - community-validated
 rules of thumb the user acts on (you cannot):
@@ -173,7 +191,9 @@ unreliable -> flag/skip; simple plates will validate"), then regenerates parts.
   fabricate geometry.
 - **With context hygiene:** the verdict step writes `regeneration_policy` into the
   artifact (§2). The regeneration is delegated to a subagent (§1) seeded from that
-  policy, returning only the validated/flagged/skipped report. The main context stays
+  policy, returning only the validated/flagged/skipped report. It qualifies because
+  the policy file carries everything the regeneration needs, so the handoff loses
+  nothing. The main context stays
   lean, the constraint travels with the data, and the user just approves - no fresh
   session, no re-typing. Only if the whole thread were already overloaded would you
   fall back to recommending `/compact` with the policy path as the hand-off (§3).
