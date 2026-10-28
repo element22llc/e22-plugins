@@ -43,7 +43,7 @@ mise run ci   # exactly what CI runs
 
 - [ ] `mise run ci` green locally - or name the task that couldn't run here and why
 - [ ] Ran `/plugin-docs` and committed the result, if `skills/`, `rules/`, or `hooks/` changed
-- [ ] Ran `mise run gen:copilot` and committed the regenerated files, if `rules/`, `skills/`, `agents/`, `hooks/`, or `.mcp.json` changed
+- [ ] Ran `mise run gen:copilot` and committed the regenerated files, if `rules/`, `skills/`, `agents/`, `hooks/`, or `.claude-plugin/mcp.json` changed
 
 ## Notes for the reviewer
 

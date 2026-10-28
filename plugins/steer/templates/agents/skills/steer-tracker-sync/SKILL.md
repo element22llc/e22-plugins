@@ -62,10 +62,10 @@ what the pointers mean and how drift gets resolved.
 ## Integration: MCP-first -> `gh` fallback -> manual floor
 
 The steer plugin ships GitHub MCP to every repo that enables it (the plugin's
-own `.mcp.json` - `api.githubcopilot.com/mcp/`, authenticated from the plugin's
-`github_pat` user config), so MCP is preferred - its tools
-take a JSON `body` field, making multi-line markdown issue bodies clean with no
-shell escaping. Detect capability **in this order, every run**:
+own MCP config - `api.githubcopilot.com/mcp/`, authenticated from the plugin's
+`github_pat` user config in Claude Code, by the user's GitHub sign-in on
+Copilot), so MCP is preferred - its tools take a JSON `body` field, making
+multi-line markdown issue bodies clean with no shell escaping. Detect capability **in this order, every run**:
 
 1. **Read `/spec/tracker.md`.** Confirm the frontmatter key `system: github`
    (the lowercase enum value - not prose). If the tracker

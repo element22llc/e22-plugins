@@ -233,6 +233,46 @@ def test_codex_manifest_version_drift_fails(tmp_path: Path):
     assert any(".codex-plugin/plugin.json" in e and "manifest drifted" in e for e in errors)
 
 
+_TS = {"command": "tsls", "args": ["--stdio"]}
+
+
+def _add_lsp(root: Path, claude_map: dict, copilot_map: dict) -> None:
+    src = root / ".claude-plugin" / "plugin.json"
+    data = json.loads(src.read_text(encoding="utf-8"))
+    data["lspServers"] = {"ts": {**_TS, "extensionToLanguage": claude_map}}
+    src.write_text(json.dumps(data), encoding="utf-8")
+    manifest = _add_copilot_plugin_manifest(root, "0.1.0")
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    data["lspServers"] = {"ts": {**_TS, "fileExtensions": copilot_map}}
+    manifest.write_text(json.dumps(data), encoding="utf-8")
+
+
+def test_copilot_lsp_match_is_clean(tmp_path: Path):
+    root = _make_plugin(tmp_path)
+    _add_lsp(root, {".ts": "typescript"}, {".ts": "typescript"})
+    assert check_plugin.run_checks(root) == []
+
+
+def test_copilot_lsp_drift_fails(tmp_path: Path):
+    root = _make_plugin(tmp_path)
+    _add_lsp(root, {".ts": "typescript", ".tsx": "typescriptreact"}, {".ts": "typescript"})
+    errors = check_plugin.run_checks(root)
+    assert any("lspServers differ" in e for e in errors)
+
+
+def test_copilot_lsp_missing_fails(tmp_path: Path):
+    # Without its own block the Copilot CLI reads the Claude manifest's and
+    # rejects it for the missing fileExtensions.
+    root = _make_plugin(tmp_path)
+    src = root / ".claude-plugin" / "plugin.json"
+    data = json.loads(src.read_text(encoding="utf-8"))
+    data["lspServers"] = {"ts": {**_TS, "extensionToLanguage": {".ts": "typescript"}}}
+    src.write_text(json.dumps(data), encoding="utf-8")
+    _add_copilot_plugin_manifest(root, "0.1.0")
+    errors = check_plugin.run_checks(root)
+    assert any("lspServers differ" in e for e in errors)
+
+
 # --- integration: the real plugin is clean -------------------------------
 
 

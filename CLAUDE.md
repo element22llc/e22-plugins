@@ -33,7 +33,8 @@ plugins/steer/
 |-- .claude-plugin/plugin.json      # name + version (bumped once per release by `changie merge`)
 |-- .codex-plugin/plugin.json       # Codex plugin manifest
 |-- .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
-|-- .mcp.json                       # plugin MCP servers (github, context7)
+|-- .claude-plugin/mcp.json         # plugin MCP servers (github, context7), named by plugin.json
+|-- .github/mcp.json                # GENERATED Copilot CLI copy (no PAT header; `mise run gen:copilot`)
 |-- agents/                         # subagents (steer-reviewer - driven by /steer:audit,
 |                                   #   /steer:work --reviewed, and the /steer:loop workflow)
 |-- hooks/                          # SessionStart hooks -> inject rules/*.md + orientation;

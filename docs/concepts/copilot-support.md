@@ -28,14 +28,15 @@ truth and how to install and refresh the Copilot side.
 | Path-scoped standards | rule `inject-when` traits | **not delivered** - emitted only to `.github/instructions/` (see below) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
 | Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.agents/skills/steer-*/` (`/steer-<skill>`) |
 | Subagents | plugin `agents/` | **not declared** - the Copilot manifest carries `skills` only | `.github/agents/*.agent.md` (agent picker) |
-| MCP servers | plugin `.mcp.json` | **not declared** - the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
+| MCP servers | plugin `.claude-plugin/mcp.json` (named by the Claude manifest) | plugin `.github/mcp.json` (named by the Copilot manifest), signed in with your GitHub account | `.vscode/mcp.json` |
+| Language servers | `lspServers` in `.claude-plugin/plugin.json` | `lspServers` in the Copilot manifest (Copilot's `fileExtensions` form) | not verified |
 | Cloud coding agent | - (Claude `@claude` workflow) | - | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/hooks.json` runs, but gates nothing: the version-pin gate fails open on the CLI's tool payload, out of scope because hook enforcement is guaranteed on Claude Code only | `hooks/hooks.json` as-is, incidentally - VS Code runs the Claude-format hooks (hard `deny` on version pins), with no parity promise |
 | Status band and `/steer_snapshot` | the read-only mod `hooks/register.tsx` (`modules` in `hooks.json`; terminal and Desktop Code tab, v2.1.287+) | **none** - Copilot loads no mods; the CLI ignores the `modules` key | **none** - no mods; use `/steer-next` for the workspace state |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
 Every one of those artifacts - instructions, the cross-tool `.agents/skills/` tree, custom agents, the
-VS Code `mcp.json`, and the plugin + marketplace manifest
+VS Code and Copilot CLI `mcp.json` copies, and the plugin + marketplace manifest
 versions - is generated from that one source and guarded by a build-time **drift
 gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
 committed artifact drifts. A **symmetry meta-gate** (`check_copilot_symmetry.py`,
@@ -383,8 +384,7 @@ Repo-specific Copilot guidance you author yourself also goes in a *separate*
 
 ## MCP servers in VS Code
 
-Copilot in VS Code does **not** read the plugin's `.mcp.json` (that wires Claude
-Code only). So the scaffold ships **`.vscode/mcp.json`** - VS Code's `servers`
+Copilot in VS Code does **not** read the plugin's MCP config. So the scaffold ships **`.vscode/mcp.json`** - VS Code's `servers`
 schema - mirroring the same servers: the **GitHub** MCP server that the tracker
 gateway (`tracker-sync`, reached through `/steer-work` and its `issues` mode - it is
 `user-invocable: false`, so no one types it directly) is built around, and
@@ -396,13 +396,23 @@ that need interactive input, so the server would be missing there. Without it,
 Copilot's tracker workflow falls back to `gh` only.
 
 Like the other Copilot artifacts, this file is **generated** - `gen_copilot_mcp.py`
-renders it from the plugin's `.mcp.json` (`mise run gen:copilot`), translating the
-one sanctioned difference: the Claude-side PAT header is dropped, since VS Code
-signs in itself (the placeholders are listed in the generator's
-`VSCODE_SIGN_IN`). A byte-equality drift gate
+renders it from the plugin's `.claude-plugin/mcp.json` (`mise run gen:copilot`),
+translating the one sanctioned difference: the Claude-side PAT header is dropped,
+since VS Code signs in itself (the placeholders are listed in the generator's
+`SIGN_IN`). A byte-equality drift gate
 (`check_copilot_mcp.py`, part of `plugin-check`) fails the build if the committed
-mirror falls out of sync. Edit `.mcp.json` and regenerate - never hand-edit the
-template **in this repo**.
+mirror falls out of sync. Edit `.claude-plugin/mcp.json` and regenerate - never
+hand-edit the template **in this repo**.
+
+**The Copilot CLI** gets the same servers from the installed plugin, through a
+second generated copy, `plugins/steer/.github/mcp.json`, which the Copilot
+manifest names in `mcpServers`. It drops the same header: the CLI signs in to
+GitHub's server with your account and loads the same toolset Claude Code gets.
+The Claude config cannot sit at the plugin root as `.mcp.json`, because the CLI
+loads a root `.mcp.json` ahead of any manifest field. It would then send the
+unresolved `${user_config.github_pat}` and the server would fail with
+"Authorization header is badly formatted" (observed on CLI 1.0.104). The same
+gate fails if a plugin-root `.mcp.json` reappears.
 
 That byte-gate governs the plugin-side template only. Unlike the four artifacts
 under `.github/`, the **installed** `.vscode/mcp.json` is not steer-managed: it sits

@@ -723,8 +723,8 @@ team's setup is documented and kept in sync.
   format-on-save formatter, so the editor matches `pnpm format` / CI). Both ship
   in the plugin's bundled scaffold and install during `/steer:init` -
   per-user overrides go in a git-ignored `.vscode/settings.local.json`, never in
-  the committed file. `.vscode/mcp.json` is committed too: Copilot and VS Code
-  do not read the Claude-only `.mcp.json`, so this per-repo file is how a Copilot
+  the committed file. `.vscode/mcp.json` is committed too: Copilot in VS Code
+  does not read the plugin's MCP config, so this per-repo file is how a Copilot
   teammate gets the same MCP servers. The rest of `.vscode/` stays ignored.
 - **Prefer in-editor extensions over standalone apps for adjacent activities.**
   Lean on VS Code's extension ecosystem to keep day-to-day work in one place

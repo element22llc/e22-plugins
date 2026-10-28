@@ -1,10 +1,12 @@
-"""Tests for the Copilot/VS Code MCP generator + sync gate.
+"""Tests for the Copilot MCP generator + sync gate.
 
 ``gen_copilot_mcp.py`` renders ``plugins/steer/templates/scaffold/vscode/mcp.json``
-(VS Code's ``servers`` schema) from ``plugins/steer/.mcp.json`` (Claude's
-``mcpServers``), dropping the GitHub PAT header that VS Code's own sign-in
-replaces. The gate byte-compares the committed mirror against a fresh render.
-The real plugin's mirror must already be in sync.
+(VS Code's ``servers`` schema) and ``plugins/steer/.github/mcp.json`` (the
+Copilot CLI's ``mcpServers``) from ``plugins/steer/.claude-plugin/mcp.json``,
+dropping the GitHub PAT header that each Copilot host's own sign-in replaces.
+The gate byte-compares both committed copies against a fresh render, and refuses
+a plugin-root ``.mcp.json``, which the CLI would load instead. The real plugin's
+copies must already be in sync.
 """
 
 from __future__ import annotations
@@ -28,10 +30,10 @@ def _gh(auth: str) -> dict:
 
 
 def test_render_drops_github_pat_for_vscode_sign_in(tmp_path: Path):
-    src = tmp_path / ".mcp.json"
+    src = tmp_path / "mcp.json"
     src.write_text(_claude({"github": _gh("${user_config.github_pat}"), "markitdown": MARKITDOWN}))
     out = gen_copilot_mcp.render(src)
-    assert "// Generated from the steer plugin's .mcp.json" in out
+    assert "// Generated from the steer plugin's MCP config" in out
     # Unlike the four artifacts under templates/github/, this one is NOT steer-managed
     # in the consumer repo: `/steer:sync`'s agent-surface-current capability does not
     # cover `.vscode/`, and the scaffold MANIFEST tells the consumer to merge it
@@ -55,7 +57,7 @@ def test_render_drops_github_pat_for_vscode_sign_in(tmp_path: Path):
 
 
 def test_render_keeps_other_headers(tmp_path: Path):
-    src = tmp_path / ".mcp.json"
+    src = tmp_path / "mcp.json"
     gh = _gh("${user_config.github_pat}")
     gh["headers"]["X-MCP-Toolsets"] = "issues"
     src.write_text(_claude({"github": gh}))
@@ -65,31 +67,67 @@ def test_render_keeps_other_headers(tmp_path: Path):
 
 
 def test_render_passes_through_unmapped_placeholder(tmp_path: Path):
-    # A placeholder outside VSCODE_SIGN_IN is carried through unchanged. Covers both
+    # A placeholder outside SIGN_IN is carried through unchanged. Covers both
     # placeholder shapes the regex accepts: a bare env var and a dotted user-config reference.
-    src = tmp_path / ".mcp.json"
+    src = tmp_path / "mcp.json"
     src.write_text(_claude({"svc": {"command": "x", "args": ["${OTHER}", "${user_config.other}"]}}))
     out = gen_copilot_mcp.render(src)
     assert "${OTHER}" in out
     assert "${user_config.other}" in out
 
 
-def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
-    src = tmp_path / ".mcp.json"
-    dst = tmp_path / "mcp.json"
+def test_render_cli_is_strict_json_without_the_pat(tmp_path: Path):
+    src = tmp_path / "mcp.json"
+    gh = _gh("${user_config.github_pat}")
+    gh["headers"]["X-MCP-Toolsets"] = "issues"
+    src.write_text(_claude({"github": gh, "markitdown": MARKITDOWN}))
+    servers = json.loads(gen_copilot_mcp.render_cli(src))["mcpServers"]
+    assert servers["github"] == {**GITHUB, "headers": {"X-MCP-Toolsets": "issues"}}
+    assert servers["markitdown"] == MARKITDOWN
+
+
+def _gate(tmp_path: Path, monkeypatch) -> Path:
+    src = tmp_path / ".claude-plugin" / "mcp.json"
+    src.parent.mkdir()
     src.write_text(_claude({"github": _gh("${user_config.github_pat}"), "markitdown": MARKITDOWN}))
-    dst.write_text(gen_copilot_mcp.render(src), encoding="utf-8")
+    vscode = tmp_path / "vscode-mcp.json"
+    cli = tmp_path / ".github" / "mcp.json"
+    cli.parent.mkdir()
+    vscode.write_text(gen_copilot_mcp.render(src), encoding="utf-8")
+    cli.write_text(gen_copilot_mcp.render_cli(src), encoding="utf-8")
     monkeypatch.setattr(check_copilot_mcp, "CLAUDE_MCP", src)
-    monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", dst)
+    monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", vscode)
+    monkeypatch.setattr(check_copilot_mcp, "COPILOT_CLI_MCP", cli)
+    return tmp_path
+
+
+def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
+    root = _gate(tmp_path, monkeypatch)
     assert check_copilot_mcp.main() == 0
-    dst.write_text(dst.read_text() + "  // tampered\n", encoding="utf-8")
+    vscode = root / "vscode-mcp.json"
+    vscode.write_text(vscode.read_text() + "  // tampered\n", encoding="utf-8")
+    assert check_copilot_mcp.main() == 1
+
+
+def test_gate_catches_cli_drift(tmp_path: Path, monkeypatch):
+    root = _gate(tmp_path, monkeypatch)
+    (root / ".github" / "mcp.json").write_text("{}\n", encoding="utf-8")
+    assert check_copilot_mcp.main() == 1
+
+
+def test_gate_rejects_a_plugin_root_mcp_json(tmp_path: Path, monkeypatch):
+    # The Copilot CLI loads a plugin-root .mcp.json ahead of the manifest's
+    # mcpServers, so a Claude config there reaches it with an unresolvable PAT.
+    root = _gate(tmp_path, monkeypatch)
+    (root / ".mcp.json").write_text("{}", encoding="utf-8")
     assert check_copilot_mcp.main() == 1
 
 
 def test_real_plugin_in_sync(monkeypatch):
     from conftest import REPO_ROOT
 
-    monkeypatch.setattr(check_copilot_mcp, "CLAUDE_MCP", REPO_ROOT / check_copilot_mcp.CLAUDE_MCP)
-    monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", REPO_ROOT / check_copilot_mcp.VSCODE_MCP)
+    for name in ("CLAUDE_MCP", "VSCODE_MCP", "COPILOT_CLI_MCP"):
+        monkeypatch.setattr(check_copilot_mcp, name, REPO_ROOT / getattr(check_copilot_mcp, name))
     assert check_copilot_mcp.main() == 0
     assert "${input:" not in (REPO_ROOT / check_copilot_mcp.VSCODE_MCP).read_text()
+    assert "${user_config." not in (REPO_ROOT / check_copilot_mcp.COPILOT_CLI_MCP).read_text()
