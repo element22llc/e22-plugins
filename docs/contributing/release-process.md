@@ -26,7 +26,7 @@ flowchart LR
    plugin's maintainer `README.md`, and `plugins/steer/.claude/`).
 2. **Implementation PRs do not bump** `plugins/steer/.claude-plugin/plugin.json`.
    The `version` bump happens **once**, at release, written by `changie merge`
-   across all three manifests - so a stream of PRs cuts one coherent release
+   across all four manifests - so a stream of PRs cuts one coherent release
    instead of a bump per PR.
 
 3. **Never write a next-version number in an implementation PR.** It merges before
@@ -74,7 +74,7 @@ misremembered:
   closed by `scripts/audit_ledger.py reconcile` instead of lingering as open.
 - `scripts/release_cut.py` performs the cut itself: `changie batch` folds the
   pending fragments into `.changes/vX.Y.Z.md` and `changie merge` reassembles
-  `CHANGELOG.md` and bumps the three version-bearing manifests; the script then
+  `CHANGELOG.md` and bumps the four version-bearing manifests; the script then
   renames migration-ledger entries inside `## Entries` (never the authoring stub)
   and re-validates the release invariant - refusing to start when a precondition
   does not hold.

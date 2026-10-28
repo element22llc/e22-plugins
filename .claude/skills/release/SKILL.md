@@ -151,9 +151,7 @@ The one-line index, for orientation only:
 The gate is **mechanical**. Severity comes from `scripts/audit_severity.py`, which
 computes a ceiling from the finding's `path` (procedure Step 5); you do not grade
 findings by how serious the prose sounds, and you may not escalate one above its
-ceiling. Escalation discretion is what made this gate non-deterministic - the
-6.0.0 cut was halted by a judgment escalation on a docs-site page that ships to no
-consumer.
+ceiling: escalation discretion makes the gate non-deterministic.
 
 - **If any `[blocker]` exists, STOP.** After capping, that means exactly one of:
   a red deterministic check from Step 2 (or the computed block), or a finding on
@@ -245,15 +243,16 @@ The script performs the whole cut and refuses to start if a precondition fails:
   gate catches that). Zero renames is the normal case, not a skipped step. An
   entry keyed below the release it ships in is silently skipped by consumers, so
   this is correctness, not tidiness.
-- The three version-bearing manifests move to `X.Y.Z` with a one-line textual
+- The four version-bearing manifests move to `X.Y.Z` with a one-line textual
   edit each: `plugins/steer/.claude-plugin/plugin.json` (source of truth),
-  `plugins/steer/.github/plugin/plugin.json`, and the `steer` entry in
+  `plugins/steer/.github/plugin/plugin.json`,
+  `plugins/steer/.codex-plugin/plugin.json`, and the `steer` entry in
   `.github/plugin/marketplace.json` - leaving that file's `metadata.version` (the
   marketplace's own) alone. `.changie.yaml`'s `replacements` do this on `merge`,
   anchored on each line's indentation, which is what keeps the marketplace's two
   `"version"` keys apart; `validate_cut` re-asserts it afterwards.
-- The same `replacements` pass re-stamps `spec/.version` in the eight **managed
-  eval scaffolds**. A fixture spine stamped at the old version reads as drift to
+- The same `replacements` pass re-stamps `spec/.version` in every **managed
+  eval scaffold**. A fixture spine stamped at the old version reads as drift to
   `/steer:next` and injects a sync nudge into every run of those cases;
   `test_managed_scaffold_stamps_the_current_plugin_version` fails until they
   agree, so this is wiring, not a step anyone performs.
@@ -282,12 +281,9 @@ per-gate result; do not proceed past a red gate.
 
 **`check` is not sufficient here, and the reason is specific.** It excludes
 `test`, and the suite asserts things *about the version that was just bumped*:
-the five managed routing-eval scaffolds stamp `spec/.version` into their fixture
+the managed routing-eval scaffolds stamp `spec/.version` into their fixture
 repos, and `test_managed_scaffold_stamps_the_current_plugin_version` fails until
 the bump is propagated to all of them. A green `check` says nothing about that.
-The version edits are **not** inert to the heavier suites - assuming they were is
-what pushed a red CI on the 6.1.1 cut, after a green `check` had been reported as
-the re-gate.
 
 A fixture the bump invalidated is part of the cut, not a follow-up: re-stamp it,
 re-run `ci`, and fold the fix into the release branch before opening the PR.

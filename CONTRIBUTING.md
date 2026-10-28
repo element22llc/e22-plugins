@@ -109,7 +109,7 @@ nothing and need none. `check_changelog.py --base` enforces this on every PR.
 - **Don't edit a neighbour's pending fragment.** Yours is a new file; amending
   theirs neither records your change nor satisfies the gate.
 - **Do not bump the version.** `plugin.json`'s `version` moves **once**, at
-  release, written by `changie merge` across all three manifests - so a stream of
+  release, written by `changie merge` across all four manifests - so a stream of
   PRs cuts one coherent release instead of a bump each. Details:
   [`AUTHORING.md`](AUTHORING.md) -> "CHANGELOG & versioning" and
   `docs/contributing/release-process.md`.

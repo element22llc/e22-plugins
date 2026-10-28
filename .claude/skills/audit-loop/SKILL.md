@@ -105,35 +105,23 @@ There is a third effect, and it is **pure waste**:
 3. **The loop's own fixes manufacture findings.** A fix to a *doc*, *rule*, or
    *skill* is prose, and prose asserts facts about the plugin. Assert one that
    isn't true and the next round finds it - you have spent a full round (a `ci`,
-   a docs build, six subagents) auditing your own invention. In the run this
-   guidance came from, **most of rounds 2 and 3 was correcting prose the previous
-   round had written**: round 1's replacement text claimed `/steer:sync` does not
-   deliver the scaffold `.gitattributes` - it does, and has for many releases, via
-   the same `scaffold_reconcile.py` route the scaffold `MANIFEST.md` gives every
-   other scaffold dotfile; round 2 invented a version-pin claim about
-   `/steer:audit` and credited a gate with reading `uv.lock`/`mise.lock` that
-   `scan-version-pins.sh` never scans.
+   a docs build, six subagents) auditing your own invention. The usual shape is a
+   replacement sentence that credits a skill with a route, or a gate with a scan,
+   that the code does not have.
 
-   This paragraph is itself the worked example. Until this revision it dated that
-   `.gitattributes` claim to a specific release "nine releases back" and cited the
-   manifest row as `MANIFEST.md:46`. The release count was wrong by the time
-   anyone read it, and the line number survives only until a row is inserted above
-   it. **A cautionary note about over-precise claims is not exempt from rule 4.**
+   **A cautionary note about over-precise claims is not exempt from rule 4.**
    Neither is anything else you are about to write.
 
 Effect 3 has a **worse form**, and it earns its own name because it does not
 look like waste in the diff. A fix can take a surface that was **correct** and
 make it wrong. Inventing a false claim costs you the next round; replacing a true
 sentence with a false one costs that *plus* the correct documentation you
-destroyed - and it reads as progress, because a finding was closed. Round 1 of
-the run this guidance came from did exactly that to seven surfaces: the pre-loop
-docs were right about what a `WorktreeRemove` hook can do, and round 1 overwrote
-them from the plugin's own hook comment. Rounds 2-4 went on repairing it.
+destroyed - and it reads as progress, because a finding was closed.
 
-Note where that false comment came from: it was **already on `main`**, and it is
-on `main` still - round 1 did not write it, it *believed* it. So the trap is not
-one round's carelessness that a later round cleaned up; it is a live sentence in
-the tree that will catch the next round to read it, too. **The authority ladder in
+The usual source is a false sentence **already on `main`** - a script comment,
+say - that the round did not write but *believed*. So the trap is not one round's
+carelessness that a later round cleans up; it is a live sentence in the tree that
+will catch the next round to read it, too. **The authority ladder in
 L3.d is the specific defence**, and unlike narrow prose mode it binds round 1 -
 which is where this damage is actually done.
 
@@ -175,12 +163,10 @@ abandon a step because it started prompting. Durable rules belong in
 
 Two structural limits, both from measurement rather than taste.
 
-**The cap is 2.** Between v5.3.0 and v6.0.0 six loops ran, five of them the full
-four rounds. Rounds 3 and 4 changed **2 to 24 lines each** - for a full `mise run
-ci`, a strict docs build and six subagents apiece - and the release blocked
-anyway. Those rounds were not buying safety; they were paying a round's cost to
-proofread the previous round's prose. Round 1 fixes what the audit found. Round 2
-audits round 1's own diff and confirms it introduced nothing. Anything still open
+**The cap is 2.** Rounds 3 and 4 of earlier loops changed only a handful of
+lines each, at a full round's cost, and the release blocked anyway: they were
+proofreading the previous round's prose, not buying safety. Round 1 fixes what
+the audit found. Round 2 audits round 1's own diff and confirms it introduced nothing. Anything still open
 after that goes to the ledger as a named follow-up and **does not** hold the
 release - because after the Step 5 capping it cannot be a blocker unless it sits
 on a release-critical manifest, and that is not the kind of finding that survives
@@ -193,9 +179,7 @@ two rounds.
 graded it.
 
 This is not a quality judgement about docs. It is where the loop's cost actually
-went: across those six loops the rounds produced **257 markdown file-edits against
-44 code edits**, and the single most-edited file was
-`docs/concepts/copilot-support.md` at fourteen round commits. Docs changes need no
+went: most round edits landed on markdown, not code. Docs changes need no
 CHANGELOG entry and reach no consumer, so they were never part of the release
 contract - yet they consumed most of every loop and generated the self-inflicted
 findings that L3.d, L3.e and L4 condition 5 exist to contain. Removing them from
@@ -252,14 +236,18 @@ unaffected is a finding `/release` hands back to you later.
 dimension had nothing to say; the confirming round is the one whose coverage claim
 the entire PR rests on, and it is the one place that bet is not affordable. So:
 **if a round comes back with zero actionable findings - i.e. it is about to fire
-L4 condition 1 - it must have run all six dimensions and both halves of Step 4.**
+L4 condition 1 - it must have run all five live coherence dimensions and both
+halves of Step 4.**
 A trimmed round can never be the converging round. If you trimmed and the round
 then came back clean, you have not converged: run the skipped dimensions before
 claiming it. This is not a rewording of the disclosure rule below - disclosure
 makes a gap visible, this forbids the gap.
 
-**The one permitted trim, and its evidence bar.** In a **non-final** round, from
-**round 3 on**, a dimension may be skipped when **all three** hold, and only then:
+**The one permitted trim, and its evidence bar.** It applies only when
+`--max-rounds` is 3 or more: under the default cap of 2 every round is either
+round 1 or the confirming round, and neither may trim. In a **non-final** round,
+from **round 3 on**, a dimension may be skipped when **all three** hold, and only
+then:
 
 1. it returned **zero** blocker/high/medium in **every** prior round of this loop;
 2. the previous round's **file list** (`git show --stat` on that round's commit)
@@ -276,16 +264,15 @@ machinery rather than remembered by you.
 | Dimension | Its inputs | Skippable in practice? |
 | --- | --- | --- |
 | 1. CHANGELOG <-> change | `CHANGELOG.md` + every `plugins/steer/**` path | **Never** - every round touches both by construction |
-| 2. Version & manifest | the three version manifests, `policy/versions.yml`, `templates/scaffold/policy/versions.yml` | Often, and this is the clean case |
+| 2. Version & manifest | - | Retired to the deterministic tier (`plugin-check`); never dispatched |
 | 3. Cross-reference & inventory | `skills/*/SKILL.md`, `rules/`, `CLAUDE.md`, `README.md`, `CROSS-SURFACE.md`, `docs/reference/*` | Rarely |
 | 4. Namespace & brand | **any** shipped file that can carry an invocation token or brand string | Rarely - the input set is nearly everything shipped |
 | 5. Payload & placeholder | shipped non-`templates/` content, `templates/scaffold/**`, `MANIFEST.md`, `MIGRATIONS.md` | Often |
 | 6. Behavioural coherence | `rules/`, `skills/`, `templates/` | Rarely |
 
-Read that table before claiming a skip. The run this guidance came from skipped 2, 4
-and 5 in its **confirming** round: 2 and 5 were clean by this test, **4 was not** -
-the round had edited shipped skills and an agent file, which are exactly dimension
-4's inputs. Under the rule above that round could not have trimmed at all.
+Read that table before claiming a skip: a round that edited shipped skills or an
+agent file has touched dimension 4's inputs and cannot skip it, and a confirming
+round cannot trim at all.
 
 Two further caller-specific adjustments:
 
@@ -340,11 +327,10 @@ it.
 
 **The round's own commit message and ledger rows are claim surfaces too.** They
 are what a reviewer trusts and what the next round reads, and they fail exactly
-the way shipped prose fails. In the run this guidance came from, one round's
-commit message said it had *deleted* a clause it had in fact reworded, and
-another stated the **opposite** of what the source says because the verification
-behind it stopped a sentence short. Write both from the diff and the claim log,
-never from the intent you started the round with.
+the way shipped prose fails - a message that says a clause was *deleted* when it
+was reworded, or that states the opposite of the source because the
+verification stopped a sentence short. Write both from the diff and the claim
+log, never from the intent you started the round with.
 
 A pushed commit message cannot be corrected. So when a later round refutes what
 an earlier round **recorded** - a refutation that was itself wrong, a message
@@ -380,14 +366,9 @@ Apply the **minimal targeted** change each finding calls for:
   dimension 1** - one full round later. The per-round re-run in **L3.f** is what
   closes that window; the fragment is your job either way.
 
-- **Revising an earlier round's entry is safe now.** Each round's entry is its own
-  file, so rewording or deleting one is an ordinary edit to a path nothing else
-  touches - no merge driver resolves it, and a concurrent PR cannot resurrect
-  retracted wording. (This replaced a real hazard: when entries shared one
-  `CHANGELOG.md` region under `merge=union`, union kept *both* sides of a
-  conflicting hunk, so a retraction could silently come back with no conflict
-  marker and no gate complaint.)
-  **L6** forbids skipping it.)
+- **Revising an earlier round's entry is an ordinary edit.** Each round's entry
+  is its own file, so rewording or deleting one touches a path nothing else
+  touches, and a concurrent PR cannot resurrect retracted wording.
 - **Docs findings** - follow the `/plugin-docs` procedure
   (`.claude/skills/plugin-docs/SKILL.md`) rather than hand-editing; the generated
   pages under `docs/reference/` are reconciled from the plugin, not authored.
@@ -404,9 +385,8 @@ Apply the **minimal targeted** change each finding calls for:
   once. If you cannot reach the authority this round, the finding is
   `deferred-for-human`. Propagating an unsettled X so the surfaces agree converts
   a **visible** contradiction into an **invisible**, consistent falsehood on every
-  surface - strictly worse than what you started with, harder for the next round
-  to see, and precisely what round 1 of the run this guidance came from did
-  across every surface that described the behaviour.
+  surface - strictly worse than what you started with, and harder for the next
+  round to see.
 - **Never fix by weakening the check.** Deleting an assertion, loosening a
   validator, or dropping a doc claim to make it "true" is not convergence - it is
   hiding. If a finding is genuinely a false positive, say so with the evidence
@@ -420,9 +400,8 @@ Apply the **minimal targeted** change each finding calls for:
   and a previous round already tried to fix it, the remedy is: **keep the coarser
   claim that is stably true, in exactly one place, and delete the fine-grained one
   everywhere.** Say in the ledger that you deleted rather than refined, and why -
-  that is a fix, not a retreat. (Round 3 of the run this came from broke a two-round
-  cycle exactly this way: it deleted a per-rule byte taxonomy from the CHANGELOG and
-  the docs, leaving the corrected numbers in the one place a gate recomputes them.)
+  that is a fix, not a retreat. Numbers a gate recomputes belong only where the
+  gate recomputes them.
 - **Don't guess at intent.** If the right fix is a product/behavior decision (is
   the rule wrong, or the skill?), do not pick one to clear the round - mark it
   `deferred-for-human` with both options stated, and keep going.
@@ -430,20 +409,16 @@ Apply the **minimal targeted** change each finding calls for:
   human decision is often a decision *plus* a mechanical incoherence that needs
   no decision at all. Ask what part of it is true regardless of which way the
   human rules, and fix that part now; defer only the remainder, and say in the
-  ledger that you split it. (The run this guidance came from split a deferred
-  `[high]` into a genuinely-deferred half - nothing creates the file where it's
-  absent - and a fixable half that was real plugin incoherence: three skills
-  enumerating a merge set that excluded a file their own helper had always
-  handled.)
+  ledger that you split it. A typical split: whether a missing file should be
+  created is the decision; three skills disagreeing about which files their
+  shared helper merges is the incoherence, fixable now.
 - **The loop's own machinery is out of scope for in-round fixes.** Findings
   against [`.claude/audit/**`](../../audit/) or against
   `.claude/skills/{release,quick-release,audit-loop}/**` are **reported as
   residue, never fixed in-round** - regardless of severity. Editing the procedure
   while executing it means round N+1 runs under different rules than round N, so
   the ledger stops comparing like with like and the convergence claim quietly
-  loses its meaning. (Round 2 of the run this guidance came from edited both
-  release skills mid-loop; every later round's coverage numbers are, strictly,
-  uncomparable to round 1's because of it.) Vet the finding, cite `path:line`, put
+  loses its meaning. Vet the finding, cite `path:line`, put
   it in the residue as a named follow-up for its own PR, and leave the file alone.
   These paths ship nothing, so nothing about a release is blocked by deferring
   them.
@@ -510,9 +485,9 @@ Claim shapes that have actually gone wrong here, and what each one needs:
 #### The authority ladder - which source is allowed to settle a claim
 
 Claim discipline asks *whether* you verified. This asks **against what**, and it
-is the half that failed hardest. Round 1 of the run this guidance came from
-verified diligently, logged its evidence, and was wrong anyway, because it
-verified against a source with no standing for the claim it was making.
+is the half that fails hardest: a round can verify diligently, log its evidence,
+and still be wrong, because it verified against a source with no standing for
+the claim it was making.
 
 | The claim is about | The only source that settles it | Never authority for it |
 | --- | --- | --- |
@@ -546,10 +521,8 @@ A summarising fetch is evidence **for** a sentence it quotes back to you, and
 **never** evidence **against** one it does not. `WebFetch` reads a long page
 through a summariser; on a reference of several thousand lines it can return a
 confident, specific denial that a sentence exists when the sentence is sitting
-there verbatim. In the run this guidance came from it did so **twice in the same
-round**, on the same sentence, and those two denials came within one step of
-discarding a real `[high]` that two independent reviewers had each quoted
-correctly. Only a raw `curl` and `grep` settled it - in the reviewers' favour.
+there verbatim - enough to discard a real `[high]` that two reviewers each quoted
+correctly. A raw `curl` and `grep` settles it.
 
 So for any claim that turns on an external document:
 
@@ -584,9 +557,8 @@ that behavior. For each behavior fix, grep the changed fact across `rules/`,
 before you commit - and remember the generated Copilot surface mirrors the
 shipped one, so `mise run gen:copilot` may be part of the fix. Docs prose is the
 usual casualty: it likes to use current behavior as a worked example, so fixing a
-bug can silently turn an accurate page into a false one. (Round 3 of the run this
-came from existed largely because round 2's fix left
-`docs/concepts/authorization-model.md` using the fixed bug as a live example.)
+bug can silently turn an accurate page into a false one that still uses the
+fixed bug as a live example.
 
 **Self-review.** Then read this round's own diff as a reviewer would -
 `git diff` on the uncommitted round, ignoring what the finding *told* you to fix
@@ -650,7 +622,7 @@ Evaluate in order, before fixing:
    dispatched has reported** (procedure Step 5), **and the round then makes no
    edits**. All three are required.
 
-   "Actionable" is now a much smaller set than it used to be: severity is
+   "Actionable" is a small set: severity is
    computed from the path (procedure Step 5), findings outside
    `git diff $LAST_RELEASE..HEAD` are out of scope for the gate, and
    `non-shipping` paths are never fixed in-round (**L1b**). A round that finds
@@ -667,9 +639,7 @@ Evaluate in order, before fixing:
    The no-edits half is the one that gets dropped: a round with zero *actionable* findings can still be sitting on a pile
    of below-threshold ones, and fixing those makes the tree you ship different
    from the tree that just came back clean. There is then no confirming pass -
-   only an unaudited diff wearing a clean round's badge. (The run this guidance
-   came from shipped nine such edits in its "clean" round and had to caveat the
-   result.)
+   only an unaudited diff wearing a clean round's badge.
 
    So when the round is clean, **stop editing.** Below-threshold findings go to
    the residue as named follow-ups, not into this branch - which is also what
@@ -697,11 +667,9 @@ Evaluate in order, before fixing:
    `path:line` asserting it - and on the **third** finding against one subject
    across the loop, **quarantine the subject**: stop editing it entirely, write
    down everything the loop has established about it with each source, and hand it
-   over. In the run this guidance came from, one subject (what the `SessionEnd`
-   and `WorktreeRemove` hooks can report and can block) was wrong in **three of
-   five rounds** under three different identities, and rounds 1 and 4 committed
-   flat contradictions of each other into shipped docs. The identity guard never
-   fired once.
+   over. One subject can be wrong round after round under different finding
+   identities, with rounds committing flat contradictions of each other, and
+   never trip the identity guard - the subject count is what catches it.
 5. **Narrow prose mode - on by default from round 2.** Not a stop; a **mode**.
    Every round after the first runs narrow unless a `[blocker]` requires
    otherwise:
@@ -712,14 +680,10 @@ Evaluate in order, before fixing:
      requires. A `[blocker]` may earn new prose; nothing below it does; and
    - the ledger **says so** - "round N ran narrow: X of Y findings were ours".
 
-   **Why the default, rather than a threshold.** This used to trigger only once
-   self-inflicted findings reached half of a round's actionable set - i.e. only
-   after the loop was already auditing itself, using data the triggering round
-   didn't have yet. The run this guidance came from shows why that is too late:
-   its round-2 commit message opens *"Five findings, **every one** a consequence
-   of a round-1 fix"*. A threshold evaluated at the start of round 2 had nothing
-   to fire on; the waste had already been committed. Round 2 is where the loop
-   first has its own prose in the tree, so round 2 is where the restraint starts.
+   **Why the default, rather than a threshold.** A threshold on self-inflicted
+   findings can only fire after the loop is already auditing itself. Round 2 is
+   where the loop first has its own prose in the tree, so round 2 is where the
+   restraint starts.
 
    Report the self-inflicted count every round even when it is zero - the count
    is what tells you whether the loop is converging or chasing itself, and it must
@@ -736,7 +700,7 @@ loop keeps going, narrower.
 ## L5. Converged - prove it, then open the one PR.
 
 1. **Final full gate on the final tree:** `mise run ci` **and**
-   `mise run docs:build` (the strict build, even if L3b let a round skip it),
+   `mise run docs:build` (the strict build, even if L3.a let a round skip it),
    both run **unpiped**. Both green, or you have not converged.
 2. **Push and open one PR**, titled `Pre-release audit convergence (N rounds)`,
    body containing:
