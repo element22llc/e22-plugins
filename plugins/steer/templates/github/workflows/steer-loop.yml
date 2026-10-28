@@ -61,8 +61,8 @@ jobs:
                stop and report what blocked you - do not thrash.
             4. Have the change independently reviewed, never by the drafting
                agent's own say-so: run the code gate /steer:work finish runs
-               (a fresh reviewer subagent on the REVIEW-LOOP.md section 4
-               rubric), fix high-severity findings, at most 2 rounds.
+               (REVIEW-LOOP.md section 4: reviewers, specialist lenses, refute
+               pass), fix confirmed high findings, at most 2 rounds.
             5. Push your own work branch and open a DRAFT pull request with the
                diff, the verification output, the review's open findings and
                design questions, and any drift classes flagged. Update the tracked issue. (The

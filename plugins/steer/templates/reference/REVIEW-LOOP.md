@@ -26,8 +26,8 @@ catch.
 The **plan gate is opt-in** (`--reviewed`): reach for it on work where a wrong
 approach is costly to unwind. The **code gate runs by default** - `finish` runs
 it on every Behavioral or High-risk change, Trivial work skips it. It is one
-reviewer, not a loop of them, and its findings cost less before the push than
-from the human reviewer after it.
+general reviewer, plus a specialist only where the diff enters its domain, and
+its findings cost less before the push than from the human reviewer after it.
 
 ## 2. The three disciplines (non-negotiable)
 
@@ -38,6 +38,8 @@ The loop degrades into theater without all three.
    its own reasoning and will confirm it. This is why each gate is a *separate*
    fresh general reviewer subagent - not "re-read your own work." section 3 says what
    else the code gate may add, and why `steer-reviewer` cannot do the plan gate.
+   The refute pass (section 4) is independent too: the verifier gets the
+   finding, never the reviewer's transcript.
 2. **Explicit rubric.** The reviewer scores against the **restated requirements**
    (what success means, spelled out) plus the **relevant steer rules** - not a
    vague "is this good?". A reviewer with no rubric emits generic feedback that
@@ -45,7 +47,8 @@ The loop degrades into theater without all three.
 3. **Bounded exit.** Review loops have sharp diminishing returns: round 1 catches
    most, round 2 the tail, round 3+ is churn and sometimes introduces regressions.
    Cap the fix loop at **2 rounds**; exit as soon as a round surfaces no
-   high-severity findings.
+   high-severity findings - on the code gate, none that survives the refute
+   pass.
 
 ## 3. The two gates are different jobs
 
@@ -58,7 +61,7 @@ The loop degrades into theater without all three.
 - **Code gate** reviews the *diff in its repo*: correctness, regressions,
   fidelity to the requirement, and what the diff alone hides - the sibling code
   the change should also have touched, the peers it should match, the risk it
-  introduces. A fresh read-only subagent runs it against the section 4 rubric; where the
+  introduces. Fresh read-only subagents run it against the section 4 rubric; where the
   client has `/code-review`, run it alongside for a deeper correctness sweep.
   `steer-reviewer` is `Read`/`Grep`/`Glob`-only and has no git access, so it can
   check the **on-disk result against standards** but never "the diff" - keep
@@ -95,13 +98,72 @@ Give the reviewer three things, every time:
   It returns severity-ranked findings with `path:line`, and **design questions**
   apart: choices a reasonable reviewer would challenge, which the author answers
   in the PR rather than necessarily changing. `/steer:work review` hands its
-  reviewers this same rubric, so the author's gate runs the review the human's
-  agent will run. For standards-sensitive repos, `steer-reviewer` may also check
-  the changed files against the standards.
+  reviewers this same rubric, lenses and refute pass included, so the author's
+  gate runs the review the human's agent will run. For standards-sensitive
+  repos, `steer-reviewer` may also check the changed files against the
+  standards.
+
+**Every code-gate reviewer is adversarial.** Its job is to find the reason the
+PR must not merge, not to confirm that it works. Tell it to keep looking past
+the first finding, to try inputs and paths the tests skip, and, when it finds
+nothing, to name what it tried. "Looks good" with no list is not a review.
+
+**Specialist lenses - spawned from what the diff does.** Alongside the general
+reviewer, in the same message, spawn one fresh reviewer per lens the diff
+triggers, each given the same requirement, diff and repo access plus its lens
+below. Trigger on what the change does, not on a path list: the examples are
+the app profile's, and an infra or library repo maps them to its own layout.
+At most these three; a diff that triggers none gets the general reviewer alone.
+The author picks the lenses, so the general reviewer also names any lens it
+thinks should have run; run that one before the round closes.
+
+- **Database** - a migration, a schema definition, or query-layer code (a
+  Drizzle or SQLAlchemy model, a repository module, any SQL). Check:
+  expand/contract with the old code still working mid-rollout; a backfill
+  that runs unbatched or holds a table lock; an index for every new query path;
+  nullability, defaults and constraints matching `contract.md`; N+1 and
+  unbounded queries; transaction boundaries around multi-step writes;
+  cascades on delete; seeds and fixtures updated.
+- **UI** - a component, page, route layout, style or `DESIGN.md`. Check:
+  loading, empty, error and long-content states all handled in the code;
+  labels on every control, interactive elements reachable by keyboard;
+  layout that adapts below tablet width, no fixed page width; `DESIGN.md`
+  tokens and existing components reused over one-offs;
+  nothing server-only or secret crossing the client boundary; no internal ids
+  in user-facing copy (rule `30-spec`).
+- **Security** - any rule `60-high-risk` area: auth, authorization, secrets,
+  deletion, billing, CI and deploy workflows, feature-flag rollouts, `/infra`
+  (migrations go to the database lens). Check: authentication
+  and authorization on every new entry point, with the denied path tested; the
+  tenant boundary on every query; input validated at the boundary; no secret
+  logged, committed or bundled client-side; injection through SQL, shell, path
+  or HTML; idempotency on retries of a charge or a delete; workflow permissions
+  least-privilege and actions pinned.
+
+**Refute pass - before a high finding reaches the author.** Adversarial
+reviewers over-report by design, so high findings go to fresh verifiers - one
+per reviewer that raised any, all in one message. Give each its reviewer's
+high findings, the diff and the repo, and ask it to disprove each one: the
+guard that already handles the case, the test that already covers it, the
+reading of the requirement that makes it correct. It returns, per finding,
+**confirmed**, **refuted** with the evidence, or **unsure**. No high finding,
+no verifier.
+
+- **Confirmed** - the author fixes it.
+- **Refuted** - dropped; the gate's report line says how many. Round 2's
+  reviewers get the refuted findings with their evidence, and re-raising one
+  takes new evidence.
+- **Unsure** - stays high, marked unconfirmed. It does not hold the loop
+  open; it goes under the PR's *Notes for the reviewer* as its own list, for
+  the human to settle.
+
+In `/steer:work review` the per-PR reviewer applies the triggered lenses
+itself and spawns nothing, keeping a batch to one reviewer per PR; a PR whose
+card carries a high finding then gets one fresh verifier for all of them.
 
 Severity ranking is what makes the loop converge: **high** is what a reviewer
-would block the merge on - fix every one; weigh **medium**, treat **low** as
-optional. Only high-severity findings keep the fix loop open.
+would block the merge on - fix every confirmed one; weigh **medium**, treat
+**low** as optional. Only confirmed high findings keep the fix loop open.
 
 ## 5. Where the loop sits among the skills
 
@@ -127,8 +189,10 @@ optional. Only high-severity findings keep the fix loop open.
 ## 6. Cost
 
 Each gate spends tokens on top of the implementation. That is the price of a
-vetted result, and the reason for the triage step (Trivial changes skip both gates)
-and the 2-round cap. If a run stops at the cap with findings still open, say so
+vetted result, and the reason for the triage step (Trivial changes skip both gates),
+the diff-triggered lenses (a change outside their domains pays for one reviewer),
+the refute pass (a false high finding costs one verifier, not a fix round) and the
+2-round cap. If a run stops at the cap with findings still open, say so
 and name what was left - silent truncation reads as "all clear" when it was not.
 
 ## 7. Related: the Advisor tool (per-developer, optional)

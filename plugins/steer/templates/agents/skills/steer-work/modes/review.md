@@ -55,7 +55,9 @@ For every remaining PR, spawn a **fresh read-only subagent** in the same message
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
 read, and the code-gate rubric in
 [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4 - the same one
-the author's `finish` ran. The local checkout may sit at the base, not the PR
+the author's `finish` ran: adversarial, with the specialist lenses the diff
+triggers applied inline. Tell it to spawn no subagents of its own, so a batch
+stays one reviewer per PR. The local checkout may sit at the base, not the PR
 head: it serves the other-instances and peer passes, which look outside the
 diff. Ask it to return a compact **card**:
 
@@ -67,6 +69,11 @@ diff. Ask it to return a compact **card**:
 - findings with `path:line`, severity-ranked, or `none`;
 - design questions the author should answer in the PR, or `none`;
 - a suggested verdict: `approve`, `changes` or `look`.
+
+Then run the refute pass (`REVIEW-LOOP.md` section 4): every PR whose card
+carries a high finding gets one fresh verifier for all of them, the whole
+batch in one message. A refuted finding leaves the card; an unsure one stays,
+marked unconfirmed.
 
 The cards are input to the human's call, not the call. Read them; drop a
 finding you cannot reproduce from the diff or the checkout.
