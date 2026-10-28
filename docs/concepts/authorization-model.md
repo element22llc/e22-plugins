@@ -83,8 +83,10 @@ moves a repo between the two and reconciles the marker.
     scaffold therefore pre-authorizes the `gh` tracker-metadata write verbs
     (`gh issue create` / `edit` / `comment`) under `.claude/settings.json` ->
     `permissions.allow`, so the find-or-create path is reachable in a
-    default-permission session. The MCP write tools (`mcp__github__issue_write` /
-    `sub_issue_write`) instead sit under `ask` - a bare/ad-hoc MCP issue write is
+    default-permission session. The MCP write tools (`issue_write` /
+    `sub_issue_write`, under both the plugin-scoped
+    `mcp__plugin_steer_github__` name steer's own server surfaces as and the
+    bare `mcp__github__` name a user-configured server uses) instead sit under `ask` - a bare/ad-hoc MCP issue write is
     an allowlist escape a consumer's security review flags - but the
     `/steer:tracker-sync` skill re-grants both in its own `allowed-tools` (and
     `/steer:report` re-grants `issue_write` alone). `/steer:report` is invoked as a

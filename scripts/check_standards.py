@@ -881,6 +881,12 @@ def check_authorization(errors: list[str]) -> None:
             "mcp__github__add_issue_comment",
             "mcp__github__list_issues",
             "mcp__github__search_issues",
+            # The plugin's own server surfaces under the plugin-scoped name; the bare
+            # names above match only a user-configured `github` server.
+            "mcp__plugin_steer_github__issue_read",
+            "mcp__plugin_steer_github__add_issue_comment",
+            "mcp__plugin_steer_github__list_issues",
+            "mcp__plugin_steer_github__search_issues",
         )
         for issue_op in autonomous_issue_ops:
             if issue_op not in allow:
@@ -985,6 +991,8 @@ def check_authorization(errors: list[str]) -> None:
             "Bash(git rm:*)",
             "mcp__github__issue_write",
             "mcp__github__sub_issue_write",
+            "mcp__plugin_steer_github__issue_write",
+            "mcp__plugin_steer_github__sub_issue_write",
         ):
             if forbidden in allow:
                 errors.append(

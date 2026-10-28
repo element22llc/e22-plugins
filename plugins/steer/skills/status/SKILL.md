@@ -22,6 +22,9 @@ allowed-tools:
   - mcp__github__issue_read
   - mcp__github__list_issues
   - mcp__github__search_issues
+  - mcp__plugin_steer_github__issue_read
+  - mcp__plugin_steer_github__list_issues
+  - mcp__plugin_steer_github__search_issues
   - Bash(gh issue list:*)
   - Bash(gh issue view:*)
   - Bash(gh search issues:*)

@@ -57,6 +57,9 @@ Two invariants underpin everything:
      `search_issues` and `add_issue_comment`.
    - **`ask`** - the MCP write tools `mcp__github__issue_write` and
      `mcp__github__sub_issue_write`, so a session prompts before either.
+   - Every MCP entry is listed twice: the plugin's own server surfaces as
+     `mcp__plugin_steer_github__<tool>`, and the bare `mcp__github__<tool>`
+     form matches only a `github` server the user configured themselves.
    - **Re-granted per skill via `allowed-tools`** - `/steer:tracker-sync` re-grants
      both write tools; `/steer:report` re-grants only `issue_write`, never
      `sub_issue_write`. A grant applies **only while that skill is the invoked
