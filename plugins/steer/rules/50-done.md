@@ -56,8 +56,7 @@ item can't be satisfied, say so rather than implying the work is complete.
 
 - [ ] The five Definition of Done items hold for every change this session?
 - [ ] Unfinished work and known gaps surfaced explicitly?
-- [ ] Dev servers and watchers you started stopped, and `mise run docker:clean` run if a worktree is closing?
-- [ ] GitHub-adopted repo: the active issue reflects progress, blockers and validation; unrelated findings filed as linked issues; the PR references it with the right closing relation?
+- [ ] Dev servers and watchers you started stopped?
 - [ ] Scaffold placeholders flagged or resolved?
 - [ ] Everything finished committed, and a complete change pushed with its draft PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
 - [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?

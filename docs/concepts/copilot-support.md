@@ -532,9 +532,8 @@ the standards in `.github/copilot-instructions.md`.
   `WorktreeRemove` -> `docker:clean`), and neither event exists on a Copilot
   surface - so Copilot gets neither. This is exactly the trap this
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
-  Rules `47-worktree-services` and `50-done` -> End-of-session checklist therefore scope the hook claim to
-  Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
-  else. (On Claude Code neither half is dependable: `WorktreeRemove` fires only
+  Rule `47-worktree-services` therefore makes no hook claim and leaves
+  `mise run docker:clean` as the agent's own job on every surface. (On Claude Code neither half is dependable: `WorktreeRemove` fires only
   for worktrees a `WorktreeCreate` hook created, and the `SessionEnd` half is
   best-effort - see
   [Hooks -> Lifecycle events](../reference/hooks.md#lifecycle-events).)

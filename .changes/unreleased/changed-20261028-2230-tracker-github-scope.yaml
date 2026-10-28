@@ -1,0 +1,13 @@
+kind: Changed
+body: |-
+    - **Changed: the GitHub Issues guidance moves out of rules 35 and 50 into
+      rule 36 (Issue-first), injected only where the tracker declaration says
+      `system: github`.** Repos on another tracker, or none, no longer receive
+      the `/steer:work issues` / `/steer:tracker-sync` paragraph or the
+      end-of-session checklist item about the active issue and the PR's
+      closing relation; rule 35 keeps "a tracker other than GitHub Issues uses
+      the manual export". The checklist also drops its `mise run
+      docker:clean` clause, which rule 47 already carries for Compose repos.
+time: 2026-10-28T22:30:00.000000-04:00
+custom:
+    Slug: tracker-github-scope
