@@ -155,6 +155,7 @@ def _fixture_code_max(d: Path) -> None:
     _git_init(d)
     (d / "infra").mkdir()  # has-iac, has-infra
     (d / "apps").mkdir()  # has-apps
+    (d / "compose.yaml").write_text("services: {}\n", encoding="utf-8")  # has-compose
     (d / "openspec" / "changes").mkdir(parents=True)  # has-openspec
     (d / "openspec" / "steer").mkdir()
     (d / "spec").mkdir()

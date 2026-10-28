@@ -3,10 +3,11 @@
 #
 # WHAT IT CHECKS
 #   Whether a repo's linked worktrees - whoever created them (Claude Code, Orca,
-#   Conductor, plain `git worktree add`) - get what the "Parallel worktrees" rule
-#   assumes: inherited `mise trust`, per-worktree Compose isolation, the git-ignored
-#   boot files copied in, in-repo worktree dirs ignored, a teardown that fires when
-#   the worktree is deleted, and no Compose stack left behind by one already gone.
+#   Conductor, plain `git worktree add`) - get what the "Parallel worktrees" and
+#   "Worktree services" rules assume: inherited `mise trust`, per-worktree Compose
+#   isolation, the git-ignored boot files copied in, in-repo worktree dirs ignored,
+#   a teardown that fires when the worktree is deleted, and no Compose stack left
+#   behind by one already gone.
 #   No manager tells steer a worktree is going away: Claude Code removes its own
 #   without `WorktreeRemove`, so its leftovers are swept (the primary checkout's
 #   session check reports them); Orca and Conductor need their own archive hook.

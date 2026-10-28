@@ -47,9 +47,7 @@ baked into an image or a CI log. Detail: `/steer:reference conventions`.
 
 ### Parallel worktrees
 
-Sibling agents may share this repo through worktrees. Start services only via
-`mise run ...`, never a bare `docker compose up` or a hardcoded port, and clean
-up with `mise run docker:clean`. A new worktree takes `mise trust` only when the
-primary checkout is trusted; never create trust - ask the human. Worktrees
-another tool manages (Orca, Conductor) need `/steer:setup worktrees`.
-Mechanics: `/steer:reference conventions`.
+Sibling agents may share this repo through worktrees. A new worktree takes
+`mise trust` only when the primary checkout is trusted; never create trust -
+ask the human. Worktrees another tool manages (Orca, Conductor) need
+`/steer:setup worktrees`. Mechanics: `/steer:reference conventions`.
