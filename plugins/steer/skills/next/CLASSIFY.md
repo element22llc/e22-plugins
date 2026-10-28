@@ -18,7 +18,7 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md section 2).
 | Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/steer:spec questions` |
 | Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject - answerable in-session via `/steer:spec adr` |
 | Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves - answerable in-session via `/steer:spec` |
-| PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command - **never** promptable) |
+| PR open, awaiting review / in `validate` | Human decision required (L3) | A draft's author marks it ready, then a reviewer reviews (no command - **never** promptable) |
 | Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now - next transition (L4) | `/steer:work resume #N` |
 | PR merged but issue still `validate` (stale tracker) | Human decision required (L3) - `validate -> done` is propose-only, and a merged PR is necessary but not sufficient | `/steer:work resume #N` proposes `done` once acceptance is confirmed |
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now - next transition (L4) | owning skill |

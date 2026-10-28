@@ -153,7 +153,7 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 | `exploring` (feature needs a spec) | Human decision required | Shape intent - `/steer:work issues materialize` -> `/steer:spec` |
 | `ready-for-spec`, intent not approved | Human decision required | PO approves the intent - `/steer:spec approve` (offers the gate prompt) |
 | `ready-for-dev`, decomposed and actionable | Recommended | Start it - `/steer:work start #N` |
-| `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
+| `in-progress` / `validate` | Human decision required | A draft PR's author marks it ready, then a reviewer reviews it (no command) |
 | Unresolved `blocking` question on the item | Blocking now | `/steer:spec questions` |
 | Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline - `/steer:spec roadmap` |
 | `epic` in `exploring`, child features identified | Recommended | Link them - `/steer:work issues epic #E --add ...` |

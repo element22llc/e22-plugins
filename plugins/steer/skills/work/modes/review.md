@@ -124,7 +124,8 @@ Selected `Changes` PRs get `gh pr review <n> --request-changes --body-file
 Nothing here approves. Per PR, name the one move that unblocks it and do the
 ones that are yours:
 
-- **Draft, work complete** - `gh pr ready <n>`, then watch CI; a draft's
+- **Draft, work complete** - `--mine` is the author asking to ready their own
+  PRs, so here `gh pr ready <n>` is theirs: run it, then watch CI; a draft's
   skipped checks never counted as green.
 - **CI red or conflicting** - `/steer:work resume #<issue>` fixes it on its
   branch.

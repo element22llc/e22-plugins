@@ -809,7 +809,8 @@ Name the file and say what to carry forward.
   does not run `gh pr ready` before watching CI will see `finish` read a *skipped*
   check as green. The plugin ships both halves together, so a repo that takes this
   workflow edit from a current plugin already has the matching skill; call it out
-  if you are applying the edit by hand against an older one.
+  if you are applying the edit by hand against an older one. (A current
+  `finish` leaves the PR a draft and watches no CI, so the hazard is gone.)
 
   **No history entry is earned** - CI scaffolding `/steer:sync` carries forward.
 

@@ -53,9 +53,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   else the repo's lint, typecheck and test tasks), fixed until green. **CI is
   the confirming run, not the iteration loop** - every push to a ready PR re-runs
   the whole pipeline on billed runner minutes, so a fix you could have found
-  locally costs a full CI run. A push made before local gates are green (a WIP
-  checkpoint, a backup) goes to a **draft** PR (`gh pr create --draft`), which
-  the shipped `ci.yml` does not run. **Then commit and run the code gate**
+  locally costs a full CI run. Every PR `finish` opens is a **draft** (`gh pr
+  create --draft`), which the shipped `ci.yml` does not run; a push made before
+  the local gates are green (a WIP checkpoint, a backup) goes to one too, but
+  leaves the issue `in-progress`. **Then commit and run the code gate**
   before the first push, unless the change is Trivial (rule
   `80-change-class`, the heavier class when arguable; a `--hotfix` never is):
   fresh read-only reviewer subagents, never this context and not
@@ -88,28 +89,27 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Record the PR with `link-delivery` - in
-  solo-trunk the closing trunk commit is that ref; **mark the PR ready for review** (`gh pr ready`) if it
-  is still a draft, **then watch CI
-  to conclusion** (`gh pr checks --watch`) before transitioning. The order matters and is
-  not cosmetic: the shipped `ci.yml` skips every job on a draft PR, and a **skipped** check
-  reads as green to `gh pr checks`. Watching first would let `finish` reach `validate` with
-  no test having run - the exact false `done` this mode forbids. So: ready, *then* watch. If
-  a check reports `skipped` after that, treat it as a red flag and find out why, never as a
-  pass. The first push of
+  solo-trunk the closing trunk commit is that ref - transition the issue to
+  `validate`, and **stop**. A draft stays a draft: its author reads it and marks
+  it ready, which starts CI (`ready_for_review`) and makes that run theirs, so
+  `finish` never runs `gh pr ready`. Updating a PR its author already marked
+  ready leaves it ready, and the push re-runs CI: watch that run to conclusion
+  (`gh pr checks --watch`), and treat a `skipped` check as a red flag, never a
+  pass - it reads as green to `gh pr checks`. The first push of
   the new `issue/<n>` branch sets the upstream - `git push -u origin <branch>` -
   or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
   there is no PR: commit straight to `main` with a `Closes #N` trailer (see
   Closing ref if the tracker lives elsewhere) and watch
   CI on the trunk push** (`gh run watch`) the same way - the closed issue, not a
-  merged PR, is the terminal evidence. On a red build,
+  merged PR, is the terminal evidence. On a red build - a ready PR's run, picked
+  up by `resume #N`, or the trunk push -
   diagnose and fix it as part of the same unit of work: reproduce the failure
   locally with the task CI ran, fix everything that run reported, re-run the
   local gates green, then push **once** and re-watch - batch the fixes, never a
   push per attempt. A failure that only reproduces in CI (runner environment,
   secrets, services) is the exception that earns an exploratory push. Repeat
   until checks are green or a remaining failure is
-  legitimately non-blocking (and said so). Only transition to `validate` once CI is
-  green; hand the reviewer a green PR, not a running or red one. A PR-scoped failure
+  legitimately non-blocking (and said so). A PR-scoped failure
   is fixed or commented on the PR, **not** filed as a tracker issue - defer to the
   CI-failure triage in `ISSUE-WORKFLOW.md` (only a reproducible default-branch
   failure becomes a `source:ci` bug). **Never mark `done` merely because a PR was
@@ -119,12 +119,12 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   **No authenticated `gh`?** Probe `gh auth status` before the PR step; when it
   fails, open-or-update the PR through the github MCP server:
   `list_pull_requests` (`head: <owner>:<branch>`) finds an open one,
-  `create_pull_request` opens it, `update_pull_request` edits it or marks it
-  ready (`draft: false`). With no MCP server either, print the compare URL
+  `create_pull_request` opens it as a draft (`draft: true`), `update_pull_request`
+  edits it. With no MCP server either, print the compare URL
   (`https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1`) for
-  the human. Say which path ran. The CI watch stays `gh`-only: without it,
-  report CI as **not watched** and leave the issue's state alone - an unwatched
-  run never reaches `validate`.
+  the human, who opens it as a draft. Say which path ran. The CI watch stays
+  `gh`-only: without it, report a ready PR's or trunk push's CI as **not
+  watched**.
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
