@@ -101,7 +101,7 @@ and **Repair**.
   `CLAUDE.md` is `absent`.
 - **Repair:** a **human decision** - `sync` never picks the mode. Propose
   additive-splicing the `## Delivery mode` section from
-  `templates/scaffold/CLAUDE.md` (which documents both modes) with the marker
+  `templates/scaffold/CLAUDE.template.md` (which documents both modes) with the marker
   defaulting to `pr-flow` - matching the hooks' fail-open, so behaviour is
   unchanged - and **surface the solo-trunk option**, recommending it when the repo
   is a solo PO+dev with no MVP/deploy yet (rule `45-delivery`). Additive

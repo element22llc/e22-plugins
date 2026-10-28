@@ -31,7 +31,10 @@ not substitution - and an `infra` repo may drop the paired
 Read the row, not this heading, when they disagree.
 Dotfiles are
 stored here **without their leading dot** (so they don't act on this plugin repo
-itself); rename on copy as mapped below. The one carve-out is an empty directory
+itself); rename on copy as mapped below. The product `CLAUDE.md` is stored as
+`CLAUDE.template.md` for the same reason: Claude Code would otherwise load it,
+placeholders included, into any session here that reads this directory. The one
+carve-out is an empty directory
 marker (`spec/features/.gitkeep`, `spec/decisions/.gitkeep`), which is inert here
 and installs unchanged. The Node project files and per-type
 structure live in **profile overlays** (Layer 1 / Layer 2) - see below.
@@ -39,7 +42,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) - see below.
 | Bundled path | Install as | Notes |
 |---|---|---|
 | `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/steer:setup init`. **workspace** substitutes `profiles/workspace/README.md` (Layer 2) - see that row. |
-| `CLAUDE.md` | `CLAUDE.md` | Product-specific context only - the org standards are injected by this plugin, never copied in. |
+| `CLAUDE.template.md` | `CLAUDE.md` | Product-specific context only - the org standards are injected by this plugin, never copied in. |
 | `REVIEW.md` | `REVIEW.md` | **PR review calibration** for Claude Code Review and Copilot code review: what counts as Important vs Nit, a Nit cap, what not to report. Neither reviewer receives the SessionStart rules, so this file carries the review-only checks (regression test, drift classes, high-risk scoping, pins) and names `.github/copilot-instructions.md` for the standards in prose - never as an `@` include, which Code Review skips for a path in a subdirectory and leaves as plain text on an unprotected branch. Keep it free of `@` lines and Markdown links. Claude Code Review reads it from the base or default branch (protect it, or exclusions and the Nit cap are not honored) and needs a Team or Enterprise plan; Copilot code review reads it from the PR's head branch on any plan. **Team-owned** - fill the `## Always check` placeholder and keep the heading, since sync reconciles the `##` sections additively and would propose a deleted one again. Capability `review-calibration`. |
 | `ARCHITECTURE.md` | `ARCHITECTURE.md` | System-architecture + tech-stack overview (the engineer's system model). Auto-populated by `/steer:setup init`, reverse-engineered by `/steer:setup adopt`; drift-gated. **Never overwrite** an `ARCHITECTURE.md` that `/steer:setup adopt` reverse-engineered or a team populated. |
 | `mise.toml` | `mise.toml` | Toolchain (`node`/`python`/`uv` pinned - **mandatory for agent tooling**) + standard tasks (`dev:setup`, `docker:*`, `db:*`, plus the `pre-commit` / `check` / `ci` verification tiers that delegate to `scripts/ci-*.sh`; `/steer:setup init` wires `pre-commit` to `.git/hooks/pre-commit` via `mise generate git-pre-commit`, which is per-clone state and nothing to commit). Adapt tasks to the product's stack - a `library`/`cli` prunes `docker:*`/`db:*` **only if it also deletes `compose.yaml`**: the always-on worktree and end-of-session rules mandate `mise run docker:clean`, so a repo that keeps the compose file must keep the tasks (same coupling the `infra` profile states). No `mise.lock` ships - `/steer:setup init`/`/steer:setup adopt` create and commit it (`touch mise.lock`, `mise install`, `mise lock --platform linux-x64,macos-arm64`). Until then CI installs unlocked; never commit an empty lock. **`infra` substitutes `profiles/infra/mise.toml`** and **`workspace` substitutes `profiles/workspace/mise.toml`** (Layer 2). |

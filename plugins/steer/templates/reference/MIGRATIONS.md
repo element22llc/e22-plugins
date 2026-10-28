@@ -1663,7 +1663,7 @@ Name the file and say what to carry forward.
 - **Action:** read-then-propose. Add a `## Profile` section carrying
   `<!-- steer:profile=app -->` (the safe default - only change it to another
   profile if the repo is *clearly* infra/library/cli/service and the dev confirms),
-  modeled on `templates/scaffold/CLAUDE.md`. Place it near the `## Delivery mode`
+  modeled on `templates/scaffold/CLAUDE.template.md`. Place it near the `## Delivery mode`
   section. Idempotent: once the marker is present the precondition is empty, so
   re-running is a no-op.
 

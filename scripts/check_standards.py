@@ -1171,7 +1171,7 @@ def _user_facing_surfaces() -> list[Path]:
     for name in _sessionstart_hook_basenames():
         surfaces.append(PLUGIN_ROOT / "hooks" / name)
     surfaces.append(PLUGIN_ROOT / "templates/scaffold/README.md")
-    surfaces.append(PLUGIN_ROOT / "templates/scaffold/CLAUDE.md")
+    surfaces.append(PLUGIN_ROOT / "templates/scaffold/CLAUDE.template.md")
     surfaces.extend(sorted((PLUGIN_ROOT / "templates/spec").glob("*.md")))
     # The PR template is read by a human in the GitHub compose box, and
     # scan-invocations.sh already scans its installed copy in consumer repos -

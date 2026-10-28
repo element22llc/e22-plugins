@@ -21,8 +21,9 @@ README quickstart, PR template), update the scaffold bundle here in the same
 change as the rule. Standards prose is **not** duplicated into any product
 `CLAUDE.md`; those hold only product-specific context. Scaffold dotfiles are
 stored **without the leading dot** (`gitignore`, `env.example`, `claude/`,
-`github/`, ...) so they don't act on this repo itself - `MANIFEST.md` maps the
-install paths; keep it in sync when adding scaffold files.
+`github/`, ...) so they don't act on this repo itself, and the product
+`CLAUDE.md` is stored as `CLAUDE.template.md` so it never loads into this repo's
+sessions - `MANIFEST.md` maps the install paths; keep it in sync when adding scaffold files.
 
 ## Layout
 

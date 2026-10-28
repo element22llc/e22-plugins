@@ -1,0 +1,11 @@
+kind: Changed
+body: |-
+    - **Changed: the scaffold's product `CLAUDE.md` is stored as
+      `CLAUDE.template.md`.** Under its real name, Claude Code loaded it -
+      `[Product Name]` placeholders included - into any session in the plugin
+      repo that read the scaffold directory. `MANIFEST.md` maps it to
+      `CLAUDE.md`, so `/steer:setup` installs the same file under the same name
+      in a product repo; nothing changes for consumers.
+time: 2026-10-28T16:00:00.000000-04:00
+custom:
+    Slug: scaffold-claude-md-template
