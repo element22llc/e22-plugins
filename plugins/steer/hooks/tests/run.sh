@@ -2034,7 +2034,7 @@ printf '%s' "${out}" | grep -q 'spec/HISTORY.md' && bad "inv: provenance HISTORY
 # Clean repo (the current scaffold CLAUDE.md) -> silent.
 IR1="${WORK}/inv1"
 mkdir -p "${IR1}"
-cp "${PLUGIN}/templates/scaffold/CLAUDE.md" "${IR1}/CLAUDE.md"
+cp "${PLUGIN}/templates/scaffold/CLAUDE.template.md" "${IR1}/CLAUDE.md"
 invscan "${IR1}"
 assert_empty "inv: clean scaffold CLAUDE.md -> silent" "${out}"
 

@@ -204,7 +204,8 @@ where deleting the redundant duplicate beats filing a second copy (no
 Scaffold dotfiles are stored in the plugin **without the leading dot**
 (`gitignore`, `env.example`, `github/`, `claude/`, ...) so they don't act on the
 plugin repo itself. `MANIFEST.md` maps each stored file to its installed path
-(adding the dot back). When a standard implies concrete scaffolding, the scaffold
+(adding the dot back); the product `CLAUDE.md` is stored as `CLAUDE.template.md`
+so Claude Code never loads it into a session in the plugin repo. When a standard implies concrete scaffolding, the scaffold
 bundle is updated in the **same change** as the rule.
 
 When `/steer:setup init`, `/steer:setup adopt`, or `/steer:setup sync` install a scaffold file that

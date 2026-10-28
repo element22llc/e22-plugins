@@ -502,7 +502,9 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 `/steer:init` / `/steer:adopt`.
 
 - **Dotfiles are stored without the leading dot** (`gitignore`, `env.example`,
-  `claude/`, `vscode/`, ...) so they don't act on this repo itself.
+  `claude/`, `vscode/`, ...) so they don't act on this repo itself. The product
+  `CLAUDE.md` is stored as `CLAUDE.template.md`, so Claude Code never loads it
+  into a session here.
 - **GitHub templates and the spec spine live in their own topic dirs**, not under
   `scaffold/`: `plugins/steer/templates/github/` (Issue Forms, workflows, PR
   template - plus the runtime-only `issue-bodies/`) and
