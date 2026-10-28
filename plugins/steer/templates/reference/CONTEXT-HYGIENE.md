@@ -92,7 +92,8 @@ model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
   a separate context given the plan, the restated requirements, and the steer rules
   as the rubric.
 - `/steer:work finish` spawns one for its code gate on every non-Trivial change,
-  given the branch diff and the `REVIEW-LOOP.md` section 4 rubric.
+  given the branch diff and the `REVIEW-LOOP.md` section 4 rubric, plus a
+  specialist per lens the diff triggers and a verifier per high finding.
 - the `/steer:loop` scaffolded workflow spawns one **unconditionally** - rule
   `53-autonomous-loops` splits ideation from verification, so the reviewer that
   checks the loop's work is never the context that produced it.

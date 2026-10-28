@@ -11,8 +11,11 @@ while the subcommands below read an issue and deliver it.
 
 !!! tip "Review gates - `finish` and `--reviewed`"
     `finish` runs an independent code gate on every non-Trivial change: a fresh
-    reviewer checks correctness, other instances of the fixed pattern, peer
-    consistency, introduced risk and touched docs, with a bounded fix loop.
+    adversarial reviewer checks correctness, other instances of the fixed
+    pattern, peer consistency, introduced risk and touched docs; a database,
+    UI or security specialist joins when the diff enters that domain; a
+    verifier tries to refute each high finding before it reaches the author;
+    and a bounded fix loop follows.
     Add `--reviewed` for an independent plan-gate review and plan sign-off
     before implementing. The shared protocol and rubric live in
     `templates/reference/REVIEW-LOOP.md`.

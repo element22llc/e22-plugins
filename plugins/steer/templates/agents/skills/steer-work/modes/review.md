@@ -55,7 +55,10 @@ For every remaining PR, spawn a **fresh read-only subagent** in the same message
 on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
 read, and the code-gate rubric in
 [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4 - the same one
-the author's `finish` ran. The local checkout may sit at the base, not the PR
+the author's `finish` ran, adversarial framing included. To keep a batch to one
+subagent per PR, the reviewer applies each specialist lens the diff triggers
+itself rather than spawning one, and the refute pass is yours: the check below
+against the diff. The local checkout may sit at the base, not the PR
 head: it serves the other-instances and peer passes, which look outside the
 diff. Ask it to return a compact **card**:
 

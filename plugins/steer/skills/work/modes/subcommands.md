@@ -57,15 +57,17 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   checkpoint, a backup) goes to a **draft** PR (`gh pr create --draft`), which
   the shipped `ci.yml` does not run. **Then commit and run the code gate**
   before the first push, unless the change is Trivial (rule
-  `80-change-class`, the heavier class when arguable; a `--hotfix` never is): a
-  fresh read-only reviewer subagent, never this context and not
-  `steer-reviewer` (no git), reads `git diff origin/<default>...HEAD` and
-  scores it against the code-gate rubric in
-  [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4. A later
+  `80-change-class`, the heavier class when arguable; a `--hotfix` never is):
+  fresh read-only reviewer subagents, never this context and not
+  `steer-reviewer` (no git), read `git diff origin/<default>...HEAD` and score
+  it against the code-gate rubric in
+  [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the
+  general reviewer plus one per specialist lens the diff triggers, in one
+  message, then a fresh verifier per high finding (the refute pass). A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
-  Fix every high-severity finding, re-run the local gates, and re-review; stop
-  after 2 rounds or the first round with no high finding, and name any high
-  finding left open. Put each medium finding you leave, and each design
+  Fix every confirmed high finding, re-run the local gates, and re-review; stop
+  after 2 rounds or the first round with no confirmed high finding, and name
+  any high finding left open. Put each medium finding you leave, and each design
   question with the decision taken, under the PR's *Notes for the reviewer* (in
   solo-trunk, the trunk commit body), so the human confirms rather than
   discovers. A skipped gate gets one line saying why.

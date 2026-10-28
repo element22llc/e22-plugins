@@ -1,0 +1,17 @@
+kind: Changed
+body: |-
+    - **Changed: the `/steer:work finish` code gate is adversarial, adds
+      specialist reviewers from the diff, and refutes its own high findings.**
+      Every reviewer is told to find the reason the PR must not merge and to
+      name what it tried when it finds nothing. A database, UI or security
+      specialist joins the general reviewer when the diff enters that domain
+      (a migration or query code, a component or style, a rule
+      `60-high-risk` area), at most three, so a change outside them still
+      pays for one reviewer. Each high finding then goes to a fresh verifier
+      that tries to disprove it: refuted findings are dropped, unsure ones
+      become medium, and only confirmed ones keep the 2-round fix loop open.
+      `/steer:work review` applies the same framing and lenses inside its one
+      reviewer per PR. The rubric is in `REVIEW-LOOP.md` section 4.
+time: 2026-10-28T10:00:00.000000-04:00
+custom:
+    Slug: adversarial-review-lenses
