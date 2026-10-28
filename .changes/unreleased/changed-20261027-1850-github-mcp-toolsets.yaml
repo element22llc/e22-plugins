@@ -1,14 +1,16 @@
 kind: Changed
 body: |-
-    - **Changed: the bundled GitHub MCP server exposes only issue tools.** The
-      plugin's `.mcp.json` now sends `X-MCP-Toolsets: context,issues`, which
-      cuts the server from 49 tools to 14: every issue tool steer calls, plus
-      `get_me`. Fewer tool definitions keep tool selection sharp. Steer itself
-      loses nothing, since pull requests, repositories and workflow runs already
-      go through `gh`, but a session whose only GitHub MCP server is steer's no
+    - **Changed: the bundled GitHub MCP server exposes a narrow toolset.** The
+      plugin's MCP config (`.claude-plugin/mcp.json`) now sends
+      `X-MCP-Toolsets: context,issues`, which cuts the server from 49 tools to
+      17: every issue tool steer calls, `get_me`, and the three pull-request
+      tools `/steer:work finish` falls back to. Fewer tool definitions keep
+      tool selection sharp. Steer itself loses nothing, since repositories,
+      workflow runs and the rest of the pull-request surface already go
+      through `gh`, but a session whose only GitHub MCP server is steer's no
       longer has MCP tools for them; add your own server in a project or user
       `.mcp.json` to get them back. The scaffold's `.vscode/mcp.json` carries
-      the same header. `/steer:setup sync` never rewrites `.vscode/`, so an
+      the same headers. `/steer:setup sync` never rewrites `.vscode/`, so an
       existing repo keeps the full toolset in VS Code until it merges the
       header by hand.
 time: 2026-10-27T18:50:00.000000-04:00

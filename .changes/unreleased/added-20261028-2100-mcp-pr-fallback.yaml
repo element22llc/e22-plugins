@@ -7,8 +7,8 @@ body: |-
       `create_pull_request` and `update_pull_request`, then to printing the
       compare URL, and says which path ran. The bundled server adds just those
       three tools (`X-MCP-Tools`), 17 in all: `merge_pull_request` and the
-      review tools stay unexposed. The CI watch stays on `gh`; without it,
-      `finish` reports CI as not watched and leaves the issue's state alone.
+      review tools stay unexposed. The CI watch stays on `gh`; without it, a
+      ready PR's or trunk push's CI is reported as not watched.
 time: 2026-10-28T21:00:00.000000-04:00
 custom:
     Slug: mcp-pr-fallback
