@@ -1649,6 +1649,12 @@ capscan "${CR0}"
 assert_eq "cap: empty repo plugin-enabled absent" "$(capstatus "${out}" plugin-enabled-local)" "absent"
 assert_eq "cap: empty repo in-ci absent" "$(capstatus "${out}" in-ci-plugin-loading)" "absent"
 assert_eq "cap: empty repo stack=none" "$(capstatus "${out}" stack)" "none"
+assert_eq "cap: empty repo review-calibration absent" "$(capstatus "${out}" review-calibration)" "absent"
+cp "${PLUGIN}/templates/scaffold/REVIEW.md" "${CR0}/REVIEW.md"
+capscan "${CR0}"
+assert_eq "cap: REVIEW.md -> review-calibration present-wired" \
+	"$(capstatus "${out}" review-calibration)" "present-wired"
+rm "${CR0}/REVIEW.md"
 
 # settings.json wiring: true -> wired, false -> disabled, present-no-steer -> mis-wired.
 CR1="${WORK}/cap1"

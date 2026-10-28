@@ -315,6 +315,15 @@ else
 	emit "drift-gate" "mis-wired" "$dg_files"
 fi
 
+# --- review-calibration - automated PR reviews rank findings by the standards ---
+# Presence-only: the file is team-owned, so its content is step 5's reconcile.
+F="REVIEW.md"
+if exists "$F"; then
+	emit "review-calibration" "present-wired" "$F"
+else
+	emit "review-calibration" "absent" "$F"
+fi
+
 # --- branch-protection-policy - machine-readable gate description ---
 F="policy/branch-protection.yml"
 if exists "$F"; then

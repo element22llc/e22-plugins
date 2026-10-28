@@ -264,6 +264,23 @@ and **Repair**.
 - **Why it matters:** `ci.yml` is the single required status check behind branch
   protection; the PR template is where drift classes are surfaced before merge.
 
+### review-calibration - automated PR reviews rank findings by the standards
+- **Files:** `REVIEW.md`
+- **Conditional:** always (GitHub-hosted repos).
+- **Wired-when:** `REVIEW.md` **exists** at the repo root. Presence-only, like
+  `line-ending-normalization`: the file is team-owned, and whether it carries the
+  template's current `##` sections is step 5's additive reconcile, not a
+  capability gap. This entry only closes the **create-missing** hole.
+- **Repair:** create from `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/REVIEW.md`. No
+  yes needed: the file changes no build, git or runtime behavior, and lands on
+  `feat/sync` for review like any repair. Report that Claude Code Review honors
+  its exclusions and Nit cap only from a protected default branch
+  (`/steer:setup protect`).
+- **Verbatim:** no
+- **Why it matters:** Claude Code Review and Copilot code review run without the
+  SessionStart rules, so without this file they rank a missing regression test or
+  an unflagged drift class like any other finding.
+
 ### question-gate - the open-question contract enforced in CI
 - **Files:** `scripts/ci-spec.sh`, `scripts/spec-questions.sh`, the `ci:spec` task
   in `mise.toml`, and its step in `.github/workflows/ci.yml`
