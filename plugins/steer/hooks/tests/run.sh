@@ -3424,6 +3424,30 @@ assert_has "snapshot --items: claim without branch shows its title" "${out}" "^C
 assert_has "snapshot --items: bare claim falls back to its file name" "${out}" "^C${_tab}31${_tab}issue_31-bare$"
 rm -f "${WS1}/spec/.work/issue_715-bot.md" "${WS1}/spec/.work/issue_29-fold" "${WS1}/spec/.work/issue_31-bare.md"
 
+# (a4) #847: a marker whose branch is gone - deleted locally, or its pushed
+# upstream pruned - is finished work, not a claim. A live branch, even one cut
+# with no commits yet, stays.
+WS3="$(git_repo wsClaims issue/50-live)"
+(cd "${WS3}" &&
+	git branch -q issue/51-upstream-gone &&
+	git remote add origin https://example.invalid/r.git &&
+	git config branch.issue/51-upstream-gone.remote origin &&
+	git config branch.issue/51-upstream-gone.merge refs/heads/issue/51-upstream-gone) >/dev/null 2>&1
+mkdir -p "${WS3}/spec/.work"
+for _b in issue/50-live issue/51-upstream-gone issue/52-deleted; do
+	printf -- '- issue: %s\n- branch: %s\n' "$(printf '%s' "${_b}" | sed 's|issue/\([0-9]*\).*|\1|')" "${_b}" \
+		>"${WS3}/spec/.work/$(printf '%s' "${_b}" | tr '/' '_').md"
+done
+run_sh "${SNAP}" --brief "${WS3}"
+assert_has "snapshot --brief: gone-branch claims not counted" "${out}" "^claims=1$"
+run_sh "${SNAP}" --items "${WS3}"
+assert_has "snapshot --items: live branch claim listed" "${out}" "^C${_tab}50${_tab}issue/50-live$"
+printf '%s' "${out}" | grep -q "^C${_tab}5[12]${_tab}" && bad "snapshot --items: gone-branch claims must be hidden" || ok
+run_sh "${SNAP}" "${WS3}"
+assert_has "snapshot: deleted-branch claim annotated" "${out}" "issue_52-deleted.md .*(stale: branch gone)"
+assert_has "snapshot: upstream-gone claim annotated" "${out}" "issue_51-upstream-gone.md .*(stale: branch gone)"
+printf '%s' "${out}" | grep -q 'issue_50-live.md .*stale' && bad "snapshot: live claim must not read stale" || ok
+
 # (b) empty unmanaged repo: dimensions print explicit "none", never silence.
 WS2="$(new_repo wsEmpty)"
 run_sh "${SNAP}" "${WS2}"
