@@ -3,6 +3,53 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.16.0
+
+- **Added: English is the repo language, with a declared main product
+  language.** Rule 85 now says code, identifiers, file and directory names,
+  comments, commits, PR text, specs, ADRs and docs are written in English
+  whatever language the user speaks, one language per artifact. The main
+  product language the product `CLAUDE.md` declares (English by default)
+  is the source of user-facing information (UI strings, the app guide's
+  user-facing pages, release notes) and of `spec/glossary.md`, whose terms
+  each name their English code identifier; other locales are translations
+  of it. Chat follows the user. The scaffold `CLAUDE.template.md` gains
+  `**Main product language:**` and `**Other locales:**` lines under
+  Product, with a `<!-- steer:product-language=en -->` marker the status
+  band reads: it shows `lang: <code>`, or **set language** where no marker
+  is declared, and a press opens a language selector whose choices fill an
+  ask in the prompt without submitting. The glossary template gains a
+  `(code: ...)` slot per term, and `/steer:reference conventions` carries
+  the full guidance, including i18n message files and how a
+  non-English-reading PO's spec artifacts opt into the main product
+  language.
+- **Added: `/steer:work queue #A #B ...` works through a list of issues one
+  after another.** `/steer:work` already said several issues get one branch
+  and PR each, but not how to deliver them in one run. `queue` triages the
+  list first - an issue claimed by someone else, not ready, High-risk with no
+  agreed scope, or dependent on another queued issue is set aside with its
+  reason. Each remaining issue goes to a fresh worker - in its own worktree
+  under PR flow, one at a time in the main checkout under solo trunk - which
+  loads the rules and runs the normal `start` -> `finish` flow, local gates
+  and code gate included. Unlike a single `/steer:work`, every
+  non-Trivial issue also gets the independent plan review by default, since
+  nobody watches each one start; `--reviewed` adds your sign-off on each plan,
+  and a plan whose serious findings will not resolve comes back to you
+  instead of being built. The session checks every reported PR instead
+  of trusting the report, relays human gates to you in-session, records a
+  blocked issue and moves on, and stops early only on a failure that would hit
+  every issue. Under PR flow it ends at draft PRs and points at
+  `/steer:work review --mine`; it never merges or readies a PR (#844).
+- **Fixed: closed work no longer shows as a resumable claim.** Nothing
+  removed a `spec/.work/` marker, so the Work claims pane offered
+  `[ resume ]` on every issue ever worked. `/steer:work` `start`, `resume`
+  and `finish` now read every marker's issue through tracker-sync and delete
+  the markers of closed issues; `status` reports them. The status band and
+  Work claims pane also leave out a marker whose branch exists neither
+  locally nor on a remote, or whose pushed upstream is gone, and the
+  workspace snapshot `/steer:next` reads tags it `(stale: branch gone)`.
+  (#847)
+
 ## 7.15.0
 
 - **Fixed: volumes left by deleted Claude Code worktrees are now reported.**
