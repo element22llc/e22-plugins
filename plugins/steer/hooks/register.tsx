@@ -7,7 +7,7 @@
 import type { EngineInterface, Register } from 'claude-code'
 
 export type Brief = Record<string, string>
-export type Section = 'features' | 'questions' | 'adrs' | 'claims'
+export type Section = 'features' | 'questions' | 'adrs' | 'claims' | 'language'
 export type BandPart = { text: string; section?: Section; command?: string; key?: string }
 export type Items = {
   features: { id: string; status: string }[]
@@ -23,6 +23,14 @@ const SECTIONS: { section: Section; label: string }[] = [
   { section: 'questions', label: 'Open questions' },
   { section: 'adrs', label: 'ADRs to ratify' },
   { section: 'claims', label: 'Work claims' },
+]
+const LANGUAGES: { code: string; name: string }[] = [
+  { code: 'en', name: 'English' },
+  { code: 'fr', name: 'French' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'de', name: 'German' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'it', name: 'Italian' },
 ]
 
 export function parseBrief(stdout: string): Brief {
@@ -70,6 +78,7 @@ export function bandParts(b: Brief): BandPart[] | null {
   const parts: (BandPart | null)[] = [
     { text: 'steer' },
     b.delivery ? { text: b.delivery } : null,
+    { text: b.language ? `lang: ${b.language}` : 'set language', section: 'language' },
     b.spine === 'managed' ? null : { text: `spine: ${b.spine}` },
     part(drafts > 0 && features ? `${features} (${count(b.drafts, 'draft', 'drafts')})` : features, {
       section: 'features',
@@ -99,6 +108,11 @@ export function featureCommand(f: Items['features'][number]): string {
   return f.status === 'draft' ? `/steer:spec ${f.id}` : `/steer:status feature ${f.id}`
 }
 
+// No skill owns the setting, so the fill is an ask Claude carries out, not a slash command.
+export function languageCommand(code: string, name: string): string {
+  return `Set the main product language to ${name} (${code}) in CLAUDE.md -> Product, marker included.`
+}
+
 export function questionCommand(q: Items['questions'][number]): string {
   return q.scope === 'vision' ? '/steer:spec questions' : `/steer:spec ${q.scope}`
 }
@@ -117,6 +131,7 @@ let parts: BandPart[] | null = null
 let items: Items | null = null
 let shown: Section = 'questions'
 let lastCwd: string | undefined
+let language = ''
 
 // A snapshot that fails or cannot start hides the band; it never rejects, so
 // the fire-and-forget callers below leave no unhandled rejection.
@@ -125,7 +140,9 @@ async function refresh($: EngineInterface, cwd?: string) {
   let fresh: BandPart[] | null = null
   try {
     const run = await snapshot($, ['--brief'], lastCwd)
-    fresh = run.exitCode === 0 ? bandParts(parseBrief(run.stdout)) : null
+    const brief = run.exitCode === 0 ? parseBrief(run.stdout) : null
+    language = brief?.language ?? ''
+    fresh = brief && bandParts(brief)
   } catch {
     fresh = null
   }
@@ -240,6 +257,18 @@ export const register: Register = on => {
       claims: items.claims.length,
     }
     const body = () => {
+      if (shown === 'language')
+        return [
+          <Text key="lang-now" dimColor>
+            {language ? `Main product language: ${language}` : 'No main product language declared.'}
+          </Text>,
+          ...LANGUAGES.map(l =>
+            row(`l-${l.code}`, l.code === language ? 'current' : 'select', languageCommand(l.code, l.name), `${l.name}  ${l.code}`),
+          ),
+          <Box key="l-other" flexDirection="row" gap={1} marginTop={1}>
+            <Button key="do-l-other" label="other" onPress={() => suggest($, 'Set the main product language to ')} />
+          </Box>,
+        ]
       if (items === null) return [<Text dimColor>Reading the spine...</Text>]
       if (sizes?.[shown] === 0) return [<Text dimColor>Nothing here.</Text>]
       if (shown === 'features')

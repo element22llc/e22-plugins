@@ -914,7 +914,8 @@ Patterns:
   and repo docs (README, `CLAUDE.md`, `ARCHITECTURE.md`, `DESIGN.md`).
 
   The **main product language**, declared in the product `CLAUDE.md` ->
-  Product and English by default, is the source language of what end users
+  Product (the `<!-- steer:product-language=<code> -->` marker, which the
+  status band shows and offers to change) and English by default, is the source language of what end users
   read: UI strings, the app guide's user-facing pages, and release notes. It is
   also the language of `spec/glossary.md`, the bridge between the two worlds:
   each term is defined in the product language and names its English code

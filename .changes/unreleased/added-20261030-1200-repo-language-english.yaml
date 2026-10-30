@@ -10,7 +10,10 @@ body: |-
       each name their English code identifier; other locales are translations
       of it. Chat follows the user. The scaffold `CLAUDE.template.md` gains
       `**Main product language:**` and `**Other locales:**` lines under
-      Product, the glossary template a `(code: ...)` slot per term, and
+      Product, with a `<!-- steer:product-language=en -->` marker the status
+      band reads: it shows `lang: <code>`, or **set language** where no marker
+      is declared, and a press opens a language selector whose choices fill an
+      ask in the prompt without submitting. The glossary template a `(code: ...)` slot per term, and
       `/steer:reference conventions` the full guidance, including i18n message
       files and how a non-English-reading PO's spec artifacts opt into the main
       product language.
