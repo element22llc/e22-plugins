@@ -30,9 +30,13 @@ or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
 [Replace with one paragraph: what this product does, who uses it, and what
 success looks like. Pull from `/spec/vision.md` once it exists.]
 
-**Product language:** English - UI copy, the app guide's user-facing pages and
-release notes. Everything else in the repo is English
-(`/steer:reference conventions` -> "English is the repo language").
+**Main product language:** English - the source of UI copy, the app guide's
+user-facing pages, release notes and `spec/glossary.md`.
+
+**Other locales:** none - translated from the main language.
+
+Everything else in the repo is English (`/steer:reference conventions` ->
+"English is the repo language").
 
 ## Delivery mode
 

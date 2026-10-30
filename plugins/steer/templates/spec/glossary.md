@@ -8,14 +8,15 @@ Shared vocabulary for this product. Add a term whenever PO, devs, and Claude wou
 - Claude reads this file. Consistent vocabulary here means consistent vocabulary in generated specs and code.
 - Keep entries to one or two sentences. This is a quick reference, not a dictionary.
 - When you rename something in code, update this file in the same PR.
+- Write this file in the main product language (product `CLAUDE.md` -> Product), headings included; each term names its English code identifier.
 
 ## Terms
 
 > Replace these examples with real terms once the product takes shape.
 
-**[Term]** - Short definition. Note any synonyms we explicitly avoid, such as: we say customer, not client or account.
+**[Term]** (code: `[Identifier]`) - Short definition. Note any synonyms we explicitly avoid, such as: we say customer, not client or account.
 
-**[Term]** - Definition.
+**[Term]** (code: `[Identifier]`) - Definition.
 
 ## Anti-synonyms
 

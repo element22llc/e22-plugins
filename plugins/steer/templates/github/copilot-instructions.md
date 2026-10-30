@@ -734,9 +734,10 @@ prose: `/steer:reference conventions`.
   every language, French included.
 - **English is the repo language**, whatever language the user speaks: code,
   identifiers, file and directory names, comments, commits, branches, PR text,
-  specs, ADRs and docs (README, `CLAUDE.md`, `ARCHITECTURE.md`). Only **product
-  copy** - UI strings, the app guide's user-facing pages, release notes - is in
-  the product language `CLAUDE.md` -> Product declares, as is any spec artifact
-  that line names for a PO who does not read English. One language per
-  artifact, headings included: a README's product paragraph is dev docs, not
-  product copy. Chat, and a report rendered for a reader, follow that reader.
+  specs, ADRs and docs (README, `CLAUDE.md`, `ARCHITECTURE.md`). The **main
+  product language** `CLAUDE.md` -> Product declares (default English) is the
+  source of user-facing information - UI strings, the app guide's user-facing
+  pages, release notes - and of `spec/glossary.md`, where each term names its
+  English code identifier; other locales are translated from it. One language
+  per artifact, headings included: a README's product paragraph is dev docs.
+  Chat, and a report rendered for a reader, follow that reader.
