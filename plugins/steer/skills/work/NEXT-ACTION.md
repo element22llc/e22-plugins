@@ -12,7 +12,8 @@ End every invocation with a `## Recommended next actions - /steer:work` block
 (with the mode where one ran - `/steer:work promote`) per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Per the **locality
 rule**, consider only this issue, its branch, PR, criteria, validation, and any
-blocker directly hit - not the wider workspace. Map execution state to actions
+blocker directly hit - not the wider workspace. A `queue` run's locality is its
+list of issues. Map execution state to actions
 without redefining the subcommands in `SKILL.md`:
 
 | State | Category | Action / suggested command |
@@ -25,6 +26,8 @@ without redefining the subcommands in `SKILL.md`:
 | Ready PR, CI red | Blocking now | `/steer:work resume #N` - reproduce and fix locally until the local gates are green, then push once and re-watch |
 | Ready PR, CI green, awaiting review | Human decision required | A reviewer reviews the PR - several waiting: `/steer:work review` |
 | PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed - a merged PR is necessary, not sufficient (`/steer:work resume #N`) |
+| `queue` ended, issues blocked or set aside | Blocking now | The one move recorded for the first in run order - usually `/steer:work resume #N` |
+| `queue` ended, drafts open | Human decision required | Read each draft, then ready them and watch CI - `/steer:work review --mine` |
 | Issue `done` | Complete | Optional: start another ready issue - `/steer:work start #N`, else `No action is currently required.` |
 
 Choose one `Current recommended action` by precedence. The block recommends only -
