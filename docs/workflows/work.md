@@ -7,7 +7,7 @@ while the subcommands below read an issue and deliver it.
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | queue | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "Review gates - `finish` and `--reviewed`"
     `finish` runs an independent code gate on every non-Trivial change: a fresh
@@ -89,7 +89,35 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
 | `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR **as a draft** (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - transition to `validate` and stop: the author reads the draft and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. |
+| `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
+
+## Issue queue - `/steer:work queue`
+
+`queue` delivers a list of independent issues in one run, in the order given.
+The session orchestrates and implements nothing itself:
+
+1. **Triage from metadata** - an issue claimed by someone else, not ready,
+   High-risk with no agreed scope, or dependent on another queued issue is set
+   aside with its reason. Dependent work belongs in a stack or a `batch/*`
+   branch, not a queue.
+2. **One fresh worker per issue, in its own worktree.** It loads the rules,
+   runs the normal `start` -> `finish` flow (local gates, code gate, a draft PR
+   off the default branch) and returns a short card. Every non-Trivial issue
+   also gets the independent plan gate by default, without stopping for your
+   sign-off; `--reviewed` adds the sign-off, and a plan whose high findings will
+   not resolve comes back to you instead of being built. In solo-trunk the workers
+   run one at a time in the main checkout.
+3. **Verify, don't trust** - the PR exists, is a draft, targets the default
+   branch, and the issue is in `validate`.
+4. **Record and continue** - a blocked issue is recorded and the next one
+   starts. Human gates (`--reviewed` plan sign-off, an unresolved plan, a `Proposed`
+   ADR, a product question) are asked in the session. The queue stops early only on a
+   failure that would hit every issue.
+
+It ends with one table of issue -> draft PR or blocker, and points at
+`/steer:work review --mine` to ready the drafts. **It never merges or readies a
+PR.**
 
 ## Batch review - `/steer:work review`
 
