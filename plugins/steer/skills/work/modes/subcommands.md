@@ -24,7 +24,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   defines (section "Marker format"), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
-  load linked specs (`steer:spec-path`, acceptance criteria); **pick up the
+  prune the markers of closed issues (`WORK-MARKER.md` -> Removal); load
+  linked specs (`steer:spec-path`, acceptance criteria); **pick up the
   questions this slice settles** - each open `impact: non-blocking` question in
   the feature's `## Open questions` gated at `required_before: implementation`
   is a decision the build makes: build the option it names (else the simplest)
@@ -36,7 +37,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   begin implementation.
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
-  branch that no longer exists, a PR that merged/closed while away). **If the
+  branch that no longer exists, a PR that merged/closed while away) and prune
+  the markers of closed issues (`WORK-MARKER.md` -> Removal). **If the
   marker's session list (`WORK-MARKER.md` -> Claude Code sessions) has a head
   session different from the current
   one, surface it as a context source** - offer `claude --resume <id>` to re-enter
@@ -47,7 +49,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   current session at the head of the list. Continue from the actual lifecycle
   state.
 - **`status #N`** - **read-only**: report state, claimant, branch, PR, blockers,
-  spec readiness, and outstanding validation. Mutates nothing.
+  spec readiness, outstanding validation, and any marker a closed issue still
+  holds. Mutates nothing.
 - **`finish #N`** - run the required validation **locally, before any push**:
   the fullest gate `mise tasks` lists (`mise run ci`, else `mise run check`,
   else the repo's lint, typecheck and test tasks), fixed until green. **CI is
@@ -88,7 +91,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   as settled by this change, for its owner to confirm on the running change. An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
-  open and the confirmation at review is its answer. Record the PR with `link-delivery` - in
+  open and the confirmation at review is its answer. Prune the markers of closed
+  issues (`WORK-MARKER.md` -> Removal). Record the PR with `link-delivery` - in
   solo-trunk the closing trunk commit is that ref - transition the issue to
   `validate`, and **stop**. A draft stays a draft: its author reads it and marks
   it ready, which starts CI (`ready_for_review`) and makes that run theirs, so

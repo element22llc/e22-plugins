@@ -225,6 +225,12 @@ offers `claude --resume <id>` (and the transcript path) so you can re-enter that
 conversation for context. These session ids are local-only breadcrumbs - they
 stay in the git-ignored marker and never reach the tracker.
 
+Nothing in git prunes `spec/.work/`, so `start`, `resume` and `finish` do: they
+read every marker's issue through the tracker and delete the markers of closed
+issues; `status` only reports them. The status band and its Work claims pane
+also leave out a marker whose branch exists neither locally nor on a remote, or
+whose pushed upstream is gone, so finished work is not offered as a `resume`.
+
 ## Native Claude Code delivery features
 
 Claude Code's own delivery tools fit this flow without moving the merge gate.

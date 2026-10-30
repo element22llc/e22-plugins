@@ -225,8 +225,8 @@ docs, or infra work. Record the branch in `steer:branch` (tracker metadata) **an
 in the local marker `spec/.work/<branch>.md` (slashes -> underscores; local-only -
 `spec/.work/` is git-ignored). The marker is what the Stop-hook reconciliation
 checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
-unconventional but claimed branch is still recognized. Optional housekeeping:
-remove the marker when the issue is closed.
+unconventional but claimed branch is still recognized. A closed issue's marker
+is removed, never left to read as a live claim (`WORK-MARKER.md` -> Removal).
 
 In **`--hotfix` mode**, use `hotfix/<n>-slug` instead (see `modes/hotfix.md`).
 

@@ -1,0 +1,13 @@
+kind: Fixed
+body: |-
+    - **Fixed: closed work no longer shows as a resumable claim.** Nothing
+      removed a `spec/.work/` marker, so the Work claims pane offered
+      `[ resume ]` on every issue ever worked. `/steer:work` `start`, `resume`
+      and `finish` now read every marker's issue through tracker-sync and delete
+      the markers of closed issues; `status` reports them. The workspace
+      snapshot, and so the band and pane, also leaves out a marker whose branch
+      exists neither locally nor on a remote, or whose pushed upstream is gone.
+      (#847)
+time: 2026-10-30T12:00:00.000000-04:00
+custom:
+    Slug: prune-closed-work-markers

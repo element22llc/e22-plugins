@@ -30,7 +30,7 @@
 #     F <feature-id> <status>
 #     Q <feature-id | vision> <Q-id> <status> <impact> <required_before> <title>
 #     A <adr-number> <title>                      (Proposed ADRs only)
-#     C <issue> <branch>                          (work claims)
+#     C <issue> <branch>                          (work claims whose branch still exists)
 #
 # CONSTRAINTS (per repo CLAUDE.md): POSIX sh, no jq.
 
@@ -42,6 +42,22 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(CDPATH='' cd -- "$(dirname -- "$0")/.." && 
 . "${PLUGIN_ROOT}/hooks/lib/scope.sh"
 . "${PLUGIN_ROOT}/hooks/lib/questions.sh"
 . "${PLUGIN_ROOT}/hooks/lib/report-fault.sh"
+
+# A marker outlives its work: /steer:work prunes it only once the tracker says
+# the issue closed. A branch deleted locally, or whose pushed upstream is gone,
+# is finished work too; only a conclusive git lookup counts, so a value that is
+# not a well-formed branch name keeps its claim.
+steer_claim_gone() { # <branch: value>
+	_cb="$(printf '%s' "$1" | tr -d '\r' | sed -e 's/[[:space:]]*$//' -e 's/^`\(.*\)`$/\1/' -e 's|^refs/heads/||')"
+	[ -n "${_cb}" ] || return 1
+	git -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
+	git -C "${ROOT}" check-ref-format --branch "${_cb}" >/dev/null 2>&1 || return 1
+	if ! git -C "${ROOT}" show-ref --verify --quiet "refs/heads/${_cb}"; then
+		[ -z "$(git -C "${ROOT}" for-each-ref --count=1 "refs/remotes/*/${_cb}")" ]
+		return
+	fi
+	[ "$(git -C "${ROOT}" for-each-ref --format='%(upstream:track)' "refs/heads/${_cb}")" = '[gone]' ]
+}
 
 BRIEF=0
 ITEMS=0
@@ -95,6 +111,8 @@ if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 	_claims=0
 	for _wm in "${ROOT}"/spec/.work/*; do
 		[ -e "${_wm}" ] || continue
+		_wlabel="$(sed -n -e 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)"
+		steer_claim_gone "${_wlabel}" && continue
 		_claims=$((_claims + 1))
 		[ "${ITEMS}" -eq 1 ] || continue
 		# Markers in the wild predate WORK-MARKER.md: `issue:` without the list
@@ -104,7 +122,6 @@ if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 		_wname="$(basename "${_wm}" .md)"
 		[ -n "${_wissue}" ] ||
 			_wissue="$(printf '%s' "${_wname}" | sed -n 's/^[a-z]*_\([0-9][0-9]*\)-.*/\1/p')"
-		_wlabel="$(sed -n -e 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)"
 		[ -n "${_wlabel}" ] || _wlabel="$(sed -n 's/^\(- \)\{0,1\}title: *//p' "${_wm}" | head -1)"
 		printf 'C\t%s\t%s\n' "${_wissue}" "$(printf '%s' "${_wlabel:-${_wname}}" | tr '\t' ' ')"
 	done
@@ -232,6 +249,8 @@ for _wm in "${ROOT}"/spec/.work/*; do
 	[ -e "${_wm}" ] || continue
 	_wfound=1
 	_wdetail="$(grep '^- \(issue\|branch\):' "${_wm}" 2>/dev/null | tr '\n' ' ')"
+	steer_claim_gone "$(sed -n 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)" &&
+		_wdetail="${_wdetail}(stale: branch gone)"
 	printf -- '- %s %s\n' "$(basename "${_wm}")" "${_wdetail}"
 done
 [ "${_wfound}" -eq 1 ] || printf -- '- none\n'
