@@ -169,8 +169,8 @@ phase reconciles rather than duplicates.
   **Only** for an active incident on a confirmed-deployed production; else normal flow.
   -> procedure: [`modes/hotfix.md`](modes/hotfix.md)
 
-Neither flag changes the subcommands above; both leave the merge and deploy
-gates exactly where they are.
+Neither flag changes the subcommands above, except that `queue` refuses
+`--hotfix`; both leave the merge and deploy gates exactly where they are.
 
 ## Closing ref - check the tracker repo first
 
