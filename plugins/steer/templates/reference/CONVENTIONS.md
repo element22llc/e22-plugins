@@ -907,6 +907,23 @@ Patterns:
   `« »` is still a non-breaking space. Those forms are what typesetting inserts
   and what an editor should never contain; write the ASCII form and let
   rendering do the rest.
+- **English is the repo language.** Everything a developer reads is English,
+  whatever language the session is held in: code, identifiers, file and
+  directory names, comments, log messages, test names, commit messages, branch
+  names, PR text, the `/spec` spine (vision, intent, contract, ADRs, history)
+  and repo docs (README, `CLAUDE.md`, `ARCHITECTURE.md`, `DESIGN.md`). The
+  **product language**, declared in the product `CLAUDE.md` -> Product, governs
+  only what end users read: UI strings, the app guide's user-facing pages, and
+  release notes. Two failure modes to avoid: an artifact that mixes languages -
+  English template headings over French prose is the common one - and a French
+  domain term leaking into an identifier or path (`donnees-pilote/`) instead of
+  its English equivalent, with the French term recorded once in
+  `spec/glossary.md`. Chat follows the user's language, and a report rendered
+  for a reader (`/steer:status`, `/steer:status feature`) follows that reader.
+  A product whose PO does not read English may name PO-read spec artifacts
+  (`vision.md`, `intent.md`) in that same `CLAUDE.md` line as following the
+  product language; each such file is then written wholly in it, template
+  headings included.
 
 Anti-patterns to avoid:
 

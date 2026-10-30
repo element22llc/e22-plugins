@@ -1,0 +1,15 @@
+kind: Added
+body: |-
+    - **Added: English is the repo language.** Rule 85 now says code,
+      identifiers, file and directory names, comments, commits, PR text, specs,
+      ADRs and docs are written in English whatever language the user speaks,
+      one language per artifact; only product copy (UI strings, the app
+      guide's user-facing pages, release notes) follows the product language
+      the product `CLAUDE.md` declares, and chat follows the user. The scaffold
+      `CLAUDE.template.md` gains a `**Product language:**` line under Product,
+      and `/steer:reference conventions` carries the full guidance, including
+      how a non-English-reading PO's spec artifacts opt into the product
+      language.
+time: 2026-10-30T12:00:00.000000-04:00
+custom:
+    Slug: repo-language-english
