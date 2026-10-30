@@ -6,7 +6,8 @@ body: |-
       and `finish` now read every marker's issue through tracker-sync and delete
       the markers of closed issues; `status` reports them. The workspace
       snapshot, and so the band and pane, also leaves out a marker whose branch
-      is deleted or whose pushed upstream is gone. (#847)
+      exists neither locally nor on a remote, or whose pushed upstream is gone.
+      (#847)
 time: 2026-10-30T12:00:00.000000-04:00
 custom:
     Slug: prune-closed-work-markers

@@ -34,11 +34,14 @@ extensionless `spec/.work/<branch>` marker exists, upgrade it: carry over any
 ## Removal
 
 Nothing in git prunes `spec/.work/`, so this skill does. At `start`, `resume`
-and `finish`, read the issue of every marker in the directory with one batched
-`get` through `/steer-tracker-sync`, and delete each marker whose issue is
-**closed** - whatever the closure reason, and every marker that issue holds (one
-per branch cut for it). Delete only on that tracker read: a marker whose issue
-is open stays, and so does one whose issue cannot be read or resolved. `status`
+and `finish`, read the issue of every marker in the directory - one `get`
+through `/steer-tracker-sync` per distinct issue number - and delete each marker
+whose issue is **closed**, whatever the closure reason, and every marker that
+issue holds (one per branch cut for it). Delete only on that tracker read: a
+marker whose issue is open stays, and so does one whose issue cannot be read or
+resolved. Never prune the markers of the issue this run names or of the
+checked-out branch - the run still reads and stamps them; a later run prunes
+them once that work has moved on. `status`
 mutates nothing, so it reports stale markers instead of deleting them. The
 workspace snapshot already hides a marker whose branch is gone; that is display,
 not removal.

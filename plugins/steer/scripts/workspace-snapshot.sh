@@ -45,12 +45,18 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(CDPATH='' cd -- "$(dirname -- "$0")/.." && 
 
 # A marker outlives its work: /steer:work prunes it only once the tracker says
 # the issue closed. A branch deleted locally, or whose pushed upstream is gone,
-# is finished work too; only a conclusive git lookup counts.
-steer_claim_gone() { # <branch>
-	[ -n "$1" ] || return 1
+# is finished work too; only a conclusive git lookup counts, so a value that is
+# not a well-formed branch name keeps its claim.
+steer_claim_gone() { # <branch: value>
+	_cb="$(printf '%s' "$1" | tr -d '\r' | sed -e 's/[[:space:]]*$//' -e 's/^`\(.*\)`$/\1/' -e 's|^refs/heads/||')"
+	[ -n "${_cb}" ] || return 1
 	git -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
-	git -C "${ROOT}" show-ref --verify --quiet "refs/heads/$1" || return 0
-	[ "$(git -C "${ROOT}" for-each-ref --format='%(upstream:track)' "refs/heads/$1")" = '[gone]' ]
+	git -C "${ROOT}" check-ref-format --branch "${_cb}" >/dev/null 2>&1 || return 1
+	if ! git -C "${ROOT}" show-ref --verify --quiet "refs/heads/${_cb}"; then
+		[ -z "$(git -C "${ROOT}" for-each-ref --count=1 "refs/remotes/*/${_cb}")" ]
+		return
+	fi
+	[ "$(git -C "${ROOT}" for-each-ref --format='%(upstream:track)' "refs/heads/${_cb}")" = '[gone]' ]
 }
 
 BRIEF=0

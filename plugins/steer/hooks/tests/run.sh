@@ -3447,6 +3447,16 @@ run_sh "${SNAP}" "${WS3}"
 assert_has "snapshot: deleted-branch claim annotated" "${out}" "issue_52-deleted.md .*(stale: branch gone)"
 assert_has "snapshot: upstream-gone claim annotated" "${out}" "issue_51-upstream-gone.md .*(stale: branch gone)"
 printf '%s' "${out}" | grep -q 'issue_50-live.md .*stale' && bad "snapshot: live claim must not read stale" || ok
+# A live branch written with format drift, or alive only on the remote, keeps its claim.
+(cd "${WS3}" &&
+	git branch -q issue/53-remote-only &&
+	git update-ref refs/remotes/origin/issue/53-remote-only HEAD &&
+	git branch -q -D issue/53-remote-only) >/dev/null 2>&1
+printf -- '- issue: 50\n- branch: `refs/heads/issue/50-live`  \r\n' >"${WS3}/spec/.work/issue_50-drift.md"
+printf -- '- issue: 50\n- branch: issue/50-live # note\n' >"${WS3}/spec/.work/issue_50-comment.md"
+printf -- '- issue: 53\n- branch: issue/53-remote-only\n' >"${WS3}/spec/.work/issue_53-remote-only.md"
+run_sh "${SNAP}" --brief "${WS3}"
+assert_has "snapshot --brief: drifted, commented and remote-only claims kept" "${out}" "^claims=4$"
 
 # (b) empty unmanaged repo: dimensions print explicit "none", never silence.
 WS2="$(new_repo wsEmpty)"

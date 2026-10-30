@@ -200,8 +200,8 @@ stay in the git-ignored marker and never reach the tracker.
 Nothing in git prunes `spec/.work/`, so `start`, `resume` and `finish` do: they
 read every marker's issue through the tracker and delete the markers of closed
 issues; `status` only reports them. The status band and its Work claims pane
-also leave out a marker whose branch is deleted or whose pushed upstream is
-gone, so finished work is never offered as a `resume`.
+also leave out a marker whose branch exists neither locally nor on a remote, or
+whose pushed upstream is gone, so finished work is not offered as a `resume`.
 
 ## Native Claude Code delivery features
 
