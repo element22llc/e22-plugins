@@ -212,6 +212,17 @@ steer_delivery_mode() {
 	printf 'pr-flow'
 }
 
+# steer_product_language <repo_root> - prints the main product language code
+# from the product CLAUDE.md marker `<!-- steer:product-language=fr -->`, or
+# nothing when no CLAUDE.md or marker exists, so the status band can tell
+# "unset" apart from English.
+steer_product_language() {
+	_cm="${1:-.}/CLAUDE.md"
+	[ -f "${_cm}" ] || return 0
+	sed -n 's/^[[:space:]]*<!--[[:space:]]*steer:product-language=\([A-Za-z_-]*\)[[:space:]]*-->.*/\1/p' \
+		"${_cm}" 2>/dev/null | head -1
+}
+
 # steer_graduation_waived <repo_root> - returns 0 when the product CLAUDE.md
 # carries a recorded graduation waiver on its `## Delivery mode` section:
 #   <!-- steer:graduation=waived -->

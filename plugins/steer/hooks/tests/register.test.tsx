@@ -1,7 +1,7 @@
 import type { On } from 'claude-code'
 import { describe, expect, test } from 'claude-code/testing'
 
-import { bandText, parseBrief, parseItems } from '../register'
+import { bandText, languageCommand, parseBrief, parseItems } from '../register'
 
 const ran = (stdout: string) => ({
   value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
@@ -27,6 +27,7 @@ const ITEMS = [
 const MANAGED = [
   'delivery=pr-flow',
   'spine=managed',
+  'language=fr',
   'features=2',
   'drafts=1',
   'questions=3',
@@ -38,8 +39,12 @@ const MANAGED = [
 describe('bandText', () => {
   test('summarises a managed repo, leaving zero counts out', async () => {
     expect(bandText(parseBrief(MANAGED))).toBe(
-      'steer - pr-flow - 2 features (1 draft) - 3 open questions - 1 ADR to ratify',
+      'steer - pr-flow - lang: fr - 2 features (1 draft) - 3 open questions - 1 ADR to ratify',
     )
+  })
+
+  test('offers to set a main product language where none is declared', async () => {
+    expect(bandText(parseBrief('spine=managed\nlanguage='))).toBe('steer - set language')
   })
 
   test('leaves out what the status line already shows', async () => {
@@ -57,12 +62,12 @@ describe('bandText', () => {
   })
 
   test('pluralises drafts', async () => {
-    expect(bandText(parseBrief('spine=managed\nfeatures=3\ndrafts=2'))).toBe('steer - 3 features (2 drafts)')
+    expect(bandText(parseBrief('spine=managed\nfeatures=3\ndrafts=2'))).toBe('steer - set language - 3 features (2 drafts)')
   })
 
   test('names an abnormal spine and routes faults to a report ask', async () => {
     expect(bandText(parseBrief('spine=damaged\ndelivery=solo-trunk\nfaults=2'))).toBe(
-      'steer - solo-trunk - spine: damaged - 2 steer faults -> report them',
+      'steer - solo-trunk - set language - spine: damaged - 2 steer faults -> report them',
     )
   })
 })
@@ -240,4 +245,24 @@ test('the advisory switch fills the setup mode and never submits', async ($, on)
   await band.press({ key: 'band-advisory' })
   expect(filled.at(-1)).toBe('/steer:setup advisory off')
   await band.unmount()
+})
+
+test('the language part opens a selector whose choices fill an ask and never submit', async ($, on) => {
+  const { filled, open } = engine(on)
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  const band = await $.ui.mount({ ...ABOVE_PROMPT, surface: 'terminal' })
+  expect((await band.find({ key: 'band-language' }))?.props.label).toBe('lang: fr')
+  await band.press({ key: 'band-language' })
+  expect(open.has('steer')).toBe(true)
+  await band.unmount()
+  const pane = await $.ui.mount({ ...PANE, surface: 'terminal', props: PANE_PROPS })
+  expect(await pane.find({ type: 'Text', text: 'Main product language: fr' })).toBeDefined()
+  expect((await pane.find({ key: 'do-l-fr' }))?.props.label).toBe('current')
+  await pane.press({ key: 'do-l-en' })
+  expect(filled.at(-1)).toBe(languageCommand('en', 'English'))
+  expect(filled.at(-1)).toContain('English (en)')
+  expect(open.has('steer')).toBe(false)
+  await pane.press({ key: 'do-l-other' })
+  expect(filled.at(-1)).toBe('Set the main product language to ')
+  await pane.unmount()
 })

@@ -907,6 +907,35 @@ Patterns:
   `« »` is still a non-breaking space. Those forms are what typesetting inserts
   and what an editor should never contain; write the ASCII form and let
   rendering do the rest.
+- **English is the repo language.** Everything a developer reads is English,
+  whatever language the session is held in: code, identifiers, file and
+  directory names, comments, log messages, test names, commit messages, branch
+  names, PR text, the `/spec` spine (vision, intent, contract, ADRs, history)
+  and repo docs (README, `CLAUDE.md`, `ARCHITECTURE.md`, `DESIGN.md`).
+
+  The **main product language**, declared in the product `CLAUDE.md` ->
+  Product (the `<!-- steer:product-language=<code> -->` marker, which the
+  status band shows and offers to change) and English by default, is the source language of what end users
+  read: UI strings, the app guide's user-facing pages, and release notes. It is
+  also the language of `spec/glossary.md`, the bridge between the two worlds:
+  each term is defined in the product language and names its English code
+  identifier (**Mandat** (code: `Engagement`) - ...), so the domain vocabulary
+  users see and the names developers write stay mapped one to one. Other
+  locales the same line lists are **translations** of the main language, never
+  a second source: once there is more than one locale, UI strings live in
+  per-locale message files keyed in English, the main language's file is the
+  one edited first, and a string missing from another locale falls back to it.
+
+  Two failure modes to avoid: an artifact that mixes languages - English
+  template headings over French prose is the common one - and a product-language
+  domain term leaking into an identifier or path (`donnees-pilote/`) instead of
+  its English code identifier from the glossary. Chat follows the user's
+  language, and a report rendered
+  for a reader (`/steer:status`, `/steer:status feature`) follows that reader.
+  A product whose PO does not read English may name PO-read spec artifacts
+  (`vision.md`, `intent.md`) in that same `CLAUDE.md` line as following the
+  main product language; each such file is then written wholly in it, template
+  headings included.
 
 Anti-patterns to avoid:
 

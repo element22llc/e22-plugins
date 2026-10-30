@@ -24,7 +24,8 @@
 #   (defaults to resolving the work-tree root from the current directory)
 #   --brief prints counts only, one `key=value` per line, for the status band
 #   in hooks/register.tsx - a machine format, so keep its keys stable. It
-#   carries no branch: Claude Code's status line already shows it.
+#   carries no branch: Claude Code's status line already shows it. `language`
+#   is empty when CLAUDE.md declares no main product language.
 #   --items prints the items behind those counts for the mod's pane, one
 #   tab-separated record per line - also a machine format, keep it stable:
 #     F <feature-id> <status>
@@ -130,6 +131,7 @@ if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 	printf 'delivery=%s\n' "$(steer_delivery_mode "${ROOT}")"
 	printf 'spine=%s\n' "$(steer_spine_state "${ROOT}")"
 	printf 'mode=%s\n' "$(steer_declared_mode "${ROOT}")"
+	printf 'language=%s\n' "$(steer_product_language "${ROOT}")"
 	printf 'features=%s\n' "${_features}"
 	printf 'drafts=%s\n' "${_drafts}"
 	printf 'questions=%s\n' "${_questions}"
