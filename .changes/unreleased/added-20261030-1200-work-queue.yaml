@@ -10,7 +10,11 @@ body: |-
     agreed scope, or dependent on another queued issue is set aside with its
     reason. Each remaining issue goes to a fresh worker in its own worktree,
     which loads the rules and runs the normal `start` -> `finish` flow, local
-    gates and code gate included. The session checks every reported PR instead
+    gates and code gate included. Unlike a single `/steer:work`, every
+    non-Trivial issue also gets the independent plan review by default, since
+    nobody watches each one start; `--reviewed` adds your sign-off on each plan,
+    and a plan whose serious findings will not resolve comes back to you
+    instead of being built. The session checks every reported PR instead
     of trusting the report, relays human gates to you in-session, records a
     blocked issue and moves on, and stops early only on a failure that would hit
     every issue. It ends at draft PRs and points at `/steer:work review --mine`;

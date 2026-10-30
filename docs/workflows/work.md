@@ -103,13 +103,16 @@ The session orchestrates and implements nothing itself:
    branch, not a queue.
 2. **One fresh worker per issue, in its own worktree.** It loads the rules,
    runs the normal `start` -> `finish` flow (local gates, code gate, a draft PR
-   off the default branch) and returns a short card. In solo-trunk the workers
+   off the default branch) and returns a short card. Every non-Trivial issue
+   also gets the independent plan gate by default, without stopping for your
+   sign-off; `--reviewed` adds the sign-off, and a plan whose high findings will
+   not resolve comes back to you instead of being built. In solo-trunk the workers
    run one at a time in the main checkout.
 3. **Verify, don't trust** - the PR exists, is a draft, targets the default
    branch, and the issue is in `validate`.
 4. **Record and continue** - a blocked issue is recorded and the next one
-   starts. Human gates (`--reviewed` plan sign-off, a `Proposed` ADR, a product
-   question) are asked in the session. The queue stops early only on a
+   starts. Human gates (`--reviewed` plan sign-off, an unresolved plan, a `Proposed`
+   ADR, a product question) are asked in the session. The queue stops early only on a
    failure that would hit every issue.
 
 It ends with one table of issue -> draft PR or blocker, and points at

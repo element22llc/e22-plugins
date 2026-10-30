@@ -12,8 +12,11 @@ that flow holds per issue: one branch and one draft PR off the default branch,
 the local gates, the code gate. **It never merges and never readies a PR** -
 the run ends at drafts.
 
-`queue #A #B ... [--reviewed]` runs the issues in the order given.
-`--reviewed` applies to every issue. `--hotfix` is refused: an incident is one
+`queue #A #B ... [--reviewed]` runs the issues in the order given. Every
+non-Trivial issue gets the independent plan gate by default: nobody watches
+each issue start, so a misread issue would otherwise cost a full
+implementation and code gate before anyone saw it. `--reviewed` adds the human
+plan sign-off on top, issue by issue. `--hotfix` is refused: an incident is one
 issue, `/steer-work --hotfix #N`. A list of one is `start #N`.
 
 ## Step 1 - triage from metadata, before any worker
@@ -43,8 +46,13 @@ earlier issue's context into the next. Brief it to:
 
 - load the rules first with `/steer-standards` - a fresh subagent sees steer's
   skills but not the rules the SessionStart hook injected here;
-- run `/steer-work start #N`, then `/steer-work finish #N` (with `--reviewed`
-  when the queue has it);
+- run `/steer-work start #N`, then, before implementing, the plan gate in
+  `modes/reviewed.md` unless the issue is Trivial (rule `80-change-class`).
+  Without `--reviewed`, skip the human sign-off: revise on every high finding
+  and implement, but return a plan whose high findings survive the 2-round
+  cap (`REVIEW-LOOP.md` section 2) as a gate question instead. Then
+  `/steer-work finish #N`, with the vetted plan and its resolved findings in
+  the PR's *Notes for the reviewer*;
 - keep rule 45's worktree discipline - `mise trust` only as it allows, services
   only through `mise run ...`, `mise run docker:clean` before returning;
 - never ask the human: on a gate, stop and return it;
@@ -74,8 +82,8 @@ exists to avoid.
 
 The issues are independent branches, so one failure does not stop the next.
 
-- **A gate question** (a `--reviewed` plan sign-off, a blocking `Proposed` ADR,
-  a product question): ask the human now, per rule `61-gates`. Their answer
+- **A gate question** (a `--reviewed` plan sign-off, a plan whose high
+  findings would not resolve, a blocking `Proposed` ADR, a product question): ask the human now, per rule `61-gates`. Their answer
   goes back to that worker (Claude Code: `SendMessage`), else to a fresh worker
   running `resume #N` with it. `Decide later` records the issue and moves on.
 - **Red gates or a blocker** after `finish`'s own bounded rounds: record it and
