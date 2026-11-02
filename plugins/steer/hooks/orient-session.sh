@@ -47,8 +47,8 @@ CWD="$(steer_field cwd)"
 # and greet, so a payload without the field behaves as it did before.
 # inject-standards.sh handles the lean rule injection for this same mode.
 case "$(steer_field source)" in
-	resume | clear | compact | fork) _steer_greet=0 ;;
-	*) _steer_greet=1 ;;
+resume | clear | compact | fork) _steer_greet=0 ;;
+*) _steer_greet=1 ;;
 esac
 
 if [ "${_steer_greet}" = "1" ] && [ "$(steer_work_mode "${CWD}")" = "knowledge" ]; then

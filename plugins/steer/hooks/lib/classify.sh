@@ -26,42 +26,55 @@
 # POSIX sh, pure string matching on the path. Order matters: more specific
 # classes are tested first.
 steer_classify_path() {
-  _p="$1"
-  case "${_p}" in
-    */spec/*|spec/*|*/.claude/*|.claude/*) printf 'spec' ; return ;;
-  esac
-  case "${_p}" in
-    package-lock.json|*/package-lock.json|pnpm-lock.yaml|*/pnpm-lock.yaml|\
-    yarn.lock|*/yarn.lock|*.lock|*.lockb|Cargo.lock|*/Cargo.lock|\
-    poetry.lock|*/poetry.lock|uv.lock|*/uv.lock|go.sum|*/go.sum|\
-    composer.lock|*/composer.lock|Gemfile.lock|*/Gemfile.lock)
-      printf 'lockfile' ; return ;;
-  esac
-  case "${_p}" in
-    */dist/*|dist/*|*/build/*|build/*|*/node_modules/*|node_modules/*|\
-    */.next/*|*/target/*|target/*|*/__pycache__/*|*.min.js|*.min.css|*.map)
-      printf 'generated' ; return ;;
-  esac
-  case "${_p}" in
-    *.md|*.mdx|*.markdown|*.txt|*.rst|*.adoc|LICENSE|LICENSE.*|*/docs/*|docs/*)
-      printf 'documentation' ; return ;;
-  esac
-  case "${_p}" in
-    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.py|*.go|*.rs|*.java|*.rb|*.php|*.cs|\
-    *.cpp|*.cc|*.c|*.h|*.hpp|*.swift|*.kt|*.scala|*.ex|*.exs|*.vue|*.svelte)
-      printf 'implementation' ; return ;;
-  esac
-  case "${_p}" in
-    *.toml|*.yaml|*.yml|*.tf|*.tfvars|*.sql|*.sh|*.bash|*.zsh|\
-    *.json|*.properties|*.conf|*.cfg|*.ini|*.env|.env|.env.*|*/.env|*/.env.*|\
-    Dockerfile|Dockerfile.*|*/Dockerfile|*/Dockerfile.*|Containerfile|\
-    compose.yaml|compose.yml|docker-compose.yml|docker-compose.yaml|\
-    */compose.yaml|*/compose.yml|Makefile|makefile|GNUmakefile|*/Makefile|*.mk|\
-    Chart.yaml|values.yaml|*/k8s/*|*/helm/*|*/.github/workflows/*|.github/workflows/*|\
-    mise.toml|*/mise.toml|.mise.toml)
-      printf 'operations' ; return ;;
-  esac
-  printf 'unknown'
+	_p="$1"
+	case "${_p}" in
+	*/spec/* | spec/* | */.claude/* | .claude/*)
+		printf 'spec'
+		return
+		;;
+	esac
+	case "${_p}" in
+	package-lock.json | */package-lock.json | pnpm-lock.yaml | */pnpm-lock.yaml | \
+		yarn.lock | */yarn.lock | *.lock | *.lockb | Cargo.lock | */Cargo.lock | \
+		poetry.lock | */poetry.lock | uv.lock | */uv.lock | go.sum | */go.sum | \
+		composer.lock | */composer.lock | Gemfile.lock | */Gemfile.lock)
+		printf 'lockfile'
+		return
+		;;
+	esac
+	case "${_p}" in
+	*/dist/* | dist/* | */build/* | build/* | */node_modules/* | node_modules/* | \
+		*/.next/* | */target/* | target/* | */__pycache__/* | *.min.js | *.min.css | *.map)
+		printf 'generated'
+		return
+		;;
+	esac
+	case "${_p}" in
+	*.md | *.mdx | *.markdown | *.txt | *.rst | *.adoc | LICENSE | LICENSE.* | */docs/* | docs/*)
+		printf 'documentation'
+		return
+		;;
+	esac
+	case "${_p}" in
+	*.ts | *.tsx | *.js | *.jsx | *.mjs | *.cjs | *.py | *.go | *.rs | *.java | *.rb | *.php | *.cs | \
+		*.cpp | *.cc | *.c | *.h | *.hpp | *.swift | *.kt | *.scala | *.ex | *.exs | *.vue | *.svelte)
+		printf 'implementation'
+		return
+		;;
+	esac
+	case "${_p}" in
+	*.toml | *.yaml | *.yml | *.tf | *.tfvars | *.sql | *.sh | *.bash | *.zsh | \
+		*.json | *.properties | *.conf | *.cfg | *.ini | *.env | .env | .env.* | */.env | */.env.* | \
+		Dockerfile | Dockerfile.* | */Dockerfile | */Dockerfile.* | Containerfile | \
+		compose.yaml | compose.yml | docker-compose.yml | docker-compose.yaml | \
+		*/compose.yaml | */compose.yml | Makefile | makefile | GNUmakefile | */Makefile | *.mk | \
+		Chart.yaml | values.yaml | */k8s/* | */helm/* | */.github/workflows/* | .github/workflows/* | \
+		mise.toml | */mise.toml | .mise.toml)
+		printf 'operations'
+		return
+		;;
+	esac
+	printf 'unknown'
 }
 
 # steer_class_nudges <class> - the shared exempt/nudge decision used by BOTH
@@ -69,8 +82,8 @@ steer_classify_path() {
 # implementation/operations; nudge conservatively on unknown. Prints "nudge" or
 # "exempt".
 steer_class_nudges() {
-  case "$1" in
-    implementation|operations|unknown) printf 'nudge' ;;
-    *) printf 'exempt' ;;
-  esac
+	case "$1" in
+	implementation | operations | unknown) printf 'nudge' ;;
+	*) printf 'exempt' ;;
+	esac
 }

@@ -1,0 +1,10 @@
+kind: Fixed
+body: |-
+    - **Fixed: the hook scripts now pass `shfmt`, which gates them like every
+      other shell script.** Six scripts under `hooks/` are reformatted (tabs,
+      unindented `case` arms) with no behavior change, and the exemption that
+      kept `shfmt` advisory for `hooks/` is removed from pre-commit and
+      `mise run shell`.
+time: 2026-11-02T15:30:00.000000-05:00
+custom:
+    Slug: hooks-shfmt

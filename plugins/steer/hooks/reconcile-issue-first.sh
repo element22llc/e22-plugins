@@ -202,8 +202,9 @@ IFS="${_oifs}"
 # UNLESS app source (implementation-class) also changed: sync's contract forbids
 # touching app code, so that is a real anomaly worth surfacing rather than exempting.
 case "${BRANCH}" in
-	feat/sync|feat/sync-*|feat/sync/*)
-		printf '%s' "${GOVERNED}" | grep -q '(implementation)' || exit 0 ;;
+feat/sync | feat/sync-* | feat/sync/*)
+	printf '%s' "${GOVERNED}" | grep -q '(implementation)' || exit 0
+	;;
 esac
 
 # Loop guard 2 / fire-once: at most one advisory per session+repo (keyed by root).
