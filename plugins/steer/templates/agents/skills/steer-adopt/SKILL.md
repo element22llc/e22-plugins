@@ -60,9 +60,11 @@ runbook seems to conflict with one of these, the guardrail wins.
   from existing code - dev confirms`), not an open question. Product intent and
   genuine decisions go to the human and to the owning feature's `## Open
   questions` (or `vision.md` for product-level) as structured `### Q-NNN` blocks,
-  never bare `- [ ]` items and never guessed into the spec. PO-acceptance boxes
-  stay **unchecked**; the PO has not validated extracted intents. Run
-  `/steer-spec questions` to resolve open questions.
+  never bare `- [ ]` items and never guessed into the spec. A feature already
+  working on a deployed app is written `live` as-built - shipped behavior needs
+  no PO approval; the rest stay `draft` (PROCEDURE Phase 5). PO-acceptance
+  boxes stay **unchecked**. Run `/steer-spec questions` to resolve open
+  questions.
 - **Propose big restructures, don't force them.** Layout moves, rewrites, and
   risky changes are *proposed*; the dev's PR review is the hard gate. Never
   restructure silently.
@@ -152,7 +154,8 @@ phase you are on there before executing it.
    `glossary.md` by interviewing the human; unknowns -> `## Open questions`.
    -> PROCEDURE Phase 4
 5. **Extract a spec per feature** - `intent.md` + `contract.md` from the real
-   code; PO-acceptance boxes stay unchecked. Answer code-facts from the code;
+   code; `live` as-built where the app is deployed, else `draft`, and
+   PO-acceptance boxes stay unchecked. Answer code-facts from the code;
    only human decisions become `### Q-NNN` questions. -> PROCEDURE Phase 5
 6. **Inventory as-built architectural choices** - record observation + evidence +
    disposition in `PRODUCTIONIZATION.md`; **no ADR from inference** (guardrails).

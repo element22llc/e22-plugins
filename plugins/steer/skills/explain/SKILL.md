@@ -166,7 +166,9 @@ chart. Map the intent's own sections to these visuals:
 - **PO sign-off -> a completion meter.** Show the four `## PO acceptance`
   checkboxes as a small progress meter / ring labelled **sign-off** with the
   ratio (e.g. "sign-off 2 of 4"), each item's ticked state taken **verbatim**
-  from the intent - never tick a box the spec leaves unchecked.
+  from the intent - never tick a box the spec leaves unchecked. An intent whose
+  `Approved by:` reads `as-built` shipped before adoption: label the meter
+  "as-built - released before adoption", never as missing sign-off.
 - **Acceptance criteria -> a separate checklist.** The `## Acceptance criteria`
   boxes are a different list with their own count - never merged into the
   sign-off meter or reported against its denominator. A ticked criterion is the

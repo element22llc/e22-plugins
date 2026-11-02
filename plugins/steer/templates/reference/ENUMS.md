@@ -18,7 +18,9 @@ matching enum below (CI enforces this too).
 A materialized intent starts at **`draft`** (`/steer:work issues materialize`
 never approves). Only **`/steer:spec approve`** flips it to **`approved`**.
 **`live`** means released to users - a fact no issue state implies, since `done`
-is an accepted close, not a release.
+is an accepted close, not a release. The one other path is adoption:
+`/steer:setup adopt` writes a feature already released before adoption as `live`
+directly, `Approved by: as-built`, with no `approved` step.
 
 **Delivery progress is not in here, deliberately.** Whether a feature is being
 built, has an open PR, or was merged is the issue's `steer:state`
