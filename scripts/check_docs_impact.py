@@ -7,7 +7,9 @@ rules, hooks) but touches no ``docs/`` file, the docs have almost certainly
 drifted - fail and point at ``/plugin-docs``.
 
 This is intentionally coarse (any docs change clears the gate); the structural
-sync is enforced separately and always by ``validate_docs.py``.
+sync is enforced separately and always by ``validate_docs.py``. The one
+exception: a shell script whose change is formatting only (``shfmt`` gives the
+same output for both versions) does not trip it.
 
 Usage::
 
@@ -70,6 +72,34 @@ def _is_doc_bearing(path: str) -> bool:
     return path.startswith(DOC_BEARING_PREFIXES)
 
 
+def _git_show(rev: str, path: str) -> str | None:
+    proc = subprocess.run(["git", "show", f"{rev}:{path}"], capture_output=True, text=True)
+    return proc.stdout if proc.returncode == 0 else None
+
+
+def _shfmt(source: str) -> str | None:
+    try:
+        proc = subprocess.run(["shfmt"], input=source, capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
+    return proc.stdout if proc.returncode == 0 else None
+
+
+def _is_shfmt_only(base: str, path: str) -> bool:
+    """A ``.sh`` change that ``shfmt`` normalizes away cannot change behavior, so
+    it has no documented surface to drift from. Anything unprovable - no shfmt,
+    an added or deleted file, a parse error - counts as a real change."""
+    if not path.endswith(".sh"):
+        return False
+    mb = subprocess.run(["git", "merge-base", base, "HEAD"], capture_output=True, text=True)
+    old = _git_show(mb.stdout.strip() if mb.returncode == 0 else base, path)
+    new = _git_show("HEAD", path)
+    if old is None or new is None:
+        return False
+    old_fmt, new_fmt = _shfmt(old), _shfmt(new)
+    return old_fmt is not None and old_fmt == new_fmt
+
+
 def check_impact(base: str, errors: list[str]) -> None:
     changed = _changed_files(base)
     if changed is None:
@@ -77,7 +107,7 @@ def check_impact(base: str, errors: list[str]) -> None:
         return
     if not changed:
         return
-    doc_bearing = [p for p in changed if _is_doc_bearing(p)]
+    doc_bearing = [p for p in changed if _is_doc_bearing(p) and not _is_shfmt_only(base, p)]
     docs_touched = any(p.startswith(DOCS_PREFIX) for p in changed)
     if doc_bearing and not docs_touched:
         errors.append(
