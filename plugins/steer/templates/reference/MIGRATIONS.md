@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `.claude/settings.json` stops enabling `typescript-lsp`
+### v7.17.0 - `.claude/settings.json` stops enabling `typescript-lsp`
 
 - **What & why:** the scaffold enabled `typescript-lsp@claude-plugins-official`
   alongside steer's own `typescript` language server (`plugin.json`
