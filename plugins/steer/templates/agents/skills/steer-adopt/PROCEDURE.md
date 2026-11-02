@@ -122,8 +122,24 @@ same "confirm at review" convention the contract template already uses). Write
 each behavior rule as a named `### R-NNN` requirement block per the template,
 with the same marker after its statement, so a later PR that changes it shows up
 in the Spec delta as a change to as-built behavior. Draft
-`intent.md`'s what/why from the feature's behavior but leave the PO-acceptance
-boxes **unchecked** - the PO has not validated these yet.
+`intent.md`'s what/why from the feature's behavior and leave the PO-acceptance
+boxes **unchecked** - nobody has reviewed them yet.
+
+**Set `Status:` from what already shipped, not from a PO gate.** Ask the dev
+once, before writing any intent, whether the app is deployed with real users;
+a production deploy workflow or `infra/` tree is the recommended answer, never
+the answer. Then per feature:
+
+- **`live`** - the app is deployed and this feature works there. The release
+  already happened, so there is no scope to approve: write `> Approved by:
+  as-built (adopted from code; the adoption PR review confirms it)` and `>
+  Approved at: <adoption date>`, and delete the unfilled `Q-001` seed (past
+  `draft` it fails `ci:spec`). A PO review of the description is welcome and
+  gates nothing.
+- **`draft`** - the app is not deployed, the feature is half-built or looks
+  dead, or it carries an open `blocking` question (a `live` intent clears every
+  gate, so `ci:spec` would fail on it). Its scope still needs approval via
+  `/steer-spec approve`.
 
 **Answer from the code before you ask.** Adoption is reverse-engineering, so most
 ambiguities it meets are facts about what the code already does ("when is this
@@ -148,8 +164,8 @@ up (the scaffold's placeholder seed is replaced by the first real question, not
 kept beside it), set `created:` to today, `status: open`, `owner:`, `impact:`,
 and `required_before:`. A question the adopted code already works around is
 usually `non-blocking`; `blocking` at `intent-approval` is for one the PO must
-answer before this intent can be approved. If a feature ends with no real
-question, leave the unfilled seed as the scaffold wrote it.
+answer before this intent can be approved. If a `draft` feature ends with no
+real question, leave the unfilled seed as the scaffold wrote it.
 
 ## Phase 6 - Inventory as-built architectural choices, without inventing decisions
 
@@ -423,7 +439,7 @@ Derive it from the adoption state observed, mapping these states to categories:
 |---|---|---|
 | Confirmed committed secret / critical exposure | Blocking now | Rotate & invalidate the value; then `/security-review` |
 | Invalid or incomplete adoption artifacts | Blocking now | Complete/repair them (no command) |
-| Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files - `/steer-spec approve` per feature (offers the gate prompt) |
+| Extracted `draft` intents (app not deployed, or feature half-built) | Human decision required | PO approves the named `intent.md` files - `/steer-spec approve` per feature (offers the gate prompt). `live` as-built intents need none |
 | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/steer-spec adr` |
 | Adoption PR not yet opened | Blocking now (next transition) | Push the branch and open the adoption PR |
 | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |

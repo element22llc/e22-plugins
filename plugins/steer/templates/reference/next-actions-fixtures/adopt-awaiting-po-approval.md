@@ -5,7 +5,7 @@ Workflow: `/steer:adopt`
 ## Given
 
 - No secrets or critical security exposure.
-- Two reverse-engineered `intent.md` files (`export`, `admin`) are written but not PO-accepted.
+- The app is not deployed yet; two reverse-engineered `intent.md` files (`export`, `admin`) are written `draft`, not PO-accepted.
 - Two `Proposed` ADRs await a decision.
 - Adoption findings are not yet published.
 

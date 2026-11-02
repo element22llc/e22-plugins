@@ -262,7 +262,9 @@ drift: `exploring` holds no `Status:` until an `intent.md` is materialized as
 `draft`, and `done` stays `approved` until the feature is actually released.
 Resolve those with the spec gate (`/steer:spec approve`) and the release event -
 never silently. A spec at `approved` whose issue is `done` is **not** drift; a
-spec at `live` whose feature was never released is (see Audit & drift).
+spec at `live` whose feature was never released is (see Audit & drift). An
+adopted feature already released before adoption is born `live` with no issue
+(`Approved by: as-built`) - also not drift.
 
 ## Labels (small, deliberate set)
 

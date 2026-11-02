@@ -100,7 +100,9 @@ draft -> approved -> live
 
 `approved` is the owner's sign-off on **intent**, not a technical guarantee - the
 build is vetted by a human dev at PR review (the Verify gate). `live` means
-released to users, which an accepted close (`done`) does not imply. See
+released to users, which an accepted close (`done`) does not imply. A feature
+`/steer:setup adopt` finds already released is written `live` directly, as-built,
+with no `approved` step. See
 [Spec approval](../workflows/spec.md#approval-evidence) for why an `approved`
 spec is a vetted *target*, not a vetted build.
 
