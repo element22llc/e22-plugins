@@ -8,6 +8,7 @@ with check_changelog.py instead of fail-closing on a missing merge base).
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -81,6 +82,53 @@ def test_gate_cleared_by_any_docs_change(git_repo: Path):
     errors: list[str] = []
     check_docs_impact.check_impact("main", errors)
     assert errors == []
+
+
+needs_shfmt = pytest.mark.skipif(shutil.which("shfmt") is None, reason="shfmt not installed")
+
+
+def _hook_branch(repo: Path, before: str, after: str) -> None:
+    hook = repo / "plugins/steer/hooks/demo.sh"
+    hook.parent.mkdir(parents=True, exist_ok=True)
+    hook.write_text(before, encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "hook")
+    _git(repo, "checkout", "-q", "-b", "feat/x")
+    hook.write_text(after, encoding="utf-8")
+    _git(repo, "commit", "-qam", "hook change")
+
+
+@needs_shfmt
+def test_gate_silent_on_shfmt_only_hook_change(git_repo: Path):
+    _hook_branch(
+        git_repo,
+        "case $1 in\n  a) echo a ; exit 0 ;;\nesac\n",
+        "case $1 in\na)\n\techo a\n\texit 0\n\t;;\nesac\n",
+    )
+    errors: list[str] = []
+    check_docs_impact.check_impact("main", errors)
+    assert errors == []
+
+
+@needs_shfmt
+def test_gate_trips_on_behavioral_hook_change(git_repo: Path):
+    _hook_branch(git_repo, "echo a\n", "echo b\n")
+    errors: list[str] = []
+    check_docs_impact.check_impact("main", errors)
+    assert len(errors) == 1
+
+
+def test_gate_trips_on_hook_change_when_shfmt_is_missing(
+    git_repo: Path, tmp_path: Path, monkeypatch
+):
+    _hook_branch(git_repo, "echo a ; echo b\n", "echo a\necho b\n")
+    git_only = tmp_path / "bin"
+    git_only.mkdir()
+    (git_only / "git").symlink_to(shutil.which("git") or "git")
+    monkeypatch.setenv("PATH", str(git_only))
+    errors: list[str] = []
+    check_docs_impact.check_impact("main", errors)
+    assert len(errors) == 1
 
 
 def test_gate_silent_on_non_doc_bearing_change(git_repo: Path):
