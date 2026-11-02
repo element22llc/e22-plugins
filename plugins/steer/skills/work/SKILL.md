@@ -6,12 +6,13 @@ when_to_use: >-
   change now. `queue #A #B` works through several issues one after another,
   a fresh worker each. `--reviewed` adds a plan review gate for costly changes;
   `--hotfix` only for a real production incident ("prod is down"), never
-  ordinary urgent work. Modes that take no issue: `promote` (ship main to
-  production), `review` (clear the PR review queue, "review my PRs"), `tidy`
+  ordinary urgent work. `debug` finds a bug's root cause before any fix
+  ("why is this failing?"), diagnosis only when no fix is asked. Modes that
+  take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy`
   (clean up the repo root, organize stray documents and diagrams),
   `walkthrough` (record a demo video). `issues`: backlog work with no code
   this turn - capture, triage, decompose, a ranked board.
-argument-hint: "[start | resume | status | finish | queue | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
+argument-hint: "[start | resume | status | finish | queue | debug | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -43,7 +44,7 @@ allowed-tools:
   - mcp__plugin_steer_github__update_pull_request
   - mcp__plugin_steer_github__list_pull_requests
 ---
-<!-- steer:modes start,resume,status,finish,queue,promote,tidy,review,walkthrough,issues -->
+<!-- steer:modes start,resume,status,finish,queue,debug,promote,tidy,review,walkthrough,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the
@@ -154,6 +155,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
+| **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
@@ -169,14 +171,12 @@ the repo or its **work state**, which is what it owns - the issue captured today
 is the one `start` claims tomorrow. A recommendation you hand
 back to a user names `/steer:work <mode>`, never the owning skill.
 
-**`status #N` and `issues status` are different views.** `status #N` is one
-claimed issue's execution - claimant, branch, PR, CI, validation. `issues status
-[#N | <feature-id>]` joins the issue to the spine - intent, contract readiness,
-sub-issues, an epic's rollup. "How is my PR doing?" vs "is this feature ready?".
+**`status #N` is not `issues status`.** `status #N` is one claimed issue's
+execution (claimant, branch, PR, CI, validation); `issues status [#N |
+<feature-id>]` joins it to the spine (intent, contract readiness, sub-issues).
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
-through `finish`, but the phases stay distinct and idempotent - re-running a
-phase reconciles rather than duplicates.
+through `finish`; the phases stay distinct, and re-running one reconciles.
 
 **Read the full procedure before executing one:**
 [`modes/subcommands.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/subcommands.md).
@@ -193,8 +193,8 @@ phase reconciles rather than duplicates.
   **Only** for an active incident on a confirmed-deployed production; else normal flow.
   -> procedure: [`modes/hotfix.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/hotfix.md)
 
-Neither flag changes the subcommands above, except that `queue` refuses
-`--hotfix`; both leave the merge and deploy gates exactly where they are.
+Neither flag changes the subcommands (`queue` refuses `--hotfix`) or moves
+the merge and deploy gates.
 
 ## Closing ref - check the tracker repo first
 

@@ -33,6 +33,7 @@ SCAFFOLD_VARIANTS = {
         "routes-general-knowledge-to-none",
         "routes-lost-user-to-next",
         "routes-repo-health-to-audit",
+        "routes-root-cause-to-work",
         "routes-think-feature-through-to-spec",
         "routes-triage-backlog-to-issues",
         "routes-load-conventions-to-reference",

@@ -138,6 +138,9 @@ replacements:
   - path: plugins/steer/evals/routes-repo-health-to-audit/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/routes-root-cause-to-work/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-requirements-resent-to-intake/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'

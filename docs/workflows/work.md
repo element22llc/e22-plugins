@@ -7,7 +7,7 @@ while the subcommands below read an issue and deliver it.
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish | queue | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | queue | debug | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "Review gates - `finish` and `--reviewed`"
     `finish` runs an independent code gate on every non-Trivial change: a fresh
@@ -91,6 +91,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR **as a draft** (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - transition to `validate` and stop: the author reads the draft and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. |
 | `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
+| `debug [#N \| <symptom>]` | Root cause before the fix - see below. With only a symptom and no fix asked, diagnosis only and not issue-scoped. |
 
 ## Issue queue - `/steer:work queue`
 
@@ -145,6 +146,28 @@ nothing, and an unattended loop never approves. **It never merges.**
 not let you approve. It marks finished drafts ready, routes red or conflicting
 ones to `resume`, retargets an independent stacked PR onto the default branch,
 and asks you who should review an unassigned one.
+
+## Debugging - `/steer:work debug`
+
+Any defect - a `bug` issue, a failing test or check, a red build `finish` must
+fix, a `--hotfix` incident - follows one procedure before a line of product code
+changes:
+
+1. **Reproduce** with a command that fails every time - ideally the regression
+   test the Testing rule requires - and check what changed since the last
+   known-good state (`git bisect` when one is known).
+2. **Trace to the source** - where the bad value is first produced, not where it
+   surfaced - comparing against a working sibling path.
+3. **One hypothesis at a time**, each tested with the smallest change that can
+   refute it and reverted when it does.
+4. **State the causal chain** from trigger to symptom with `file:line` at each
+   step, the fix, and where the regression test lives.
+5. **Fix test-first at the source**, then run the full local gates.
+
+Three refuted hypotheses or failed fixes stop the loop: what was ruled out goes
+to the dev as a design question (a `contract.md` change or an ADR), never a
+workaround. Asked only "why is this failing?", it stops at the findings and
+edits nothing.
 
 ## Walkthrough - show the feature working
 

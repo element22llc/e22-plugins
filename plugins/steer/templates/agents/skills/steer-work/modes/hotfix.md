@@ -48,6 +48,8 @@ What changes versus the normal flow:
 - **Single-reviewer, expedited.** One reviewer approval is sufficient (it relaxes
   the high-risk scoping ceremony of rules 60 and 80) - it does **not**
   remove the PR/merge human gate. No self-merge.
+- **Cause before fix, faster.** [`debug.md`](debug.md) still governs the fix:
+  the incident gets a stated causal chain, never a guess shipped under pressure.
 - **Local gates, no draft.** Run the local gates before the push as `finish`
   does - a red CI round-trip is slower than a local run - and its code gate,
   whatever the diff's size: an incident fix is High-risk, and one expedited
