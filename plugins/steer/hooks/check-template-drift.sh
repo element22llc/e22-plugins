@@ -50,16 +50,16 @@ REPO="$(steer_repo_root "${CWD}")" || REPO="${CWD}"
 # flagged on every session. This mirrors check-open-questions.sh, which already
 # ignores the same marker.
 missing_sections() {
-  _existing="$1"
-  _template="$2"
-  [ -f "$_existing" ] && [ -f "$_template" ] || return 0
-  # One awk over the two files instead of a grep spawn per template heading: on a
-  # 50-feature repo the old inner loop spawned 800+ greps at every SessionStart,
-  # setting the startup latency floor. awk records the template's `##`/`###`
-  # headings (skipping `steer:placeholder` seeds), deletes any the existing file
-  # also has, and prints the remainder - an exact full-line match, as `grep -qxF`
-  # did. Order-insensitive; `sort` gives a stable, deterministic report.
-  awk '
+	_existing="$1"
+	_template="$2"
+	[ -f "$_existing" ] && [ -f "$_template" ] || return 0
+	# One awk over the two files instead of a grep spawn per template heading: on a
+	# 50-feature repo the old inner loop spawned 800+ greps at every SessionStart,
+	# setting the startup latency floor. awk records the template's `##`/`###`
+	# headings (skipping `steer:placeholder` seeds), deletes any the existing file
+	# also has, and prints the remainder - an exact full-line match, as `grep -qxF`
+	# did. Order-insensitive; `sort` gives a stable, deterministic report.
+	awk '
     FNR == NR {
       if (($0 ~ /^## / || $0 ~ /^### /) && $0 !~ /steer:placeholder/) t[$0] = 1
       next
@@ -75,27 +75,27 @@ REPORT=""
 # The file is read from ${REPO}/<rel> (root-anchored), but the printed label keeps
 # the relative path so the notice reads the same from any cwd.
 check_pair() {
-  _rel="$2"
-  _out="$(missing_sections "${REPO}/${_rel}" "$3")"
-  [ -n "$_out" ] || return 0
-  REPORT="${REPORT}
+	_rel="$2"
+	_out="$(missing_sections "${REPO}/${_rel}" "$3")"
+	[ -n "$_out" ] || return 0
+	REPORT="${REPORT}
 - **${1}** (\`${_rel}\`) is missing:
 $(printf '%s\n' "$_out" | sed 's/^/    - /')"
 }
 
 check_pair "PRODUCTIONIZATION.md" "spec/PRODUCTIONIZATION.md" "${TPL}/productionization.md"
-check_pair "BUILD-STATUS.md"         "spec/BUILD-STATUS.md"         "${TPL}/build-status.md"
+check_pair "BUILD-STATUS.md" "spec/BUILD-STATUS.md" "${TPL}/build-status.md"
 
 # Feature specs - there may be many; glob guards against the no-match literal.
 for _intent in "${REPO}"/spec/features/*/intent.md; do
-  [ -e "$_intent" ] || continue
-  _rel="${_intent#"${REPO}/"}"
-  check_pair "intent.md ($(dirname "$_rel"))" "$_rel" "${TPL}/feature-intent.md"
+	[ -e "$_intent" ] || continue
+	_rel="${_intent#"${REPO}/"}"
+	check_pair "intent.md ($(dirname "$_rel"))" "$_rel" "${TPL}/feature-intent.md"
 done
 for _contract in "${REPO}"/spec/features/*/contract.md; do
-  [ -e "$_contract" ] || continue
-  _rel="${_contract#"${REPO}/"}"
-  check_pair "contract.md ($(dirname "$_rel"))" "$_rel" "${TPL}/feature-contract.md"
+	[ -e "$_contract" ] || continue
+	_rel="${_contract#"${REPO}/"}"
+	check_pair "contract.md ($(dirname "$_rel"))" "$_rel" "${TPL}/feature-contract.md"
 done
 
 [ -n "$REPORT" ] || exit 0

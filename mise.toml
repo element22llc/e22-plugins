@@ -175,12 +175,7 @@ run = [
   # files bare via `mise run ci:hygiene`. Without this the repo's disables mask
   # exactly the findings that break a fresh bootstrap.
   "shellcheck --norc plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh",
-  # shfmt mirrors the pre-commit hook's scoping exactly: a HARD gate everywhere
-  # except plugins/steer/hooks/.
-  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
-  # plugins/steer/hooks/ predates the formatter and is grandfathered (pre-commit
-  # excludes the same prefix): report drift, never fail. `shfmt -w` to apply.
-  "shfmt -d plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh || true",
+  "shfmt -d plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
 ]
 
 [tasks.hooktests]

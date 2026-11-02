@@ -32,7 +32,7 @@ regardless - this matrix is for tight iteration on a single failure.
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/templates/reference/MIGRATIONS.md` | `plugin-check` (`check_migrations.py` for entry structure + the `[Unreleased]` deep pass; `check_plugin.py`'s `check_migration_versions` for the version key) | `uv run python scripts/check_migrations.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
-| any other `*.sh` - `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
+| any other `*.sh` - `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck and shfmt are hard gates everywhere) |
 | `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
 | `.github/workflows/**` | `actions` + `actions-security` | `actionlint && uv run zizmor --no-online-audits .github/workflows/` |
 | `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** - reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
@@ -407,7 +407,7 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   `sh` prefix when adding a hook.
 - Add a fixture case to `plugins/steer/hooks/tests/run.sh` for any new behaviour,
   then run `mise run hooktests` (deterministic, no network). `mise run shell`
-  (shellcheck hard gate, shfmt advisory) must also pass.
+  (shellcheck and shfmt, both hard gates) must also pass.
 - **The one non-`sh` exception is the mod, `hooks/register.tsx`** (named under
   `modules` in `hooks.json`). It only draws and answers commands: it never
   gates, denies or rewrites, because a mod is skipped on older Claude Code,

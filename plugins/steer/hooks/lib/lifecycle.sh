@@ -46,9 +46,9 @@ steer_status_cleared_gate() {
 	case "$1" in
 	approved) printf 'intent-approval' ;;
 	live) printf 'production-release' ;;
-	implemented) printf 'implementation' ;;      # retired - un-migrated repos only
-	validated) printf 'non-prod-validation' ;;   # retired - un-migrated repos only
-	*) : ;; # draft / unknown / absent -> none cleared
+	implemented) printf 'implementation' ;;    # retired - un-migrated repos only
+	validated) printf 'non-prod-validation' ;; # retired - un-migrated repos only
+	*) : ;;                                    # draft / unknown / absent -> none cleared
 	esac
 }
 

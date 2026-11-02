@@ -87,7 +87,3 @@ repos:
         entry: shfmt -d
         language: system
         types: [shell]
-        # The existing steer hook scripts predate this formatter and are
-        # grandfathered (CI treats shfmt as advisory for them too). shfmt still
-        # gates any *new* shell script you add or touch elsewhere.
-        exclude: ^plugins/steer/hooks/

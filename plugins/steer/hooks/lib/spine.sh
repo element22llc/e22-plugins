@@ -124,8 +124,8 @@ steer_spine_state() {
 	while [ -n "${_rest}" ]; do
 		_f="${_rest%% *}"
 		case "${_rest}" in
-			*' '*) _rest="${_rest#* }" ;;
-			*) _rest="" ;;
+		*' '*) _rest="${_rest#* }" ;;
+		*) _rest="" ;;
 		esac
 		[ -f "${_root}/spec/${_f}" ] || {
 			printf 'damaged'
