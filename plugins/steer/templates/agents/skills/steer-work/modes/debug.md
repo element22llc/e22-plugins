@@ -1,7 +1,7 @@
 # `/steer-work debug` - the cause before the fix
 
-Read this file before the first edit whenever the work is a **defect**: a
-`bug`-labelled issue `start` or `resume` picked up, a failing test or check, a
+Read this file before the first edit whenever the work is a **defect**: an
+issue of kind `bug` that `start` or `resume` picked up, a failing test or check, a
 red build `finish` must fix, a `--hotfix` incident, or `debug <symptom | #N |
 test path>` asked directly. The guardrails, preconditions and authorization in
 `SKILL.md` apply unchanged.
@@ -15,9 +15,10 @@ an explained mechanism is a guess, and the next symptom is its bill.
   governs its implementation phase. A bug fix changes observable behavior, so it
   is never Trivial (rule `80-change-class`) and `finish` runs its code gate.
 - **A symptom with no fix asked** ("why does this test fail?") - diagnosis only.
-  Not issue-scoped: like `promote`, it skips Preconditions steps 1 and 3,
-  changes no tracked file and ends at the findings block. Asked for the fix afterwards, Issue-first decides whether it
-  needs an issue, and `start` continues with the findings in hand.
+  Not issue-scoped: it skips Preconditions steps 1 and 3 (`SKILL.md` -> 0b),
+  runs steps 1-4 below, changes no tracked file and ends at the findings block.
+  Asked for the fix afterwards, Issue-first decides whether it needs an issue,
+  and `start` continues with the findings in hand.
 - **`--hotfix`** - the same steps, faster. An incident still gets a cause; the
   mandatory follow-up records it.
 
@@ -25,7 +26,8 @@ an explained mechanism is a guess, and the next symptom is its bill.
 
 1. **Reproduce.** Read the whole error and stack trace. Get a command whose
    output shows the failure every time; the regression test the Testing rule
-   requires is the best one, so write it now if the seam exists. Not
+   requires is the best one, so write it now if the seam exists and a fix was
+   asked (diagnosis only: name it in the findings instead). Not
    reproducible -> gather evidence (logs, a probe at each component boundary)
    rather than guess. Check what changed: `git log` / `git diff` since the last
    known-good state, `git bisect` when a good commit is known.

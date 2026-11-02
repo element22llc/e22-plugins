@@ -165,16 +165,17 @@ changes:
    step, the fix, and where the regression test lives.
 5. **Fix test-first at the source**, then run the full local gates.
 
-Three refuted hypotheses or failed fixes stop the loop: what was ruled out goes
-to the dev as a design question (a `contract.md` change or an ADR), never a
+Three refuted hypotheses or failed fixes stop the loop and report what was ruled
+out. A cause that is a wrong responsibility, shared state or a broken assumption
+goes to the dev as a design question (a `contract.md` change or an ADR), never a
 workaround. Asked only "why is this failing?", it stops at the findings and
 edits nothing.
 
 ## Browser QA - `/steer:work qa`
 
 Tests cover the code; `qa` clicks through what the diff changed before the
-reviewer has to. On the current work branch, with the app on a fresh local
-stack:
+reviewer has to. On the work not yet in `origin/<default>` - the work branch, or
+the unpushed trunk commits in solo-trunk - with the app on a fresh local stack:
 
 1. **Map the flows** the diff reaches - changed pages, routes, components and
    handlers, and the user flows that lead to them - plus the touched feature's
