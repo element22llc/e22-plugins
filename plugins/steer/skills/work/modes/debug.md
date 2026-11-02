@@ -15,8 +15,8 @@ an explained mechanism is a guess, and the next symptom is its bill.
   governs its implementation phase. A bug fix changes observable behavior, so it
   is never Trivial (rule `80-change-class`) and `finish` runs its code gate.
 - **A symptom with no fix asked** ("why does this test fail?") - diagnosis only.
-  Not issue-scoped (Preconditions 0b): it changes no tracked file and ends at the
-  findings block. Asked for the fix afterwards, Issue-first decides whether it
+  Not issue-scoped: like `promote`, it skips Preconditions steps 1 and 3,
+  changes no tracked file and ends at the findings block. Asked for the fix afterwards, Issue-first decides whether it
   needs an issue, and `start` continues with the findings in hand.
 - **`--hotfix`** - the same steps, faster. An incident still gets a cause; the
   mandatory follow-up records it.

@@ -78,13 +78,12 @@ These hold for the whole run, in every mode.
    **there**. A missing local `intent.md` means the workspace has not been read
    yet, never that the feature is unspecified - **never** author product-level
    spec files here to fill the gap.
-0b. **`promote`, `tidy`, `review`, `walkthrough` and a diagnosis-only `debug`
-   skip steps 1 and 3** - none is issue-scoped (`promote` ships what is merged,
-   `tidy` moves files, `review` works the PR queue, `walkthrough` records a demo
-   of an approved intent, `debug` with no fix asked edits nothing), so none
-   reads the tracker or finds-or-creates an issue. Read
-   `modes/promote.md` / `modes/review.md` / `modes/debug.md` from Step 1;
-   `tidy` and `walkthrough` -> their rows.
+0b. **`promote`, `tidy`, `review` and `walkthrough` skip steps 1 and 3** -
+   none is issue-scoped (`promote` ships what is merged, `tidy` moves files,
+   `review` works the PR queue, `walkthrough` records a demo of an approved
+   intent), so none reads the tracker or finds-or-creates an issue. Read
+   `modes/promote.md` / `modes/review.md` from Step 1; `tidy` and
+   `walkthrough` -> their rows.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
@@ -156,7 +155,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
-| **`debug [#N \| <symptom>]`** | Root cause before the fix: reproduce, trace to the source, one hypothesis at a time, a stated causal chain, then a test-first fix. With only a symptom and no fix asked it is **diagnosis only** - not issue-scoped. `start`, `resume`, `finish` and `--hotfix` follow the same procedure whenever the work is a defect. -> [`modes/debug.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/debug.md) |
+| **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
@@ -172,14 +171,12 @@ the repo or its **work state**, which is what it owns - the issue captured today
 is the one `start` claims tomorrow. A recommendation you hand
 back to a user names `/steer:work <mode>`, never the owning skill.
 
-**`status #N` and `issues status` are different views.** `status #N` is one
-claimed issue's execution - claimant, branch, PR, CI, validation. `issues status
-[#N | <feature-id>]` joins the issue to the spine - intent, contract readiness,
-sub-issues, an epic's rollup. "How is my PR doing?" vs "is this feature ready?".
+**`status #N` is not `issues status`.** `status #N` is one claimed issue's
+execution (claimant, branch, PR, CI, validation); `issues status [#N |
+<feature-id>]` joins it to the spine (intent, contract readiness, sub-issues).
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
-through `finish`, but the phases stay distinct and idempotent - re-running a
-phase reconciles rather than duplicates.
+through `finish`; the phases stay distinct, and re-running one reconciles.
 
 **Read the full procedure before executing one:**
 [`modes/subcommands.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/subcommands.md).
@@ -196,8 +193,8 @@ phase reconciles rather than duplicates.
   **Only** for an active incident on a confirmed-deployed production; else normal flow.
   -> procedure: [`modes/hotfix.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/hotfix.md)
 
-Neither flag changes the subcommands above, except that `queue` refuses
-`--hotfix`; both leave the merge and deploy gates exactly where they are.
+Neither flag changes the subcommands (`queue` refuses `--hotfix`) or moves
+the merge and deploy gates.
 
 ## Closing ref - check the tracker repo first
 
