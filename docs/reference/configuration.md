@@ -107,16 +107,13 @@ the org stack defaults in rule `10-stack`:
 | `typescript` | `typescript-language-server --stdio` | `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs` |
 | `python` | `pyright-langserver --stdio` | `.py` `.pyi` |
 
-!!! warning "On a scaffolded repo the `typescript` server may be the inert one"
-    The bundled scaffold also enables `typescript-lsp@claude-plugins-official`
-    (`.claude/settings.json`), whose server declares the **same** name, command
-    and extensions as steer's. When two enabled servers claim an extension, *"the
-    first server registered handles files with that extension and the others never
-    start"*, and the `/plugin` interface shows a warning naming the active one.
-    Registration order is not steer's to control, so on a scaffolded repo one of
-    the two is inert - TS diagnostics still work, but `restartOnCrash: false` may
-    not be the setting in force. Which side should give way is an open question,
-    not a resolved design.
+!!! note "Don't also enable `typescript-lsp@claude-plugins-official`"
+    Its server declares the **same** name, command and extensions as steer's.
+    When two enabled servers claim an extension, *"the first server registered
+    handles files with that extension and the others never start"*, so one of the
+    two would be inert and `restartOnCrash: false` might not be the setting in
+    force. The scaffold no longer enables it, and `/steer:setup sync` proposes
+    removing it from a repo scaffolded before that change.
 
 !!! info "A server activates only when its binary is on `PATH`"
     Claude Code starts each server by name, so a repo without

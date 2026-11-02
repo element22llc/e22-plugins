@@ -94,6 +94,30 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `.claude/settings.json` stops enabling `typescript-lsp`
+
+- **What & why:** the scaffold enabled `typescript-lsp@claude-plugins-official`
+  alongside steer's own `typescript` language server (`plugin.json`
+  `lspServers`). Both claim the same extensions, and when two enabled servers
+  do, the first one registered handles them and the other never starts - so
+  which server ran, and whether steer's `restartOnCrash: false` applied, was
+  down to registration order. Steer's server now owns `.ts`/`.js`, as its
+  `python` server already owns `.py`.
+- **Precondition:** the installed file still enables the upstream plugin -
+
+  ```sh
+  grep -n '"typescript-lsp@claude-plugins-official": *true' .claude/settings.json 2>/dev/null
+  ```
+
+  No output => already migrated, or the dev disabled or removed it => no-op.
+- **Action:** read-then-propose; show the diff. Remove only the
+  `typescript-lsp@claude-plugins-official` key from `enabledPlugins`; leave
+  every other plugin and the `claude-plugins-official` marketplace entry, which
+  the other upstream plugins still need. The language server binary
+  (`typescript-language-server`) must still be on `PATH`, as before.
+
+  **No history entry is earned.**
+
 ### v7.12.0 - `.vscode/mcp.json` GitHub server drops the PAT prompt
 
 - **What & why:** the scaffolded `.vscode/mcp.json` gave the `github` server its
