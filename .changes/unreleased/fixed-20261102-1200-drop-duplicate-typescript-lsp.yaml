@@ -1,0 +1,13 @@
+kind: Fixed
+body: |-
+    - **Fixed: one TypeScript language server per scaffolded repo.** The
+      scaffold's `.claude/settings.json` enabled
+      `typescript-lsp@claude-plugins-official` next to steer's own `typescript`
+      server, which claims the same extensions, so one of the two never started
+      and registration order decided which. The scaffold no longer enables it;
+      a `MIGRATIONS.md` entry has `/steer:setup sync` propose removing it from
+      repos scaffolded earlier. Steer's `typescript` and `python` servers are
+      unchanged and still need their binaries on `PATH`.
+time: 2026-11-02T12:00:00.000000-05:00
+custom:
+    Slug: drop-duplicate-typescript-lsp
