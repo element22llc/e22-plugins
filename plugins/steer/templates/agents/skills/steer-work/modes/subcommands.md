@@ -34,7 +34,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   learnings** - grep `spec/learnings/*.md` frontmatter (`area:`, `symptoms:`,
   `applies_when:`) for terms from the issue and the paths you expect to touch,
   and read only the files that match (no directory, nothing to do);
-  begin implementation.
+  begin implementation - a defect through
+  [`debug.md`](debug.md), cause before fix.
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
   branch that no longer exists, a PR that merged/closed while away) and prune
@@ -107,8 +108,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   CI on the trunk push** (`gh run watch`) the same way - the closed issue, not a
   merged PR, is the terminal evidence. On a red build - a ready PR's run, picked
   up by `resume #N`, or the trunk push -
-  diagnose and fix it as part of the same unit of work: reproduce the failure
-  locally with the task CI ran, fix everything that run reported, re-run the
+  diagnose and fix it as part of the same unit of work ([`debug.md`](debug.md)):
+  reproduce the failure locally with the task CI ran, fix everything that run reported, re-run the
   local gates green, then push **once** and re-watch - batch the fixes, never a
   push per attempt. A failure that only reproduces in CI (runner environment,
   secrets, services) is the exception that earns an exploratory push. Repeat

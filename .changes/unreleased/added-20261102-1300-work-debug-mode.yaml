@@ -1,0 +1,16 @@
+kind: Added
+body: |-
+    - **Added: `/steer:work debug` - root cause before the fix.** A defect now
+      follows one procedure (`skills/work/modes/debug.md`): reproduce, trace back
+      to where the bad value is produced, test one hypothesis at a time, state
+      the causal chain with `file:line` before touching product code, then fix
+      test-first at the source. Three refuted hypotheses or failed fixes stop the
+      loop and go to the dev as a design question. `start`, `resume`, `finish`'s
+      red-build fix and `--hotfix` follow it whenever the work is a defect;
+      `debug <symptom>` with no fix asked is diagnosis only and needs no issue.
+      Adapted from obra/superpowers `systematic-debugging` and Compound
+      Engineering's `ce-debug` (both MIT); the prose is steer's own. A routing
+      case `routes-root-cause-to-work` covers the new mode.
+time: 2026-11-02T13:00:00.000000-05:00
+custom:
+    Slug: work-debug-mode

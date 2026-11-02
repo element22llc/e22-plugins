@@ -257,7 +257,7 @@ that hands off to it, the same rule as the front-door cases above.
 |---|---|
 | `doctor`, `protect`, `worktrees` | `routes-missing-mise-to-doctor`, `routes-protect-main-to-protect`, `routes-orca-worktrees-to-worktrees` |
 | `adr`, `intake`, `questions`, `roadmap` | `routes-postgres-decision-to-adr`, `routes-requirements-resent-to-intake`, `routes-open-questions-to-questions`, `routes-release-timeline-to-roadmap` |
-| `work --hotfix`, `promote`, `review`, `tidy` | `routes-production-down-to-work`, `routes-promote-merged-to-work`, `routes-pr-queue-to-work`, `routes-loose-documents-to-tidy` |
+| `work --hotfix`, `debug`, `promote`, `review`, `tidy` | `routes-production-down-to-work`, `routes-root-cause-to-work`, `routes-promote-merged-to-work`, `routes-pr-queue-to-work`, `routes-loose-documents-to-tidy` |
 | `explain`, `help` | `routes-stakeholder-page-to-explain`, `routes-what-can-steer-do-to-help` |
 | `standards`, `report`, `reference`, `loop` | `routes-web-chat-to-standards`, `routes-steer-crashed-to-report`, `routes-load-conventions-to-reference`, `routes-nightly-loop-to-loop` |
 

@@ -6,12 +6,13 @@ when_to_use: >-
   change now. `queue #A #B` works through several issues one after another,
   a fresh worker each. `--reviewed` adds a plan review gate for costly changes;
   `--hotfix` only for a real production incident ("prod is down"), never
-  ordinary urgent work. Modes that take no issue: `promote` (ship main to
-  production), `review` (clear the PR review queue, "review my PRs"), `tidy`
+  ordinary urgent work. `debug` finds a bug's root cause before any fix
+  ("why is this failing?"), diagnosis only when no fix is asked. Modes that
+  take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy`
   (clean up the repo root, organize stray documents and diagrams),
   `walkthrough` (record a demo video). `issues`: backlog work with no code
   this turn - capture, triage, decompose, a ranked board.
-argument-hint: "[start | resume | status | finish | queue | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
+argument-hint: "[start | resume | status | finish | queue | debug | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -43,7 +44,7 @@ allowed-tools:
   - mcp__plugin_steer_github__update_pull_request
   - mcp__plugin_steer_github__list_pull_requests
 ---
-<!-- steer:modes start,resume,status,finish,queue,promote,tidy,review,walkthrough,issues -->
+<!-- steer:modes start,resume,status,finish,queue,debug,promote,tidy,review,walkthrough,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the
@@ -77,12 +78,13 @@ These hold for the whole run, in every mode.
    **there**. A missing local `intent.md` means the workspace has not been read
    yet, never that the feature is unspecified - **never** author product-level
    spec files here to fill the gap.
-0b. **`promote`, `tidy`, `review` and `walkthrough` skip steps 1 and 3** -
-   none is issue-scoped (`promote` ships what is merged, `tidy` moves files,
-   `review` works the PR queue, `walkthrough` records a demo of an approved
-   intent), so none reads the tracker or finds-or-creates an issue. Read
-   `modes/promote.md` / `modes/review.md` from Step 1; `tidy` and
-   `walkthrough` -> their rows.
+0b. **`promote`, `tidy`, `review`, `walkthrough` and a diagnosis-only `debug`
+   skip steps 1 and 3** - none is issue-scoped (`promote` ships what is merged,
+   `tidy` moves files, `review` works the PR queue, `walkthrough` records a demo
+   of an approved intent, `debug` with no fix asked edits nothing), so none
+   reads the tracker or finds-or-creates an issue. Read
+   `modes/promote.md` / `modes/review.md` / `modes/debug.md` from Step 1;
+   `tidy` and `walkthrough` -> their rows.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
@@ -154,6 +156,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
+| **`debug [#N \| <symptom>]`** | Root cause before the fix: reproduce, trace to the source, one hypothesis at a time, a stated causal chain, then a test-first fix. With only a symptom and no fix asked it is **diagnosis only** - not issue-scoped. `start`, `resume`, `finish` and `--hotfix` follow the same procedure whenever the work is a defect. -> [`modes/debug.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/debug.md) |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
