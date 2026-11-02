@@ -61,6 +61,12 @@ flowchart TD
   structured `### Q-NNN` block with its owner, impact, gate, and `created:` date,
   so an adopted repo does not start with a backlog of questions nobody needs to
   answer.
+- **Shipped features are not re-approved.** Adopt asks once whether the app is
+  deployed with real users. A feature that already works there is written
+  `Status: live` with `Approved by: as-built` - there is no scope left for the PO
+  to approve, and the adoption PR review confirms the extraction. A feature on an
+  undeployed app, a half-built one, or one with an open blocking question stays
+  `draft` and goes through `/steer:spec approve` like any new intent.
 - **No ADR from inference.** Adopt must never infer a *ratified* ADR from code.
   The as-built spine records what exists; a decision that was never explicitly
   made is not an ADR. See [Product spine](../concepts/product-spine.md).
