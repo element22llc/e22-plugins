@@ -137,7 +137,10 @@ materialize` deliberately stops at `draft`. Other workflows (notably
 `/steer-build`) **delegate** here after an explicit PO approval -
 they invoke this operation but **must not reproduce its field-editing logic**
 (the `## PO acceptance` checkboxes, `> Approved by:` / `> Approved at:`, the
-`Status:` flip, or the history entry). An explicit PO statement authorizes Claude
+`Status:` flip, or the history entry). The one write outside this mode is not
+this transition: `/steer-setup adopt` writes a feature already released as
+`live`, `Approved by: as-built`, with no `approved` step (`ENUMS.md`). An
+explicit PO statement authorizes Claude
 to run this operation; the PO never has to know or type the slash command.
 
 **Allowed transition - `draft -> approved` only.** This is the spec side of the

@@ -15,10 +15,11 @@ where `walkthrough` films a happy path for a PO.
 it runs only when asked. `finish` names it in the closing block when the diff
 touches UI paths (`NEXT-ACTION.md`); it never starts it.
 
-It runs on the current work branch against `origin/<default>`, inside that
-branch's issue: a fix it makes is a localized supporting change of that issue,
-recorded in its managed block. The run itself opens no issue. On the default
-branch, or with no UI in the diff, say there is nothing to drive and stop.
+It runs on the work not yet in `origin/<default>` - the work branch in pr-flow,
+the unpushed trunk commits in solo-trunk - inside that work's issue: a fix it
+makes is a localized supporting change of that issue, recorded in its managed
+block. The run itself opens no issue. With nothing ahead of `origin/<default>`,
+or no UI in the diff, say there is nothing to drive and stop.
 
 ## Preconditions
 

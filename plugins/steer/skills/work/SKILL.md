@@ -79,12 +79,13 @@ These hold for the whole run, in every mode.
    **there**. A missing local `intent.md` means the workspace has not been read
    yet, never that the feature is unspecified - **never** author product-level
    spec files here to fill the gap.
-0b. **`promote`, `tidy`, `review` and `walkthrough` skip steps 1 and 3** -
-   none is issue-scoped (`promote` ships what is merged, `tidy` moves files,
-   `review` works the PR queue, `walkthrough` records a demo of an approved
-   intent), so none reads the tracker or finds-or-creates an issue. Read
-   `modes/promote.md` / `modes/review.md` from Step 1; `tidy` and
-   `walkthrough` -> their rows.
+0b. **`promote`, `tidy`, `review`, `walkthrough` and a symptom-only `debug`
+   skip steps 1 and 3** - none is issue-scoped (`promote` ships what is merged,
+   `tidy` moves files, `review` works the PR queue, `walkthrough` records a demo
+   of an approved intent, a symptom-only `debug` diagnoses and changes nothing),
+   so none reads the tracker or finds-or-creates an issue. Read
+   `modes/promote.md` / `modes/review.md` / `modes/debug.md` from Step 1;
+   `tidy` and `walkthrough` -> their rows.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out

@@ -5,8 +5,8 @@
 >   (product state only - delivery progress lives on the tracker issue below)
 > Created: YYYY-MM-DD
 > Tracker: [ref in this product's format - see /spec/tracker.md - or "none yet"]
-> Approved by: [PO github handle - written by `/steer:spec approve`, else "not yet"]
-> Approved at: [YYYY-MM-DD - written by `/steer:spec approve`, else "not yet"]
+> Approved by: [PO github handle - written by `/steer:spec approve` (`as-built` when adoption writes a shipped feature at `live`), else "not yet"]
+> Approved at: [YYYY-MM-DD - written by `/steer:spec approve` (the adoption date for `as-built`), else "not yet"]
 
 ## PO acceptance
 
