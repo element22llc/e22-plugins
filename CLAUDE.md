@@ -196,7 +196,8 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   code land in the same commit - do not skip the hook or commit around it.
 - **Fast iteration:** when one gate fails, re-run just that script -
   `uv run python scripts/check_standards.py`, `... scripts/check_plugin.py`,
-  `... scripts/check_fixtures.py`, or `sh plugins/steer/hooks/tests/run.sh`.
+  `... scripts/check_fixtures.py`, or `sh plugins/steer/hooks/tests/run.sh <name>`
+  (one hook's `cases/<name>.sh`).
 - **Editing a rule?** `mise run rules:preview` shows the always-on payload a
   real session receives - a per-rule inject/skip table with the `inject-when`
   token that decided each one, plus the byte total. Add `-- --repo <path>` for a
