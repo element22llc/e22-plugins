@@ -7,7 +7,7 @@ while the subcommands below read an issue and deliver it.
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish | queue | debug | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "Review gates - `finish` and `--reviewed`"
     `finish` runs an independent code gate on every non-Trivial change: a fresh
@@ -92,6 +92,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
 | `debug [#N \| <symptom>]` | Root cause before the fix - see below. With only a symptom and no fix asked, diagnosis only and not issue-scoped. |
+| `qa [#N]` | Opt-in browser QA of the flows the branch diff touches - see below. |
 
 ## Issue queue - `/steer:work queue`
 
@@ -168,6 +169,31 @@ Three refuted hypotheses or failed fixes stop the loop: what was ruled out goes
 to the dev as a design question (a `contract.md` change or an ADR), never a
 workaround. Asked only "why is this failing?", it stops at the findings and
 edits nothing.
+
+## Browser QA - `/steer:work qa`
+
+Tests cover the code; `qa` clicks through what the diff changed before the
+reviewer has to. On the current work branch, with the app on a fresh local
+stack:
+
+1. **Map the flows** the diff reaches - changed pages, routes, components and
+   handlers, and the user flows that lead to them - plus the touched feature's
+   acceptance criteria when it has an `intent.md`.
+2. **Drive each flow** in a real browser: the happy path, then empty and invalid
+   input, a second role where access logic changed, back and reload, a narrow
+   viewport - watching console errors and failed requests as well as the page.
+3. **Fix or file.** Breakage this diff introduced is fixed through `debug`, with
+   a regression test; anything larger, needing a product decision, or already
+   broken on the default branch becomes a separate linked issue.
+4. **Record** the flows driven, what passed, what was fixed and what was filed
+   under the PR's *Notes for the reviewer*, then `finish` again for the new
+   commits.
+
+It is opt-in: `finish` suggests it when the diff touches UI paths and never
+runs it. The driver is the walkthrough's - the Playwright CLI with a shell, the
+Playwright MCP without - and no QA script is committed; a check worth keeping
+becomes a regression test. Local, seeded data only: never a deployed
+environment or a real account.
 
 ## Walkthrough - show the feature working
 

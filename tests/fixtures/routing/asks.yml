@@ -107,6 +107,9 @@ fixtures:
   - ask: "carts with 3 of an item are charged for 1 - find the root cause"
     skill: work
     signals: ["root cause"]
+  - ask: "click through the screens this branch changed in a browser before review"
+    skill: work
+    signals: ["browser"]
   - ask: "promote what is merged on main to production"
     skill: work
     signals: ["promote"]

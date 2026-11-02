@@ -1,0 +1,17 @@
+kind: Added
+body: |-
+    - **Added: `/steer:work qa` - diff-scoped browser QA before review.** An
+      opt-in mode (`skills/work/modes/qa.md`) that maps the user flows the
+      branch diff touches, adds the touched feature's acceptance criteria, and
+      drives them in a real browser on a fresh local stack, edges included.
+      Breakage this diff introduced is fixed through `debug` (cause, regression
+      test, fix at the source); anything larger or pre-existing becomes a
+      separate linked issue; the findings land in the PR's *Notes for the
+      reviewer*. It reuses the walkthrough tool table (Playwright CLI with a
+      shell, Playwright MCP without), commits no QA script, and never runs on
+      its own: `finish` suggests it when the diff touches UI paths. Adapted
+      from Compound Engineering's `ce-dogfood` (EveryInc, MIT); the procedure
+      is steer's own.
+time: 2026-11-02T14:00:00.000000-05:00
+custom:
+    Slug: work-qa-mode

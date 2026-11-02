@@ -21,6 +21,8 @@ without redefining the subcommands in `SKILL.md`:
 | Acceptance criteria not yet met | Blocking now (next transition) | Continue - `/steer:work resume #N` |
 | Required validation failing | Blocking now | Fix failures, then `/steer:work finish #N` |
 | Implemented, PR not opened | Blocking now (next transition) | `/steer:work finish #N` |
+| `qa` added fix commits | Blocking now | Re-run the gates on them - `/steer:work finish #N` |
+| Draft PR open, diff touches UI paths, `qa` not run this branch | Recommended | Drive the changed flows in a browser before review - `/steer:work qa #N` (opt-in, never auto-run) |
 | Draft PR open, in `validate` | Human decision required | Its author reads the PR, then marks it ready, which runs CI (no command - a draft's skipped checks are not green) |
 | Ready PR, CI running | Blocking now | Watch to conclusion - `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | Ready PR, CI red | Blocking now | `/steer:work resume #N` - reproduce and fix locally until the local gates are green, then push once and re-watch |

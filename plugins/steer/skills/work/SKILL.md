@@ -7,12 +7,13 @@ when_to_use: >-
   a fresh worker each. `--reviewed` adds a plan review gate for costly changes;
   `--hotfix` only for a real production incident ("prod is down"), never
   ordinary urgent work. `debug` finds a bug's root cause before any fix
-  ("why is this failing?"), diagnosis only when no fix is asked. Modes that
+  ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks
+  through the flows a UI change touches in a real browser before review. Modes that
   take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy`
   (clean up the repo root, organize stray documents and diagrams),
   `walkthrough` (record a demo video). `issues`: backlog work with no code
   this turn - capture, triage, decompose, a ranked board.
-argument-hint: "[start | resume | status | finish | queue | debug | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
+argument-hint: "[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -44,7 +45,7 @@ allowed-tools:
   - mcp__plugin_steer_github__update_pull_request
   - mcp__plugin_steer_github__list_pull_requests
 ---
-<!-- steer:modes start,resume,status,finish,queue,debug,promote,tidy,review,walkthrough,issues -->
+<!-- steer:modes start,resume,status,finish,queue,debug,qa,promote,tidy,review,walkthrough,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the
@@ -156,6 +157,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
+| **`qa [#N]`** | Opt-in: drive the flows the branch diff touches in a real browser, fix small breakage via `debug`, file the rest. Read `modes/qa.md` first. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
@@ -219,27 +221,17 @@ PRs cannot be atomic (`/steer:reference polyrepo`).
 
 ## Completion semantics
 
-**Closure reason - not the mere fact of closure - decides the terminal state.**
-Inspect it before transitioning a closed issue; keep delivery state as independent
-evidence (a merged PR - or, in solo-trunk, the closing trunk commit - is
-necessary for `done`, not sufficient on its own).
-
-- Opening the draft PR, local gates green -> `validate` (never `done`). **(Solo-trunk has no PR - the
-  trunk commit that closes the issue is the delivery; go straight to the closure
-  reasons below.)**
-- Closed as **`completed`** (delivered - PR merged or trunk commit landed - **and**
-  acceptance criteria accepted) -> `done`.
-- Closed as **`rejected` / `duplicate` / `obsolete` / `not-planned` /
-  `superseded`** -> **`cancelled`**, never `done` - record a replacement pointer
-  where one applies. Cancelled work was not delivered.
-- PR closed **without** merge -> back to `in-progress` or `blocked`.
-- `status` / `resume` / `finish` reconcile stale markers on the next interaction,
-  reading the closure reason rather than assuming "closed == done." **They never
-  touch the spec's `Status:`** - delivery progress lives only in the issue marker,
-  and an `approved` intent whose issue is `in-progress`, `validate`, or `done` is
-  correct, not drift (crosswalk in `ISSUE-WORKFLOW.md`). The one spec-side state
-  this flow can legitimately surface is a `live` intent whose issue never reached a
-  terminal state; report it, never rewrite it.
+**Closure reason - not the mere fact of closure - decides the terminal state**
+(`ISSUE-WORKFLOW.md` -> Completion rules and crosswalk). Draft PR open, local
+gates green -> `validate`, never `done`; solo-trunk has no PR, its closing trunk
+commit is the delivery. Closed `completed` (delivered **and** acceptance
+accepted) -> `done`. Closed `rejected` / `duplicate` / `obsolete` /
+`not-planned` / `superseded` -> **`cancelled`**, never `done`, with a
+replacement pointer where one applies. PR closed without merge -> `in-progress`
+or `blocked`. `status` / `resume` / `finish` reconcile stale markers by the
+closure reason and **never touch the spec's `Status:`**: an `approved` intent
+whose issue is `in-progress`, `validate` or `done` is correct; a `live` intent
+whose issue never reached a terminal state is reported, never rewritten.
 
 ## Branch naming
 
