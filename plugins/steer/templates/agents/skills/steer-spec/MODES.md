@@ -11,7 +11,8 @@ intent is presented for approval (step 4 of the default flow) or on demand.
 It interrogates the draft against the classic gap classes and converts every
 **real** gap into a structured `Q-NNN` open question - never loose prose, and
 never an invented answer. Read-only against decisions: it raises questions;
-answering them stays with the PO/dev (`/steer-spec questions`).
+answering them stays with the PO/dev (`/steer-spec questions`). Writing in a
+decision this conversation already made is not a new one (rule `30-spec`).
 
 Sweep these gap classes against `intent.md` (and `contract.md` where present):
 
@@ -44,7 +45,7 @@ option to build first in the question; the build settles it (`/steer-work`
 ### Fresh-reader pass - a reader who was not in the conversation
 
 The context that wrote the draft is anchored to it and cannot see what it left
-unsaid (`REVIEW-LOOP.md` section 2, Independence). After the sweep, spawn **one**
+unsaid ([`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 2, Independence). After the sweep, spawn **one**
 fresh subagent - never a fork, which would carry this conversation - and give it
 only files: `intent.md`, `contract.md` where present, and the spine files they
 link to (`vision.md`, `glossary.md`, cited ADRs). In advisory mode, pass the
@@ -206,10 +207,10 @@ preconditions above hold (no refusal, no unresolved blocking question), present 
 tradeoff to the PO and ask: **Approve / Reject / Decide later** (rule
 `61-gates`; full protocol `/steer-reference gates`). The prompt shows the
 **acceptance criteria**, the **locked scope - in and out**, and any non-blocking
-open questions that survive approval. It also shows the fresh reader's *What
-this proposes* paraphrase and what its pass corrected (clarify mode ->
-Fresh-reader pass), or says the pass did not run - an intent drafted in an
-earlier session is not re-read by a direct `approve`. `Decide later` leaves the intent `draft`
+open questions that survive approval. When clarify's fresh-reader pass ran in
+this session, it also shows the reader's *What this proposes* paraphrase and
+what the pass corrected; when the pass was skipped for want of a subagent tool,
+it says so. A direct `approve` does not re-read an intent drafted earlier. `Decide later` leaves the intent `draft`
 untouched; `Reject` records the reason in `intent.md`. Never pre-select
 `Approve`, and never read ambient agreement as approval.
 

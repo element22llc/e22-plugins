@@ -88,6 +88,8 @@ model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
 - `/steer:audit` fans out one read-only `steer-reviewer` subagent per dimension on
   large repos, then vets the gathered summaries.
 - `/steer:audit spec` fans out one reviewer per feature for large drift comparisons.
+- `/steer:spec clarify` spawns one **fresh reader** before an intent goes for
+  approval - given the draft and its linked spine files, never the conversation.
 - `/steer:work --reviewed` spawns a **fresh reviewer subagent** for its plan gate -
   a separate context given the plan, the restated requirements, and the steer rules
   as the rubric.
