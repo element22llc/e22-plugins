@@ -8,8 +8,10 @@ body: |-
       superseded or deprecated ADR with its successor. A decision in a
       high-risk area also gets one question round with the dev on invariants,
       fail-at-boot validation, grant completeness and who else can reach what
-      it restricts. The ratification prompt then says what grounding verified,
-      corrected and could not check.
+      it restricts - a draft written during setup or a build included; with
+      no dev in the session, those questions are recorded as open in the ADR.
+      The ratification prompt then says what grounding verified, corrected
+      and could not check.
 time: 2026-11-03T12:00:00.000000-05:00
 custom:
     Slug: adr-ground-draft
