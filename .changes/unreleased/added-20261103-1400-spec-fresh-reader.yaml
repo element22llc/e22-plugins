@@ -7,11 +7,7 @@ body: |-
       assumes already exists, then flags undefined product terms, unstated
       dependencies and acceptance criteria two readers would test
       differently. A wrong paraphrase is the headline finding, and the PO
-      sees the paraphrase in the approval prompt. `REVIEW-LOOP.md` gains the
-      author's side of every review: fix, contest only with evidence the
-      reviewer could have read, record a decision the conversation made but
-      the spine lacks, or decline a low finding - never contest a
-      comprehension gap.
+      sees the paraphrase in the approval prompt.
 time: 2026-11-03T14:00:00.000000-05:00
 custom:
     Slug: spec-fresh-reader
