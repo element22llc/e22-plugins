@@ -46,7 +46,7 @@ option to build first in the question; the build settles it (`/steer-work`
 
 The context that wrote the draft is anchored to it and cannot see what it left
 unsaid ([`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 2, Independence). After the sweep, spawn **one**
-fresh subagent - never a fork, which would carry this conversation - and give it
+fresh subagent that does not inherit this conversation, and give it
 only files: `intent.md`, `contract.md` where present, and the spine files they
 link to (`vision.md`, `glossary.md`, cited ADRs). In advisory mode, pass the
 draft text instead. Ask it for:

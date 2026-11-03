@@ -218,9 +218,9 @@ silently.
   routes implementation through `/steer:work`; in its default prototype/local mode
   it implements directly.
 - **`/steer:spec`** runs the same independence before code exists: `clarify`'s
-  fresh-reader pass gives one fresh subagent the draft intent alone, and its
-  findings are answered by section 4 -> Answering findings before the PO is
-  asked to approve.
+  fresh-reader pass gives one fresh subagent the draft and the spine files it
+  links to, never the conversation, and its findings are answered by section 4
+  -> Answering findings before the PO is asked to approve.
 - **`/code-review`** is the built-in diff reviewer the code gate adds where the
   client has it, for correctness depth; the rubric reviewer covers what it
   cannot see outside the diff.

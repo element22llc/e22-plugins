@@ -91,8 +91,8 @@ model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
 - `/steer:spec clarify` spawns one **fresh reader** before an intent goes for
   approval - given the draft and its linked spine files, never the conversation.
 - `/steer:work --reviewed` spawns a **fresh reviewer subagent** for its plan gate -
-  a separate context given the plan, the restated requirements, and the steer rules
-  as the rubric.
+  a separate context given the plan, the restated requirements, the steer rules
+  as the rubric, and read access to the repo.
 - `/steer:work finish` spawns one for its code gate on every non-Trivial change,
   given the branch diff and the `REVIEW-LOOP.md` section 4 rubric, plus a
   specialist per lens the diff triggers and a verifier per high finding.
