@@ -37,6 +37,11 @@ flowchart TD
 New ADRs default to **Proposed** - the fixture suite asserts this. An ADR becomes
 **Accepted** only on an explicit human decision.
 
+Before the ratification prompt, `/steer:spec adr` grounds the draft: it finds every place a
+setting, secret or role the decision changes is set or read, checks the paths
+and identifiers it cites, replaces citations of superseded ADRs, and for a
+high-risk decision runs one stress-test question round with the dev.
+
 That decision is **answerable in-session**. `/steer:spec adr accept <n>` is the single
 writer of `Proposed -> Accepted`: it offers the three-option gate prompt
 (**Approve / Reject / Decide later**) carrying the ADR's rejected alternatives and

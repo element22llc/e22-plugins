@@ -52,20 +52,53 @@ the product repo, from the bundled template.
    stamped (`> Ratified via: in-session`). That is a *create*, not a
    `Proposed -> Accepted` transition - `accept` remains the single writer of the
    transition.
-6. **Offer ratification** (below) rather than ending on a `Proposed` ADR the
+6. **Ground the draft** (below) before anyone is asked to ratify it.
+7. **Offer ratification** (below) rather than ending on a `Proposed` ADR the
    author has to go and hand-edit.
+
+## Ground the draft - check it against the repo and the spine
+
+A draft written from the conversation is wrong in ways a few greps find, and a
+reviewer should not be the first to find them. Before the ratification prompt,
+fix the draft against each check:
+
+1. **Change-set completeness.** For every setting, secret, credential, role,
+   permission or env var the Decision adds, removes or replaces, search the repo
+   for every place it is currently set, granted or read - infra, deploy config,
+   env schemas and their defaults, app code. The Decision names each site or
+   says why it stays. A site the draft never mentions is the usual miss, not a
+   false claim: dropping a password while the same secret still sets the
+   username, or still sits in a role's readable secrets, breaks or leaks.
+2. **Cited facts.** Read every path, `path:line`, setting and identifier the
+   draft cites, and correct any claim the file does not support.
+3. **Cited ADRs.** Read each cited ADR's `> Status:`. A `Superseded` or
+   `Deprecated` one is replaced by its successor, and so is vocabulary that only
+   the retired record uses.
+4. **High-risk stress test.** When the decision touches a High-risk area (rule
+   `60-high-risk`), run one question round with the dev per
+   [`QUESTION-ROUNDS.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/QUESTION-ROUNDS.md)
+   before the prompt: the invariant that holds the security property, and
+   whether the ADR states it; which bad configuration fails at boot rather than
+   at runtime; whether grants and defaults cover everything the identity
+   touches; and who else - humans, admins, other services - can still reach
+   what this decision restricts. Fold confirmed answers into the draft; an
+   unanswered one goes in the prompt as open. Skip the round when a bootstrap
+   is the caller - its own interview already asked.
+
+Do it inline; it is a handful of reads, not a sweep to delegate.
 
 ## Offer ratification - don't end on a dead `Proposed`
 
 A `Proposed` ADR blocks everything downstream, and the person who can unblock it
-is usually the one in the session. So having drafted it, **present the tradeoff
+is usually the one in the session. So having drafted and grounded it, **present the tradeoff
 and ask** - one question, three options: **Approve / Reject / Decide later**
 (rule `61-gates`; full protocol `/steer-reference gates`).
 
 The prompt must show the **Decision**, the **rejected alternatives with their
 reasons**, and the **negative** consequences. "Approve ADR 0007?" is theater - a
 human cannot decide what they cannot see, and prompting straight after you drafted
-your own proposal is exactly where rubber-stamping happens.
+your own proposal is exactly where rubber-stamping happens. So the prompt also
+states what grounding verified, what it corrected, and what it could not check.
 
 - **Approve** -> run `accept <n>` (below), then continue into whatever the ADR was
   blocking, in the same pass.
