@@ -3,6 +3,45 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.18.0
+
+- **Added: `/steer:spec adr` grounds a draft before asking anyone to ratify
+  it.** Between drafting and the ratification prompt, the skill searches
+  for every place a setting, secret, role or env var the decision changes
+  is set or read, and makes the Decision name each one. It also checks
+  every path and identifier the draft cites, and replaces a citation of a
+  superseded or deprecated ADR with its successor. A decision in a
+  high-risk area also gets one question round with the dev on invariants,
+  fail-at-boot validation, grant completeness and who else can reach what
+  it restricts - a draft written during setup or a build included; with
+  no dev in the session, those questions are recorded as open in the ADR.
+  The ratification prompt then says what grounding verified, corrected
+  and could not check.
+- **Added: `/steer:spec clarify` gets a fresh reader before an intent goes
+  for approval.** After the gap sweep, one subagent that never saw the
+  conversation reads only the draft intent, its contract and the spine
+  files they link to. It paraphrases what the draft proposes and what it
+  assumes already exists, then flags undefined product terms, unstated
+  dependencies and acceptance criteria two readers would test
+  differently. A wrong paraphrase is the headline finding, and the PO
+  sees the paraphrase in the approval prompt.
+- **Changed: the `--reviewed` plan gate runs three named passes, and a
+  reviewer that never reports is no longer read as clean.** The plan
+  reviewer now gets read access to the repo and checks what the plan
+  misses, searches for an existing helper, module or dependency before
+  accepting a new one, and flags every design choice or touched file the
+  plan leaves to implementation - a choice made mid-implementation is one
+  nobody reviewed. The plan names its files and design choices. Across
+  the review loop and `/steer:audit`, a reviewer or verifier that errors,
+  times out or returns nothing is retried once, then reported `not run`
+  instead of counting as zero findings.
+- **Changed: `REVIEW-LOOP.md` now covers the author's side of every
+  review.** A confirmed code-gate finding and a high-severity plan-gate
+  finding are always fixed. Any other finding gets one answer: fix it,
+  contest it only with evidence the reviewer could have read, record a
+  decision the conversation made but the spine lacks, or decline it if
+  it is low. A gap a fresh reader could not follow is never contested.
+
 ## 7.17.0
 
 - **Fixed: the intent template no longer says only `/steer:spec approve`
