@@ -130,6 +130,8 @@ units**, or any sweep where diffing every feature inline would crowd this contex
 delegate **each feature's diff to the `steer-reviewer` subagent** (one per feature,
 explicitly), handing it the intended-behavior unit, the as-built `/spec` feature
 that owns it, and the verdict scale above; then gather the per-feature verdicts.
+A reviewer that returns no report is retried once, then its feature is reported
+**not run** - never as matching.
 `steer-reviewer` is read-only by construction (`Read`/`Grep`/`Glob` only) - the
 tracker pull stays here in the lead. Below that size, diff the features inline.
 

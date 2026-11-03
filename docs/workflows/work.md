@@ -17,7 +17,11 @@ while the subcommands below read an issue and deliver it.
     verifier tries to refute each high finding before it reaches the author;
     and a bounded fix loop follows.
     Add `--reviewed` for an independent plan-gate review and plan sign-off
-    before implementing. The shared protocol and rubric live in
+    before implementing: the reviewer checks what the plan misses, searches
+    the repo for existing code the plan would duplicate, and flags every
+    design choice the plan leaves to implementation. A reviewer that returns
+    no report is retried once, then reported `not run` - never as clean.
+    The shared protocol and rubric live in
     `templates/reference/REVIEW-LOOP.md`.
 
 !!! warning "`--hotfix` - the production-incident fast-path"

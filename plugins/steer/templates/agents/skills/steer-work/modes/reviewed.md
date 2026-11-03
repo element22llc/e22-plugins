@@ -15,14 +15,16 @@ stopping rules: [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22ll
   without the gates and say they were skipped - honesty over ceremony. The gates
   earn their cost only on non-trivial work.
 - **Plan gate - independent.** Before implementing, draft the approach (what
-  changes, where, why), then spawn a **fresh reviewer subagent** - a separate
+  changes, in which files, why, and each design choice it needs), then spawn a
+  **fresh reviewer subagent** - a separate
   context, **not** `steer-reviewer` (that agent reviews existing on-disk code and
   needs `path:line` evidence a prospective plan can't supply). Give it the plan,
-  the **restated requirements** (what success means, in your words), and the
-  relevant **steer rules** as the rubric, plus any `spec/learnings/` files the
-  `start` grep matched (frontmatter and body). Ask for severity-ranked findings
-  plus a "what's missing" pass; a plan that ignores a matched learning is a
-  finding. **Revise on every high-severity finding**; never review
+  the **restated requirements** (what success means, in your words), the
+  relevant **steer rules** as the rubric, and read access to the repo, plus any
+  `spec/learnings/` files the `start` grep matched (frontmatter and body). Ask
+  for severity-ranked findings from the plan gate's three passes
+  (`REVIEW-LOOP.md` section 4: what is missing, existing code first, no decision
+  left open); a plan that ignores a matched learning is a finding. **Revise on every high-severity finding**; never review
   your own plan.
 - **Human plan sign-off - answerable in-session.** Present the vetted plan before a
   significant change (`--reviewed` is the caller opting into gates; rule
