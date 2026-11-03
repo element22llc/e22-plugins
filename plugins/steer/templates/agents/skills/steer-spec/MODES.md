@@ -11,7 +11,8 @@ intent is presented for approval (step 4 of the default flow) or on demand.
 It interrogates the draft against the classic gap classes and converts every
 **real** gap into a structured `Q-NNN` open question - never loose prose, and
 never an invented answer. Read-only against decisions: it raises questions;
-answering them stays with the PO/dev (`/steer-spec questions`).
+answering them stays with the PO/dev (`/steer-spec questions`). Writing in a
+decision this conversation already made is not a new one (rule `30-spec`).
 
 Sweep these gap classes against `intent.md` (and `contract.md` where present):
 
@@ -39,8 +40,36 @@ shape, how an interaction feels - is a `Q-NNN` whose title says it settles with
 a prototype, `impact: non-blocking` at `required_before: implementation`, never
 `blocking` at `intent-approval`: no amount of asking answers it. Name the
 option to build first in the question; the build settles it (`/steer-work`
-`start`, `/steer-build` step 6) and its owner confirms on the running change. Close by summarizing what was raised vs. already covered -
-a draft that survives the sweep with nothing raised is a *finding worth
+`start`, `/steer-build` step 6) and its owner confirms on the running change.
+
+### Fresh-reader pass - a reader who was not in the conversation
+
+The context that wrote the draft is anchored to it and cannot see what it left
+unsaid ([`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 2, Independence). After the sweep, spawn **one**
+fresh subagent - never a fork, which would carry this conversation - and give it
+only files: `intent.md`, `contract.md` where present, and the spine files they
+link to (`vision.md`, `glossary.md`, cited ADRs). In advisory mode, pass the
+draft text instead. Ask it for:
+
+1. **A paraphrase first**, 2-5 sentences under each of two headings: *What this
+   proposes* and *What it assumes already exists*. A section it cannot
+   paraphrase is a high finding.
+2. **Then findings**, each with a severity and the section it concerns: a term
+   specific to this product that is never defined (general vocabulary is not a
+   finding), a step that depends on something unstated, an acceptance criterion
+   two readers would test differently, a gap class above the draft is silent on.
+
+Compare the paraphrase with what was agreed. A wrong paraphrase is the finding
+that matters most: the draft says something other than what was meant. Answer
+every finding by `REVIEW-LOOP.md` section 4 -> Answering findings: a
+comprehension gap is fixed in the text, a decision this conversation already
+made is written in, and a gap nobody here can close becomes a `Q-NNN` like the
+sweep's. One reader, one round; re-run it only when the paraphrase was wrong.
+On a surface with no subagent tool, skip the pass and say so in the approval
+prompt - a re-read in this context is not a fresh read.
+
+Close by summarizing what the sweep and the reader raised vs. what was already
+covered - a draft that survives both with nothing raised is a *finding worth
 stating*, not a failed run.
 
 ## Validate mode - `/steer-spec validate [feature-id|--all]`
@@ -178,7 +207,10 @@ preconditions above hold (no refusal, no unresolved blocking question), present 
 tradeoff to the PO and ask: **Approve / Reject / Decide later** (rule
 `61-gates`; full protocol `/steer-reference gates`). The prompt shows the
 **acceptance criteria**, the **locked scope - in and out**, and any non-blocking
-open questions that survive approval. `Decide later` leaves the intent `draft`
+open questions that survive approval. When clarify's fresh-reader pass ran in
+this session, it also shows the reader's *What this proposes* paraphrase and
+what the pass corrected; when the pass was skipped for want of a subagent tool,
+it says so. A direct `approve` does not re-read an intent drafted earlier. `Decide later` leaves the intent `draft`
 untouched; `Reject` records the reason in `intent.md`. Never pre-select
 `Approve`, and never read ambient agreement as approval.
 

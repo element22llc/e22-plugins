@@ -155,7 +155,9 @@ precondition the others don't: it is GitHub-only, and says so and stops when
 4. **Clarify - sweep the draft for gaps** (clarify mode - procedure in
    `MODES.md`) before
    presenting anything for approval: interrogate the draft against the gap
-   classes and convert every real gap into a `Q-NNN` open question. This is
+   classes and convert every real gap into a `Q-NNN` open question, then run
+   its fresh-reader pass: one subagent that never saw this conversation
+   paraphrases the draft and flags what it could not follow. This is
    where ambiguity becomes structured, answerable questions instead of
    surprises at implementation.
 5. **Resolve open questions.** Run the `/steer-questions` read-then-propose loop on
