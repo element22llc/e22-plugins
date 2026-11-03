@@ -184,8 +184,9 @@ would block the merge on - fix every confirmed one; weigh **medium**, treat
 
 **Answering findings - the author's side.** The refute pass checks the
 reviewer; these rules check the author, who wrote what is under review and
-wants it to be right. A confirmed code-gate finding is already past contest -
-fix it. Every other finding gets one answer:
+wants it to be right. A confirmed code-gate finding and a high-severity
+plan-gate finding are already past contest - fix them. Every other finding
+gets one answer:
 
 - **Fix** - the finding holds. A gap a fresh reader could not follow is always
   this: the next human reader will not follow it either, so a comprehension gap
