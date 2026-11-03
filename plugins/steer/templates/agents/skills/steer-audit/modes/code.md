@@ -106,7 +106,8 @@ of dimension.
    evidence + standard missed + impact/effort/confidence + proposed routing).
    Head it with the scope - whole-repo, or `--since <ref>` and the file count -
    and note any dimension that was **skipped** (not applicable) or **not run** (no
-   `/spec`) so silence never reads as "clean." Under a scope, close with the
+   `/spec`, or its reviewer returned no report after one retry) so silence
+   never reads as "clean." Under a scope, close with the
    one-line pre-existing count. Offer to also write it to
    `/spec/AUDIT-REPORT.md` **only if the dev wants it tracked** - it's a
    point-in-time artifact, not part of the durable spine. Write it to the working

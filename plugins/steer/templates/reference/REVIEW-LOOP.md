@@ -73,10 +73,21 @@ The loop degrades into theater without all three.
 Give the reviewer three things, every time:
 
 - **Plan gate** - the plan text; the restated requirement; the steer rules the
-  change touches (e.g. conventions, change classification, the relevant lifecycle rules).
-  Ask for severity-ranked findings and an explicit "what is missing" pass (the
-  plan is prospective, so the reviewer reasons about the approach rather than
-  citing `path:line`s).
+  change touches (e.g. conventions, change classification, the relevant lifecycle rules);
+  and read access to the repo. Ask for severity-ranked findings from three
+  passes (the plan is prospective, so a finding about the approach needs no
+  `path:line`):
+  1. **What is missing** - requirements, cases or steps the plan does not cover.
+  2. **Existing code first** - for every helper, module, component or
+     dependency the plan adds, search the repo for one that already does the
+     job. A match the plan ignores is a finding, cited by its `path:line`; at
+     the code gate the duplicate is already written.
+  3. **No decision left open** - could a fresh session implement the plan
+     without making a design choice: a schema, an API shape, a dependency, how
+     an edge case behaves? Each open choice is a finding, because a choice made
+     mid-implementation is one nobody reviewed. So is a file the change must
+     touch that the plan does not name. The plan names choices; it does not
+     pre-write the code.
 - **Code gate** - the restated requirement (the issue's acceptance criteria, the
   intent), the change class, the branch diff against its merge base, and read
   access to the whole repo. The rubric is rules `50-done`, `40-testing`,
@@ -156,6 +167,12 @@ no verifier.
 - **Unsure** - stays high, marked unconfirmed. It does not hold the loop
   open; it goes under the PR's *Notes for the reviewer* as its own list, for
   the human to settle.
+
+**A reviewer that did not report did not review.** A reviewer or verifier that
+errors, times out or returns no report is retried once; if it fails again, the
+gate's report line names it `not run`, and a verifier's findings stay
+**unsure**. Never count it as zero findings - that is silent truncation
+(section 6).
 
 In `/steer:work review` the per-PR reviewer applies the triggered lenses
 itself and spawns nothing, keeping a batch to one reviewer per PR; a PR whose
