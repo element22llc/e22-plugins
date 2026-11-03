@@ -165,6 +165,29 @@ Severity ranking is what makes the loop converge: **high** is what a reviewer
 would block the merge on - fix every confirmed one; weigh **medium**, treat
 **low** as optional. Only confirmed high findings keep the fix loop open.
 
+**Answering findings - the author's side.** The refute pass checks the
+reviewer; these rules check the author, who wrote what is under review and
+wants it to be right. A confirmed code-gate finding is already past contest -
+fix it. Every other finding gets one answer:
+
+- **Fix** - the finding holds. A gap a fresh reader could not follow is always
+  this: the next human reader will not follow it either, so a comprehension gap
+  is never contested.
+- **Contest** - the finding is wrong, shown by evidence the reviewer could have
+  read: a `path:line`, a test, a recorded decision. "That was intentional" is
+  not evidence, and neither is the wish to contest.
+- **Record** - the finding is wrong only because the answer lives outside every
+  file the reviewer could read. A decision made in this conversation belongs in
+  the spine anyway (rule `30-spec` -> Durable decisions): write it there, which
+  answers the finding. Anything else - a house convention, a fact the human
+  reader brings - goes to the human unchanged.
+- **Decline** - a low finding not worth the edit; say so.
+
+Add text a human reader needs, never text only a zero-context reviewer needs.
+Never downgrade a severity - contest it with the reason. Contested, recorded
+and declined findings reach the human in the gate's report; none is dropped
+silently.
+
 ## 5. Where the loop sits among the skills
 
 - **`/steer:work`** owns governed implementation - branch, commits, tests, PR,
@@ -177,6 +200,10 @@ would block the merge on - fix every confirmed one; weigh **medium**, treat
 - **`/steer:build`** is the PO-facing greenfield flow. In its governed mode it
   routes implementation through `/steer:work`; in its default prototype/local mode
   it implements directly.
+- **`/steer:spec`** runs the same independence before code exists: `clarify`'s
+  fresh-reader pass gives one fresh subagent the draft intent alone, and its
+  findings are answered by section 4 -> Answering findings before the PO is
+  asked to approve.
 - **`/code-review`** is the built-in diff reviewer the code gate adds where the
   client has it, for correctness depth; the rubric reviewer covers what it
   cannot see outside the diff.
