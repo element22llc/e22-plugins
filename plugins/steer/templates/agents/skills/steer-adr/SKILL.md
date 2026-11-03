@@ -82,8 +82,10 @@ fix the draft against each check:
    at runtime; whether grants and defaults cover everything the identity
    touches; and who else - humans, admins, other services - can still reach
    what this decision restricts. Fold confirmed answers into the draft; an
-   unanswered one goes in the prompt as open. Skip the round when a bootstrap
-   is the caller - its own interview already asked.
+   unanswered one goes in the prompt as open. A bootstrap caller runs the round
+   too - no bootstrap interview asks these. With no dev in the session (a
+   `/steer-build` PO), record the four questions as open in the ADR's Context
+   for the dev's review instead.
 
 Do it inline; it is a handful of reads, not a sweep to delegate.
 

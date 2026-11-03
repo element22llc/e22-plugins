@@ -70,7 +70,7 @@ The loop degrades into theater without all three.
 
 ## 4. Rubric shape per gate
 
-Give the reviewer three things, every time:
+Give the reviewer four things, every time:
 
 - **Plan gate** - the plan text; the restated requirement; the steer rules the
   change touches (e.g. conventions, change classification, the relevant lifecycle rules);
