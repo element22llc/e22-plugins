@@ -3,6 +3,21 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.18.1
+
+- **Fixed: `/steer:work review` presents a high-risk PR in one pass.** The
+  `Look` bucket's "walk the human through it line by line" was read as an
+  interactive tour: one PR split into file groups ("part 1 of 6"), with a
+  decision asked per part and a wait for "next" between them. A `Look` PR
+  now gets one message - the full card with findings ranked across every
+  file - and one decision on the whole PR. Line-by-line still describes
+  how thoroughly the reviewer reads.
+- **Fixed: `/steer:work review` takes `Look` PRs after the batch.** The
+  one-pass `Look` instruction sat before the `Ready` / `Changes` approval
+  question, so read in order it put each `Look` decision first,
+  contradicting "after the batch". It now closes step 4: batch approvals
+  first, then each `Look` PR presented whole.
+
 ## 7.18.0
 
 - **Added: `/steer:spec adr` grounds a draft before asking anyone to ratify
