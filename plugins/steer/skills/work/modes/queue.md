@@ -49,8 +49,8 @@ earlier issue's context into the next. Brief it to:
 - run `/steer:work start #N`, then, before implementing, the plan gate in
   `modes/reviewed.md` unless the issue is Trivial (rule `80-change-class`).
   Without `--reviewed`, skip the human sign-off: revise on every high finding
-  and implement, but return a plan whose high findings survive the 2-round
-  cap (`REVIEW-LOOP.md` section 2) as a gate question instead. Then
+  and implement, but return a plan whose high findings survive the
+  bounded exit (`REVIEW-LOOP.md` section 2) as a gate question instead. Then
   `/steer:work finish #N`, with the vetted plan and its resolved findings in
   the PR's *Notes for the reviewer*;
 - keep rule 45's worktree discipline - `mise trust` only as it allows, services

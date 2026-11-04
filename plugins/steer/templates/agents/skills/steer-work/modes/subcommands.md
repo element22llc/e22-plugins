@@ -71,7 +71,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   message, then the refute pass on their high findings. A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
   Fix every confirmed high finding, re-run the local gates, and re-review; stop
-  after 2 rounds or the first round with no confirmed high finding, and name
+  on a round with no confirmed high finding, on one whose count did not drop
+  from the round before, or after 4 rounds (`REVIEW-LOOP.md` section 2), and name
   any high finding left open, unconfirmed ones as their own list. Put each medium finding you leave, and each design
   question with the decision taken, under the PR's *Notes for the reviewer* (in
   solo-trunk, the trunk commit body), so the human confirms rather than
