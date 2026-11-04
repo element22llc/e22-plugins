@@ -21,7 +21,9 @@ while the subcommands below read an issue and deliver it.
     Add `--reviewed` for an independent plan-gate review and plan sign-off
     before implementing: the reviewer checks what the plan misses, searches
     the repo for existing code the plan would duplicate, and flags every
-    design choice the plan leaves to implementation. A reviewer that returns
+    design choice the plan leaves to implementation. High-risk work gets the
+    plan gate without the flag, and its sign-off is the dev scoping High-risk
+    work already requires. A reviewer that returns
     no report is retried once, then reported `not run` - never as clean.
     The shared protocol and rubric live in
     `templates/reference/REVIEW-LOOP.md`.

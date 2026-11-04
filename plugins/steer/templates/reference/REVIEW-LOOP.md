@@ -24,7 +24,8 @@ the diff it is dearer; caught after merge, dearest. The loop front-loads that
 catch.
 
 The **plan gate is opt-in** (`--reviewed`): reach for it on work where a wrong
-approach is costly to unwind. The **code gate runs by default** - `finish` runs
+approach is costly to unwind. High-risk work gets it without asking - `start`
+turns it on, and its sign-off is the dev scoping rule `60-high-risk` requires. The **code gate runs by default** - `finish` runs
 it on every Behavioral or High-risk change, Trivial work skips it. It is one
 general reviewer, plus a specialist only where the diff enters its domain, and
 its findings cost less before the push than from the human reviewer after it.

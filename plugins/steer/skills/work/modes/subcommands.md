@@ -34,7 +34,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   learnings** - grep `spec/learnings/*.md` frontmatter (`area:`, `symptoms:`,
   `applies_when:`) for terms from the issue and the paths you expect to touch,
   and read only the files that match (no directory, nothing to do);
-  begin implementation - a defect through
+  **classify the change** (rule `80-change-class`, the heavier class when
+  arguable) - High-risk runs the plan gate in [`reviewed.md`](reviewed.md)
+  even without `--reviewed`; begin implementation - a defect through
   [`debug.md`](debug.md), cause before fix.
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded

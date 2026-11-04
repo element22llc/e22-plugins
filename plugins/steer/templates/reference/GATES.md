@@ -36,7 +36,7 @@ decision** (section 4).
 |---|---|---|---|
 | **ADR ratification** | `Proposed -> Accepted` | the ADR's `Deciders` | `/steer:spec adr accept <n>` |
 | **Intent approval** | `draft -> approved` | the PO | `/steer:spec approve <id>` |
-| **Plan sign-off** | vetted plan -> implementation | whoever asked for the work | `/steer:work --reviewed` |
+| **Plan sign-off** | vetted plan -> implementation | whoever asked for the work | `/steer:work --reviewed`, or `start` on High-risk work |
 
 Each keeps its existing owner and preconditions. The prompt is an **additional
 channel** for the answer, not a new transition and not a second writer:
