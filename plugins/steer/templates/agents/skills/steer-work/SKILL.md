@@ -162,7 +162,8 @@ through `finish`; the phases stay distinct, and re-running one reconciles.
 
 - **`--reviewed`** - add an independent plan gate and a human plan sign-off
   before implementing, on top of the code gate `finish` always runs on
-  non-Trivial work. Triage trivial work out of the gates.
+  non-Trivial work. Triage trivial work out of the gates. On automatically
+  for High-risk work, where the sign-off is the rule `60-high-risk` scoping.
   -> procedure: [`modes/reviewed.md`](modes/reviewed.md)
 - **`--hotfix`** - the production-incident fast path (rule `61-gates` -> Hotfix): a
   `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a

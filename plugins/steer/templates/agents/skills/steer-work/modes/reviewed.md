@@ -1,6 +1,7 @@
 # `/steer-work --reviewed` - an independent plan gate
 
-Read this file only when `--reviewed` was passed. The preconditions,
+Read this file when `--reviewed` was passed, or when `start` classes the
+change High-risk (end of file). The preconditions,
 authorization scope, delivery mode, subcommands, and guardrails stay in
 `SKILL.md` and apply unchanged.
 
@@ -51,6 +52,19 @@ stopping rules: [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22ll
 - **Report.** One line per gate - what it checked and its verdict - plus any
   residual risk, then the `## Recommended next actions` block from `SKILL.md`.
   Resolved findings are not re-listed; the diff carries them.
+
+**High-risk work turns it on without the flag.** `start` runs this plan gate
+on any change rule `80-change-class` classes High-risk (the heavier class when
+arguable), except under `--hotfix`. Its human sign-off *is* rule
+`60-high-risk`'s dev scoping, held against the vetted plan:
+
+- **Dev in the session** - ask the human plan sign-off above.
+- **No dev in the session** - in/out scope recorded on the issue stands in for
+  it; with none recorded, ask for scope on the issue and stop before any code.
+- **Pre-production** (rule `60-high-risk` -> relaxation) - no sign-off.
+
+Without a sign-off, the vetted plan and its resolved findings go under the PR's
+*Notes for the reviewer*.
 
 In **prototype/local mode** there is no tracker and therefore no `/steer-work` to
 run - apply the same `REVIEW-LOOP.md` protocol directly around `/steer-build`'s
