@@ -15,7 +15,9 @@ while the subcommands below read an issue and deliver it.
     pattern, peer consistency, introduced risk and touched docs; a database,
     UI or security specialist joins when the diff enters that domain; a
     verifier tries to refute each high finding before it reaches the author;
-    and a bounded fix loop follows.
+    and a bounded fix loop follows: it stops on a round with no confirmed
+    high finding, re-reviews only while that count drops round over round,
+    and never runs more than 4 rounds.
     Add `--reviewed` for an independent plan-gate review and plan sign-off
     before implementing: the reviewer checks what the plan misses, searches
     the repo for existing code the plan would duplicate, and flags every
