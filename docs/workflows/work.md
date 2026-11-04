@@ -136,14 +136,15 @@ given) and does the reviewer's legwork in parallel:
    returning an eight-line card: what it does, change class, tests and contract
    coverage, drift flags, findings with `path:line`, a suggested verdict.
 3. **Four buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
-   never batch-approved) and *Blocked*. A *Look* PR is then presented whole -
-   its full card in one message, one decision for the PR - never in parts.
+   never batch-approved) and *Blocked*.
 4. **One question, one command.** You reply with the *Ready* PRs to approve
    (or `ready` for all of them); the approvals post in a single command, and a
    PR pushed to since its card was built is skipped. The command runs the same
    in sh, bash and zsh, and names each PR it could not look up or approve
    rather than reporting it as changed. Findings on the *Changes* PRs you name
    post as change requests.
+5. **Then each *Look* PR, presented whole** - its full card in one message,
+   one decision for the PR - never in parts.
 
 The approval is yours: nothing is pre-selected, an ambient "ok" approves
 nothing, and an unattended loop never approves. **It never merges.**
