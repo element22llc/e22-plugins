@@ -94,14 +94,7 @@ Sort every PR into a bucket and print them in this order, one line per PR
 needs line-by-line review and an explicit resolution (rule `50-done` -> Drift
 gates); after the batch, offer to go through each one.
 
-**Line-by-line is how the reviewer reads, not how you report.** Each `Look` PR
-gets one message: its full card, findings ranked across every file, design
-questions, and a suggested verdict. Then ask for one decision on the whole PR:
-approve, request changes, or post the questions. Never split one PR into parts
-or wait for "next" between files; go deeper on one finding only when the human
-asks.
-
-Then ask **once**, in plain text - a picker caps out at four options: reply
+Ask **once**, in plain text - a picker caps out at four options: reply
 with the `Ready` numbers to approve, `ready` for every one listed, and the
 `Changes` numbers to post findings on. Nothing is pre-selected. Silence, "ok",
 "looks good" or a number outside the printed list approves nothing.
@@ -125,6 +118,13 @@ every PR is reported as changed, approving nothing.
 
 Selected `Changes` PRs get `gh pr review <n> --request-changes --body-file
 <card>` the same way, the body being the card's findings with paths.
+
+**Then the `Look` PRs, one at a time. Line-by-line is how the reviewer reads,
+not how you report.** Each `Look` PR gets one message: its full card, findings
+ranked across every file, design questions, and a suggested verdict. Then ask
+for one decision on the whole PR: approve, request changes, or post the
+questions. Never split one PR into parts or wait for "next" between files; go
+deeper on one finding only when the human asks.
 
 ## Step 5 - `--mine`: make each PR reviewable
 

@@ -1,0 +1,10 @@
+kind: Fixed
+body: |-
+    - **Fixed: `/steer:work review` takes `Look` PRs after the batch.** The
+      one-pass `Look` instruction sat before the `Ready` / `Changes` approval
+      question, so read in order it put each `Look` decision first,
+      contradicting "after the batch". It now closes step 4: batch approvals
+      first, then each `Look` PR presented whole.
+time: 2026-11-04T16:00:00.000000-05:00
+custom:
+    Slug: review-look-order
