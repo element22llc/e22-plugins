@@ -44,11 +44,14 @@ The loop degrades into theater without all three.
    (what success means, spelled out) plus the **relevant steer rules** - not a
    vague "is this good?". A reviewer with no rubric emits generic feedback that
    never converges.
-3. **Bounded exit.** Review loops have sharp diminishing returns: round 1 catches
-   most, round 2 the tail, round 3+ is churn and sometimes introduces regressions.
-   Cap the fix loop at **2 rounds**; exit as soon as a round surfaces no
-   high-severity findings - on the code gate, none that survives the refute
-   pass.
+3. **Bounded exit.** A fresh reviewer always finds *something*, so "until
+   clean" never reliably ends; progress is what earns another round. Count each
+   round's high-severity findings - on the code gate, those that survive the
+   refute pass. Exit on a round with **none**. Otherwise run another round only
+   while the count **strictly drops** from the round before: the same count or
+   more means the fixes are churning or regressing, and another round makes it
+   worse. Round 2 always runs after a round 1 with findings, and the loop never
+   exceeds **4 rounds**.
 
 ## 3. The two gates are different jobs
 
@@ -161,8 +164,8 @@ reading of the requirement that makes it correct. It returns, per finding,
 no verifier.
 
 - **Confirmed** - the author fixes it.
-- **Refuted** - dropped; the gate's report line says how many. Round 2's
-  reviewers get the refuted findings with their evidence, and re-raising one
+- **Refuted** - dropped; the gate's report line says how many. Each later
+  round's reviewers get the refuted findings with their evidence, and re-raising one
   takes new evidence.
 - **Unsure** - stays high, marked unconfirmed. It does not hold the loop
   open; it goes under the PR's *Notes for the reviewer* as its own list, for
@@ -237,8 +240,8 @@ Each gate spends tokens on top of the implementation. That is the price of a
 vetted result, and the reason for the triage step (Trivial changes skip both gates),
 the diff-triggered lenses (a change outside their domains pays for one reviewer),
 the refute pass (a false high finding costs one verifier, not a fix round) and the
-2-round cap. If a run stops at the cap with findings still open, say so
-and name what was left - silent truncation reads as "all clear" when it was not.
+bounded exit (section 2). If a run stops with findings still open - stalled or at
+the 4-round cap - say which, and name what was left - silent truncation reads as "all clear" when it was not.
 
 ## 7. Related: the Advisor tool (per-developer, optional)
 

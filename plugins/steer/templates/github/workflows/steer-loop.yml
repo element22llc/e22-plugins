@@ -62,7 +62,8 @@ jobs:
             4. Have the change independently reviewed, never by the drafting
                agent's own say-so: run the code gate /steer:work finish runs
                (REVIEW-LOOP.md section 4: reviewers, specialist lenses, refute
-               pass), fix confirmed high findings, at most 2 rounds.
+               pass), fix confirmed high findings, and re-review while their
+               count drops each round, at most 4 rounds.
             5. Push your own work branch and open a DRAFT pull request with the
                diff, the verification output, the review's open findings and
                design questions, and any drift classes flagged. Update the tracked issue. (The
