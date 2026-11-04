@@ -136,7 +136,8 @@ given) and does the reviewer's legwork in parallel:
    returning an eight-line card: what it does, change class, tests and contract
    coverage, drift flags, findings with `path:line`, a suggested verdict.
 3. **Four buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
-   never batch-approved) and *Blocked*.
+   never batch-approved) and *Blocked*. A *Look* PR is then presented whole -
+   its full card in one message, one decision for the PR - never in parts.
 4. **One question, one command.** You reply with the *Ready* PRs to approve
    (or `ready` for all of them); the approvals post in a single command, and a
    PR pushed to since its card was built is skipped. The command runs the same
