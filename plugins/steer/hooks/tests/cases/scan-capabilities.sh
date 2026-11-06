@@ -9,6 +9,7 @@ CAPSCAN="${PLUGIN}/scripts/scan-capabilities.sh"
 CAPS_MD="${PLUGIN}/templates/reference/CAPABILITIES.md"
 capscan() { run_sh "${CAPSCAN}" "$1" "${PLUGIN}"; }
 capstatus() { printf '%s\n' "$1" | awk -F '\t' -v id="$2" '$1==id {print $2}'; }
+capfiles() { printf '%s\n' "$1" | awk -F '\t' -v id="$2" '$1==id {print $3}'; }
 
 # Empty repo: capability-critical files absent; stack fingerprint emitted.
 CR0="${WORK}/cap0"
@@ -79,6 +80,42 @@ assert_eq "cap: dependency-automation present-wired" "$(capstatus "${out}" depen
 printf 'on: pull_request\n' >"${CRD}/.github/workflows/dependabot-auto-merge.yml"
 capscan "${CRD}"
 assert_eq "cap: retired auto-merge workflow -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+rm "${CRD}/.github/workflows/dependabot-auto-merge.yml"
+
+# A workflow_call caller must grant the auto-merge job's write scopes: GitHub
+# refuses to start the caller run otherwise, even when the job's `if` skips it.
+printf 'permissions:\n  contents: read\njobs:\n  ci:\n    uses: "./.github/workflows/ci.yml"\n' \
+	>"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: read-only workflow_call caller -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+assert_has "cap: short caller named" "$(capfiles "${out}" dependency-automation)" ".github/workflows/main-check.yaml"
+printf 'jobs:\n  ci:\n    uses: ./.github/workflows/ci.yml\n' >"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: caller with no permissions -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+printf '# contents: write, pull-requests: write\npermissions:\n  contents: write\njobs:\n  ci:\n    uses: ./.github/workflows/ci.yml\n' \
+	>"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: caller granting one scope (other in a comment) -> mis-wired" \
+	"$(capstatus "${out}" dependency-automation)" "mis-wired"
+printf 'jobs:\n  ci:\n    permissions:\n      contents: "write"\n      pull-requests: write\n    uses: ./.github/workflows/ci.yml\n' \
+	>"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: caller granting the scopes -> present-wired" "$(capstatus "${out}" dependency-automation)" "present-wired"
+printf 'permissions: write-all\njobs:\n  ci:\n    uses: ./.github/workflows/ci.yml\n' >"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: write-all caller -> present-wired" "$(capstatus "${out}" dependency-automation)" "present-wired"
+printf 'jobs:\n  ci:\n    # uses: ./.github/workflows/ci.yml\n    runs-on: x\n' >"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: commented-out caller ignored" "$(capstatus "${out}" dependency-automation)" "present-wired"
+
+# Splicing the job into a repo without it breaks a read-only caller too.
+CRA="${WORK}/capDepAbsent"
+mkdir -p "${CRA}/.github/workflows"
+printf 'on: workflow_call\njobs: {}\n' >"${CRA}/.github/workflows/ci.yml"
+printf 'permissions: read-all\njobs:\n  ci:\n    uses: ./.github/workflows/ci.yml\n' >"${CRA}/.github/workflows/nightly.yml"
+capscan "${CRA}"
+assert_eq "cap: absent job, caller present -> absent" "$(capstatus "${out}" dependency-automation)" "absent"
+assert_has "cap: absent still names the short caller" "$(capfiles "${out}" dependency-automation)" ".github/workflows/nightly.yml"
 
 # agent-surface-current: the retired-surface check keys on steer's OWN artifacts.
 # The migration that retires .github/prompts/ deliberately leaves a team-authored

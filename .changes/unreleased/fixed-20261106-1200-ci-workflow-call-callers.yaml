@@ -1,0 +1,16 @@
+kind: Fixed
+body: |-
+    - **Fixed: `/steer:setup sync` no longer leaves a `workflow_call` caller of
+      `ci.yml` failing at startup.** The `dependabot-auto-merge` job declares
+      `contents: write` and `pull-requests: write`, and GitHub refuses to start
+      a workflow that calls `ci.yml` with a narrower grant, even when the job's
+      `if` would skip it. A repo whose `ci.yml` was also a reusable workflow
+      kept passing PR CI while every scheduled or push caller run failed. The
+      capability scan now reports dependency-automation as mis-wired while any
+      in-repo caller lacks those scopes. Sync proposes adding them to the
+      calling job, on top of its current grant. The scaffold manifest applies
+      the same rule to adopt and template reconciliation, and the `ci.yml`
+      template warns in its `on:` block. Tracked as issue #864.
+time: 2026-11-06T12:00:00.000000-05:00
+custom:
+    Slug: ci-workflow-call-callers

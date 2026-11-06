@@ -346,13 +346,24 @@ and **Repair**.
 - **Wired-when:** `dependabot.yml` present; `ci.yml` carries the job, guarded on
   `github.event.pull_request.user.login == 'dependabot[bot]'`, gated on the
   `update-type` (patch/minor merged, majors left for a human), and merging with
-  `--match-head-commit`; and the retired standalone
-  `.github/workflows/dependabot-auto-merge.yml` is gone (MIGRATIONS removes it).
+  `--match-head-commit`; the retired standalone
+  `.github/workflows/dependabot-auto-merge.yml` is gone (MIGRATIONS removes it);
+  and every workflow that calls `ci.yml` (`uses: ./.github/workflows/ci.yml`)
+  grants `contents: write` and `pull-requests: write`, or `write-all`. A
+  narrower caller fails at startup on every run - GitHub checks a called job's
+  scopes before its `if` - while PR-triggered CI stays green and hides it.
 - **Repair:** create a missing `dependabot.yml` from `templates/github/`,
   uncommenting the ecosystem block(s) matching the detected stack
   (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. Splice the
   `dependabot-auto-merge` job from `templates/github/workflows/ci.yml` into
-  `ci.yml` - additively, never over a product's own jobs. Dependabot alerts +
+  `ci.yml` - additively, never over a product's own jobs. For each caller the
+  scan names, propose a job-level `permissions:` on the job that calls `ci.yml`:
+  its current effective grant (its own block, else the workflow's top-level
+  one) plus the two write scopes - never only those two, which would drop
+  scopes the called jobs inherit. A caller with no `permissions:` at either
+  level, `read-all` or `{}` counts as short. The grant is a ceiling: `ci.yml`'s
+  own top-level `contents: read` still binds its other jobs. If the dev
+  declines, flag it as operational drift in the PR. Dependabot alerts +
   security updates are **`/steer:setup protect`**'s job - name it as the
   follow-up; sync writes the files, it does not configure GitHub.
 - **Verbatim:** no (ecosystems are adapted per stack)
