@@ -111,7 +111,7 @@ Per `NEXT-ACTIONS.md`, derived from where the run stopped:
 |---|---|---|
 | `production_gate` is not `prod-branch-pr` | Human decision required | The declared gate is the human's own step (no command) |
 | No `prod` branch, or it is unprotected | Blocking now | `/steer-setup protect` |
-| A hotfix on `prod` not back-ported | Human decision required | A dev merges the `prod -> main` back-port PR (no command) |
+| A hotfix on `prod` not back-ported | Human decision required | A dev merges the hotfix back-port PR into `main` (no command) |
 | Default branch red | Blocking now | Fix the build before promoting |
 | Changelog cut PR open | Human decision required | A dev reviews and merges the cut (no command) |
 | Promotion PR open | Human decision required | A dev approves and merges - **that merge deploys production** (no command) |

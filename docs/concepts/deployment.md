@@ -41,7 +41,7 @@ flowchart LR
     PROD -->|incident| HF[hotfix branch<br/>cut from prod]
     HF --> HFPR{{hotfix -> prod PR<br/>carries a patch cut}}
     HFPR -->|merge| PROD
-    PROD -->|back-port PR| MAIN
+    HFPR -.->|cherry-pick, back-port PR| MAIN
 
     classDef gated fill:#fde,stroke:#c39
     class PRODPR,HFPR gated
@@ -78,10 +78,11 @@ cut from it would ship that work too. So the hotfix path runs beside `prod`:
 - **The PR carries its own patch release.** Its fragment is cut on the branch
   (`changie batch patch`), so merging it ships a new patch version - there is no
   separate promotion to wait for.
-- **Back-port to `main`, always.** Right after the merge, a `prod -> main` PR
-  brings the fix and its changelog entry home, squash-merged because `main`
-  keeps linear history. `/steer:work promote` refuses to open the next
-  promotion while a hotfix is missing from `main`.
+- **Back-port to `main`, always.** Right after the merge, the fix and its
+  changelog entry are cherry-picked onto a branch cut from `main` and land
+  through an ordinary PR - never a PR whose head is `prod`, where resolving a
+  conflict would commit into production. `/steer:work promote` refuses to open
+  the next promotion while a hotfix is missing from `main`.
 
 When `production_gate` is not `prod-branch-pr`, production deploys from the
 default branch, so the hotfix branches from and targets it like any change.

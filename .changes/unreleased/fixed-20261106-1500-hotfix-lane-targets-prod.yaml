@@ -8,8 +8,9 @@ body: |-
     a fix cut from `main` carried every unreleased commit through the `prod`
     gate. Under `production_gate: prod-branch-pr` the branch is now cut from
     `prod` and its PR targets `prod`, carrying its own patch cut (`changie batch
-    patch`), and the mandatory follow-up opens a `prod -> main` back-port PR.
-    `/steer:work promote` stops while a hotfix version on `prod` is missing from
-    `main`. The scaffold `ci:changelog` gate skips a back-port PR (head `prod`),
-    whose fragment the hotfix cut already consumed; `/steer:setup sync`
-    carries the gate change into an installed `ci.yml` and `ci-changelog.sh`.
+    patch`), and the mandatory follow-up back-ports it to `main` through a
+    cherry-picked PR. `/steer:work promote` stops while a hotfix version on
+    `prod` is missing from `main`. The scaffold `ci:changelog` gate passes a PR
+    that adds a released version file (`.changes/*.md`), whose fragments that
+    cut consumed; `/steer:setup sync` carries the change into an installed
+    `scripts/ci-changelog.sh`.

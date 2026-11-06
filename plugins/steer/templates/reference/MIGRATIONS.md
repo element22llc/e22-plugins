@@ -94,27 +94,25 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `ci:changelog` skips the `prod -> main` hotfix back-port
+### [Unreleased] - `ci:changelog` passes a hotfix back-port carrying its cut
 
 - **What & why:** a `/steer:work --hotfix` PR into `prod` now cuts its own patch
-  release, and its fix returns to `main` through a back-port PR whose head is
-  `prod`. That PR changes shipping code but adds no fragment - the cut consumed
-  it - so the old gate failed every back-port. `ci.yml` now passes
-  `STEER_CI_HEAD_REF`, and `scripts/ci-changelog.sh` skips a PR whose head is
-  `prod`, as it already skipped one whose base is `prod`.
-- **Precondition:** the installed gate has the old promotion-only skip -
+  release, and its fix returns to `main` through a cherry-picked back-port PR.
+  That PR changes shipping code but adds no fragment - the cut consumed it - so
+  the old gate failed every back-port. `scripts/ci-changelog.sh` now passes a
+  diff that adds a released version file (`.changes/*.md`).
+- **Precondition:** the installed gate predates the cut check -
 
   ```sh
-  grep -q 'STEER_CI_HEAD_REF' scripts/ci-changelog.sh 2>/dev/null || grep -n 'STEER_CI_BASE_REF:-}" = prod' scripts/ci-changelog.sh 2>/dev/null
+  test -f scripts/ci-changelog.sh && ! grep -q 'carries a release cut' scripts/ci-changelog.sh && echo stale
   ```
 
   No output => already migrated, or the repo has no changelog gate => no-op.
 - **Action:** read-then-propose; show the diff. In `scripts/ci-changelog.sh`,
-  replace the `STEER_CI_BASE_REF = prod` skip block with the template's
-  two-branch block (base `prod`, or head `prod`). In
-  `.github/workflows/ci.yml`'s `Changelog fragment` step, add
-  `STEER_CI_HEAD_REF: ${{ github.head_ref }}` to its `env`. Leave the rest of
-  both files as they are.
+  splice the template's `cut=` block (the comment, the `git diff
+  --diff-filter=A ... ':(glob).changes/*.md'` lookup and its early `exit 0`)
+  in after the `.changie.yaml` check and before `changed=`. Leave the rest of
+  the file as it is.
 
   **No history entry is earned.**
 

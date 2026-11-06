@@ -39,17 +39,10 @@ if [ -n "${strays}" ]; then
 fi
 
 # Promotion carries changes already gated on their way into main, and the cut
-# before it consumed their fragments. A hotfix PR into prod cuts its own patch,
-# so the prod -> main back-port arrives with its fragments consumed too.
-if [ "${STEER_CI_EVENT:-}" = pull_request ]; then
-	if [ "${STEER_CI_BASE_REF:-}" = prod ]; then
-		printf 'ci:changelog - PR into prod; it carries a cut, not new fragments.\n'
-		exit 0
-	fi
-	if [ "${STEER_CI_HEAD_REF:-}" = prod ]; then
-		printf 'ci:changelog - back-port from prod; its hotfix cut consumed the fragments.\n'
-		exit 0
-	fi
+# before it consumed their fragments - there is nothing left to add.
+if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod ]; then
+	printf 'ci:changelog - promotion to prod; fragments were checked on main.\n'
+	exit 0
 fi
 
 if ! base="$(steer_ci_base)"; then
@@ -59,6 +52,15 @@ fi
 
 if [ ! -f .changie.yaml ]; then
 	steer_ci_notice 'No .changie.yaml - repo has no changelog yet. Run /steer:setup sync to install it.'
+	exit 0
+fi
+
+# A diff that adds a released version file carries a cut that consumed its
+# fragments: the back-port of a hotfix that was cut on prod.
+cut="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- ':(glob).changes/*.md' 2>/dev/null ||
+	git diff --diff-filter=A --name-only "${base}" HEAD -- ':(glob).changes/*.md')"
+if [ -n "${cut}" ]; then
+	printf 'ci:changelog - carries a release cut (%s); its fragments were consumed.\n' "$(printf '%s' "${cut}" | tr '\n' ' ')"
 	exit 0
 fi
 

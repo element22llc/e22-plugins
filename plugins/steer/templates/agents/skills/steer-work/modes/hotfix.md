@@ -80,10 +80,19 @@ What changes versus the normal flow:
   human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up.** Once the fire is out, restore traceability.
   First, when the fix went into `prod`, **back-port it** the moment that PR
-  merges, or the next promotion's changelog and `main` both lack it:
-  `gh pr create --base main --head prod --title "backport: <version>"`,
-  squash-merged by a human (`main` keeps linear history). `ci:changelog` skips
-  a PR whose head is `prod` - the hotfix cut already consumed its fragment.
+  merges, or the next promotion's changelog and `main` both lack it. Never
+  open a PR with `prod` as its head: resolving a conflict there commits into
+  `prod`.
+
+  ```sh
+  git fetch origin main prod && git switch -c hotfix/<n>-backport origin/main
+  git cherry-pick <the hotfix's commit on prod>   # add -m 1 if it is a merge commit
+  gh pr create --base main --title "backport: <version>" ...
+  ```
+
+  A `CHANGELOG.md` conflict (a cut already on `main`) is resolved by running
+  `changie merge`, never by hand. `ci:changelog` passes the PR without a new
+  fragment because it adds the hotfix's version file, which consumed it.
   Then backfill/finish the issue, write the spec/ADR if a durable decision was made,
   put the incident's root cause on the enforcement ladder (`finish` in
   `modes/subcommands.md` - an incident is the strongest trigger, and a regression
