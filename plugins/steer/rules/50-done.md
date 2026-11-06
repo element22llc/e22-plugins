@@ -58,5 +58,5 @@ item can't be satisfied, say so rather than implying the work is complete.
 - [ ] Unfinished work and known gaps surfaced explicitly?
 - [ ] Dev servers and watchers you started stopped?
 - [ ] Scaffold placeholders flagged or resolved?
-- [ ] Everything finished committed, and a complete change pushed with its draft PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
+- [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
 - [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?

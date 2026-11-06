@@ -14,7 +14,7 @@ flowchart TD
     COMMIT --> DONE{Definition of Done holds?}
     DONE -->|No| MORE[Keep working]
     MORE --> COMMIT
-    DONE -->|Yes| PUSH[Push + open draft PR autonomously<br/>announced; CI runs once the author marks it ready]
+    DONE -->|Yes| PUSH[Push + open PR autonomously<br/>ready on a clean code gate, else a draft the author marks ready]
     PUSH --> GATE{{Human reviews & merges the PR}}
 
     classDef gated fill:#fde,stroke:#c39
@@ -320,7 +320,8 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 
 !!! note "Watching CI is not crossing the gate"
     `/steer:work finish` opens a draft PR and leaves CI to the author who marks
-    it ready. Once a PR is ready (or on a trunk push), the skill watches CI to
+    it ready - unless its code gate came back clean, when it opens the PR ready.
+    Once a PR is ready (or on a trunk push), the skill watches CI to
     conclusion and fixes a red build before treating the work as done - that is *finishing* the work, not
     merging. To support this without a prompt per poll, the `work` skill
     pre-approves **read-only** CI status (`gh pr checks`, `gh run view`,

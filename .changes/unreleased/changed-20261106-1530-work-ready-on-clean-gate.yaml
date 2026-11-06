@@ -1,0 +1,21 @@
+kind: Changed
+time: 2026-11-06T15:30:00.000000000-05:00
+custom:
+  Slug: work-ready-on-clean-gate
+body: |-
+  - **Changed: `/steer:work finish` opens the PR ready when its code gate
+    comes back clean.** Since #834 every PR `finish` opened was a draft its
+    author had to mark ready before CI ran. Now the PR opens ready, and
+    `finish` watches its CI to conclusion, when nothing in it needs the
+    author's reading first: the code gate ran and left no high finding open,
+    put no medium finding or design question under *Notes for the reviewer*,
+    flagged no drift class, and left no question awaiting its owner's
+    confirmation. Anything else still opens as a draft. A later `finish` that
+    comes back clean readies its earlier draft; a ready PR is never moved
+    back to draft. Every reviewer and the refute pass now report back before
+    anything is pushed. Stays a draft: a Trivial change (no code gate ran), a
+    PR opened without `gh` (its CI cannot be watched), and every autonomous
+    loop PR. `queue` workers follow the same rule, and the queue's
+    verification accepts a ready PR whose card reports a clean gate and green
+    CI. Rule `45-delivery`, the `/steer:work`, `/steer:next` and
+    `/steer:work issues` next-action rows, and the docs describe both paths.

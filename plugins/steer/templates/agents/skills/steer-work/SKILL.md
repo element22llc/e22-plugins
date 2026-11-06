@@ -38,9 +38,10 @@ These hold for the whole run, in every mode.
   human (see `ISSUE-WORKFLOW.md`). **Asking** that human in-session is how you
   obtain their answer (rule `61-gates`), never a licence to supply one.
 - **The merge is the human gate** (rule 45), and not promptable in any mode -
-  push and open the PR yourself, as a draft; never mark it ready, merge or
-  deploy. Watching CI to conclusion and fixing a red build, once a PR is ready
-  or on a trunk push, is **finishing the work**, not crossing that gate. In solo-trunk the trunk commit *is* delivery (Delivery mode below);
+  push and open the PR yourself (ready only on a clean code gate); never merge
+  or deploy. Watching CI to conclusion
+  and fixing a red build, once a PR is ready or on a trunk push, is **finishing
+  the work**, not crossing that gate. In solo-trunk the trunk commit *is* delivery (Delivery mode below);
   deploy stays human-gated all the same.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.
@@ -111,8 +112,8 @@ canonical in **rule 45 (Commit autonomy)**, the trunk-push gate in
 modes**; they differ only in the branch/PR ceremony.
 
 - **pr-flow** (default) - the flow described throughout: claim -> `issue/<n>`
-  branch + `spec/.work` marker -> implement -> push -> open a draft PR ->
-  `validate`; its author marks it ready, which runs CI. On declared-but-unprotected `main`, run it unchanged, note the
+  branch + `spec/.work` marker -> implement -> push -> open the PR (ready on a
+  clean code gate, else draft) -> `validate`. On declared-but-unprotected `main`, run it unchanged, note the
   missing wall and recommend `/steer-setup protect`.
 - **solo-trunk** - substitute the trunk commit wherever a step says *branch*,
   *marker* or *PR*; still claim the issue, and close it from that commit
@@ -129,8 +130,8 @@ modes**; they differ only in the branch/PR ceremony.
 | **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
-| **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
-| **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. Automatic for two or more issues. -> [`modes/queue.md`](modes/queue.md) |
+| **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR (**ready** on a clean code gate, CI watched; else a **draft**), transition to `validate`, and **stop**. Never `done` merely because a PR was opened - and never on a *skipped* check. |
+| **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at PRs. Automatic for two or more issues. -> [`modes/queue.md`](modes/queue.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
 | **`qa [#N]`** | Opt-in: drive the flows the branch diff touches in a real browser, fix small breakage via `debug`, file the rest. Read `modes/qa.md` first. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](modes/promote.md) |
@@ -199,7 +200,7 @@ PRs cannot be atomic (`/steer-reference polyrepo`).
 ## Completion semantics
 
 **Closure reason - not the mere fact of closure - decides the terminal state**
-(`ISSUE-WORKFLOW.md` -> Completion rules and crosswalk). Draft PR open, local
+(`ISSUE-WORKFLOW.md` -> Completion rules and crosswalk). PR open, local
 gates green -> `validate`, never `done`; solo-trunk has no PR, its closing trunk
 commit is the delivery. Closed `completed` (delivered **and** acceptance
 accepted) -> `done`. Closed `rejected` / `duplicate` / `obsolete` /

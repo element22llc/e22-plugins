@@ -834,7 +834,8 @@ Name the file and say what to carry forward.
   check as green. The plugin ships both halves together, so a repo that takes this
   workflow edit from a current plugin already has the matching skill; call it out
   if you are applying the edit by hand against an older one. (A current
-  `finish` leaves the PR a draft and watches no CI, so the hazard is gone.)
+  `finish` readies a PR only after a clean code gate, then watches the run
+  `ready_for_review` starts and never reads a skipped check as green.)
 
   **No history entry is earned** - CI scaffolding `/steer:sync` carries forward.
 

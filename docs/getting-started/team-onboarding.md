@@ -102,7 +102,8 @@ it maps everyday intents to the skill that handles them.
 ## What should I never do?
 
 - **Never merge without a developer's review.** Claude commits, pushes the
-  branch, and opens the PR autonomously - as a draft its author marks ready;
+  branch, and opens the PR autonomously - ready after a clean code review,
+  else as a draft its author marks ready;
   **the merge review is the one human gate** - an open PR is inert behind branch protection, so the review happens
   there, not before the push. (Merge and deploy are never pre-approved.) See the
   [Authorization model](../concepts/authorization-model.md).
@@ -139,8 +140,9 @@ it maps everyday intents to the skill that handles them.
   branch).
 - **Commits, pushes, and opens the PR autonomously** on a non-`main` branch
   (`/steer:work` defaults to `issue/<number>-<slug>`; otherwise the repo's
-  convention, else `feat/*` / `fix/*`). `/steer:work` opens it as a **draft**
-  and stops: its author reads it and marks it ready, which starts CI. Nothing
+  convention, else `feat/*` / `fix/*`). `/steer:work` opens it **ready** when
+  its code review left nothing to read, and watches CI; otherwise as a
+  **draft**, and stops: its author reads it and marks it ready, which starts CI. Nothing
   merges without the reviewer - the backstop, enforced by branch protection.
 
 See the [Hooks reference](../reference/hooks.md) and

@@ -29,8 +29,9 @@ Delivery has **two modes**, keyed to the product `CLAUDE.md` marker
   **fragment** (`mise run changelog:new`); `CHANGELOG.md` is generated, never
   hand-edited.
 - **Get the local gates green before you push**: CI confirms, it is not the
-  loop you iterate in. `/steer:work` opens its PR as a **draft** (a hotfix's
-  opens ready); its author marks it ready, and CI runs then. Watch every run that follows - a ready PR's, a trunk push's -
+  loop you iterate in. `/steer:work` opens its PR as a **draft**, which its
+  author marks ready, and CI runs then; it opens ready when its code gate came
+  back clean, and a hotfix's always does. Watch every run that follows - a ready PR's, a trunk push's -
   to conclusion and fix a red build before the work counts as complete. **Merge and deploy stay human-gated in every mode** -
   never `gh pr merge`, never deploy, never push to a protected `prod` branch.
 
