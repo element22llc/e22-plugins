@@ -103,17 +103,20 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `validate`, and **stop** - on a ready PR, once its CI is watched.
   **Draft or ready.** Open the PR ready (`gh pr create` without `--draft`), or
   ready an existing draft (`gh pr ready`), only when it holds nothing its author
-  must read first: the code gate ran - a Trivial change skips it and stays a
-  draft - and converged with no high finding open, confirmed or not; no medium
-  finding or design question went under *Notes for the reviewer*; no drift class
-  is flagged; and no question awaits its owner's confirmation. Anything else
+  must read first, across the whole PR and not only the commits a later gate
+  re-read: the code gate ran - a Trivial change skips it and stays a draft - and
+  no round left a high finding open, confirmed or not; no medium finding or
+  design question went under *Notes for the reviewer* (a vetted plan and
+  findings already resolved are record, not reading); no drift class is
+  flagged; and no question awaits its owner's confirmation. Anything else
   stays a draft: its author reads it and marks it ready, which starts CI
   (`ready_for_review`) and makes that run theirs. A later `finish` that comes
   back clean readies its draft; a ready PR is never moved back to draft. An
   unattended run (rule `53-autonomous-loops`) always opens a draft. A PR
   `finish` opened or readied, and a push to one already ready, starts CI: watch
-  that run to conclusion (`gh pr checks --watch`) - after `gh pr ready`, the run
-  `ready_for_review` starts, not the skipped one before it - and treat a
+  that run to conclusion (`gh pr checks --watch`) - after `gh pr ready`, wait
+  until `gh pr checks` lists the new run's checks as pending, since the draft's
+  skipped ones show first - and treat a
   `skipped` check as a red flag, never a pass - it reads as green to `gh pr
   checks`. The first push of
   the new `issue/<n>` branch sets the upstream - `git push -u origin <branch>` -

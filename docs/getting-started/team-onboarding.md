@@ -171,7 +171,8 @@ At every decision gate - these are the points where Claude deliberately pauses:
 - **Merge & deploy** - always a human call.
 
 Pushing the branch and opening the PR are **not** gates - Claude does both
-autonomously, opening a draft its author marks ready; the review happens on the
+autonomously, opening it ready after a clean code review, else as a draft its
+author marks ready; the review happens on the
 open PR, which is inert behind branch protection until a human merges.
 
 If you're a PO, your build ends at a **hand-off for dev review** by design -

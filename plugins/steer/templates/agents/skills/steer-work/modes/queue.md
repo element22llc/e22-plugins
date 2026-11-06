@@ -60,8 +60,8 @@ earlier issue's context into the next. Brief it to:
   only through `mise run ...`, `mise run docker:clean` before returning;
 - never ask the human: on a gate, stop and return it;
 - return a card - issue, branch, PR URL or `none`, draft or ready, local gate
-  result, high code-gate findings left open, a ready PR's CI conclusion, the
-  gate question or blocker, or `none`.
+  result, high code-gate findings left open, the gate question or blocker, or
+  `none`.
 
 **solo-trunk.** No worktree: `main` can be checked out in only one place. Run
 each worker in the main checkout, one at a time, fast-forwarded to
@@ -75,7 +75,7 @@ exists to avoid.
 
 - **pr-flow** - `gh pr list --head <branch> --json number,isDraft,baseRefName,url`:
   the PR exists and targets the default branch; a ready one (`isDraft`
-  false) needs a card reporting a clean code gate and its CI watched green. Through the
+  false) also has its checks green and none skipped (`gh pr checks <n>`). Through the
   gateway, the issue is in `validate` with its PR linked.
 - **solo-trunk** - the closing commit is on `origin/<default>`.
 - A mismatch records the issue as blocked, with the fact that failed.
@@ -100,6 +100,6 @@ The issues are independent branches, so one failure does not stop the next.
 
 ## Step 5 - report
 
-One table, in run order: issue, outcome (`draft #n`, `set aside`, `blocked`),
+One table, in run order: issue, outcome (`ready #n`, `draft #n`, `set aside`, `blocked`),
 and the one fact that matters - a set-aside reason, an open high finding, a
 blocker. Then the next-actions block (`NEXT-ACTION.md`).

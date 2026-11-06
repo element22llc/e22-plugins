@@ -325,7 +325,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
     conclusion and fixes a red build before treating the work as done - that is *finishing* the work, not
     merging. To support this without a prompt per poll, the `work` skill
     pre-approves **read-only** CI status (`gh pr checks`, `gh run view`,
-    `gh run watch`) alongside its delivery grants. `gh pr merge`, `gh api`, and
+    `gh run watch`) alongside its delivery grants, `gh pr ready` among them. `gh pr merge`, `gh api`, and
     anything that deploys stay gated exactly as before.
 
 !!! note "The local boundary is advisory - the server enforces it"

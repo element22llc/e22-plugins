@@ -65,7 +65,7 @@ flowchart TD
     PROGRESS --> FINISH["/steer:work finish #123"]
     FINISH --> GATES[Run local gates until green]
     GATES --> CLEAN{Code gate clean?}
-    CLEAN -->|yes| RPR[Open the PR ready]
+    CLEAN -->|yes| RPR[Open the PR ready<br/>transition to validate]
     RPR --> CI[CI runs, watched to conclusion]
     CLEAN -->|no| PR[Open a draft PR]
     PR --> STATE[Transition to validate and stop]
@@ -337,7 +337,7 @@ Claude Code's own delivery tools fit this flow without moving the merge gate.
   clean, when it opens it ready and watches its CI (a `--hotfix` always opens
   it ready); a draft's CI runs once the author marks it ready. Every run after that - a ready PR's, a trunk push's - is watched to
   green and a red build fixed before the work counts as done - the skill pre-approves `git push` /
-  `gh pr create|edit` plus read-only CI status (`gh pr checks`, `gh run
+  `gh pr create|edit|ready` plus read-only CI status (`gh pr checks`, `gh run
   view`, `gh run watch`) for this; the merge
   step stays gated. If you have stepped away, the in-turn watch blocks the turn;
   re-enter monitoring via the harness `/loop` over `gh pr checks` or a
