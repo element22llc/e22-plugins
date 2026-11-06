@@ -104,10 +104,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   **Draft or ready.** Open the PR ready (`gh pr create` without `--draft`), or
   ready an existing draft (`gh pr ready`), only when it holds nothing its author
   must read first, across the whole PR and not only the commits a later gate
-  re-read: the code gate ran - a Trivial change skips it and stays a draft - and
-  no round left a high finding open, confirmed or not; no medium finding or
-  design question went under *Notes for the reviewer* (a vetted plan and
-  findings already resolved are record, not reading); no drift class is
+  re-read: no round of the code gate left a high finding open, confirmed or
+  not - a Trivial change, which skips the gate, qualifies; no medium finding or
+  design question went under *Notes for the reviewer* (a vetted plan, findings
+  already resolved and a skipped gate's one line are record, not reading); no drift class is
   flagged; and no question awaits its owner's confirmation. Anything else
   stays a draft: its author reads it and marks it ready, which starts CI
   (`ready_for_review`) and makes that run theirs. A later `finish` that comes
