@@ -1,0 +1,66 @@
+name: Release
+
+# Tags vX.Y.Z and publishes a GitHub Release when a changelog version reaches the branch
+# production runs from. Rationale: /steer:reference conventions -> "Changelog".
+
+on:
+  push:
+    branches: [main, prod]
+    paths: [".changes/*.md"]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: write # creates the tag and the Release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Publish the newest changelog version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          gate="$(sed -n 's/^production_gate:[[:space:]]*//p' policy/delivery.yml 2>/dev/null)"
+          release_branch=main
+          [ "${gate:-prod-branch-pr}" = prod-branch-pr ] && release_branch=prod
+          if [ "$BRANCH" != "$release_branch" ]; then
+            echo "::notice::Releases publish from ${release_branch} (production_gate: ${gate:-prod-branch-pr}); nothing to do on ${BRANCH}."
+            exit 0
+          fi
+
+          version="$(find .changes -maxdepth 1 -name '*.md' ! -name 'header.tpl.md' -exec basename {} .md \; |
+            sed 's/^v//' | sort -V | tail -1)"
+          if [ -z "$version" ]; then
+            echo "::notice::No changelog version cut yet."
+            exit 0
+          fi
+          tag="v${version}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "${tag} is already released."
+            exit 0
+          fi
+          notes=".changes/${tag}.md"
+          [ -f "$notes" ] || notes=".changes/${version}.md"
+
+          # A Release body renders newlines as <br>: join each entry's wrapped lines
+          # and drop the version heading the Release title already carries.
+          awk 'NR == 1 && /^## / { next }
+            /^[[:space:]]+[^-*[:space:]]/ && buf != "" { sub(/^[[:space:]]+/, " "); buf = buf $0; next }
+            { if (seen) print buf; buf = $0; seen = 1 }
+            END { if (seen) print buf }' "$notes" >release-notes.md
+
+          gh release create "$tag" --title "$tag" --target "$SHA" \
+            --notes-file release-notes.md --generate-notes

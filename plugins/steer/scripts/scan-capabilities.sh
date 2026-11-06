@@ -452,6 +452,14 @@ else
 	emit "question-gate" "mis-wired" "$qg_files"
 fi
 
+# --- release-publish - every release is a tag and a GitHub Release ---
+F=".github/workflows/release.yml"
+if exists "$F"; then
+	emit "release-publish" "present-wired" "$F"
+else
+	emit "release-publish" "absent" "$F"
+fi
+
 # --- line-ending-normalization - LF pinned for every checkout ---
 # Presence-only: whether the file's CONTENT carries the current pins is step 5's
 # additive reconcile, not a capability gap. This entry exists solely to close the

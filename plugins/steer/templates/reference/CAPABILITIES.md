@@ -470,6 +470,16 @@ and **Repair**.
   without `.changie.yaml` and `.changes/unreleased/` that instruction has
   nowhere to land and `ci:changelog` has nothing to check.
 
+### release-publish - every release is a tag and a GitHub Release
+- **Files:** `.github/workflows/release.yml`
+- **Conditional:** always (GitHub-hosted repos)
+- **Wired-when:** the file exists. Presence-only: the product may adapt it.
+- **Repair:** create from `templates/github/workflows/release.yml`; propose.
+  Nothing to configure - it uses `GITHUB_TOKEN` and reads `policy/delivery.yml`.
+- **Verbatim:** no
+- **Why it matters:** without it a production release leaves no tag and no
+  Release, so nothing records which version is running or what it shipped.
+
 ### line-ending-normalization - LF pinned for every checkout
 - **Files:** `.gitattributes`
 - **Conditional:** always (every managed repo carries shell scripts, CI, or a

@@ -520,6 +520,9 @@ is metadata driving the version bump and grouping, and is not rendered.
   `changie batch patch` in its own PR. A repo that cut date versions
   (`2026.9.15`) before keeps going from its last one - it is valid semver, so
   `auto` bumps it like any other.
+- **Publishing is automatic.** `.github/workflows/release.yml` tags `vX.Y.Z`
+  and publishes a GitHub Release when the cut reaches the branch production
+  runs from (`prod` by default, else `main`); nobody runs `gh release create`.
 - **CI enforces it.** `ci:changelog` fails a PR that changes shipping code
   without *adding* a fragment. Editing an existing fragment is amending someone
   else's pending entry, not recording yours. Paths that ship nothing - `spec/`,
