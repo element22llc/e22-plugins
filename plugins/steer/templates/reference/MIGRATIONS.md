@@ -108,8 +108,8 @@ Name the file and say what to carry forward.
   ```sh
   test -f scripts/ci-coverage.sh && ! grep -q 'rebased=' scripts/ci-coverage.sh && echo stale
   test -f scripts/ci-changelog.sh && ! grep -q 'core.quotePath=false' scripts/ci-changelog.sh && echo stale
-  test -f scripts/ci-changelog.sh && ! grep -q 'STEER_CI_PR_AUTHOR' scripts/ci-changelog.sh && echo stale
-  grep -q 'mise run ci:changelog' .github/workflows/ci.yml 2>/dev/null && ! grep -q 'STEER_CI_PR_AUTHOR' .github/workflows/ci.yml && echo stale
+  test -f scripts/ci-changelog.sh && ! grep -q 'STEER_CI_ACTOR' scripts/ci-changelog.sh && echo stale
+  grep -q 'mise run ci:changelog' .github/workflows/ci.yml 2>/dev/null && ! grep -q 'STEER_CI_ACTOR' .github/workflows/ci.yml && echo stale
   ```
 
   No output => already migrated => no-op.
@@ -120,10 +120,11 @@ Name the file and say what to carry forward.
     the `## Coverage` summary line.
   - `scripts/ci-changelog.sh`: replace each `git diff ` with
     `git -c core.quotePath=false diff `, and splice in the template's
-    `STEER_CI_PR_AUTHOR` block just before the `steer_ci_base` call.
+    Dependabot block (`STEER_CI_PR_AUTHOR` + `STEER_CI_ACTOR`) just before the
+    `steer_ci_base` call.
   - `.github/workflows/ci.yml`: add
-    `STEER_CI_PR_AUTHOR: ${{ github.event.pull_request.user.login }}` to the
-    `ci:changelog` step's `env:`, and in the `spec-drift` and `DESIGN.md` steps
+    `STEER_CI_PR_AUTHOR: ${{ github.event.pull_request.user.login }}` and
+    `STEER_CI_ACTOR: ${{ github.actor }}` to the `ci:changelog` step's `env:`, and in the `spec-drift` and `DESIGN.md` steps
     replace `git diff --name-only` with
     `git -c core.quotePath=false diff --name-only`.
 

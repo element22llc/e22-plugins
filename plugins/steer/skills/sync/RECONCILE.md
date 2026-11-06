@@ -110,6 +110,11 @@ is visible rather than silent.
    never flips an existing value, so a deliberate `"steer@e22-plugins": false`
    opt-off is preserved.
 
+   A `~` line in the delta is never written. It is either a placeholder to
+   resolve to the real value, or a `.gitignore` re-include (`!path`) under a
+   directory the repo ignores whole, which git cannot honour: name it to the dev
+   and propose switching that directory ignore to its `/*` form.
+
    **No `.mcp.json` reconcile.** The `github` and `context7` MCP
    servers ship with the **plugin** (`plugins/steer/.claude-plugin/mcp.json`), not the scaffold - so they
    refresh with the `/plugin update` in step 2 and are **not** part of scaffold

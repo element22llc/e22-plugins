@@ -47,7 +47,8 @@ fi
 
 # A Dependabot bump adds no fragment and cannot take one: dependabot-auto-merge
 # refuses a commit that is not Dependabot's, so requiring one would block every bump.
-if [ "${STEER_CI_PR_AUTHOR:-}" = 'dependabot[bot]' ]; then
+# Same guard as that job: author and pusher both Dependabot.
+if [ "${STEER_CI_PR_AUTHOR:-}" = 'dependabot[bot]' ] && [ "${STEER_CI_ACTOR:-}" = 'dependabot[bot]' ]; then
 	printf 'ci:changelog - Dependabot dependency bump; no fragment required.\n'
 	exit 0
 fi

@@ -8,7 +8,8 @@ body: |-
     package before diff-cover reads them, where before no changed line ever
     matched and the gate always passed. `ci:changelog` no longer counts an
     exempt file with a non-ASCII name (git quoted it) as shipping code, and
-    passes a Dependabot PR, so `dependabot-auto-merge` can run;
+    passes a PR that Dependabot both opened and pushed, so
+    `dependabot-auto-merge` can run;
     `/steer:setup sync` migrates existing repos. `scaffold_reconcile.py` puts
     template lines before a repo's own in `.gitattributes`, so its `eol`
     rules keep winning, and reports a `!` re-include an existing directory

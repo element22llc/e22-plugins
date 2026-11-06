@@ -78,8 +78,10 @@ ci_changelog "spec/sources/$(printf 'r\303\251sum\303\251').pdf" "docs/$(printf 
 assert_eq "ci-changelog: exempt paths with accented names need no fragment" "${rc}" "0"
 ci_changelog package.json
 assert_eq "ci-changelog: a dependency bump by a human still needs one" "${rc}" "1"
-(cd "${CC}" && STEER_CI_BASE=probe~1 STEER_CI_PR_AUTHOR='dependabot[bot]' sh scripts/ci-changelog.sh >/dev/null 2>&1)
+(cd "${CC}" && STEER_CI_BASE=probe~1 STEER_CI_PR_AUTHOR='dependabot[bot]' STEER_CI_ACTOR='dependabot[bot]' sh scripts/ci-changelog.sh >/dev/null 2>&1)
 assert_eq "ci-changelog: a Dependabot PR needs no fragment" "$?" "0"
+(cd "${CC}" && STEER_CI_BASE=probe~1 STEER_CI_PR_AUTHOR='dependabot[bot]' STEER_CI_ACTOR=someone sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: a human push onto a Dependabot PR still needs one" "$?" "1"
 
 # ci-coverage: per-package lcov paths reach diff-cover rebased onto the package.
 CV="${WORK}/cicoverage"

@@ -98,6 +98,7 @@ jobs:
           STEER_CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           STEER_CI_BEFORE: ${{ github.event.before }}
           STEER_CI_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          STEER_CI_ACTOR: ${{ github.actor }}
         run: mise run ci:changelog
 
       - name: Spec open-question contract
