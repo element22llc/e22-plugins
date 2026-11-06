@@ -79,6 +79,24 @@ assert_eq "cap: dependency-automation present-wired" "$(capstatus "${out}" depen
 printf 'on: pull_request\n' >"${CRD}/.github/workflows/dependabot-auto-merge.yml"
 capscan "${CRD}"
 assert_eq "cap: retired auto-merge workflow -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+rm "${CRD}/.github/workflows/dependabot-auto-merge.yml"
+
+# A workflow_call caller must grant the auto-merge job's write scopes: GitHub
+# refuses to start the caller run otherwise, even when the job's `if` skips it.
+printf 'permissions:\n  contents: read\njobs:\n  ci:\n    uses: "./.github/workflows/ci.yml"\n' \
+	>"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: read-only workflow_call caller -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+printf 'jobs:\n  ci:\n    uses: ./.github/workflows/ci.yml\n' >"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: caller with no permissions -> mis-wired" "$(capstatus "${out}" dependency-automation)" "mis-wired"
+printf 'jobs:\n  ci:\n    permissions:\n      contents: write\n      pull-requests: write\n    uses: ./.github/workflows/ci.yml\n' \
+	>"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: caller granting the scopes -> present-wired" "$(capstatus "${out}" dependency-automation)" "present-wired"
+printf 'permissions: write-all\njobs:\n  ci:\n    uses: ./.github/workflows/ci.yml\n' >"${CRD}/.github/workflows/main-check.yaml"
+capscan "${CRD}"
+assert_eq "cap: write-all caller -> present-wired" "$(capstatus "${out}" dependency-automation)" "present-wired"
 
 # agent-surface-current: the retired-surface check keys on steer's OWN artifacts.
 # The migration that retires .github/prompts/ deliberately leaves a team-authored

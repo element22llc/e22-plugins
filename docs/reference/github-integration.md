@@ -79,6 +79,14 @@ product-repo-facing version of this.
   approves and never arms native auto-merge. **Major** bumps are never
   auto-merged; they get a "left for a human" comment.
 
+!!! warning "A `ci.yml` other workflows call must get its scopes from them"
+    The job declares `contents: write` and `pull-requests: write`. If `ci.yml`
+    also has `on: workflow_call`, every workflow that calls it must grant both
+    scopes. GitHub checks them at startup, before the job's `if`, so a narrower
+    caller fails on every run while PR-triggered CI stays green. The sync
+    capability scan reports such a caller, and sync proposes adding the grant
+    to the calling job.
+
 ### The review-gate exception
 
 steer normally requires a human-approved PR before anything lands on `main`. The

@@ -9,6 +9,9 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
+  # Adding `workflow_call`? Every caller job must grant `contents: write` + `pull-requests: write`
+  # (dependabot-auto-merge's scopes): GitHub checks them at startup, before the job's `if`, and
+  # fails each run of a narrower caller.
 
 # Supersede a PR's own in-flight run when it is pushed again - the biggest saver of
 # Actions minutes on an agent-driven branch, which pushes often. Never on `main`:

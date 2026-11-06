@@ -337,6 +337,17 @@ dbc=".github/dependabot.yml"
 dbj=".github/workflows/ci.yml"
 dbw=".github/workflows/dependabot-auto-merge.yml"
 da_files="$dbc,$dbj"
+# GitHub fails a workflow_call caller at startup, before any `if`, when it grants
+# less than the called jobs declare - so a read-only caller of ci.yml never runs.
+# Checked per file: a grant on another job in the same file also passes.
+da_short_callers=""
+for f in "$ROOT"/.github/workflows/*.yml "$ROOT"/.github/workflows/*.yaml; do
+	[ -f "$f" ] && [ "$f" != "$ROOT/$dbj" ] || continue
+	grep -qE "uses:[[:space:]]*[\"']?\./\.github/workflows/ci\.ya?ml" "$f" || continue
+	grep -qE 'permissions:[[:space:]]*write-all' "$f" && continue
+	grep -qE 'contents:[[:space:]]*write' "$f" && grep -qE 'pull-requests:[[:space:]]*write' "$f" && continue
+	da_short_callers="$da_short_callers,${f#"$ROOT"/}"
+done
 if exists "$dbw"; then
 	# The retired standalone workflow approves with a repo-wide grant; its
 	# migration replaces it with the ci.yml job.
@@ -344,12 +355,12 @@ if exists "$dbw"; then
 elif ! exists "$dbc" && ! has "$dbj" "dependabot\[bot\]"; then
 	emit "dependency-automation" "absent" "$da_files"
 elif exists "$dbc" && has "$dbj" "dependabot\[bot\]" && has "$dbj" "update-type" &&
-	has "$dbj" "match-head-commit"; then
+	has "$dbj" "match-head-commit" && [ -z "$da_short_callers" ]; then
 	emit "dependency-automation" "present-wired" "$da_files"
 else
 	# Auto-merge not scoped to dependabot[bot] patch/minor on the tested head is
 	# worse than no automation, so report wired-but-wrong rather than present.
-	emit "dependency-automation" "mis-wired" "$da_files"
+	emit "dependency-automation" "mis-wired" "$da_files$da_short_callers"
 fi
 
 # --- toolchain-pin - mise toolchain + lock (lock contents NOT compared) ---
