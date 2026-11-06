@@ -33,7 +33,7 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           SHA: ${{ github.sha }}
         run: |
-          gate="$(sed -n 's/^production_gate:[[:space:]]*//p' policy/delivery.yml 2>/dev/null)"
+          gate="$(sed -n 's/^production_gate:[[:space:]]*//p' policy/delivery.yml 2>/dev/null || true)"
           release_branch=main
           [ "${gate:-prod-branch-pr}" = prod-branch-pr ] && release_branch=prod
           if [ "$BRANCH" != "$release_branch" ]; then
@@ -41,8 +41,8 @@ jobs:
             exit 0
           fi
 
-          version="$(find .changes -maxdepth 1 -name '*.md' ! -name 'header.tpl.md' -exec basename {} .md \; |
-            sed 's/^v//' | sort -V | tail -1)"
+          version="$(find .changes -maxdepth 1 -name '*.md' ! -name 'header.tpl.md' -exec basename {} .md \; 2>/dev/null |
+            sed 's/^v//' | sort -V | tail -1 || true)"
           if [ -z "$version" ]; then
             echo "::notice::No changelog version cut yet."
             exit 0
