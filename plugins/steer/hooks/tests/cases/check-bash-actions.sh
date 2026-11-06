@@ -298,4 +298,49 @@ assert_empty "merge-gate: read-only pr command silent" "${out}"
 out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg14 mcp__github__pull_request_read '')")"
 assert_empty "merge-gate: other MCP PR tools silent" "${out}"
 
+# Spellings that slipped past the merge gate. A command with real newlines needs
+# them JSON-escaped, which bash_json does not do.
+bash_json_nl() { # <cwd> <session> <command with newlines>
+	_cmd="$(printf '%s' "$3" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk 'NR > 1 { printf "\\n" } { printf "%s", $0 }')"
+	printf '{"session_id":"%s","cwd":"%s","tool_name":"Bash","tool_input":{"command":"%s"}}' "$2" "$1" "${_cmd}"
+}
+for mc in 'gh pr -R o/r merge 5' 'gh pr --repo=o/r merge 5' 'gh pr --repo o/r merge 5 --squash' \
+	'/opt/homebrew/bin/gh pr merge 5' '\gh pr merge 5' "echo can\\'t; gh pr merge 5" \
+	"bash -c 'gh pr merge 5 --squash'" 'sh -c "gh pr merge 5"' "eval 'gh pr merge 5'" \
+	'echo "$(gh pr merge 5 --squash)"' 'echo "`gh pr merge 5`"'; do
+	out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg15 "${mc}")")"
+	assert_deny "merge-gate: ${mc} denied" "${out}"
+done
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg16 "# it's done
+gh pr merge 5")")"
+assert_deny "merge-gate: apostrophe in a comment does not hide the merge" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg17 "gh pr comment 5 --body-file - <<'EOF'
+it's ready
+EOF
+gh pr merge 5 --squash")")"
+assert_deny "merge-gate: apostrophe in a heredoc body does not hide the merge" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18 "gh pr comment 5 --body-file - <<EOF
+the human runs gh pr merge 5
+EOF")")"
+assert_empty "merge-gate: heredoc body mentioning gh pr merge silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg19 'bash -c "gh pr view 5" # then gh pr merge')")"
+assert_empty "merge-gate: merge only in a trailing comment silent" "${out}"
+
+# Trunk-push: matched on the quote-stripped text, past git global options.
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp20 'git commit -am "docs: explain when to git push in README"')")"
+assert_empty "trunk-push: git push inside a commit message silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp20 'git push origin main')")"
+assert_ask "trunk-push: a quoted mention does not spend the session's ask" "${out}"
+for pc in 'git -c core.hooksPath=/dev/null push origin main' 'git --no-pager push' \
+	'/usr/bin/git push' '(git push)' "git -C \"${TP_HOT}\" push"; do
+	out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" "tp21-$(printf '%s' "${pc}" | cksum | cut -d' ' -f1)" "${pc}")")"
+	assert_ask "trunk-push: ${pc} asks" "${out}"
+done
+
+# Stacked-PR: -B belongs to the gh pr segment only.
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp20 'git checkout -B feat/x && gh pr create --fill')")"
+assert_empty "stacked-pr: git checkout -B before gh pr create is not the base" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp21 'git checkout -B feat/x && gh pr create -B feat/a --fill')")"
+assert_ask "stacked-pr: the gh pr segment's own -B still asks" "${out}"
+
 finish

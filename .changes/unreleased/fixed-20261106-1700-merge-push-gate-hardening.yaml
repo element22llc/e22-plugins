@@ -1,0 +1,18 @@
+kind: Fixed
+time: 2026-11-06T17:00:00.000000000-05:00
+custom:
+  Slug: merge-push-gate-hardening
+body: |-
+  - **Fixed: the merge gate and trunk-push ask no longer miss common
+    spellings.** The merge gate now denies `gh pr -R <repo> merge`, a `gh`
+    called by path or as `\gh`, `bash -c` / `sh -c` / `eval` wrappers, and a
+    `$(...)` or backtick inside double quotes. An apostrophe in a comment, a
+    heredoc body or an unterminated quote no longer hides a merge that follows
+    it; comments and heredoc bodies are read as data. The solo-trunk push ask
+    now matches past git global options (`-c k=v`, `--no-pager`), a path to
+    `git`, and a subshell, and a commit message that mentions "git push" no
+    longer spends the once-per-session ask. The stacked-PR ask reads `-B` only
+    from the `gh pr create|edit` segment, so `git checkout -B x && gh pr
+    create` no longer asks. One `steer:allow-pin` marker now exempts only its
+    own line, matching the CI scanner, and hook messages drop control bytes
+    that made their JSON invalid.

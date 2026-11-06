@@ -144,10 +144,11 @@ steer_mutation_content() {
 
 # steer_json_safe <value> - sanitize a value for embedding in a hand-built JSON
 # string: strip double quotes and backslashes, flatten newlines/tabs/CRs to
-# spaces. The shared idiom behind every hook's SAFE_* interpolation - one home
-# so a fix to the sanitization lands everywhere at once.
+# spaces, drop the other control bytes JSON forbids raw. The shared idiom behind
+# every hook's SAFE_* interpolation - one home so a fix to the sanitization
+# lands everywhere at once.
 steer_json_safe() {
-	printf '%s' "$1" | tr -d '"\\' | tr '\n\t\r' '   '
+	printf '%s' "$1" | tr -d '"\\' | tr '\n\t\r' '   ' | LC_ALL=C tr -d '\001-\037'
 }
 
 # steer_json_string - stdin -> one JSON string literal (quotes included), lossless.
