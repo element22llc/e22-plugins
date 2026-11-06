@@ -122,3 +122,12 @@ def test_ci_test_passes_vitest_flags_without_a_separator() -> None:
     """pnpm forwards a literal `--`; vitest then ignores --coverage and writes no lcov."""
     script = (SCAFFOLD / "scripts" / "ci-test.sh").read_text(encoding="utf-8")
     assert "pnpm run test -- " not in script
+
+
+@pytest.mark.parametrize("path", _ROOT_CONFIGS)
+def test_root_config_installs_the_security_tools_ci_security_runs(path: str) -> None:
+    config = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8"))
+    if "ci:security" not in config.get("tasks", {}):
+        pytest.skip(f"{path} runs no ci:security")
+    missing = {"aqua:aquasecurity/trivy", "pipx:semgrep"} - set(config.get("tools", {}))
+    assert not missing, f"{path} runs ci:security but does not install {sorted(missing)}"
