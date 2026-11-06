@@ -368,7 +368,7 @@ The approved spec is decomposed into **tracked issues** - triaged, prioritized, 
 ### ⚙️ Build - one issue, end to end
 The AI claims the issue, branches, loads the linked spec, implements, **writes the tests**, and opens the pull request - updating the issue as it goes.
 
-**Autonomy where it's safe:** commits, pushes and opening a draft PR are autonomous. **Merge and deploy are never implied.**
+**Autonomy where it's safe:** commits, pushes and opening the PR (ready on a clean code review, else a draft) are autonomous. **Merge and deploy are never implied.**
 
 <div class="text-sm opacity-60 mt-3">Every non-trivial change gets an independent <b>code review</b> <i>before</i> the PR; high-risk work also gets a <b>plan review</b> and a developer sign-off before any code.</div>
 
@@ -389,7 +389,7 @@ Plan: /steer:work issues - capture -> triage -> decompose; issue-first is
 re-asserted by advisory PreToolUse/Stop hooks in Claude Code - they remind,
 they never block. Build: /steer:work - claim, branch, classify, implement,
 test, then the code gate (fresh reviewer subagents on the diff, fix and
-re-review while findings keep dropping, 4 rounds at most) and a draft PR.
+re-review while findings keep dropping, 4 rounds at most) and a PR - ready on a clean gate, else a draft.
 The plan gate runs on --reviewed and automatically on High-risk work. The
 autonomy boundary is the key message for both audiences.
 -->

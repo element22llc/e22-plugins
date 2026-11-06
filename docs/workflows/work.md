@@ -153,7 +153,9 @@ or readies a PR.** `--reviewed` carries over to every worker; `--hotfix` is refu
 given) and does the reviewer's legwork in parallel:
 
 1. **Triage from metadata** in one `gh pr list` call - draft, red CI and
-   conflicting PRs go straight to *Blocked* without a review.
+   conflicting PRs go straight to *Blocked* without a review. A stacked PR
+   adds one lookup for a GitHub native stack: merging it merges every PR
+   below it, so its readiness is judged across the whole stack.
 2. **One read-only reviewer subagent per remaining PR**, all at once, each
    returning a seven-line card: what it does, change class, tests and contract
    coverage, drift flags, findings with `path:line`, design questions for the
@@ -176,7 +178,8 @@ nothing, and an unattended loop never approves. **It never merges.**
 
 `review --mine` is the author's side - your own queued PRs, which GitHub will
 not let you approve. It marks finished drafts ready, routes red or conflicting
-ones to `resume`, retargets an independent stacked PR onto the default branch,
+ones to `resume`, retargets an independent stacked PR onto the default branch
+(a native stack is reported to you instead - leaving one is a restructuring),
 and asks you who should review an unassigned one.
 
 ## Debugging - `/steer:work debug`
