@@ -188,6 +188,9 @@ fixtures:
   - ask: "work through issues #12, #15 and #18 one after another"
     skill: work
     signals: ["one after another", "queue"]
+  - ask: "fix #12 and #15"
+    skill: work
+    signals: ["several issues", "queue automatically"]
   - ask: "I have twenty PRs waiting on me - help me review and approve them fast"
     skill: work
     signals: ["review queue", "review my PRs"]

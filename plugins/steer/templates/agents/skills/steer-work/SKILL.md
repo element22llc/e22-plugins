@@ -10,7 +10,7 @@ argument-hint: '[start | resume | status | finish | queue | debug | qa | promote
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to work, fix, resume or finish an issue ("fix #123") or to implement a change now. `queue #A #B` works through several issues one after another, a fresh worker each. `--reviewed` adds a plan review gate for costly changes; `--hotfix` only for a real production incident ("prod is down"), never ordinary urgent work. `debug` finds a bug's root cause before any fix ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks through the flows a UI change touches in a real browser before review. Modes that take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the repo root, organize stray documents and diagrams), `walkthrough` (record a demo video). `issues`: backlog work with no code this turn - capture, triage, decompose, a ranked board.
+**When to use.** Use to work, fix, resume or finish an issue ("fix #123") or to implement a change now. Several issues at once ("fix #12 and #15", `queue #A #B`) run as a queue automatically: one after another, a fresh worker each. `--reviewed` adds a plan review gate for costly changes; `--hotfix` only for a real production incident ("prod is down"), never ordinary urgent work. `debug` finds a bug's root cause before any fix ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks through the flows a UI change touches in a real browser before review. Modes that take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the repo root, organize stray documents and diagrams), `walkthrough` (record a demo video). `issues`: backlog work with no code this turn - capture, triage, decompose, a ranked board.
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
@@ -130,7 +130,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR **as a draft**, transition to `validate`, and **stop** - its author marks it ready, which runs CI. Never `done` merely because a PR was opened - and never on a *skipped* check. |
-| **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. -> [`modes/queue.md`](modes/queue.md) |
+| **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at draft PRs. Automatic for two or more issues. -> [`modes/queue.md`](modes/queue.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
 | **`qa [#N]`** | Opt-in: drive the flows the branch diff touches in a real browser, fix small breakage via `debug`, file the rest. Read `modes/qa.md` first. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](modes/promote.md) |
@@ -154,6 +154,7 @@ execution (claimant, branch, PR, CI, validation); `issues status [#N |
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`; the phases stay distinct, and re-running one reconciles.
+Two or more issues -> `queue` (Multiple issues).
 
 **Read the full procedure before executing one:**
 [`modes/subcommands.md`](modes/subcommands.md).
@@ -239,13 +240,15 @@ context.
 
 ## Multiple issues
 
-`Implement #123 and #124` -> **one branch + PR per issue** by default (in
-solo-trunk, **one trunk commit per issue**, each closing its own `#N`). Combine only
-when one issue explicitly depends on the other, separating them would produce an
-invalid intermediate state, or the user explicitly asks for combined delivery -
-otherwise issue-first traceability degrades into many-issues-to-one-PR.
-To deliver them in one run, one fresh worker each, use `queue`
-([`modes/queue.md`](modes/queue.md)).
+An implement ask naming two or more issues - `Implement #123 and #124`, `start
+#A #B`, a bare `#A #B` - **runs as `queue`** without being asked: say so in one
+line and follow [`modes/queue.md`](modes/queue.md),
+carrying `--reviewed` over (`--hotfix` stays refused). Each issue gets **one
+branch + PR** (in solo-trunk, **one trunk commit**, closing its own `#N`), and
+the queue's triage sets aside dependent ones. Combine into one branch instead
+only when separating them would produce an invalid intermediate state or the
+user explicitly asks for combined delivery - otherwise issue-first traceability
+degrades into many-issues-to-one-PR. `status #A #B` stays read-only.
 
 Native `/batch`, `/autofix-pr`, plan mode and `claude --worktree` fit this flow
 as `/steer-reference conventions` -> Native Claude Code delivery features lays

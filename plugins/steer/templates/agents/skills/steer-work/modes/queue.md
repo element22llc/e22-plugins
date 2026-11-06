@@ -1,6 +1,8 @@
 # `/steer-work queue` - deliver a list of issues, one fresh worker each
 
-Read this file only when `queue` is the subcommand. It is issue-scoped -
+Read this file only when `queue` is the subcommand, named or entered
+automatically for an implement ask naming two or more issues (`SKILL.md` ->
+Multiple issues). It is issue-scoped -
 Preconditions 1 and 2 hold - but every issue is named, so step 3 has nothing to
 find-or-create.
 

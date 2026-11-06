@@ -136,7 +136,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
-phase reconciles rather than duplicates.
+phase reconciles rather than duplicates. Naming two or more issues runs
+`queue` instead (`SKILL.md` -> Multiple issues).
 
 ## Spec delta - derived, never staged
 
