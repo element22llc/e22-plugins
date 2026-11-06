@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `ci:changelog` passes a hotfix back-port carrying its cut
+### v7.20.0 - `ci:changelog` passes a hotfix back-port carrying its cut
 
 - **What & why:** a `/steer:work --hotfix` PR into `prod` now cuts its own patch
   release, and its fix returns to `main` through a cherry-picked back-port PR.
