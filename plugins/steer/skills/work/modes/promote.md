@@ -39,6 +39,11 @@ it. Then:
   required review on `prod`, say the promotion PR would merge without an
   approval, and recommend `/steer:setup protect` before continuing. Offer to continue
   anyway only if the dev says so; record that they did.
+- **Every hotfix is back-ported.** A hotfix cuts its patch on `prod`, so a
+  version file `prod` has and the default branch lacks is a fix `main` never
+  got: `git diff --name-only --diff-filter=A origin/main origin/prod -- '.changes/*.md'`.
+  Any output -> stop and open the back-port (`modes/hotfix.md` -> follow-up),
+  or name the open one for a human to merge.
 - **The default branch is green.** `gh pr checks` on the last merged PR, or
   `gh run list --branch main --limit 1`. A red default branch is not promotable;
   report it and stop.
@@ -106,6 +111,7 @@ Per `NEXT-ACTIONS.md`, derived from where the run stopped:
 |---|---|---|
 | `production_gate` is not `prod-branch-pr` | Human decision required | The declared gate is the human's own step (no command) |
 | No `prod` branch, or it is unprotected | Blocking now | `/steer:setup protect` |
+| A hotfix on `prod` not back-ported | Human decision required | A dev merges the `prod -> main` back-port PR (no command) |
 | Default branch red | Blocking now | Fix the build before promoting |
 | Changelog cut PR open | Human decision required | A dev reviews and merges the cut (no command) |
 | Promotion PR open | Human decision required | A dev approves and merges - **that merge deploys production** (no command) |

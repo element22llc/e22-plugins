@@ -42,6 +42,22 @@ What changes versus the normal flow:
   lane, so no work marker is needed up front. `<n>` is the issue number once it
   exists; until then use a short slug, and record the number and the marker
   when the issue is filed in the follow-up.
+- **Cut it from what production runs.** When `policy/delivery.yml` says
+  `production_gate: prod-branch-pr` (absent means that) and a `prod` branch
+  exists, branch from it and target it - a hotfix cut from the default branch
+  would carry every unreleased commit into production:
+
+  ```sh
+  git fetch origin prod && git switch -c hotfix/<n>-slug origin/prod
+  gh pr create --base prod ...
+  ```
+
+  Any other gate deploys from the default branch: branch and target it as
+  `start` does, and say in the PR that unreleased work on it ships too.
+- **The PR carries its own patch release.** Add the fragment (kind `Fixed` or
+  `Security`), then cut it on the branch so merging ships a version:
+  `changie batch patch && changie merge`. Under `prod-branch-pr` the merge of
+  this PR is the production gate, so the cut cannot wait for `promote`.
 - **Issue after-the-fact.** Don't block the fix on find-or-create. File or backfill
   the issue as soon as practical and reference it from the PR/commit - the hook
   won't nag a `hotfix/` branch, but the issue is still required by the follow-up.
@@ -62,8 +78,13 @@ What changes versus the normal flow:
   auto-executed**: pushing the `hotfix/` branch and opening the PR are
   autonomous (Commit autonomy), while `gh pr merge` and any deploy stay
   human-gated (this skill does not pre-approve them).
-- **Mandatory follow-up.** Once the fire is out, restore traceability:
-  backfill/finish the issue, write the spec/ADR if a durable decision was made,
+- **Mandatory follow-up.** Once the fire is out, restore traceability.
+  First, when the fix went into `prod`, **back-port it** the moment that PR
+  merges, or the next promotion's changelog and `main` both lack it:
+  `gh pr create --base main --head prod --title "backport: <version>"`,
+  squash-merged by a human (`main` keeps linear history). `ci:changelog` skips
+  a PR whose head is `prod` - the hotfix cut already consumed its fragment.
+  Then backfill/finish the issue, write the spec/ADR if a durable decision was made,
   put the incident's root cause on the enforcement ladder (`finish` in
   `modes/subcommands.md` - an incident is the strongest trigger, and a regression
   test is the expected rung), and write a `/spec/history/` entry (in a polyrepo member, to the **workspace's**

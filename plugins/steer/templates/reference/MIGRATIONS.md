@@ -94,6 +94,30 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `ci:changelog` skips the `prod -> main` hotfix back-port
+
+- **What & why:** a `/steer:work --hotfix` PR into `prod` now cuts its own patch
+  release, and its fix returns to `main` through a back-port PR whose head is
+  `prod`. That PR changes shipping code but adds no fragment - the cut consumed
+  it - so the old gate failed every back-port. `ci.yml` now passes
+  `STEER_CI_HEAD_REF`, and `scripts/ci-changelog.sh` skips a PR whose head is
+  `prod`, as it already skipped one whose base is `prod`.
+- **Precondition:** the installed gate has the old promotion-only skip -
+
+  ```sh
+  grep -q 'STEER_CI_HEAD_REF' scripts/ci-changelog.sh 2>/dev/null || grep -n 'STEER_CI_BASE_REF:-}" = prod' scripts/ci-changelog.sh 2>/dev/null
+  ```
+
+  No output => already migrated, or the repo has no changelog gate => no-op.
+- **Action:** read-then-propose; show the diff. In `scripts/ci-changelog.sh`,
+  replace the `STEER_CI_BASE_REF = prod` skip block with the template's
+  two-branch block (base `prod`, or head `prod`). In
+  `.github/workflows/ci.yml`'s `Changelog fragment` step, add
+  `STEER_CI_HEAD_REF: ${{ github.head_ref }}` to its `env`. Leave the rest of
+  both files as they are.
+
+  **No history entry is earned.**
+
 ### v7.17.0 - `.claude/settings.json` stops enabling `typescript-lsp`
 
 - **What & why:** the scaffold enabled `typescript-lsp@claude-plugins-official`

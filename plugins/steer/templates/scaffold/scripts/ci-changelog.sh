@@ -39,10 +39,17 @@ if [ -n "${strays}" ]; then
 fi
 
 # Promotion carries changes already gated on their way into main, and the cut
-# before it consumed their fragments - there is nothing left to add.
-if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod ]; then
-	printf 'ci:changelog - promotion to prod; fragments were checked on main.\n'
-	exit 0
+# before it consumed their fragments. A hotfix PR into prod cuts its own patch,
+# so the prod -> main back-port arrives with its fragments consumed too.
+if [ "${STEER_CI_EVENT:-}" = pull_request ]; then
+	if [ "${STEER_CI_BASE_REF:-}" = prod ]; then
+		printf 'ci:changelog - PR into prod; it carries a cut, not new fragments.\n'
+		exit 0
+	fi
+	if [ "${STEER_CI_HEAD_REF:-}" = prod ]; then
+		printf 'ci:changelog - back-port from prod; its hotfix cut consumed the fragments.\n'
+		exit 0
+	fi
 fi
 
 if ! base="$(steer_ci_base)"; then

@@ -42,7 +42,9 @@ while the subcommands below read an issue and deliver it.
     which deployed environment is down, planning on the normal flow until the
     answer names one. The lane
     relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
-    `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
+    `hotfix/<n>-slug` branch cut from and merged into `prod` (carrying its own
+    patch cut, then back-ported to `main` - see
+    [Deployment](../concepts/deployment.md#hotfixes)), one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
     opening the PR are autonomous, as everywhere). It still runs the local
     gates and `finish`'s code gate whatever the diff's size, but opens the PR
