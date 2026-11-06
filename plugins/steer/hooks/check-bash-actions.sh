@@ -130,11 +130,12 @@ steer_strip_quoted() {
 			if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
 			if (c != q) { b = b c; continue }
 			if (b !~ /[[:space:]]/) o = o q b q
-			else if ((q == "\"" && b ~ /\$\(|`/) || o ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh[[:space:]]+-[[:alpha:]]*c|eval)[[:space:]]+$/) o = o " " b " "
+			else if ((q == "\"" && b ~ /\$\(|`/) || substr(o, length(o) > 40 ? length(o) - 40 : 1) ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh[[:space:]]+-[[:alpha:]]*c|eval)[[:space:]]+$/) o = o " " b " "
 			else o = o q q
 			q = ""
 			continue
 		}
+		if (c == "\\" && substr($0, i + 1, 1) == "\n") { o = o " "; i++; continue }
 		if (c == "\\") { o = o c substr($0, ++i, 1); continue }
 		if (c == "\"" || c == "\047") { q = c; b = ""; continue }
 		p = substr(o, length(o), 1)
@@ -150,7 +151,15 @@ steer_strip_quoted() {
 			d = ""
 			while (j <= n && substr($0, j, 1) !~ /[[:space:];&|<>()]/) { d = d substr($0, j, 1); j++ }
 			gsub(/["\047\\]/, "", d)
-			if (d ~ /^[A-Za-z_]/) { hd[++nh] = d; hs[nh] = strip; o = o "<<" d " "; i = j - 1; continue }
+			cur = o
+			sub(/.*\n/, "", cur)
+			r = substr($0, j)
+			e = index(r, "\n")
+			if (e) r = substr(r, 1, e - 1)
+			# A body fed to an interpreter (sh <<EOF, cat <<EOF | sh) is commands, not data.
+			if (d ~ /^[A-Za-z_]/ && (cur r) !~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh|ssh|eval)([[:space:]]|$)/) {
+				hd[++nh] = d; hs[nh] = strip; o = o "<<" d " "; i = j - 1; continue
+			}
 		}
 		if (c == "\n" && nh > 0) {
 			o = o c

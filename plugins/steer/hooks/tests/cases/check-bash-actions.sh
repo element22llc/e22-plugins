@@ -323,6 +323,17 @@ out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18 "gh pr commen
 the human runs gh pr merge 5
 EOF")")"
 assert_empty "merge-gate: heredoc body mentioning gh pr merge silent" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18b "sh <<'EOF'
+gh pr merge 5
+EOF")")"
+assert_deny "merge-gate: heredoc fed to sh is commands" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18c "cat <<EOF | bash
+gh pr merge 5
+EOF")")"
+assert_deny "merge-gate: heredoc piped to bash is commands" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18d 'gh pr \
+  merge 5')")"
+assert_deny "merge-gate: backslash-continued gh pr merge denied" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg19 'bash -c "gh pr view 5" # then gh pr merge')")"
 assert_empty "merge-gate: merge only in a trailing comment silent" "${out}"
 
@@ -342,5 +353,16 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp20 'git checkout -B
 assert_empty "stacked-pr: git checkout -B before gh pr create is not the base" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" sp21 'git checkout -B feat/x && gh pr create -B feat/a --fill')")"
 assert_ask "stacked-pr: the gh pr segment's own -B still asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" sp22 'gh pr create \
+  --base feat/a \
+  --fill')")"
+assert_ask "stacked-pr: backslash-continued --base asks" "${out}"
+
+# A quoted -C target with a space still resolves the pushed repo.
+TP_SPACE="$(new_repo "tp hot space")"
+mkdir -p "${TP_SPACE}/infra"
+claude_md_mode "${TP_SPACE}" solo-trunk
+out="$(run_hook check-bash-actions.sh "$(bash_json /tmp tp22 "git -C \"${TP_SPACE}\" push")")"
+assert_ask "trunk-push: quoted -C target with a space asks" "${out}"
 
 finish
