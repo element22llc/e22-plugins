@@ -16,6 +16,11 @@ enabled - a lean subset in non-code folders, since the scoped rules self-gate (s
 [Known limitations](../reference/known-limitations.md)) - and the
 `/steer:<skill>` commands become available.
 
+Working in the GitHub Copilot CLI or app, Copilot in VS Code, or OpenAI Codex
+instead? steer installs there too, best-effort - the skills and the standards,
+with hook enforcement guaranteed on Claude Code only. Their install steps are in
+[GitHub Copilot support](../concepts/copilot-support.md#using-it-as-a-copilot-teammate).
+
 !!! note "Invocation is always namespaced"
     Skills are invoked as `/steer:<skill>` (e.g. `/steer:spec`), never bare
     `/<skill>` - Claude Code namespaces plugin skills to avoid collisions.
@@ -54,8 +59,8 @@ session in a managed repo and ask something only the loaded standards can answer
     `SessionStart` had bugs earlier in 2026, since closed). But on the **Desktop
     *Chat* tab and claude.ai web
     chat** hooks do **not** run, so the rules are **not** auto-injected and the
-    `PreToolUse` hooks (the spec-first/issue-first nudges and the version-pin
-    block) do not run. On those surfaces - and as a fallback anywhere the rules
+    `PreToolUse` hooks (the spec-first/issue-first nudges, the version-pin and
+    merge denies, and the trunk-push and stacked-PR asks) do not run. On those surfaces - and as a fallback anywhere the rules
     didn't load - run this manually at the start of the session before doing
     anything else:
 
@@ -82,6 +87,9 @@ routes to the right path, so you don't have to choose:
 - **New repo:** installs the bundled scaffold and `/spec` spine (`/steer:setup init`).
 - **Existing app:** reverse-engineers a `/spec` spine from the code and adds the
   scaffold ([`/steer:setup adopt`](../workflows/adopt.md)).
+- **Code steer should not adopt** (an external review, someone else's code):
+  name `/steer:setup advisory` - it is declared, never detected. The standards
+  load as a review lens; no spine or scaffold is written.
 
 Both replace the old static `repository-template` as the bootstrap source.
 
@@ -97,8 +105,10 @@ Both replace the old static `repository-template` as the bootstrap source.
 
 ## Keeping a repo in sync
 
-After a new plugin release, run **[`/steer:setup`](../workflows/index.md)** in a
-managed repo - it detects the drift and applies pending migrations, reconciling
+After a new plugin release, update the plugin first -
+`/plugin update steer@e22-plugins` - since sync reads the migration ledger and
+templates from the installed plugin. Then run
+**[`/steer:setup`](../workflows/index.md)** in a managed repo - it detects the drift and applies pending migrations, reconciling
 the scaffold and spec spine against the current templates (via `/steer:setup sync`).
 
 ## Next step

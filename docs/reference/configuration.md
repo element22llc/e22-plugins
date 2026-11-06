@@ -58,7 +58,9 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     have a root Compose file (`has-compose`),
     and those that have declared the automation opt-in (`automation-optin`).
     `automation-optin` is the only predicate that fails **closed**: every other
-    token injects on an unreadable signal, because a safety rule must never be
+    token injects on an unreadable signal (except `advisory`, which never
+    injects from its predicate by design - only the advisory-mode branch admits
+    it), because a safety rule must never be
     dropped silently, whereas rule 53 governs machinery a repo only has once it
     has asked for it. `10-stack` and `15-commands` carry `org-e22` alone.
     Tokens compose with `|` for OR and `&` for AND, AND binding loosest.
@@ -163,10 +165,13 @@ the org stack defaults in rule `10-stack`:
 - **`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** - Claude Code's own knob, not
   steer's: raises the `SessionEnd` budget above its 1.5s default so the teardown
   has time to finish (see [Hooks](hooks.md)).
-- **`STEER_CLAUDE_CODE_VERSION`** (in `mise.toml`) - the pinned Claude Code
-  version CI installs, for reproducible `claude plugin validate --strict`.
-  Both manifests are validated in strict mode, so warnings the runtime
-  tolerates - unrecognized fields, missing metadata - fail the build.
+- **`STEER_CLAUDE_CODE_VERSION`** (in this marketplace repo's `mise.toml` - a
+  maintainer setting, not a consumer one) - the pinned Claude Code version the
+  required CI job installs, for reproducible `claude plugin validate --strict`.
+  Three targets are validated in strict mode - the marketplace manifest, the
+  plugin manifest and the repo-local dev skills under `.claude/skills` - so
+  warnings the runtime tolerates (unrecognized fields, missing metadata) fail
+  the build.
 
 Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
@@ -370,3 +375,16 @@ down as skills shrink and is not raised to fit new prose.
 A companion routing-fixture net
 (`tests/fixtures/routing/asks.yml`) pins the vocabulary plain-language routing
 depends on, so trimming can never silently break "just say what you want".
+
+## Repo markers
+
+A managed repo declares a few facts about itself as one-line markers, read by
+the hooks and skills rather than inferred:
+
+| Marker | Where | What it declares |
+| --- | --- | --- |
+| `<!-- steer:delivery-mode=pr-flow -->` or `=solo-trunk` | product `CLAUDE.md` -> `## Delivery mode` | The delivery mode (rule `45-delivery`). Absent or unreadable -> `pr-flow`. `/steer:setup` sets it; `/steer:setup protect` flips it to `pr-flow` at graduation. |
+| `<!-- steer:graduation=waived -->` | the same section, second line | A solo-trunk repo staying single-dev on trunk on purpose. Written by `/steer:setup protect waive`; silences the graduation nudge and the trunk-push prompt; `/steer:setup protect apply` removes it. |
+| `<!-- steer:profile=app -->` (or `service`, `library`, `cli`, `infra`, `workspace`) | product `CLAUDE.md` -> `## Profile` | Which stack-specific scaffold the bootstrap lays down. Absent or malformed -> `app`. Scaffold-time only: always-on rules gate on filesystem traits, not on this marker. |
+| `<!-- steer:product-language=en -->` | product `CLAUDE.md` -> `## Product` | The main product language (English by default): the source of UI copy, the app guide's user-facing pages, release notes and `spec/glossary.md`. The status band shows it. |
+| `"env": { "STEER_MODE": "advisory" }` | `.claude/settings.local.json` | [Advisory mode](known-limitations.md#advisory-mode-standards-without-adoption). Written and removed by `/steer:setup advisory` (`off`); the hooks read the file, so it takes effect at the next session start. |

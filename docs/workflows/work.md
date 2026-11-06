@@ -10,7 +10,8 @@ while the subcommands below read an issue and deliver it.
 **Argument hint:** `[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "Review gates - `finish` and `--reviewed`"
-    `finish` runs an independent code gate on every non-Trivial change: a fresh
+    `finish` runs an independent code gate on every non-Trivial change (a
+    `--hotfix` always counts as non-Trivial): a fresh
     adversarial reviewer checks correctness, other instances of the fixed
     pattern, peer consistency, introduced risk and touched docs; a database,
     UI or security specialist joins when the diff enters that domain; a
@@ -22,8 +23,11 @@ while the subcommands below read an issue and deliver it.
     before implementing: the reviewer checks what the plan misses, searches
     the repo for existing code the plan would duplicate, and flags every
     design choice the plan leaves to implementation. High-risk work gets the
-    plan gate without the flag, and its sign-off is the dev scoping High-risk
-    work already requires. A reviewer that returns
+    plan gate without the flag (except under `--hotfix`), and its sign-off is
+    the dev scoping High-risk work already requires: with no dev in the
+    session, in/out scope recorded on the issue stands in for it, and with
+    none recorded `start` asks for scope on the issue and stops before any
+    code; a pre-production repo needs no sign-off. A reviewer that returns
     no report is retried once, then reported `not run` - never as clean.
     The shared protocol and rubric live in
     `templates/reference/REVIEW-LOOP.md`.
@@ -40,7 +44,10 @@ while the subcommands below read an issue and deliver it.
     relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
     `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
-    opening the PR are autonomous, as everywhere). Once the fire is
+    opening the PR are autonomous, as everywhere). It still runs the local
+    gates and `finish`'s code gate whatever the diff's size, but opens the PR
+    ready for review rather than as a draft, and watches its CI to conclusion
+    itself. Once the fire is
     out, a **mandatory follow-up** backfills the issue, the spec/ADR, puts the
     incident's root cause on the [enforcement ladder](#learnings-enforcement-first),
     and writes a `/spec/history/` entry: Definition of Done is *deferred, never waived*.
@@ -93,14 +100,16 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 
 | Mode | What it does |
 | --- | --- |
-| `start` | Validate, claim (self-assigns the invoking GitHub user), branch from the freshly fetched default branch - never the checked-out work branch; stacking on another PR only when the issue needs its unmerged code, and targeting a `batch/*` branch when the dev lands many fixes as one merge - + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, pick up the non-blocking questions gated at `implementation` as decisions this slice makes, grep `spec/learnings/` frontmatter for prior lessons that match the issue, begin implementing. |
+| `start` | Validate, claim (self-assigns the invoking GitHub user), branch from the freshly fetched default branch - never the checked-out work branch; stacking on another PR only when the issue needs its unmerged code, and targeting a `batch/*` branch when the dev lands many fixes as one merge - + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, pick up the non-blocking questions gated at `implementation` as decisions this slice makes, grep `spec/learnings/` frontmatter for prior lessons that match the issue, classify the change (rule `80-change-class`, the heavier class when arguable) - High-risk runs the plan gate even without `--reviewed` - then begin implementing, a defect through `debug` (cause before fix). |
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
-| `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR **as a draft** (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - transition to `validate` and stop: the author reads the draft and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. |
+| `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR **as a draft** (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - transition to `validate` and stop: the author reads the draft and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. With no authenticated `gh`, the PR is opened or updated through the GitHub MCP server (still as a draft), and with neither it prints the compare URL for you to open as a draft; the CI watch needs `gh`, so without it a ready PR's or trunk push's CI is reported as not watched. |
 | `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. Entered automatically when an implement ask names two or more issues. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
 | `debug [#N \| <symptom>]` | Root cause before the fix - see below. With only a symptom and no fix asked, diagnosis only and not issue-scoped. |
 | `qa [#N]` | Opt-in browser QA of the flows the branch diff touches - see below. |
+| `promote` | Not issue-scoped - ships what is already merged. Reads `policy/delivery.yml`'s `production_gate` (absent -> `prod-branch-pr`), shows what would ship, cuts the changelog in its own PR to the default branch, then opens the `main` -> `prod` promotion PR and stops: merging it deploys production and is the human's gate. Any other gate value (`github-environment`, `manual`, `none`) stops there: there is no promotion PR to open. |
+| `tidy` | Not issue-scoped - sweeps loose files at the repo root into `/spec/reference` and `/spec/design`: confidently classified strays move now, every rename and delete waits for a yes. Changes where files live, never behavior. |
 
 ## Issue queue - `/steer:work queue`
 
@@ -130,7 +139,7 @@ nothing itself:
 
 It ends with one table of issue -> draft PR or blocker, and points at
 `/steer:work review --mine` to ready the drafts. **It never merges or readies a
-PR.**
+PR.** `--reviewed` carries over to every worker; `--hotfix` is refused.
 
 ## Batch review - `/steer:work review`
 
@@ -140,8 +149,11 @@ given) and does the reviewer's legwork in parallel:
 1. **Triage from metadata** in one `gh pr list` call - draft, red CI and
    conflicting PRs go straight to *Blocked* without a review.
 2. **One read-only reviewer subagent per remaining PR**, all at once, each
-   returning an eight-line card: what it does, change class, tests and contract
-   coverage, drift flags, findings with `path:line`, a suggested verdict.
+   returning a seven-line card: what it does, change class, tests and contract
+   coverage, drift flags, findings with `path:line`, design questions for the
+   author, a suggested verdict. A fresh verifier then tries to refute each
+   card's high findings: a refuted one leaves the card, an unsure one stays
+   marked unconfirmed.
 3. **Four buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
    never batch-approved) and *Blocked*.
 4. **One question, one command.** You reply with the *Ready* PRs to approve
@@ -317,14 +329,14 @@ Claude Code's own delivery tools fit this flow without moving the merge gate.
 - Git and PR delivery follow the repo's commit-autonomy rules - commits,
   pushes, and opening the PR are autonomous; **merging is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
-- **`finish` opens its PR as a draft and stops**; CI runs once the author marks
-  it ready. Every run after that - a ready PR's, a trunk push's - is watched to
+- **`finish` opens its PR as a draft and stops** (a `--hotfix` opens it ready
+  and watches its CI); CI runs once the author marks it ready. Every run after that - a ready PR's, a trunk push's - is watched to
   green and a red build fixed before the work counts as done - the skill pre-approves `git push` /
   `gh pr create|edit` plus read-only CI status (`gh pr checks`, `gh run
   view`, `gh run watch`) for this; the merge
   step stays gated. If you have stepped away, the in-turn watch blocks the turn;
-  re-enter monitoring by re-running `gh pr checks` on a loop (steer ships no
-  background poller). Merge and deploy remain a human's call.
+  re-enter monitoring via the harness `/loop` over `gh pr checks` or a
+  background watch (steer ships no background poller). Merge and deploy remain a human's call.
 - **A change that ships brings a changelog fragment** - `mise run
   changelog:new`, one file under `.changes/unreleased/`. `mise run ci` and the
   required check both fail without one (`ci:changelog`), and editing someone

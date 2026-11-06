@@ -46,12 +46,15 @@ flowchart LR
 - **Merge to `main` auto-deploys `non-prod`.** Landing on the default branch is
   the trigger; there is no separate "deploy to staging" step.
 - **Prod is gated by a reviewed PR from `main` into a long-lived `prod` branch.**
-  Merging that PR auto-deploys production. **Never push directly to `prod`.**
+  [`/steer:work promote`](../workflows/work.md) opens it and stops; merging it
+  auto-deploys production. **Never push directly to `prod`.**
 - **The `prod` promotion is also the release moment.** An app or service deploys
-  continuously and has no artifact version, so its changelog is cut here, from the
-  fragments accumulated since the last promotion - `changie batch $(date
+  continuously and has no artifact version, so its changelog is cut at promotion,
+  from the fragments accumulated since the last one - `changie batch $(date
   +%Y.%-m.%-d)` then `changie merge` (a CalVer ship date; `library`/`cli` repos cut
-  semver with `changie batch auto` instead). See
+  semver with `changie batch auto` instead). The cut lands first, as its own PR to
+  the default branch (`.changes/unreleased/` lives there, and you cannot push to a
+  protected `main`); `promote` opens the promotion PR once that has merged. See
   [Repository contract](../reference/repository-contract.md#what-a-managed-repo-carries).
 - **The branch-protection approval on `prod` *is* the production gate.** It stands
   in for the deployment-environment approvals that GitHub Enterprise would
@@ -95,7 +98,10 @@ A deployed environment is not "done" until it is observable. The standard requir
 - **alerting** routed somewhere a human actually sees it.
 
 "Deployed but unobservable" does not count as delivered; the wiring is captured in
-the product's `ARCHITECTURE.md`.
+the product's `ARCHITECTURE.md`. What a deployed environment reports to a human is
+declared in `policy/delivery.yml`'s `observability` list (the scaffold seeds
+`[sentry]`); an empty list means not wired yet, which steer flags as a gap to
+close rather than a failure to fix now.
 
 ## Rollback
 

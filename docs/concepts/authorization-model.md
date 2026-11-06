@@ -294,8 +294,10 @@ the fix never varies: wrap the reads in a bundled script and grant that.
   `/steer:setup protect` graduates the repo or `/steer:setup protect waive` records that
   staying single-dev on trunk is deliberate.
 - **Product and architecture decisions** - ratifying a `Proposed` ADR, approving
-  a feature intent, signing off a `--reviewed` plan. Claude proposes; the named
-  human decides. Unlike the three above, these are **answerable in-session** (see
+  a feature intent, signing off a `--reviewed` plan or the plan gate High-risk
+  work runs without the flag (there the dev's sign-off is the High-risk scoping;
+  with no dev in the session, scope recorded on the issue stands in, else the
+  work stops before any code). Claude proposes; the named human decides. Unlike the three above, these are **answerable in-session** (see
   the note below).
 
 !!! note "Answerable in-session - the channel, not the authority"
@@ -352,8 +354,8 @@ multi-turn run it is a limit the skill keeps in prose:
 A skill's tier is not a separate label - it is readable straight from its
 frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, NotebookEdit,
 EnterWorktree` (`audit`, `next`, `standards`, `doctor`, `explain`, `help`,
-`reference`, `report`, `status`), a Tier 2 skill carries no such line. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
-`doctor` and `reference` disallow it too, while `audit`, `explain`, `help`,
+`reference`, `report`, `status`, `weekly-update`), a Tier 2 skill carries no such line. `Write` splits Tier 1 rather than defining it: `standards`,
+`doctor`, `reference` and `weekly-update` disallow it too, while `audit`, `next`, `explain`, `help`,
 `status` and `report` keep it for writes bound in prose - a temp path in every
 case except `audit`, which may additionally write a confirmed
 `/spec/AUDIT-REPORT.md` or `DRIFT-REPORT.md`.

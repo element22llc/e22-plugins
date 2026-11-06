@@ -31,9 +31,9 @@ flowchart LR
 | **0, Bootstrap** | [`/steer:setup`](../workflows/index.md) -> `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | - (enablement, not a gate) |
 | **1, Shape** | [`/steer:spec`](../workflows/spec.md) (with its `questions`, `adr`, `intake` and `roadmap` modes) | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` - blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
 | **2, Plan** | [`/steer:work issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:setup sync` let the PR be the record |
-| **3, Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change classification + high-risk scoping; **merge/deploy never implied** |
+| **3, Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a draft PR | Commit autonomy + change classification + high-risk scoping; an independent code gate on every non-Trivial change before the push, and a plan gate before any code on High-risk work (or with `--reviewed`); **merge/deploy never implied** |
 | **4, Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
-| **5, Deliver** | merge -> [deploy](deployment.md); [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
+| **5, Deliver** | merge -> [deploy](deployment.md); [`/steer:work promote`](../workflows/work.md) opens the production promotion PR; [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
 | **6, Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `work tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | - (re-enters Plan) |
 
 Non-technical owners enter through [`/steer:build`](../workflows/build.md), which
@@ -63,7 +63,7 @@ lines it touches; when two readings are arguable, it takes the **heavier** class
 | --- | --- | --- |
 | **Trivial** | No observable behavior change - copy, formatting, comments, a behavior-preserving refactor, generated output, lockfiles | Open a PR and stop: **no issue, no spec, no ADR, no plan**. The PR is the work record. |
 | **Behavioral** | Observable behavior changes, for a user, a caller, or an operator | Tests in the same PR, and the owning `contract.md` updated. A planned feature writes `intent.md` first and gets PO approval. Plan mode (or a posted plan) whenever the approach is worth reviewing before it is written. |
-| **High-risk** | Anything in the [high-risk areas](../reference/configuration.md) list, **at any size** | Scope with the dev before any code, contract or ADR first, smaller PRs, line-by-line review. Never Trivial, and never treated as merely Behavioral. |
+| **High-risk** | Anything in the [high-risk areas](../reference/configuration.md) list, **at any size** | Scope with the dev before any code - `/steer:work start` runs the independent plan gate without being asked, and the dev's sign-off on the vetted plan is that scoping - contract or ADR first, smaller PRs, the `finish` code gate, line-by-line review. Never Trivial, and never treated as merely Behavioral. |
 
 Line count was the previous model's axis - Tiny under ~20 lines, then Small,
 Medium and Large - and it is the one property that says nothing about what a
@@ -181,10 +181,17 @@ steer is **advisory in the local session** - it proposes, surfaces, and flags, b
 the hard gates are human. These are never auto-crossed by routing:
 
 - Creating an issue beyond an explicit capture/implement request
-- Ratifying an ADR (it stays *Proposed* until a human ratifies)
+- Ratifying an ADR (it stays *Proposed* until a human ratifies), approving a
+  feature intent, and signing off a `--reviewed` or High-risk plan - answerable
+  in-session, never by Claude alone
 - **Merge** and **deploy** (pushing a branch and opening the PR are autonomous
   delivery steps - the merge review is the gate)
-- Writing real secrets or repo settings
+- Writing real secrets, or changing repo settings without the human's explicit
+  confirmation (`/steer:setup protect` applies branch protection only on a yes)
+- Touching `/infra` or pushing to a protected branch
+
+Merge, deploy, real secrets, `/infra` and protected-branch pushes are never
+promptable: asking in the session does not authorize them.
 
 See the [Authorization model](authorization-model.md) for the full authority
 table, and [Known limitations](../reference/known-limitations.md) for where the

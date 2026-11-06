@@ -36,7 +36,10 @@ flowchart TD
 5. Triages the codebase into **`spec/PRODUCTIONIZATION.md`** - a Keep / Refactor
    / Rewrite / Reject verdict per area, with the reasoning, so the team inherits
    a ranked remediation plan rather than a verdict-free inventory.
-6. Installs the repo scaffold (toolchain, CI, PR template).
+6. Installs the repo scaffold (toolchain, CI, PR template, `REVIEW.md`, the
+   Copilot and cross-tool skill surfaces) and the `AGENTS.md` pointer block -
+   appended to an existing `AGENTS.md`, and when that file has team content,
+   `CLAUDE.md` ends with an `@AGENTS.md` import so Claude Code keeps reading it.
 7. If the tracker is GitHub Issues, bootstraps the label taxonomy
    (`/steer:work issues bootstrap-labels`) and verifies the org-level
    Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) -
@@ -60,7 +63,8 @@ flowchart TD
   a genuine product or intent decision becomes an open question, written as a
   structured `### Q-NNN` block with its owner, impact, gate, and `created:` date,
   so an adopted repo does not start with a backlog of questions nobody needs to
-  answer.
+  answer. What it does ask comes in rounds, each question carrying a
+  recommended answer drawn from what the code already shows.
 - **Shipped features are not re-approved.** Adopt asks once whether the app is
   deployed with real users. A feature that already works there is written
   `Status: live` with `Approved by: as-built` - there is no scope left for the PO

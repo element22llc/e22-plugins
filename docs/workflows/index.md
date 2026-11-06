@@ -17,8 +17,8 @@ For the full per-command catalog (including internal helpers), see the
     answer such as `/steer:reference conventions` names its source in its first
     line instead. The
     `/steer:*` forms below are the explicit way to invoke a workflow - handy when
-    you already know the one you want - not something you must memorize. Decision gates (creating issues, approving a spec, merging,
-    deploying) still pause for a human regardless of how the skill was
+    you already know the one you want - not something you must memorize. Decision gates (creating an issue beyond an explicit fix / add /
+    implement ask, approving a spec, merging, deploying) still pause for a human regardless of how the skill was
     reached - pushing the branch and opening the PR are autonomous.
 
     Announcing the route and *running* it are the same step: a reply that names
@@ -78,7 +78,12 @@ below give the detail.
 | Capture, triage, or decompose ideas into issues | [`/steer:work issues`](issues.md) |
 | Shape or approve a feature spec | [`/steer:spec`](spec.md) |
 | Start, resume, or finish an issue | [`/steer:work`](work.md) |
-| Implement with a plan-review gate on top of `finish`'s code gate | [`/steer:work --reviewed`](work.md) |
+| Implement with a plan-review gate on top of `finish`'s code gate (High-risk work gets it without the flag) | [`/steer:work --reviewed`](work.md) |
+| Work through several issues one after another | [`/steer:work queue #A #B`](work.md#issue-queue-steerwork-queue) (or just name two or more issues) |
+| Find a bug's root cause before fixing it ("why is this failing?") | [`/steer:work debug`](work.md#debugging-steerwork-debug) |
+| Click through the flows a UI change touches in a real browser before review | [`/steer:work qa`](work.md#browser-qa-steerwork-qa) |
+| Clear the PR review queue, or ready my own drafts | [`/steer:work review`](work.md#batch-review-steerwork-review) (`--mine` for your own) |
+| Ship what is merged to production | [`/steer:work promote`](work.md) |
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
 | Browse everything steer can do - not sure what to ask for | `/steer:next capabilities` |
@@ -119,7 +124,7 @@ below give the detail.
 | --- | --- |
 | [`/steer:work issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work, without editing code. |
 | [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document, `roadmap` lays unshipped intent on a timeline. |
-| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. `finish` runs an independent code-gate review on every non-Trivial change; add `--reviewed` for a plan-gate review before implementing. |
+| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. `finish` runs an independent code-gate review on every non-Trivial change; add `--reviewed` for a plan-gate review before implementing - High-risk work gets it without the flag. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 
 ## Steady state

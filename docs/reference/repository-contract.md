@@ -410,6 +410,18 @@ files the standing invocation-hygiene scan does not - feature `intent.md` files,
 sources, audit reports) keeps the spelling it was written in. The full mapping is
 [Invocation changes](invocation-changes.md).
 
+Eleven entries follow 7.0. **7.1.0** converts legacy `- [ ]` open questions to
+`### Q-NNN` blocks and clears unfilled `Q-001` placeholder seeds from features
+past `draft`. **7.2.1** moves `changelog:new` and `convert:doc` to commands
+`cmd.exe` runs on Windows, and has `dependabot-auto-merge.yml` approve only after
+every check passed. **7.3.0** has that workflow arm native auto-merge instead of
+polling, and folds `ci.yml`'s advisory checks into one `advisory` job. **7.4.0**
+runs the bundled workflows on `ubuntu-26.04`, not `ubuntu-latest`. **7.8.0** has
+the scaffold `mise.toml` adopt `min_version`, `usage`, `sources` and
+`--skip-deps`. **7.10.0** moves Dependabot auto-merge into `ci.yml` and stops it
+approving. **7.12.0** drops the PAT prompt from the `.vscode/mcp.json` GitHub
+server, and **7.17.0** stops `.claude/settings.json` enabling `typescript-lsp`.
+
 Ledger entries are keyed by the release that **introduced** them, and `/steer:setup sync` skips
 every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut
 is keyed `[Unreleased]` - never a guessed number, since an implementation PR merges before

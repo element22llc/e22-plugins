@@ -17,9 +17,10 @@ flowchart LR
     A[Idea] -->|/steer:work issues capture| B[Issue]
     B -->|/steer:spec| C[Draft spec]
     C -->|/steer:spec approve| D[Approved spec]
-    D -->|/steer:work issues decompose| E[Work items]
+    D -->|"/steer:work issues decompose #N"| E[Work items]
     E -->|/steer:work start| F[Implementation]
-    F -->|/steer:work finish| G[PR]
+    F -->|/steer:work finish| G[Draft PR]
+    G -->|you mark it ready| H[CI + review]
 ```
 
 ## 1. Set up the repo
@@ -66,11 +67,13 @@ evidence. *Expected:* an `intent.md` you review, with its `Status:` flipped to
 ## 4. Decompose into work
 
 ```text
-/steer:work issues decompose
+/steer:work issues decompose #<feature-issue>
 ```
 
-Breaks the approved spec into tracked work items. *Expected:* one issue per work
-item, each printed with its issue number (e.g. `#123`) - that number is what you
+Breaks the approved spec into tracked work items, as sub-issues of the feature's
+issue. It runs only once the intent is `approved` and its contract is ready - a
+populated `contract.md` with no blocking question gated at contract approval.
+*Expected:* one issue per work item, each printed with its issue number (e.g. `#123`) - that number is what you
 pass to `/steer:work` in the next step.
 
 ## 5. Implement and finish
@@ -81,7 +84,11 @@ pass to `/steer:work` in the next step.
 ```
 
 Use the issue number from step 4's decompose output in place of `#123`. Implements
-the issue and lands a PR. Commits, the push, and opening the PR happen
+the issue, runs the local gates, and opens a **draft** PR, then stops: you read
+it and mark it ready, which starts CI. Before the push, `finish` runs an
+independent code review on every non-Trivial change; High-risk work also gets an
+independent plan review and your sign-off before any code (`--reviewed` adds
+that to any change). Commits, the push, and opening the PR happen
 autonomously, but **merging is gated** - the reviewed merge is the human gate.
 See the [Authorization model](../concepts/authorization-model.md).
 

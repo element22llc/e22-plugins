@@ -4,7 +4,10 @@
 [Claude Code](https://claude.com/claude-code). It is not a product; it hosts one
 plugin of its own - **`steer`** - which injects org-wide engineering standards
 into every product Claude session and carries the bundled repo scaffold that
-bootstraps a new repository spec-first.
+bootstraps a new repository spec-first. steer also installs on the GitHub
+Copilot CLI and app, Copilot in VS Code, and OpenAI Codex, best-effort: the
+skills and standards travel, hook enforcement is guaranteed on Claude Code only
+(see [GitHub Copilot support](concepts/copilot-support.md)).
 
 The marketplace also **re-lists** Anthropic's upstream `frontend-design` plugin
 via a `git-subdir` source pinned to a SHA. That plugin is *referenced, not
@@ -31,7 +34,10 @@ flowchart LR
 | --- | --- | --- |
 | **Always-on rules** | `plugins/steer/rules/` | Injected every session by the `SessionStart` hook (lexical order by numeric prefix). |
 | **Skills** | `plugins/steer/skills/` | On-demand, invoked as `/steer:<skill>` (e.g. `/steer:spec`). |
-| **Hooks** | `plugins/steer/hooks/` | POSIX-sh; inject rules and gate risky actions. |
+| **Hooks** | `plugins/steer/hooks/` | POSIX-sh scripts that inject rules and gate risky actions, plus the read-only status-band mod `register.tsx`. |
+| **Subagents** | `plugins/steer/agents/` | `steer-reviewer`, the read-only reviewer `/steer:audit` and `/steer:work --reviewed` delegate one bounded slice to. |
+| **Policy** | `plugins/steer/policy/` | Org policy data: `branch-protection.yml`, `versions.yml`. |
+| **MCP and language servers** | `plugins/steer/.claude-plugin/` | The GitHub and context7 MCP servers (`mcp.json`) and the TypeScript and Python language servers (`lspServers` in `plugin.json`). |
 | **Templates** | `plugins/steer/templates/` | Spec spine, reference prose, and the bundled repo scaffold. |
 
 ## Where to go next

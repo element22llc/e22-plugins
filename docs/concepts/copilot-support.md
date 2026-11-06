@@ -27,7 +27,7 @@ truth and how to install and refresh the Copilot side.
 | Always-on standards | SessionStart hook -> raw stdout, in parts | `SessionStart` hook (the plugin's `hooks/hooks.json`, run by the CLI) -> top-level `additionalContext`, incidental and unguaranteed; `.github/copilot-instructions.md` as the reliable path | `SessionStart` hook (the plugin's `hooks/hooks.json`, run by VS Code) -> `hookSpecificOutput.additionalContext`, incidental and unguaranteed; `.github/copilot-instructions.md` as the reliable path |
 | Path-scoped standards | rule `inject-when` traits | **not delivered** - emitted only to `.github/instructions/` (see below) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
 | Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.agents/skills/steer-*/` (`/steer-<skill>`) |
-| Subagents | plugin `agents/` | **not declared** - the Copilot manifest carries `skills` only | `.github/agents/*.agent.md` (agent picker) |
+| Subagents | plugin `agents/` | **not declared** - the Copilot manifest carries `skills`, `mcpServers` and `lspServers`, no agents | `.github/agents/*.agent.md` (agent picker) |
 | MCP servers | plugin `.claude-plugin/mcp.json` (named by the Claude manifest) | plugin `.github/mcp.json` (named by the Copilot manifest), signed in with your GitHub account | `.vscode/mcp.json` |
 | Language servers | `lspServers` in `.claude-plugin/plugin.json` | `lspServers` in the Copilot manifest (Copilot's `fileExtensions` form) | not verified |
 | Cloud coding agent | - (Claude `@claude` workflow) | - | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
@@ -60,7 +60,7 @@ three shapes, and the script tells them apart (`steer_hook_host` in
   characters, so the ruleset arrives in parts (one registration of the script
   per part in `hooks/hooks.json`).
 - **Copilot CLI** loads `hooks/hooks.json` by default convention, although the
-  Copilot manifest declares only `skills`, and accepts its PascalCase events
+  Copilot manifest declares no hooks, and accepts its PascalCase events
   ("VS Code compatible format"). It injects SessionStart context only from a
   top-level `additionalContext` and drops raw text and `hookSpecificOutput`.
   (steer once shipped a separate camelCase `copilot-hooks.json` for the CLI; it
@@ -155,8 +155,10 @@ copilot plugin marketplace add element22llc/e22-plugins
 copilot plugin install steer@e22-plugins
 ```
 
-The CLI loads the skills via the Copilot plugin manifest and reads the standards
-from `.github/copilot-instructions.md` in the repo.
+The CLI loads the skills, MCP servers and language servers via the Copilot
+plugin manifest. The standards come from `.github/copilot-instructions.md` in
+the repo, and incidentally from the plugin's SessionStart hook (see the table
+above).
 
 ### GitHub Copilot app
 
@@ -340,8 +342,9 @@ blockquote under the rule's heading -
 > **Applies only to a repo on the e22 org pack** - `policy/org.yml` with
 > `pack: e22`, which is also what an absent file means. [...]
 
-Five sections carry one today (the org pack's stack and commands rules, the
-OpenSpec backend, issue-first, and the autonomous-loop rule). The map is keyed by
+Six sections carry one today (the org pack's stack and commands rules, the
+OpenSpec backend, issue-first, the worktree-services rule, and the
+autonomous-loop rule). The map is keyed by
 **token**, not by rule, so a new trait-scoped rule inherits the qualification
 rather than depending on its author writing a conditional first sentence - and
 `check_copilot_instructions.py` fails when a token appears in neither
@@ -547,14 +550,15 @@ the standards in `.github/copilot-instructions.md`.
   and recorded hook faults (`00-router` -> When steer itself misbehaves - two of
   the three now live in the router, which absorbed the self-report rule in 6.6). Copilot's `sessionStart` ignores
   stdout, so the notice never comes - and its *absence* reads as "condition not
-  present," which is worse than no promise at all. Each rule now scopes the flag to
-  Claude Code and, where there is something a reader could look for themselves
-  (rules `00-router` and `05-roles`), says to do that instead; rule `00-router` -> When steer itself misbehaves
-  only scopes, because recorded hook faults exist on no other surface.
+  present," which is worse than no promise at all. Those sentences are gone: the
+  rules name the condition itself - a repo with no `/spec` spine, a
+  `spec/BUILD-STATUS.md` whose Handoff gate has an unchecked box - and the
+  self-report rule lists a recorded hook fault as one kind of steer defect,
+  with no promise that a hook announces it.
   Likewise rule `10-stack` no longer claims a hook **denies** stale image-major
-  pins without qualification: the ported gate only *asks* on the Copilot CLI (VS
-  Code, which runs the Claude hooks as-is, does deny), so the rule now says to
-  keep the pins current yourself.
+  pins: the gate fails open on the Copilot CLI (VS Code, which runs the Claude
+  hooks as-is, does deny), so the rule states the pin policy - an older image
+  major needs an ADR plus `# steer:allow-pin` - without naming a hook.
 - **One further rule scoped, two whose detail moved out, plus one skill.** The same
   sweep, finished. Rule `90-design-sources` pointed at the `frontend-design`
   plugin, which the Copilot marketplace does not list, so it was scoped to Claude
@@ -562,8 +566,8 @@ the standards in `.github/copilot-instructions.md`.
   `DESIGN-SOURCES.md`, which carries the same qualification). Two others no longer need scoping because the surface-specific
   detail left the rule entirely: rule `61-gates` -> Hotfix is now surface-neutral about the
   `hotfix/<n>-slug` prefix (the reconciliation it used to name is the `Stop` hook
-  `reconcile-issue-first.sh`, which is not ported - no `Stop` hook is, so on
-  Copilot the prefix carries the convention alone), and rule
+  `reconcile-issue-first.sh`, which Copilot runs only incidentally, with no
+  parity promise, so there the prefix carries the convention alone), and rule
   `36-issue-first` no longer enumerates the `allow`/`ask` permission tiers. Those
   tiers are Claude Code's - they live in `.claude/settings.json` and Claude skill
   frontmatter, and are documented in the plugin's `ISSUE-WORKFLOW.md`, which the
@@ -576,5 +580,6 @@ the standards in `.github/copilot-instructions.md`.
 - **Manual refresh.** Unlike Claude Code's live injection, the Copilot files must
   be regenerated after a plugin update (see above).
 - **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled
-  by org policy, so the standards delivery never depends on them; the Copilot
-  hook is hardened to fail **open** (it can never block an edit on error).
+  by org policy, so the standards delivery never depends on them. steer ships
+  no Copilot-specific hook: the surfaces run the Claude `hooks.json`
+  incidentally (see [Gate hooks on Copilot](#gate-hooks-on-copilot)).

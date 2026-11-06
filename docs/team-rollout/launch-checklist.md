@@ -18,10 +18,12 @@ a real (or throwaway) repo, not against production work.
       `/steer:tracker-sync` (MCP-first -> `gh` fallback). Confirm `gh auth status`
       is green so the path doesn't drop to the manual floor.
 - [ ] **PR workflow tested.** `/steer:work` produces a branch + commit and opens
-      the PR **autonomously** - push and `gh pr create` no longer pause for a
-      human; the **merge** is the sole human gate. On a solo-trunk repo, the only
-      push-time pause is the `check-bash-actions.sh` trunk-push gate, and only once a graduation
-      signal stands.
+      the PR **autonomously as a draft**, then stops - push and `gh pr create`
+      don't pause for a human. The author marks the draft ready, which starts
+      CI, and the **merge** stays the reviewer's (a `gh pr merge` from the
+      session is denied). On a solo-trunk repo, the trunk-push gate in
+      `check-bash-actions.sh` pauses a push only once a graduation signal
+      stands; a stacked PR (base on another work branch) raises an ask.
 - [ ] **In-CI `@claude` provisioned.** The shipped `claude.yml` loads the `steer`
       plugin in CI, so it needs the `ANTHROPIC_API_KEY` secret. The marketplace
       repo is public, so the plugin clone is anonymous - no marketplace credential
@@ -32,8 +34,8 @@ a real (or throwaway) repo, not against production work.
       drift (e.g. add a skill without updating the reference) is caught by CI.
 - [ ] **Copilot surface verified (if the team uses Copilot).** Confirm
       `.github/copilot-instructions.md`, `.agents/skills/`,
-      `.github/instructions/*.instructions.md`, `.github/agents/` and
-      `.vscode/mcp.json` landed, then in VS Code Copilot Chat ask something only
+      `.github/instructions/*.instructions.md`, `.github/agents/`,
+      `.vscode/mcp.json` and the steer pointer block in `AGENTS.md` landed, then in VS Code Copilot Chat ask something only
       the instructions file can answer - "what branch name does `/steer:work` use
       by default?" (expect `issue/<number>-<slug>`) or "what is this repo's
       delivery mode?" (expect `pr-flow` or `solo-trunk`, per the `CLAUDE.md`
@@ -47,6 +49,11 @@ a real (or throwaway) repo, not against production work.
       surface as `mis-wired` when it has fallen behind. `/steer:setup init` installs but
       stops on an already-initialized repo, so it is not the refresh path. See
       [Copilot support](../concepts/copilot-support.md).
+- [ ] **Codex surface verified (if the team uses Codex).** Install steer with
+      `codex plugin marketplace add element22llc/e22-plugins` then
+      `codex plugin add steer@e22-plugins`, trust steer's hooks in `/hooks`,
+      and confirm a session answers the delivery-mode question above. No gate
+      runs on Codex - only the rule injection.
 - [ ] **One PO dry run completed.** A non-developer walks
       [the PO happy path](../workflows/build.md#the-po-happy-path) end to end:
       idea -> preview -> hand-off for dev review. Expect a **PR** if the run
@@ -61,7 +68,7 @@ To remove the plugin from a Claude Code install, use the `/plugin` manager
 
 ```text
 /plugin uninstall steer@e22-plugins
-/plugin marketplace remove element22llc/e22-plugins
+/plugin marketplace remove e22-plugins
 ```
 
 This stops the hooks from firing and the rules from being injected in new
