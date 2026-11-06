@@ -186,7 +186,8 @@ the hard gates are human. These are never auto-crossed by routing:
   in-session, never by Claude alone
 - **Merge** and **deploy** (pushing a branch and opening the PR are autonomous
   delivery steps - the merge review is the gate)
-- Writing real secrets or repo settings
+- Writing real secrets, or changing repo settings without the human's explicit
+  confirmation (`/steer:setup protect` applies branch protection only on a yes)
 - Touching `/infra` or pushing to a protected branch
 
 Merge, deploy, real secrets, `/infra` and protected-branch pushes are never
