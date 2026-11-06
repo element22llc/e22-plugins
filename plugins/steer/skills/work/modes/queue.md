@@ -10,9 +10,10 @@ find-or-create.
 triages the list, hands each issue to a fresh worker, checks what the worker
 reports, and relays the human gates. It implements nothing itself. Each issue
 is delivered by the ordinary `start` -> `finish` flow, so every guarantee of
-that flow holds per issue: one branch and one draft PR off the default branch,
-the local gates, the code gate. **It never merges and never readies a PR** -
-the run ends at drafts.
+that flow holds per issue: one branch and one PR off the default branch,
+the local gates, the code gate. A worker's `finish` opens its PR ready when its
+code gate came back clean, a draft otherwise. **The orchestrator never merges
+and never readies a PR** - the run ends at open PRs.
 
 `queue #A #B ... [--reviewed]` runs the issues in the order given. Every
 non-Trivial issue gets the independent plan gate by default: nobody watches
@@ -58,8 +59,9 @@ earlier issue's context into the next. Brief it to:
 - keep rule 45's worktree discipline - `mise trust` only as it allows, services
   only through `mise run ...`, `mise run docker:clean` before returning;
 - never ask the human: on a gate, stop and return it;
-- return a card - issue, branch, PR URL or `none`, local gate result, high
-  code-gate findings left open, the gate question or blocker, or `none`.
+- return a card - issue, branch, PR URL or `none`, draft or ready, local gate
+  result, high code-gate findings left open, the gate question or blocker, or
+  `none`.
 
 **solo-trunk.** No worktree: `main` can be checked out in only one place. Run
 each worker in the main checkout, one at a time, fast-forwarded to
@@ -72,7 +74,8 @@ exists to avoid.
 ## Step 3 - verify each card, do not trust it
 
 - **pr-flow** - `gh pr list --head <branch> --json number,isDraft,baseRefName,url`:
-  the PR exists, is a draft, and targets the default branch. Through the
+  the PR exists and targets the default branch; a ready one (`isDraft`
+  false) also has its checks green and none skipped (`gh pr checks <n>`). Through the
   gateway, the issue is in `validate` with its PR linked.
 - **solo-trunk** - the closing commit is on `origin/<default>`.
 - A mismatch records the issue as blocked, with the fact that failed.
@@ -97,6 +100,6 @@ The issues are independent branches, so one failure does not stop the next.
 
 ## Step 5 - report
 
-One table, in run order: issue, outcome (`draft #n`, `set aside`, `blocked`),
+One table, in run order: issue, outcome (`ready #n`, `draft #n`, `set aside`, `blocked`),
 and the one fact that matters - a set-aside reason, an open high finding, a
 blocker. Then the next-actions block (`NEXT-ACTION.md`).

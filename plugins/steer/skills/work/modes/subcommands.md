@@ -59,9 +59,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   else the repo's lint, typecheck and test tasks), fixed until green. **CI is
   the confirming run, not the iteration loop** - every push to a ready PR re-runs
   the whole pipeline on billed runner minutes, so a fix you could have found
-  locally costs a full CI run. Every PR `finish` opens is a **draft** (`gh pr
-  create --draft`), which the shipped `ci.yml` does not run; a push made before
-  the local gates are green (a WIP checkpoint, a backup) goes to one too, but
+  locally costs a full CI run. A PR `finish` opens is a **draft** (`gh pr
+  create --draft`), which the shipped `ci.yml` does not run, unless the code
+  gate comes back clean (Draft or ready, below); a push made before the local
+  gates are green (a WIP checkpoint, a backup) always goes to a draft, and
   leaves the issue `in-progress`. **Then commit and run the code gate**
   before the first push, unless the change is Trivial (rule
   `80-change-class`, the heavier class when arguable; a `--hotfix` never is):
@@ -70,7 +71,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   it against the code-gate rubric in
   [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the
   general reviewer plus one per specialist lens the diff triggers, in one
-  message, then the refute pass on their high findings. A later
+  message, then the refute pass on their high findings; every reviewer and the
+  refute pass report back before anything is pushed. A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
   Fix every confirmed high finding, re-run the local gates, and re-review; stop
   on a round with no confirmed high finding, on one whose count did not drop
@@ -98,12 +100,25 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   open and the confirmation at review is its answer. Prune the markers of closed
   issues (`WORK-MARKER.md` -> Removal). Record the PR with `link-delivery` - in
   solo-trunk the closing trunk commit is that ref - transition the issue to
-  `validate`, and **stop**. A draft stays a draft: its author reads it and marks
-  it ready, which starts CI (`ready_for_review`) and makes that run theirs, so
-  `finish` never runs `gh pr ready`. Updating a PR its author already marked
-  ready leaves it ready, and the push re-runs CI: watch that run to conclusion
-  (`gh pr checks --watch`), and treat a `skipped` check as a red flag, never a
-  pass - it reads as green to `gh pr checks`. The first push of
+  `validate`, and **stop** - on a ready PR, once its CI is watched.
+  **Draft or ready.** Open the PR ready (`gh pr create` without `--draft`), or
+  ready an existing draft (`gh pr ready`), only when it holds nothing its author
+  must read first, across the whole PR and not only the commits a later gate
+  re-read: no round of the code gate left a high finding open, confirmed or
+  not - a Trivial change, which skips the gate, qualifies; no medium finding or
+  design question went under *Notes for the reviewer* (a vetted plan, findings
+  already resolved and a skipped gate's one line are record, not reading); no drift class is
+  flagged; and no question awaits its owner's confirmation. Anything else
+  stays a draft: its author reads it and marks it ready, which starts CI
+  (`ready_for_review`) and makes that run theirs. A later `finish` that comes
+  back clean readies its draft; a ready PR is never moved back to draft. An
+  unattended run (rule `53-autonomous-loops`) always opens a draft. A PR
+  `finish` opened or readied, and a push to one already ready, starts CI: watch
+  that run to conclusion (`gh pr checks --watch`) - after `gh pr ready`, wait
+  until `gh pr checks` lists the new run's checks as pending, since the draft's
+  skipped ones show first - and treat a
+  `skipped` check as a red flag, never a pass - it reads as green to `gh pr
+  checks`. The first push of
   the new `issue/<n>` branch sets the upstream - `git push -u origin <branch>` -
   or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
   there is no PR: commit straight to `main` with a `Closes #N` trailer (see
@@ -131,7 +146,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   edits it. With no MCP server either, print the compare URL
   (`https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1`) for
   the human, who opens it as a draft. Say which path ran. The CI watch stays
-  `gh`-only: without it, report a ready PR's or trunk push's CI as **not
+  `gh`-only: without it, a clean gate still opens a draft, since its run could
+  not be watched, and a ready PR's or trunk push's CI is reported **not
   watched**.
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`

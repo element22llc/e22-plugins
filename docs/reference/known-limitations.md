@@ -168,7 +168,7 @@ which share the full engine.
 
 The plugin's gates assume an **interactive human** is present to approve specs,
 sign off High-risk plans, mark draft PRs ready and merge them. Pushing the branch
-and opening the PR (as a draft) are autonomous; two hooks can pause one - a
+and opening the PR (a draft unless the code gate came back clean) are autonomous; two hooks can pause one - a
 solo-trunk repo's graduation gate on a trunk push, once a local signal stands,
 and the stacked-PR gate on a PR whose base is a work branch (both in
 `check-bash-actions.sh`). With no dev in the session, High-risk work stops before

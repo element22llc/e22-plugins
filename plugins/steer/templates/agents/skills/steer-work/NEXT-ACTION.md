@@ -22,14 +22,14 @@ without redefining the subcommands in `SKILL.md`:
 | Required validation failing | Blocking now | Fix failures, then `/steer-work finish #N` |
 | Implemented, PR not opened | Blocking now (next transition) | `/steer-work finish #N` |
 | `qa` added fix commits | Blocking now | Re-run the gates on them - `/steer-work finish #N` |
-| Draft PR open, diff touches UI paths, `qa` not run this branch | Recommended | Drive the changed flows in a browser before review - `/steer-work qa #N` (opt-in, never auto-run) |
+| PR open, diff touches UI paths, `qa` not run this branch | Recommended | Drive the changed flows in a browser before review - `/steer-work qa #N` (opt-in, never auto-run) |
 | Draft PR open, in `validate` | Human decision required | Its author reads the PR, then marks it ready, which runs CI (no command - a draft's skipped checks are not green) |
 | Ready PR, CI running | Blocking now | Watch to conclusion - `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | Ready PR, CI red | Blocking now | `/steer-work resume #N` - reproduce and fix locally until the local gates are green, then push once and re-watch |
 | Ready PR, CI green, awaiting review | Human decision required | A reviewer reviews the PR - several waiting: `/steer-work review` |
 | PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed - a merged PR is necessary, not sufficient (`/steer-work resume #N`) |
 | `queue` ended, issues blocked or set aside | Blocking now | The one move recorded for the first in run order - usually `/steer-work resume #N` |
-| `queue` ended, drafts open | Human decision required | Read each draft, then ready them and watch CI - `/steer-work review --mine` |
+| `queue` ended, drafts open | Human decision required | Read each draft, then ready them and watch CI - `/steer-work review --mine` (a ready one is already the reviewer's) |
 | Issue `done` | Complete | Optional: start another ready issue - `/steer-work start #N`, else `No action is currently required.` |
 
 Choose one `Current recommended action` by precedence. The block recommends only -

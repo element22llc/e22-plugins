@@ -456,8 +456,9 @@ Delivery has **two modes**, keyed to the product `CLAUDE.md` marker
   **fragment** (`mise run changelog:new`); `CHANGELOG.md` is generated, never
   hand-edited.
 - **Get the local gates green before you push**: CI confirms, it is not the
-  loop you iterate in. `/steer:work` opens its PR as a **draft** (a hotfix's
-  opens ready); its author marks it ready, and CI runs then. Watch every run that follows - a ready PR's, a trunk push's -
+  loop you iterate in. `/steer:work` opens its PR as a **draft**, which its
+  author marks ready, and CI runs then; it opens ready when its code gate came
+  back clean, and a hotfix's always does. Watch every run that follows - a ready PR's, a trunk push's -
   to conclusion and fix a red build before the work counts as complete. **Merge and deploy stay human-gated in every mode** -
   never `gh pr merge`, never deploy, never push to a protected `prod` branch.
 
@@ -548,7 +549,7 @@ item can't be satisfied, say so rather than implying the work is complete.
 - [ ] Unfinished work and known gaps surfaced explicitly?
 - [ ] Dev servers and watchers you started stopped?
 - [ ] Scaffold placeholders flagged or resolved?
-- [ ] Everything finished committed, and a complete change pushed with its draft PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
+- [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk, with CI watched to green?
 - [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?
 
 

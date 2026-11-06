@@ -18,9 +18,9 @@ a real (or throwaway) repo, not against production work.
       `/steer:tracker-sync` (MCP-first -> `gh` fallback). Confirm `gh auth status`
       is green so the path doesn't drop to the manual floor.
 - [ ] **PR workflow tested.** `/steer:work` produces a branch + commit and opens
-      the PR **autonomously as a draft**, then stops - push and `gh pr create`
-      don't pause for a human. The author marks the draft ready, which starts
-      CI, and the **merge** stays the reviewer's (a `gh pr merge` from the
+      the PR **autonomously**, ready after a clean code gate and else as a
+      draft; push and `gh pr create` don't pause for a human. The author marks a
+      draft ready, which starts CI, and the **merge** stays the reviewer's (a `gh pr merge` from the
       session is denied). On a solo-trunk repo, the trunk-push gate in
       `check-bash-actions.sh` pauses a push only once a graduation signal
       stands; a stacked PR (base on another work branch) raises an ask.
