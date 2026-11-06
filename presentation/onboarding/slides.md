@@ -659,7 +659,7 @@ Idea -> **shape it** -> **break it down** -> **build it** -> **review it**.
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">🔀</div>
-<div>Local gates green, an <b>independent code review</b>, then Claude pushes and opens a <b>draft PR</b> - and <b>stops</b>. You mark it ready (CI runs); a human merges.</div>
+<div>Local gates green, an <b>independent code review</b>, then Claude pushes and opens the PR - <b>ready</b> with CI watched when the review came back clean, else a <b>draft</b> you mark ready. A human merges.</div>
 </div>
 
 </div>
@@ -668,9 +668,10 @@ Idea -> **shape it** -> **break it down** -> **build it** -> **review it**.
 finish runs the fullest local gate (mise run ci), then the code gate: fresh
 read-only reviewer subagents score the diff, Claude fixes confirmed high
 findings and re-reviews while the count keeps dropping, 4 rounds at most.
-Trivial changes skip it. The PR opens as a draft, the issue moves to
-validate, and Claude stops. The shipped ci.yml skips drafts, so CI runs once
-the author has read the PR and marked it ready.
+Trivial changes skip it. When nothing is left for the author to read first,
+the PR opens ready and Claude watches its CI to conclusion. Otherwise it opens
+as a draft: the shipped ci.yml skips drafts, so CI runs once the author has
+read it and marked it ready. Either way the issue moves to validate.
 -->
 
 ---
@@ -731,7 +732,7 @@ at all; no promise there.
 ### ✅ Claude does on its own
 - Branches off `main` and **commits as it goes**
 - Runs the local gates + the code review
-- **Pushes and opens a draft PR** - never asks "should I?"
+- **Pushes and opens the PR** - ready on a clean review, else a draft; never asks "should I?"
 - *Solo trunk:* commits and pushes straight to `main`
 - Keeps the spec spine & the issue in sync
 
@@ -740,7 +741,7 @@ at all; no promise there.
 <div v-click class="p-6 rounded-xl border border-rose-400/30 bg-rose-400/5">
 
 ### 🛑 Waits for a human
-- **Mark the draft ready** - you read it first; CI runs then
+- **Mark a draft ready** - when the review left something for you to read; CI runs then
 - **Merge** - a hook denies it to Claude, every time
 - **Deploy** - always your call
 - **Sign-offs** - High-risk plan, ADR, intent approval

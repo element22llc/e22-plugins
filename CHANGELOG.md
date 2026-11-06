@@ -3,6 +3,106 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.20.0
+
+- **Added: GitHub native stacked PRs.** A new `/steer:reference stacks`
+  topic covers `gh stack` and the stack object: a stack number is never
+  an issue or PR number, how to resolve one read-only, how stacks merge
+  (bottom-up) and rebase, and what steer never runs. Rule 45
+  points to it, and `/steer:work review` checks whether a stacked PR is
+  in a native stack, then judges its readiness across the whole stack
+  and leaves restructuring to the author (#865).
+- **Fixed: `gh stack merge` got past the merge gate.** It merges every
+  stacked PR up to the one named, and `check-bash-actions.sh` now
+  denies it, also in its `gh extension exec stack` form. It also
+  denies `gh pr merge` followed directly by `;`, `&`, `|` or `)`
+  (`gh pr merge;...`, `(gh pr merge)`), which used to slip past. A wrapper
+  made with `gh stack alias` is not caught, so the stacks reference
+  says not to install one. The stacked-PR gate also asks on
+  `gh stack link`, and no longer fires on a PR body that only mentions
+  `gh stack submit`.
+- **Changed: `/steer:work` runs several issues as a queue without being
+  asked.** An implement ask naming two or more issues - "fix #12 and #15",
+  `/steer:work #12 #15`, `start #12 #15` - now enters `queue` automatically,
+  announced in one line, with `--reviewed` carried over: one fresh worker per
+  issue, each ending at its own draft PR. Before, `queue` ran only when named,
+  and a multi-issue ask was delivered by hand in one session. Asking for the
+  issues combined in one branch, or issues that cannot be separated without an
+  invalid intermediate state, still deliver together; `status #A #B` stays a
+  read-only report. One shift: an issue that merely depends on another in
+  the list was combined into one branch before; the queue's triage now sets
+  it aside, pointing at a stacked or `batch/*` branch.
+- **Fixed: `/steer:setup sync` no longer leaves a `workflow_call` caller of
+  `ci.yml` failing at startup.** The `dependabot-auto-merge` job declares
+  `contents: write` and `pull-requests: write`, and GitHub refuses to start
+  a workflow that calls `ci.yml` with a narrower grant, even when the job's
+  `if` would skip it. A repo whose `ci.yml` was also a reusable workflow
+  kept passing PR CI while every scheduled or push caller run failed. The
+  capability scan now reports dependency-automation as mis-wired while any
+  in-repo caller lacks those scopes. Sync proposes adding them to the
+  calling job, on top of its current grant. The scaffold manifest applies
+  the same rule to adopt and template reconciliation, and the `ci.yml`
+  template warns in its `on:` block. Tracked as issue #864.
+- **Fixed: a `/steer:work --hotfix` no longer ships unreleased work to
+  production.** The lane named a `hotfix/<n>-slug` branch but not its base, so
+  a fix cut from `main` carried every unreleased commit through the `prod`
+  gate. Under `production_gate: prod-branch-pr` the branch is now cut from
+  `prod` and its PR targets `prod`, carrying its own patch cut (`changie batch
+  patch`), and the mandatory follow-up back-ports it to `main` through a
+  cherry-picked PR. `/steer:work promote` stops while a hotfix version on
+  `prod` is missing from `main`. The scaffold `ci:changelog` gate passes a PR
+  that adds a released version file (`.changes/*.md`), whose fragments that
+  cut consumed; `/steer:setup sync` carries the change into an installed
+  `scripts/ci-changelog.sh`.
+- **Changed: `/steer:work finish` opens the PR ready when its code gate
+  comes back clean.** Since #834 every PR `finish` opened was a draft its
+  author had to mark ready before CI ran. Now the PR opens ready, and
+  `finish` watches its CI to conclusion, when nothing in it needs the
+  author's reading first, across the whole PR: no round of the code gate
+  left a high finding open (a Trivial change, which skips the gate,
+  qualifies), no medium finding or design question went under
+  *Notes for the reviewer*, no drift class is flagged, and no question
+  awaits its owner's confirmation. Anything else still opens as a draft. A
+  later `finish` that comes back clean readies its earlier draft; a ready PR
+  is never moved back to draft. Every reviewer and the refute pass now
+  report back before anything is pushed. Always a draft: a PR opened
+  without `gh` (its CI cannot be watched) and every autonomous loop PR. `queue` workers follow the same rule, and
+  the queue's verification accepts a ready PR whose checks are green, none
+  skipped. Rules `45-delivery` and `50-done`, the `/steer:work`,
+  `/steer:next` and `/steer:work issues` next-action rows, and the docs
+  describe both paths.
+- **Changed: every profile versions with semver.** An `app` or `service` used
+  to cut its release as the ship date (`changie batch $(date +%Y.%-m.%-d)`),
+  which a same-day production hotfix could not follow without colliding.
+  `/steer:work promote` now cuts `changie batch auto` for every profile - the
+  pending fragments' kinds pick the bump, `changie batch major` for a breaking
+  change - and titles the promotion PR `Release v<version>`; a hotfix cuts
+  `changie batch patch` in its own PR. A repo that already cut date versions
+  keeps going from its last one, which is valid semver: nothing to migrate.
+- **Added: every production release is tagged and published automatically.**
+  A new scaffold workflow, `.github/workflows/release.yml`, fires when a push
+  adds a changelog version file to the branch production runs from - `prod`
+  under `production_gate: prod-branch-pr`, else `main` - and tags that commit
+  `vX.Y.Z` and publishes a GitHub Release with the version's changelog entries
+  followed by GitHub's generated PR list. A promotion and a hotfix both
+  publish this way; a version already released is skipped. It needs only
+  `GITHUB_TOKEN`, so it works on any GitHub plan. `/steer:setup init` and
+  `adopt` install it, and `/steer:setup sync` proposes it to existing repos
+  (capability `release-publish`).
+- **Added: a `ci:security` stage blocks high and critical findings.** The
+  required `ci` check gains `scripts/ci-security.sh`: Trivy fails on a high or
+  critical CVE with a fix available in a production dependency
+  (`pnpm-lock.yaml`, `uv.lock`), and Semgrep fails on a `p/default` finding at
+  `ERROR` severity. A waiver goes in `.trivyignore.yaml` with a `statement`
+  and an `expired_at` date, or as `# nosemgrep: <rule-id>` with a
+  why-comment, so the exceptions register is reviewed in PRs and expires on
+  its own. Both tools are pinned through mise and need no account, so the
+  stage runs on any GitHub plan; it no-ops without a Node or Python stack.
+  `/steer:setup sync` proposes it to existing repos (capability
+  `security-gate`). **Expect the first PR after the sync to fail** if the
+  repo already carries a high finding - that is the gate working: fix it or
+  record a waiver.
+
 ## 7.19.0
 
 - **Changed: the review fix loop keeps going while it converges.** The

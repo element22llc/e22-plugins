@@ -20,6 +20,9 @@ uv = "latest"
 github-cli = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
+# ci:security - scans only when the repo carries a package.json or pyproject.toml.
+"aqua:aquasecurity/trivy" = "latest"
+"pipx:semgrep" = "latest"
 # Pinned, unlike the rest: a silent upgrade would change released output.
 changie = "1.26.0"
 
