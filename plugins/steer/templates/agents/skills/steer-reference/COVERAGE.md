@@ -289,3 +289,25 @@ capped on its on-disk total, which every consumer pays even for a rule scoped to
 a minority of repos, so a single-repo product pays zero bytes for polyrepo. It is
 delivered instead by this topic, the `orient-session.sh` SessionStart note, and
 the workspace profile in the bundled scaffold.
+
+## stacks
+
+`https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/STACKS.md`
+
+It covers, in detail:
+
+- **Native vs manual stacks** - a stack as a GitHub object versus PRs chained
+  by `--base`; rule 45's "stack only for unmerged code" governs both.
+- **A number may be a stack** - stack numbers are repo-scoped; resolving one
+  read-only through the stacks REST endpoints or `gh stack view` (exit 2, 9),
+  and why a stack number is never claimed as an issue.
+- **The `gh stack` CLI** - the agent-safe commands, which ones need a TTY, and
+  which force-push.
+- **What steer does differently** - never `gh stack merge`, drafts via
+  `submit --auto` and never `--open`, the stacked-PR gate on `submit` / `link`,
+  and the docs' conflict on signed server-side rebases.
+- **How a stack behaves** - protections from the stack base on every layer,
+  atomic bottom-up merge, linear history, merge queue, PRs that cannot leave a
+  stack.
+- **Reviewing a stacked PR** - per-layer diff, stack-wide merge readiness, and
+  leaving restructuring to the author.

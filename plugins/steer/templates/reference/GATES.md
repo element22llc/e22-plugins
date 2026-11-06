@@ -132,8 +132,8 @@ system, and **asking is not authorization**:
   `45-delivery`, `00-router` -> You are not the gate). Never `gh pr merge`. The reviewer
   reads the diff on the PR; an in-session "yes" is not that review, because the
   diff is not what was shown. On Claude Code, `check-bash-actions.sh` denies
-  every merge path (`gh pr merge`, a `gh api` merge, the MCP
-  `merge_pull_request` tool).
+  every merge path (`gh pr merge`, `gh stack merge`, a `gh api` merge, the
+  MCP `merge_pull_request` tool).
 - **Deploy** - including a hotfix whose deploy is policy-permitted (rule
   `61-gates` -> Hotfix). Permitted != auto-executed.
 - **Real secrets and credentials**, and **`/infra`** - never relaxed, not even

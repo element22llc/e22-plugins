@@ -16,8 +16,9 @@
 # CHECK 0 - MERGE GATE (Bash + MCP merge_pull_request)
 #   Merging a PR is the human's step and is never promptable (rules 45, 61):
 #   a direct "merge it" does not authorize it. Hard deny, every time, in
-#   every repo: `gh pr merge`, a `gh api` merge (REST PUT or the GraphQL
-#   mutations), and any MCP `*merge_pull_request` tool. Local `git merge` is
+#   every repo: `gh pr merge`, `gh stack merge` (merges every stacked PR up to
+#   the one named), a `gh api` merge (REST PUT, incl. `merge-async`, or the
+#   GraphQL mutations), and any MCP `*merge_pull_request` tool. Local `git merge` is
 #   untouched. Quoted prose (--body, -m) is blanked before matching.
 #
 # CHECK 1 - TRUNK-PUSH GRADUATION GATE (Bash only)
@@ -79,7 +80,8 @@
 #   that merges only bottom-up and needs every layer approved - one product repo
 #   reached 64 unrelated fixes deep that way. This check makes the stacking
 #   decision visible at the one command that records it: a `gh pr create` /
-#   `gh pr edit` whose `--base`/`-B` is a work branch, or a `gh stack submit`.
+#   `gh pr edit` whose `--base`/`-B` is a work branch, or a `gh stack submit` /
+#   `gh stack link` (each creates or extends a native stack on GitHub).
 #   Then it emits permissionDecision "ask" - a real dependency is approved in
 #   one keystroke, and an unattended run (headless, nobody to answer) stops
 #   instead of growing the chain. Asks on EVERY such command, unlike the
@@ -142,6 +144,9 @@ if [ -z "${MERGE}" ] && [ "${TOOL}" = "Bash" ] &&
 	if printf '%s' "${_bare}" |
 		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+pr[[:space:]]+merge([[:space:]]|$)'; then
 		MERGE="gh pr merge"
+	elif printf '%s' "${_bare}" |
+		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+stack[[:space:]]+merge([[:space:]]|$)'; then
+		MERGE="gh stack merge"
 	elif printf '%s' "${_bare}" | grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+api([[:space:]]|$)' &&
 		printf '%s' "${CMD}" | grep -Eq 'mergePullRequest|enablePullRequestAutoMerge|/pulls/[0-9]+/merge' &&
 		printf '%s' "${CMD}" | grep -Eq 'graphql|(-X|--method)[[:space:]=]*PUT'; then
@@ -214,7 +219,7 @@ fi
 # ---------------------------------------------------------------------------
 if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 	printf '%s' "${CMD}" |
-	grep -Eq '(^|[;&|[:space:]])gh[[:space:]]+(pr[[:space:]]+(create|edit)|stack[[:space:]]+submit)([[:space:]]|$)'; then
+	grep -Eq '(^|[;&|[:space:]])gh[[:space:]]+(pr[[:space:]]+(create|edit)|stack[[:space:]]+(submit|link))([[:space:]]|$)'; then
 
 	CWD="$(steer_field cwd)"
 	[ -n "${CWD}" ] || CWD="."
@@ -228,23 +233,20 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			printf '%s' "${_CMD_BARE}" |
 				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1
 		}
-		STACK_BASE=""
-		if printf '%s' "${CMD}" | grep -Eq 'gh[[:space:]]+stack[[:space:]]+submit'; then
-			STACK_BASE="(gh stack)"
-		else
+		WHAT=""
+		case "$(printf '%s' "${_CMD_BARE}" | sed -nE 's/.*gh[[:space:]]+stack[[:space:]]+(submit|link)([[:space:]].*)?$/\1/p' | head -n 1)" in
+		submit) WHAT="gh stack submit opens PRs that each target the branch below them" ;;
+		link) WHAT="gh stack link chains these PRs into a native stack, each targeting the branch below it" ;;
+		*)
 			_base="$(_flag '--base|-B')"
 			_head="$(_flag '--head|-H')"
 			case "${_base}" in
 			"" | "${DEFAULT}" | prod | production | staging | develop | release/* | releases/* | batch/*) ;;
-			*) [ "${_head}" = "${DEFAULT}" ] || STACK_BASE="${_base}" ;;
+			*) [ "${_head}" = "${DEFAULT}" ] || WHAT="this PR targets ${_base}, not ${DEFAULT}" ;;
 			esac
-		fi
-		if [ -n "${STACK_BASE}" ]; then
-			if [ "${STACK_BASE}" = "(gh stack)" ]; then
-				WHAT="gh stack submit opens PRs that each target the branch below them"
-			else
-				WHAT="this PR targets ${STACK_BASE}, not ${DEFAULT}"
-			fi
+			;;
+		esac
+		if [ -n "${WHAT}" ]; then
 			REASON="$(steer_json_safe "Stacked-PR gate (rule 45): ${WHAT}. A stacked PR cannot merge until every PR below it is approved and merged, so an independent change riding a stack waits on all of them - and a long stack becomes a review queue nobody can clear. Stack only when this change needs that branch's unmerged code, and say so in the PR description. Otherwise rebase onto ${DEFAULT} (git rebase --onto origin/${DEFAULT} <old-base>) and open the PR against ${DEFAULT} - or, to land many fixes as one merge, against a batch/<slug> integration branch cut from ${DEFAULT}. Approving this prompt opens the stacked PR anyway.")"
 			printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"
 			exit 0

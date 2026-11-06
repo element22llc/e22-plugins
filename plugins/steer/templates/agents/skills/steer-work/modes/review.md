@@ -40,7 +40,11 @@ Compute per PR, from Step 1's JSON alone:
   finding.
 - **Stacked** - `baseRefName` is another work branch (rule 45). Order a stack
   bottom-up; a PR can merge only after the one below it. A `batch/*` base is
-  not a stack: its PRs are siblings and merge in any order.
+  not a stack: its PRs are siblings and merge in any order. When one is
+  stacked, check once for a **native** stack (`gh api
+  'repos/{owner}/{repo}/stacks?pull_request=<n>'`, `[]` when not): its PRs
+  merge atomically from the bottom, so judge its readiness across the stack
+  (`/steer-reference stacks`).
 - **Risk class** - High-risk when any path touches a rule `60-high-risk` area
   (auth, permissions, migrations, `/infra`, secrets, deletion, billing,
   CI/deploy workflows); otherwise leave the class to Step 3.
@@ -137,7 +141,8 @@ ones that are yours:
 - **CI red or conflicting** - `/steer-work resume #<issue>` fixes it on its
   branch.
 - **Stacked, independent** - rebase onto the default branch and retarget
-  (`gh pr edit <n> --base <default>`), one PR per run. Force-push as `git push
+  (`gh pr edit <n> --base <default>`), one PR per run. In a native stack,
+  leaving means unstacking and recreating it: name it to the author instead. Force-push as `git push
   --force-with-lease origin <branch>`: the flag ahead of `origin` keeps it out
   of this skill's `git push origin *` grant, so it asks.
 - **No reviewer requested** - ask the human who, then `gh pr edit <n>
