@@ -60,6 +60,11 @@ flowchart LR
   the default branch (`.changes/unreleased/` lives there, and you cannot push to a
   protected `main`); `promote` opens the promotion PR once that has merged. See
   [Repository contract](../reference/repository-contract.md#what-a-managed-repo-carries).
+- **Every release is tagged and published automatically.** When a new version
+  reaches `prod` - a promotion or a hotfix - the scaffold's `release.yml`
+  workflow tags that commit `vX.Y.Z` and publishes a GitHub Release with the
+  version's changelog entries and the list of merged PRs. A repo that deploys
+  from `main` (any other `production_gate`) publishes from `main` instead.
 - **The branch-protection approval on `prod` *is* the production gate.** It stands
   in for the deployment-environment approvals that GitHub Enterprise would
   otherwise provide, which is why `policy/branch-protection.yml` carries a `prod`
