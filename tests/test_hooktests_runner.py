@@ -37,6 +37,20 @@ def test_stray_stderr_fails_the_run(tmp_path: Path, shell_error: str):
     assert result.stdout.strip().endswith("1 passed, 1 failed")
 
 
+def test_skip_line_on_stderr_is_allowed(tmp_path: Path):
+    result = _run(tmp_path, "echo 'SKIP: git unavailable' >&2\nassert_eq same a a")
+    assert result.returncode == 0, result.stderr
+    assert "SKIP: git unavailable" in result.stderr
+
+
+def test_case_dying_before_its_tally_is_counted_once(tmp_path: Path):
+    result = _run(tmp_path, 'echo "$UNSET_VARIABLE"')
+    assert result.returncode == 1
+    assert "probe exited before its tally" in result.stderr
+    assert "wrote to stderr" not in result.stderr
+    assert result.stdout.strip().endswith("0 passed, 1 failed")
+
+
 def test_failed_assertion_is_counted_once(tmp_path: Path):
     result = _run(tmp_path, "assert_eq differs a b")
     assert result.returncode == 1
