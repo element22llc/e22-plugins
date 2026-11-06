@@ -72,6 +72,29 @@ assert_eq "ci-changelog: a promotion PR to prod needs no new fragment" "$?" "0"
 (cd "${CC}" && STEER_CI_EVENT=push STEER_CI_BEFORE=1111111111111111111111111111111111111111 sh scripts/ci-changelog.sh >/dev/null 2>&1)
 assert_eq "ci-changelog: an unreachable push base fails open" "$?" "0"
 
+# ci-changelog: git quotes non-ASCII paths unless told not to, which broke the
+# exempt-path match; a Dependabot PR is exempt (auto-merge refuses a human commit).
+ci_changelog "spec/sources/$(printf 'r\303\251sum\303\251').pdf" "docs/$(printf '\303\251t\303\251').md"
+assert_eq "ci-changelog: exempt paths with accented names need no fragment" "${rc}" "0"
+ci_changelog package.json
+assert_eq "ci-changelog: a dependency bump by a human still needs one" "${rc}" "1"
+(cd "${CC}" && STEER_CI_BASE=probe~1 STEER_CI_PR_AUTHOR='dependabot[bot]' sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: a Dependabot PR needs no fragment" "$?" "0"
+
+# ci-coverage: per-package lcov paths reach diff-cover rebased onto the package.
+CV="${WORK}/cicoverage"
+mkdir -p "${CV}/scripts" "${CV}/bin" "${CV}/apps/web/coverage" "${CV}/coverage"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/ci-coverage.sh" "${CV}/scripts/"
+(cd "${CV}" && git init -q && : >a && git add a && git -c user.name=t -c user.email=t@t commit -qm base)
+printf 'SF:src/a.ts\nDA:1,0\nend_of_record\nSF:./src/b.ts\nend_of_record\nSF:apps/web/src/c.ts\nend_of_record\nSF:/abs/d.ts\nend_of_record\n' >"${CV}/apps/web/coverage/lcov.info"
+printf 'SF:lib/root.ts\nend_of_record\n' >"${CV}/coverage/lcov.info"
+printf '#!/bin/sh\nfor a in "$@"; do case "$a" in *.info) grep "^SF:" "$a" ;; esac; done\n' >"${CV}/bin/uvx"
+chmod +x "${CV}/bin/uvx"
+out="$(cd "${CV}" && PATH="${CV}/bin:${PATH}" STEER_CI_BASE=HEAD sh scripts/ci-coverage.sh 2>&1)"
+assert_eq "ci-coverage: package lcov paths rebased, root and absolute ones kept" \
+	"$(printf '%s' "${out}" | grep '^SF:' | sort | tr '\n' ' ')" \
+	"SF:/abs/d.ts SF:apps/web/src/a.ts SF:apps/web/src/b.ts SF:apps/web/src/c.ts SF:lib/root.ts "
+
 # changelog:new: argv reaches changie verbatim, no shell in between (#671).
 if command -v node >/dev/null 2>&1; then
 	CN="${WORK}/changelognew"

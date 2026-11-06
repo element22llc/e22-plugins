@@ -26,7 +26,10 @@ CONTRACT (mirrors template-reconcile.sh)
       kept, template-only entries appended); scalars KEEP THE EXISTING VALUE
       (never overwritten); template-only keys are appended after existing keys.
     * gitignore: template patterns not already present are appended; nothing is
-      reordered or removed.
+      reordered or removed. In .gitattributes, where the last matching line
+      wins, they are inserted before the existing lines instead. A template
+      `!` re-include under a directory the existing file ignores whole is not
+      written (git could not honour it) and is reported with `~`.
     Never deletes, reorders, or changes an existing value/line.
 
   PERMISSION TIERS - the one place this merge removes content. A Claude Code
@@ -249,6 +252,21 @@ def _patterns(lines: list[str]) -> list[str]:
     return out
 
 
+def _excluded_parent(negation: str, existing: set[str]) -> str | None:
+    """The existing pattern that ignores a parent directory of `!negation`, if any.
+
+    git never re-includes a file whose parent directory is itself excluded, so
+    appending such a negation would report a re-include that has no effect.
+    """
+    parts = negation[1:].strip("/").split("/")[:-1]
+    for i in range(1, len(parts) + 1):
+        d = "/".join(parts[:i])
+        for form in (d, f"{d}/", f"/{d}", f"/{d}/", f"**/{d}", f"**/{d}/"):
+            if form in existing:
+                return form
+    return None
+
+
 def _reconcile_gitignore(existing_path: Path, template_text: str, apply: bool) -> int:
     template_patterns = _patterns(template_text.splitlines())
     if existing_path.exists():
@@ -258,18 +276,36 @@ def _reconcile_gitignore(existing_path: Path, template_text: str, apply: bool) -
         existing_text = ""
         existing_patterns = set()
 
-    missing = [p for p in template_patterns if p not in existing_patterns]
-    if not missing:
+    missing: list[str] = []
+    skipped: list[str] = []
+    for p in template_patterns:
+        if p in existing_patterns:
+            continue
+        blocker = _excluded_parent(p, existing_patterns) if p.startswith("!") else None
+        if blocker:
+            skipped.append(
+                f"~ {p} (the existing '{blocker}' ignores the whole directory, so git "
+                f"cannot re-include it - replace '{blocker}' with its '/*' form)"
+            )
+        else:
+            missing.append(p)
+    if not missing and not skipped:
         return 0
 
-    if apply:
-        prefix = existing_text
-        if prefix and not prefix.endswith("\n"):
-            prefix += "\n"
+    if apply and missing:
         addition = "\n".join(missing) + "\n"
+        if existing_path.name in (".gitattributes", "gitattributes") and existing_text:
+            # The last matching line wins in .gitattributes, so the template goes
+            # first and the repo's own lines keep deciding where they overlap.
+            new_text = addition + existing_text
+        else:
+            prefix = existing_text
+            if prefix and not prefix.endswith("\n"):
+                prefix += "\n"
+            new_text = prefix + addition
         existing_path.parent.mkdir(parents=True, exist_ok=True)
-        existing_path.write_text(prefix + addition, encoding="utf-8")
-    print("\n".join(f"+ {p}" for p in missing))
+        existing_path.write_text(new_text, encoding="utf-8")
+    print("\n".join([f"+ {p}" for p in missing] + skipped))
     return 0
 
 

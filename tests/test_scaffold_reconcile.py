@@ -286,6 +286,31 @@ def test_gitignore_appends_missing_preserves_custom(tmp_path: Path):
     assert lines.count("node_modules/") == 1  # not duplicated
 
 
+def test_gitignore_negation_under_ignored_dir_is_reported_not_written(tmp_path: Path, capsys):
+    existing = tmp_path / ".gitignore"
+    existing.write_text("node_modules\n.vscode/\n", encoding="utf-8")
+    template = tmp_path / "gitignore"
+    template.write_text(".vscode/*\n!.vscode/settings.json\n", encoding="utf-8")
+
+    assert sr.main(["gitignore", str(existing), str(template), "--apply"]) == 0
+    lines = existing.read_text(encoding="utf-8").splitlines()
+    assert ".vscode/*" in lines
+    assert "!.vscode/settings.json" not in lines
+    out = capsys.readouterr().out
+    assert "~ !.vscode/settings.json" in out and "'.vscode/'" in out
+
+
+def test_gitattributes_template_lines_go_before_existing(tmp_path: Path):
+    existing = tmp_path / ".gitattributes"
+    existing.write_text("* text=auto\n*.bat text eol=crlf\n", encoding="utf-8")
+    template = tmp_path / "gitattributes"
+    template.write_text("* text=auto eol=lf\n*.png binary\n", encoding="utf-8")
+
+    assert sr.main(["auto", str(existing), str(template), "--apply"]) == 0
+    lines = existing.read_text(encoding="utf-8").splitlines()
+    assert lines == ["* text=auto eol=lf", "*.png binary", "* text=auto", "*.bat text eol=crlf"]
+
+
 def test_gitignore_in_sync_is_silent(tmp_path: Path, capsys):
     existing = tmp_path / ".gitignore"
     existing.write_text("node_modules/\n.venv/\n", encoding="utf-8")

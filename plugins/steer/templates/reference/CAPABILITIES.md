@@ -243,13 +243,14 @@ and **Repair**.
 
 ### drift-gate - CI hygiene check + PR drift checklists
 - **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
-  `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
+  `mise.toml`, `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
   `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
   `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** `ci.yml` reaches the hygiene stage - via `mise run ci:hygiene`,
   which runs `scan-version-pins.sh` - **and** `mise.toml` defines the `check` + `ci`
-  tasks **and** every `scripts/ci-*.sh` the tasks invoke is present **and** the PR
+  tasks **and** every `ci:*` stage `ci.yml` runs **and** every `scripts/ci-*.sh` the
+  tasks invoke is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
   checklists). A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
   such tasks is the one broken state this capability exists to catch: the required

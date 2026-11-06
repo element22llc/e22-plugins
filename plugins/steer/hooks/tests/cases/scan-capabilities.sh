@@ -327,4 +327,39 @@ assert_rc "cap: too many args -> exit 2" "$?" 2
 sh "${CAPSCAN}" "${WORK}/cap-nope" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "cap: unreadable repo-root -> exit 3" "$?" 3
 
+# drift-gate: wired only when every stage ci.yml runs has its task and script.
+CRD="${WORK}/cap-drift"
+mkdir -p "${CRD}/.github/workflows" "${CRD}/scripts"
+cp "${PLUGIN}/templates/github/workflows/ci.yml" "${CRD}/.github/workflows/ci.yml"
+cp "${PLUGIN}/templates/github/pull_request_template.md" "${CRD}/.github/pull_request_template.md"
+cp "${PLUGIN}/templates/scaffold/mise.toml" "${CRD}/mise.toml"
+cp "${PLUGIN}/templates/scaffold/scripts/"ci-*.sh "${CRD}/scripts/"
+capscan "${CRD}"
+assert_eq "cap: full scaffold CI -> drift-gate present-wired" "$(capstatus "${out}" drift-gate)" "present-wired"
+rm "${CRD}/scripts/ci-lint.sh"
+capscan "${CRD}"
+assert_eq "cap: a stage script mise.toml runs is missing -> mis-wired" "$(capstatus "${out}" drift-gate)" "mis-wired"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lint.sh" "${CRD}/scripts/"
+printf '[tasks."ci:hygiene"]\nrun = "sh scripts/ci-hygiene.sh"\n' >"${CRD}/mise.toml"
+capscan "${CRD}"
+assert_eq "cap: ci.yml stages with no tasks -> mis-wired" "$(capstatus "${out}" drift-gate)" "mis-wired"
+
+# commit-gate: core.hooksPath set means the repo owns its commit gate.
+CRG="${WORK}/cap-commit"
+mkdir -p "${CRG}/.githooks"
+git -C "${CRG}" init -q
+printf '[tasks.pre-commit]\nrun = "true"\n' >"${CRG}/mise.toml"
+capscan "${CRG}"
+assert_eq "cap: no pre-commit hook -> commit-gate absent" "$(capstatus "${out}" commit-gate)" "absent"
+git -C "${CRG}" config core.hooksPath .githooks
+capscan "${CRG}"
+assert_eq "cap: core.hooksPath set -> commit-gate n/a" "$(capstatus "${out}" commit-gate)" "n/a"
+
+# changelog-fragments is judged on the scanned repo, not the caller's cwd.
+CRC="${WORK}/cap-changie"
+mkdir -p "${CRC}/.changes/unreleased"
+: >"${CRC}/.changie.yaml"
+out="$(cd / && sh "${CAPSCAN}" "${CRC}" "${PLUGIN}" 2>/dev/null)"
+assert_eq "cap: changelog-fragments read from the repo root" "$(capstatus "${out}" changelog-fragments)" "present-wired"
+
 finish

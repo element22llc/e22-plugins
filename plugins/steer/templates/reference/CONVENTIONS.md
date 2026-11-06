@@ -528,7 +528,9 @@ is metadata driving the version bump and grouping, and is not rendered.
   else's pending entry, not recording yours. Paths that ship nothing - `spec/`,
   `docs/`, `.github/`, test directories, colocated test files (`*.test.ts`,
   `*.spec.tsx`, `test_*.py`, ...), and Markdown anywhere - are exempt;
-  `scripts/ci-changelog.sh` is the authoritative list.
+  `scripts/ci-changelog.sh` is the authoritative list. A Dependabot PR is exempt
+  too: it cannot carry a fragment, and auto-merge refuses a commit that is not
+  Dependabot's.
 
 ### Changelog vs. the other two logs
 
