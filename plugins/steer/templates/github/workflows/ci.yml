@@ -86,6 +86,9 @@ jobs:
       - name: Build container image(s)
         run: mise run ci:image
 
+      - name: Security scan (HIGH/CRITICAL dependency CVEs + code findings)
+        run: mise run ci:security
+
       # Same workflow context as coverage; locally the script falls back to origin/main.
       - name: Changelog fragment (shipping changes only)
         env:

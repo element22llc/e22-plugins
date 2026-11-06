@@ -1,0 +1,18 @@
+kind: Added
+time: 2026-11-06T18:00:00.000000000-05:00
+custom:
+  Slug: ci-security-stage
+body: |-
+  - **Added: a `ci:security` stage blocks high and critical findings.** The
+    required `ci` check gains `scripts/ci-security.sh`: Trivy fails on a high or
+    critical CVE with a fix available in a production dependency
+    (`pnpm-lock.yaml`, `uv.lock`), and Semgrep fails on a `p/default` finding at
+    `ERROR` severity. A waiver goes in `.trivyignore.yaml` with a `statement`
+    and an `expired_at` date, or as `# nosemgrep: <rule-id>` with a
+    why-comment, so the exceptions register is reviewed in PRs and expires on
+    its own. Both tools are pinned through mise and need no account, so the
+    stage runs on any GitHub plan; it no-ops without a Node or Python stack.
+    `/steer:setup sync` proposes it to existing repos (capability
+    `security-gate`). **Expect the first PR after the sync to fail** if the
+    repo already carries a high finding - that is the gate working: fix it or
+    record a waiver.

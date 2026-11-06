@@ -17,7 +17,18 @@ import pytest
 from conftest import REPO_ROOT
 
 SCRIPTS = REPO_ROOT / "plugins" / "steer" / "templates" / "scaffold" / "scripts"
-STUBBED = ("pnpm", "biome", "ruff", "docker", "uvx", "mise", "actionlint", "shellcheck")
+STUBBED = (
+    "pnpm",
+    "biome",
+    "ruff",
+    "docker",
+    "uvx",
+    "mise",
+    "actionlint",
+    "shellcheck",
+    "trivy",
+    "semgrep",
+)
 _STUB = """#!/bin/sh
 name="$(basename "$0")"
 printf '%s\\n' "${name} $*" >>"${STUB_LOG}"
@@ -170,6 +181,40 @@ def test_image_builds_each_tracked_dockerfile_from_the_repo_root(repo: Repo) -> 
 def test_image_fails_when_a_build_fails(repo: Repo) -> None:
     repo.write("apps/web/Dockerfile")
     assert repo.run("ci-image.sh", STUB_FAIL="docker").code != 0
+
+
+_TRIVY = "trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1"
+_SEMGREP = "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet"
+
+
+def test_security_skips_without_a_stack(repo: Repo) -> None:
+    r = repo.run("ci-security.sh")
+    assert (r.code, r.calls) == (0, [])
+    assert "::notice::No Node or Python stack detected" in r.out
+
+
+def test_security_scans_dependencies_then_code(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    assert repo.run("ci-security.sh").calls == [f"{_TRIVY} .", _SEMGREP]
+
+
+def test_security_honours_the_expiring_ignore_file(repo: Repo) -> None:
+    repo.write("pyproject.toml")
+    repo.write(".trivyignore.yaml", "vulnerabilities: []\n")
+    calls = repo.run("ci-security.sh").calls
+    assert calls[0] == f"{_TRIVY} --ignorefile .trivyignore.yaml ."
+
+
+def test_security_fails_on_a_dependency_finding(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    r = repo.run("ci-security.sh", STUB_FAIL="trivy")
+    assert r.code != 0
+    assert r.calls == [f"{_TRIVY} ."]
+
+
+def test_security_fails_on_a_code_finding(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    assert repo.run("ci-security.sh", STUB_FAIL="semgrep").code != 0
 
 
 def test_hygiene_on_an_empty_repo_still_validates_tasks(repo: Repo) -> None:

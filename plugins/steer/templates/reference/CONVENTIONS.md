@@ -779,6 +779,22 @@ has **no test-file-name gate**: a filename check cannot tell a real test from an
 empty one. Test presence is enforced by "stack detected but no test contract ->
 fail", the Definition of Done, and review.
 
+#### Security scanning
+
+`ci:security` blocks the required check on **high and critical** findings, in
+every repo with a Node or Python stack:
+
+- **Dependencies** - Trivy reads `pnpm-lock.yaml` and `uv.lock` (production
+  dependencies). A CVE with no fixed version yet does not block: it stays a
+  Dependabot alert until a fix exists.
+- **Code** - Semgrep's `p/default` rules at `ERROR` (high) severity.
+- **Waivers are the exceptions register.** A dependency finding is waived in
+  `.trivyignore.yaml` with a `statement` (why) and an `expired_at` date, so it
+  comes back for review on its own; a code finding by `# nosemgrep: <rule-id>`
+  with a why-comment. Both land through a reviewed PR, which is the approval.
+- **Not here:** container base-image packages (scan them at the registry, e.g.
+  ECR scan-on-push) and IaC misconfiguration.
+
 #### Coverage
 
 Coverage is a **signal to find untested behavior, not a target** - see the always-on
