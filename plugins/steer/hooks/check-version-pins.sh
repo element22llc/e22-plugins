@@ -45,7 +45,10 @@ FILE="$(steer_field file_path)"
 CONTENT="$(steer_mutation_content)"
 [ -z "${CONTENT}" ] && exit 0
 
-PINS="$(printf '%s' "${CONTENT}" | grep -Eo '(postgres|node|python|redis|valkey|nginx|mysql|mariadb|mongo):[0-9]+(\.[0-9]+)?' | sort -u)"
+# A justification marker exempts its own line only, as in the CI scanner
+# (scan-version-pins.sh): one annotated occurrence must not excuse the others.
+PINS="$(printf '%s' "${CONTENT}" | grep -vE '(steer:allow-pin|pin-ok)' |
+	grep -Eo '(postgres|node|python|redis|valkey|nginx|mysql|mariadb|mongo):[0-9]+(\.[0-9]+)?' | sort -u)"
 [ -z "${PINS}" ] && exit 0
 
 CWD="$(steer_field cwd)"
@@ -65,16 +68,6 @@ DENY=""
 for PIN in ${PINS}; do
 	PRODUCT="${PIN%%:*}"
 	VERSION="${PIN#*:}"
-
-	# Same-line justification marker -> deliberate pin, allow. The boundary
-	# class excludes only digits (not the dot) so a three-segment pin (matched
-	# here at its major.minor) still honors the marker, while a non-digit or
-	# end-of-line after the pin still blocks a partial-major match (a "1" pin
-	# must not match a "189" version). Escape the pin's dots so a dotted pin (e.g. a
-	# 3.9 tag) is matched literally, not as an ERE `.` that matches any char.
-	PIN_RE="$(printf '%s' "${PIN}" | sed 's/[.]/\\./g')"
-	printf '%s' "${CONTENT}" | grep -E "${PIN_RE}([^0-9]|\$).*(steer:allow-pin|pin-ok)" >/dev/null 2>&1 && continue
-
 	VERDICT="$(steer_policy_verdict "${POLICY}" "${PRODUCT}" "${VERSION}")"
 	case "${VERDICT}" in
 	deny\ *) DENY="${DENY}${VERDICT#deny }; " ;;

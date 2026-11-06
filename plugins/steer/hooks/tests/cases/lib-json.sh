@@ -56,4 +56,8 @@ assert_eq "extract: no-jq Write content \\n decodes to real newline (2 lines)" "
 
 . "${HOOKS}/lib/json.sh" # restore real steer_have_jq (undo the forced no-jq above)
 
+# steer_json_safe output is embedded raw in a JSON string, which forbids C0 bytes.
+assert_eq "json_safe: control bytes dropped, quotes and newlines flattened" \
+	"$(steer_json_safe "$(printf 'a\033b\001c"d\\e\nf')")" "abcde f"
+
 finish

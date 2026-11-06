@@ -367,7 +367,8 @@ stacked-PR gates). Be honest about the tiers:
 - The **merge gate** is a hook only where hooks fire: `check-bash-actions.sh`
   denies the merge paths above on Claude Code. On a hookless surface it is a
   rule Claude follows (`45-delivery`, `61-gates`), and GitHub branch protection
-  plus the human reviewer are the real backstop.
+  plus the human reviewer are the real backstop. Where it does fire it reads the command
+  text, so a merge run from a script file or a shell alias is not seen.
 
 ## When hooks fail or don't run
 

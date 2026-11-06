@@ -59,6 +59,9 @@ assert_deny "version-pins: NotebookEdit new_source denied pin caught" "${out}"
 # unescaping (issue #271). '\n' in the JSON value is a real newline in the content.
 out="$(run_hook check-version-pins.sh "$(json_write /tmp sML compose.yaml "image: $(pin postgres 11)\nother: fine # steer:allow-pin unrelated")")"
 assert_deny "version-pins: allow-pin on a different line does not suppress deny" "${out}"
+# The same pin annotated on one line and bare on another: the bare one still denies.
+out="$(run_hook check-version-pins.sh "$(json_write /tmp sML2 compose.yaml "image: $(pin postgres 11) # steer:allow-pin legacy\nimage: $(pin postgres 11)")")"
+assert_deny "version-pins: one annotated occurrence does not exempt the others" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 NOTES.md "we used $(pin postgres 11) once")")"
 assert_empty "version-pins: docs exempt" "${out}"

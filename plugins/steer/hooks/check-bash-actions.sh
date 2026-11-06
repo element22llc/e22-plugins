@@ -116,19 +116,77 @@ CMD="$(steer_field command)"
 
 # A branch name or subcommand holds no whitespace, so a quoted string that does
 # (--title, --body, -m) is blanked: prose that mentions `-B x` or `gh pr merge`
-# is neither a flag nor a command.
+# is neither a flag nor a command. Comments and heredoc bodies are data and are
+# dropped. Every ambiguity fails closed, because these gates exist to catch a
+# command: an unterminated quote keeps its text, and a quoted string the shell
+# will execute (`sh -c`, `eval`, a `$(...)` or backtick inside double quotes)
+# is kept, unquoted.
 steer_strip_quoted() {
 	printf '%s' "$1" | awk 'BEGIN { RS = "\001" } {
-	for (i = 1; i <= length($0); i++) {
+	n = length($0)
+	for (i = 1; i <= n; i++) {
 		c = substr($0, i, 1)
-		if (q == "") { if (c == "\"" || c == "\047") { q = c; b = "" } else o = o c; continue }
-		if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
-		if (c != q) { b = b c; continue }
-		o = o q (b ~ /[[:space:]]/ ? "" : b) q; q = ""
+		if (q != "") {
+			if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
+			if (c != q) { b = b c; continue }
+			if (b !~ /[[:space:]]/) o = o q b q
+			else if ((q == "\"" && b ~ /\$\(|`/) || substr(o, length(o) > 40 ? length(o) - 40 : 1) ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh[[:space:]]+-[[:alpha:]]*c|eval)[[:space:]]+$/) o = o " " b " "
+			else o = o q q
+			q = ""
+			continue
+		}
+		if (c == "\\" && substr($0, i + 1, 1) == "\n") { o = o " "; i++; continue }
+		if (c == "\\") { o = o c substr($0, ++i, 1); continue }
+		if (c == "\"" || c == "\047") { q = c; b = ""; continue }
+		p = substr(o, length(o), 1)
+		if (c == "#" && (o == "" || p ~ /[[:space:];&|(]/)) {
+			while (i < n && substr($0, i + 1, 1) != "\n") i++
+			continue
+		}
+		if (c == "<" && substr($0, i + 1, 2) ~ /^<[^<]/ && p != "<") {
+			j = i + 2
+			strip = 0
+			if (substr($0, j, 1) == "-") { strip = 1; j++ }
+			while (substr($0, j, 1) ~ /[ \t]/) j++
+			d = ""
+			while (j <= n && substr($0, j, 1) !~ /[[:space:];&|<>()]/) { d = d substr($0, j, 1); j++ }
+			gsub(/["\047\\]/, "", d)
+			cur = o
+			sub(/.*\n/, "", cur)
+			r = substr($0, j)
+			e = index(r, "\n")
+			if (e) r = substr(r, 1, e - 1)
+			# A body fed to an interpreter (sh <<EOF, cat <<EOF | sh) is commands, not data.
+			if (d ~ /^[A-Za-z_]/ && (cur r) !~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh|ssh|eval)([[:space:]]|$)/) {
+				hd[++nh] = d; hs[nh] = strip; o = o "<<" d " "; i = j - 1; continue
+			}
+		}
+		if (c == "\n" && nh > 0) {
+			o = o c
+			pos = i + 1
+			for (k = 1; k <= nh; k++) {
+				while (pos <= n) {
+					rest = substr($0, pos)
+					e = index(rest, "\n")
+					line = e ? substr(rest, 1, e - 1) : rest
+					pos = e ? pos + e : n + 1
+					if (hs[k]) sub(/^\t+/, "", line)
+					if (line == hd[k]) break
+				}
+			}
+			nh = 0
+			i = pos - 1
+			continue
+		}
+		o = o c
 	}
+	if (q != "") o = o q b
 	printf "%s", o
 }'
 }
+
+# A command word may be spelled by path (/opt/homebrew/bin/gh) or alias-escaped (\gh).
+STEER_CMD_START='(^|[;&|(`[:space:]])(\\|[^[:space:];&|(`]*/)?'
 
 # ---------------------------------------------------------------------------
 # Check 0 - merge gate. Hard deny; needs no repo, so it runs before any git work.
@@ -141,13 +199,14 @@ if [ -z "${MERGE}" ] && [ "${TOOL}" = "Bash" ] &&
 	printf '%s' "${CMD}" | grep -q 'gh[[:space:]]' &&
 	printf '%s' "${CMD}" | grep -q '[Mm]erge'; then
 	_bare="$(steer_strip_quoted "${CMD}")"
+	# gh accepts `-R/--repo <repo>` between `pr` and its subcommand.
 	if printf '%s' "${_bare}" |
-		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+pr[[:space:]]+merge([[:space:];&|)]|$)'; then
+		grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+pr([[:space:]]+(-R|--repo)([[:space:]]+|=)[^[:space:]]+)?[[:space:]]+merge([[:space:];&|)]|$)'; then
 		MERGE="gh pr merge"
 	elif printf '%s' "${_bare}" |
-		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+(ext(ension)?[[:space:]]+exec[[:space:]]+)?stack[[:space:]]+merge([[:space:];&|)]|$)'; then
+		grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+(ext(ension)?[[:space:]]+exec[[:space:]]+)?stack[[:space:]]+merge([[:space:];&|)]|$)'; then
 		MERGE="gh stack merge"
-	elif printf '%s' "${_bare}" | grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+api([[:space:]]|$)' &&
+	elif printf '%s' "${_bare}" | grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+api([[:space:]]|$)' &&
 		printf '%s' "${CMD}" | grep -Eq 'mergePullRequest|enablePullRequestAutoMerge|/pulls/[0-9]+/merge' &&
 		printf '%s' "${CMD}" | grep -Eq 'graphql|(-X|--method)[[:space:]=]*PUT'; then
 		MERGE="a gh api merge"
@@ -164,13 +223,13 @@ fi
 # it matches; falls through to check 2 otherwise.
 # ---------------------------------------------------------------------------
 if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
-	# A `git push` anywhere in the command line, including `git -C <dir> push`
-	# and compound commands (`... && git push`). Word-anchored so `git pushx` or
-	# an argument merely containing "push" (e.g. a commit message) doesn't
-	# match: the text before `git` must be a start/separator, and `push` must
-	# end at a word boundary.
-	printf '%s' "${CMD}" |
-	grep -Eq '(^|[;&|[:space:]])git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+push([[:space:]]|$)'; then
+	# A `git push` anywhere in the command line, past any git global options
+	# (`-C <dir>`, `-c k=v`, `--no-pager`) and in compound commands. Matched on
+	# the quote-stripped text, so a commit message that mentions "git push"
+	# neither asks nor spends the once-per-session ask.
+	printf '%s' "${CMD}" | grep -q 'git' && printf '%s' "${CMD}" | grep -q 'push' &&
+	steer_strip_quoted "${CMD}" |
+	grep -Eq "${STEER_CMD_START}"'git([[:space:]]+(-[Cc][[:space:]]+[^[:space:]]+|--[a-z-]+(=[^[:space:]]+)?))*[[:space:]]+push([[:space:];&|)]|$)'; then
 
 	CWD="$(steer_field cwd)"
 	[ -n "${CWD}" ] || CWD="."
@@ -227,10 +286,15 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 		DEFAULT="$(git -C "${ROOT}" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"
 		DEFAULT="${DEFAULT#origin/}"
 		[ -n "${DEFAULT}" ] || DEFAULT="main"
-		# Last occurrence wins, matching how gh resolves a repeated flag.
+		# Last occurrence wins, matching how gh resolves a repeated flag. Flags are
+		# read only from the `gh pr create|edit` segment, so `git checkout -B x &&
+		# gh pr create` does not take `-B x` as the PR base.
 		_CMD_BARE="$(steer_strip_quoted "${CMD}")"
+		_PR_ARGS="$(printf '%s' "${_CMD_BARE}" |
+			sed -nE 's/.*gh[[:space:]]+pr[[:space:]]+(create|edit)([[:space:]].*)?$/\2/p' | head -n 1)"
+		_PR_ARGS="${_PR_ARGS%%[;&|]*}"
 		_flag() {
-			printf '%s' "${_CMD_BARE}" |
+			printf '%s' "${_PR_ARGS}" |
 				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1
 		}
 		WHAT=""
