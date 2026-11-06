@@ -83,7 +83,7 @@ class: text-center
 - The artifacts: specs, contracts, ADRs, issues
 - The gates: what blocks, what nudges
 - The traceability chain, end to end
-- Claude Code **and** GitHub Copilot
+- Claude Code **and** GitHub Copilot (live gates: Claude Code)
 
 </div>
 
@@ -164,7 +164,7 @@ Think of it as **a senior engineer's discipline, always in the room**: agree wha
 
 <div v-click class="mt-4 text-center text-sm opacity-60">
 
-Runs in <b>Claude Code</b> and in <b>GitHub Copilot</b> - same standards, generated from one source of truth. <i>(More on that later.)</i>
+Runs in <b>Claude Code</b> and in <b>GitHub Copilot</b> - same standards, generated from one source of truth; the live gates are guaranteed on Claude Code only. <i>(More on that later.)</i>
 
 </div>
 
@@ -190,7 +190,7 @@ is durable **product truth**
 ### 🎫 The tracker
 is the **work & decision layer**
 
-<div class="text-sm opacity-60 mt-2">Every change above Tiny starts as a tracked issue. Discussion and status live there.</div>
+<div class="text-sm opacity-60 mt-2">Planned features, tracked bugs and high-risk work start as a tracked issue. Discussion and status live there.</div>
 
 </div>
 
@@ -286,7 +286,7 @@ Every project walks the **same path**, and every phase ends at a **named gate**.
 
 <div v-click class="mt-3 text-center text-sm opacity-60">
 
-Devs drive each phase with <code>/steer:</code> commands - <code>spec</code>, <code>issues</code>, <code>work</code>, <code>audit</code>... The next four slides walk the loop.
+Devs drive each phase through a few <code>/steer:</code> front doors - <code>setup</code>, <code>spec</code>, <code>work</code>, <code>audit</code>... The next slides walk the loop.
 
 </div>
 
@@ -355,9 +355,9 @@ Q-NNN open questions, /steer:spec approve is blocked on blocking questions.
 <div v-click class="p-5 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 🎫 Plan - issue-first
-The approved spec is decomposed into **tracked issues** - triaged, sized, prioritized.
+The approved spec is decomposed into **tracked issues** - triaged, prioritized, linked to the spec.
 
-**The rule: no change above Tiny without an issue.** Every modification beyond a ≤20-line no-behaviour-change tweak traces back to a ticket *before* the first line changes - enforced by a session gate, not just good intentions.
+**The rule: tracked work and high-risk work start as an issue.** A planned feature, a tracked bug, a decision to record - anything high-risk - gets a ticket *before* the first line changes. A trivial change lets the reviewed PR be the record.
 
 <div class="text-sm opacity-60 mt-3">Tracker-agnostic: GitHub Issues, Jira, Linear or Azure DevOps - one file in the repo declares which, everything else adapts.</div>
 
@@ -368,9 +368,9 @@ The approved spec is decomposed into **tracked issues** - triaged, sized, priori
 ### ⚙️ Build - one issue, end to end
 The AI claims the issue, branches, loads the linked spec, implements, **writes the tests**, and opens the pull request - updating the issue as it goes.
 
-**Autonomy where it's safe:** commits, pushes and opening the PR are autonomous. **Merge and deploy are never implied.**
+**Autonomy where it's safe:** commits, pushes and opening a draft PR are autonomous. **Merge and deploy are never implied.**
 
-<div class="text-sm opacity-60 mt-3">Optional <code>--reviewed</code> mode adds independent plan- and code-review passes by a separate read-only reviewer agent <i>before</i> the PR.</div>
+<div class="text-sm opacity-60 mt-3">Every non-trivial change gets an independent <b>code review</b> <i>before</i> the PR; high-risk work also gets a <b>plan review</b> and a developer sign-off before any code.</div>
 
 </div>
 
@@ -385,10 +385,71 @@ Speed comes from autonomy on the safe steps - <span class="accent">not from skip
 <style>.accent { color: #38bdf8; }</style>
 
 <!--
-Plan: /steer:work issues - capture -> triage -> decompose; issue-first is enforced by
-a PreToolUse/Stop gate in Claude Code. Build: /steer:work - claim, branch,
-implement, test, PR; steer-reviewer subagent on --reviewed. The autonomy
-boundary is the key message for both audiences.
+Plan: /steer:work issues - capture -> triage -> decompose; issue-first is
+re-asserted by advisory PreToolUse/Stop hooks in Claude Code - they remind,
+they never block. Build: /steer:work - claim, branch, classify, implement,
+test, then the code gate (fresh reviewer subagents on the diff, fix and
+re-review while findings keep dropping, 4 rounds at most) and a draft PR.
+The plan gate runs on --reviewed and automatically on High-risk work. The
+autonomy boundary is the key message for both audiences.
+-->
+
+---
+
+# Ceremony scales with the change
+
+<div class="text-sm opacity-60 mb-3">Every change is classified by <b>what it does</b> - never by how many lines it touches. Arguable? The heavier class wins.</div>
+
+<div class="grid grid-cols-3 gap-4 class-cards">
+
+<div v-click class="p-3 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+
+### 🟢 Trivial
+No visible behavior change: wording, formatting, a tidy-up. The reviewed PR is its whole record - **no issue, no spec**.
+
+</div>
+
+<div v-click class="p-3 rounded-xl border border-amber-400/30 bg-amber-400/5">
+
+### 🟡 Behavioral
+Something changes for a user, a caller or an operator. **Tests and the behavior contract** are updated in the same PR.
+
+</div>
+
+<div v-click class="p-3 rounded-xl border border-rose-400/30 bg-rose-400/5">
+
+### 🔴 High-risk
+Sign-in, permissions, data migrations, infrastructure, secrets, deletion, billing, release logic - **at any size**. A developer scopes it against an independently reviewed plan before any code.
+
+</div>
+
+</div>
+
+<div v-click class="mt-3 p-3 rounded-xl border border-rose-400/40 bg-rose-400/5 class-cards">
+
+### 🚨 The incident lane - <code>/steer:work --hotfix</code>
+Only for an active incident on a production system with real users. It relaxes **ceremony and ordering, never authority**: the issue is filed after the fix and one reviewer suffices - but merge and deploy stay human, and the follow-up (issue, decision record, history entry) is mandatory.
+
+</div>
+
+<style>
+.class-cards { font-size: 0.82rem; line-height: 1.4; }
+.class-cards h3 { font-size: 1rem; margin-bottom: 0.2rem; }
+.class-cards p { margin: 0.3rem 0; }
+</style>
+
+<!--
+Rule 80-change-class; Issue-first and the review gates take their thresholds
+from it. Trivial: open a PR and stop. Behavioral: a planned feature writes its
+intent first and gets PO approval. High-risk (rule 60): the plan gate runs
+without --reviewed; the dev's sign-off is the scoping - with no dev in the
+session, scope recorded on the issue stands in, else the work stops and asks.
+Pre-production work skips the sign-off. Every non-Trivial change gets the code
+gate before the PR. Hotfix (rule 61-gates): opens only on a deployed
+production with real users AND an active incident - urgent feature work and
+pre-MVP repos are not hotfixes. hotfix/<n>-slug branch, PR opened ready, code
+gate always runs; Definition of Done is deferred to the follow-up, never
+waived.
 -->
 
 ---
@@ -397,16 +458,16 @@ boundary is the key message for both audiences.
 
 <div class="text-sm opacity-60 mb-3">"Review <i>is</i> productionization" - the one gate no AI crosses</div>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-2 gap-6 verify-cards">
 
-<div v-click class="p-5 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### ✅ Definition of Done
-A PR isn't reviewable until it clears the checklist: **tests cover what changed**, docs updated, CI green, spec kept in sync - the same bar on every project.
+Done means all five: **intent understood**, **appropriately tested**, **CI green** (watched), affected contracts and docs updated, **merge and deploy through the human gates** - on every project.
 
 </div>
 
-<div v-click class="p-5 rounded-xl border border-rose-400/30 bg-rose-400/5">
+<div v-click class="p-4 rounded-xl border border-rose-400/30 bg-rose-400/5">
 
 ### 🚩 Drift gates
 Nine classes of sensitive change - intent drift, contract drift, security-sensitive, compliance-impacting, ... - are **flagged in the PR** the moment they're noticed.
@@ -417,14 +478,19 @@ A raised flag **blocks merge** until the human reviewer resolves it - and the AI
 
 </div>
 
-<div v-click class="mt-6 p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5 text-center text-lg">
+<div v-click class="mt-4 px-4 py-2 rounded-xl border border-emerald-400/30 bg-emerald-400/5 text-center text-lg">
 
 A human developer approves every pull request. That's not a formality - it's **the** quality gate the whole lifecycle is built around.
 
 </div>
 
+<style>
+.verify-cards { font-size: 0.9rem; line-height: 1.45; }
+.verify-cards h3 { font-size: 1.1rem; margin-bottom: 0.25rem; }
+</style>
+
 <!--
-Drift gate classes (rule 55): intent drift, contract drift, undocumented
+Drift gate classes (rule 50-done): intent drift, contract drift, undocumented
 behavior change, security-sensitive, compliance-impacting, operational, local
 setup changed, app docs invalidated, architecture/stack drift. The "can't waive
 its own flag" rule is the honest differentiator - worth saying out loud.
@@ -439,16 +505,16 @@ its own flag" rule is the honest differentiator - worth saying out loud.
 <div v-click class="p-5 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 ### 🚀 Deliver
-Merge -> deploy, behind **enforced branch protection**: no direct pushes to main, production deploys gated by a reviewed PR.
+Merge -> deploy, as each repo's <code>policy/delivery.yml</code> declares: its environments, what a merge deploys, and the **production gate** - by default a reviewed PR into <code>prod</code>, which <code>/steer:work promote</code> opens and stops at; or an environment reviewer, or a manual deploy. Branch protection keeps <code>main</code> behind review.
 
-<div class="text-sm opacity-60 mt-3">Early-stage projects can run a lighter solo mode - with CI backstops, and automatic nudges to graduate to full PR flow once a deploy target or second contributor appears.</div>
+<div class="text-sm opacity-60 mt-3">Early-stage projects can run a lighter solo-trunk mode - commits straight to main, CI on every push. Once the repo shows it ships somewhere, a push to main waits for a human until it graduates to full PR flow.</div>
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### 🔍 Maintain
-Scheduled **read-only audits** sweep the codebase against the standards and check the built software still matches the spec - findings are **filed as ranked issues**, never silently fixed.
+Repeatable **read-only audits** sweep the codebase against the standards and check the built software still matches the spec - findings are **ranked and proposed**, filed as issues in a separate confirmed step, never silently fixed.
 
 <div class="text-sm opacity-60 mt-3">Plus: <code>/steer:status</code> renders a shareable, client-ready progress report straight from the record - real counts, no fabricated status.</div>
 
@@ -463,11 +529,17 @@ Findings feed back into **Plan** - the loop closes instead of decaying.
 </div>
 
 <!--
-Deliver: /steer:setup protect, prod-branch gating (rule 52), solo-trunk graduation.
-Maintain: /steer:audit code/spec (read-only, files findings), /steer:next,
-/steer:status (artifact report). Production incidents have a sanctioned
-fast-path (work --hotfix) that relaxes ordering but keeps every human gate and
-requires post-incident backfill - mention verbally if asked about emergencies.
+Deliver: policy/delivery.yml (rule 45-delivery) - environments, deploy_on_merge,
+production_gate: prod-branch-pr (default), github-environment, manual, or none.
+/steer:work promote cuts the changelog and opens the promotion PR, then stops:
+the merge is the production gate, and a hook denies any PR merge to the AI.
+/steer:setup protect applies branch protection. Solo-trunk pushes are
+autonomous until graduation signals appear (deploy workflow, infra/ tree,
+promotion branch) - then the push asks first, once per session, until the
+repo graduates or records a waiver. Maintain: /steer:audit code/spec
+(read-only; filing is the separate /steer:work issues step), /steer:next,
+/steer:status (artifact report). A scheduled loop is opt-in only. Production
+incidents: see the change-classification slide (work --hotfix).
 -->
 
 ---
@@ -567,7 +639,7 @@ joiner onboarding: read the last quarter of /spec/history/ in five minutes.
 
 <div v-click class="p-4 rounded-xl border border-rose-400/40 bg-rose-400/5 flex gap-4 items-start">
 <div class="text-3xl">🔑</div>
-<div><b>Secrets & settings</b> - real credentials and repository security settings are never written by the AI.</div>
+<div><b>Secrets & settings</b> - real credentials are never written by the AI; repository security settings change only on a human's explicit confirmation.</div>
 </div>
 
 </div>
@@ -713,7 +785,7 @@ The same standards, **generated into the formats other agents read natively** an
 - <code>.agents/skills/steer-*/</code> - the workflows (cross-tool)
 - <code>agents/</code> - the reviewer agent
 
-<div class="opacity-60 mt-2">Regenerated from the same source on every release - parity by build, not by hand.</div>
+<div class="opacity-60 mt-2">Regenerated from the same source on every release - parity by build, not by hand. Live hook gates: best-effort here, guaranteed only on Claude Code.</div>
 
 </div>
 
@@ -734,12 +806,15 @@ because the spec, the tracker and the PR gate live in the repo, not in the assis
 </style>
 
 <!--
-Grounded in CROSS-SURFACE.md: rules -> generated copilot-instructions.md;
-skills -> prompt capsules; reviewer agent ported; two gate scripts dual-target
-(Copilot CLI). Honest nuance if asked: Copilot is best-effort tier - content
-parity yes, but the live hook gates only exist on Copilot CLI, not VS Code.
-The durable artifacts (spec/tracker/PR) are assistant-independent, which is
-the real portability argument.
+Grounded in the docs' Copilot support page: rules -> generated
+copilot-instructions.md (plus path-scoped instructions); skills -> the real
+skill bodies under .agents/skills/ (the open Agent Skills format, also read by
+Codex and others); the reviewer agent ported to .github/agents/. Honest nuance
+if asked: hook enforcement is guaranteed on Claude Code only. The Copilot CLI
+and VS Code run the plugin's hooks incidentally, with no parity promise - VS
+Code applies the version-pin deny, the CLI's gates fail open. The durable
+artifacts (spec/tracker/PR) are assistant-independent, which is the real
+portability argument.
 -->
 
 ---

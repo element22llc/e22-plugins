@@ -276,7 +276,7 @@ The point of this slide: "it works" ≠ "it's the right tool." These three are
 ENVIRONMENT boundaries, documented in known-limitations.md, not opinions. The
 no-install sandbox is the big one - no mise/docker/gh means no real build, no
 test run, no CI gate. GitHub is connector-only and repo-scoped. And steer itself
-treats Cowork as PO/knowledge-work (Tier 3). Next slide: we actually measured it.
+treats Cowork as PO/knowledge-work (best-effort, knowledge-work mode). Next slide: we actually measured it.
 -->
 
 ---
@@ -502,21 +502,21 @@ A `SessionStart` hook injects `rules/*.md` every session. **This is the load-bea
 <div v-click class="p-5 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🧩 Skills
-On-demand `/steer:<skill>` commands - `setup`, `spec`, `work`, `issues`... The verbs you drive the workflow with.
+Eight front doors (`setup`, `spec`, `work`, `audit`...), each with modes. Say the goal - Claude routes it.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 🪝 Hooks (gates)
-`PreToolUse` / `Stop` checks that nudge - or in one case **block** - at the moment of action.
+Checks at the moment of action: **two hard denies** (old version pins, any PR merge), two asks, the rest advisory nudges.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
-### 🔌 MCP
-`tracker-sync` talks to GitHub issues: **MCP -> `gh` -> manual** fallback chain.
+### 🔌 MCP & reviewer agent
+Issues go **MCP -> `gh` -> manual**. A read-only `steer-reviewer` agent serves `/steer:audit`.
 
 </div>
 
@@ -524,7 +524,7 @@ On-demand `/steer:<skill>` commands - `setup`, `spec`, `work`, `issues`... The v
 
 <div v-click class="mt-6 text-center opacity-70">
 
-A **portable nucleus** (skills + MCP, runs anywhere) and a **hook layer** (rules + gates, runs where the Claude Code engine runs).
+Skills + rules also reach Copilot and Codex. **Hooks: guaranteed on Claude Code only.**
 
 </div>
 
@@ -559,9 +559,9 @@ Then point Claude at a repo and run `/steer:setup`.
 
 # `/steer:setup` routes you in
 
-<div class="flex justify-center mt-4">
+<div class="flex justify-center">
 
-```mermaid {scale: 0.85}
+```mermaid {scale: 0.6}
 flowchart LR
     S["/steer:setup"] --> Q{repo state?}
     Q -->|brand new| INIT["init mode<br/>scaffold from bundle"]
@@ -576,25 +576,31 @@ flowchart LR
 
 </div>
 
-<div class="grid grid-cols-3 gap-6 mt-6">
+<div class="grid grid-cols-3 gap-6 mt-4 text-sm">
 
-<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="px-4 py-1 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 **`init`** installs the bundled scaffold - CI workflows, `mise.toml` tasks, `compose.yaml`, README quickstart, PR template. The repo starts standards-compliant.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
+<div v-click class="px-4 py-1 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 **`adopt`** brings an existing codebase under the standards without flattening what's already there.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+<div v-click class="px-4 py-1 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 **`sync`** keeps a bootstrapped repo current - reconciles scaffold + spec drift after a plugin update.
 
 </div>
+
+</div>
+
+<div v-click class="mt-3 text-center text-xs opacity-70">
+
+Also under <code>/steer:setup</code>: <code>doctor</code> (prerequisites), <code>protect</code> (branch protection), <code>worktrees</code>, <code>advisory</code> (code steer should not bootstrap).
 
 </div>
 
@@ -606,13 +612,13 @@ layout: center
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.9}
+```mermaid {scale: 0.8}
 flowchart LR
     C["💡 capture"] --> SP["📐 spec"]
     SP --> I["🎫 issues"]
     I --> WK["⚙️ work"]
-    WK --> PR["🔀 PR"]
-    PR -.->|human review| M["✅ merge"]
+    WK --> PR["🔀 draft PR"]
+    PR -.->|ready + review| M["✅ merge"]
     style C fill:#0ea5e9,color:#fff,stroke:#0284c7
     style SP fill:#8b5cf6,color:#fff,stroke:#7c3aed
     style I fill:#f59e0b,color:#fff,stroke:#d97706
@@ -634,7 +640,7 @@ Idea -> **shape it** -> **break it down** -> **build it** -> **review it**.
 
 # Walking the loop
 
-<div class="grid grid-cols-1 gap-3 mt-4 text-lg">
+<div class="grid grid-cols-1 gap-3 mt-4 text-base">
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">📐</div>
@@ -643,121 +649,214 @@ Idea -> **shape it** -> **break it down** -> **build it** -> **review it**.
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">🎫</div>
-<div><b><code>/steer:work issues</code></b> - decompose into tracked work. <b>Issue-first</b>: code changes above Tiny trace back to an issue.</div>
+<div><b><code>/steer:work issues</code></b> - decompose into tracked work. <b>Issue-first</b>: High-risk work and tracked work (a planned feature, a tracked bug, a follow-up...) get an issue first; anything else, the PR is the record.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">⚙️</div>
-<div><b><code>/steer:work</code></b> - implement against an issue on an <code>issue/&lt;n&gt;-&lt;slug&gt;</code> branch. Claude commits autonomously.</div>
+<div><b><code>/steer:work</code></b> - claims the issue, branches <code>issue/&lt;n&gt;-&lt;slug&gt;</code>, <b>classifies the change</b>, implements it with tests and commits autonomously.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">🔀</div>
-<div>Claude opens a <b>PR</b> - and <b>stops</b>. Push / PR / merge are <b>gated on a human</b>.</div>
+<div>Local gates green, an <b>independent code review</b>, then Claude pushes and opens a <b>draft PR</b> - and <b>stops</b>. You mark it ready (CI runs); a human merges.</div>
 </div>
 
 </div>
+
+<!--
+finish runs the fullest local gate (mise run ci), then the code gate: fresh
+read-only reviewer subagents score the diff, Claude fixes confirmed high
+findings and re-reviews while the count keeps dropping, 4 rounds at most.
+Trivial changes skip it. The PR opens as a draft, the issue moves to
+validate, and Claude stops. The shipped ci.yml skips drafts, so CI runs once
+the author has read the PR and marked it ready.
+-->
 
 ---
 
 # Be honest about the hooks
 
-<div class="text-base opacity-70 mb-4">Only one of them actually <i>blocks</i>. Know which is which.</div>
+<div class="text-base opacity-70 mb-3">Two hard <i>denies</i>, two <i>asks</i> - the rest nudge or tidy up. Know which is which.</div>
 
-<div class="grid grid-cols-1 gap-3">
+<div class="grid grid-cols-1 gap-2 text-sm">
 
-<div v-click class="p-3 rounded-lg border border-emerald-400/40 bg-emerald-400/5">
-<b>🟢 SessionStart -> inject rules</b> - <b>real & load-bearing.</b> No rules = no standards.
+<div v-click class="px-3 py-2 rounded-lg border border-emerald-400/40 bg-emerald-400/5">
+<b>🟢 SessionStart -> inject rules</b> - <b>real & load-bearing.</b> No rules = no standards. <code>SubagentStart</code> passes subagents a digest.
 </div>
 
-<div v-click class="p-3 rounded-lg border border-rose-400/40 bg-rose-400/5">
-<b>🔴 PreToolUse -> version-pin check</b> - the <b>one hard <code>deny</code></b>. Blocks runtime/image pins below the floor.
+<div v-click class="px-3 py-2 rounded-lg border border-rose-400/40 bg-rose-400/5">
+<b>🔴 PreToolUse -> deny</b> - a runtime/image pin below the floor, and <b>any PR merge</b>. "Merge it" doesn't authorize it.
 </div>
 
-<div v-click class="p-3 rounded-lg border border-amber-400/40 bg-amber-400/5">
-<b>🟡 PreToolUse -> spec-first / issue-first</b> - <b>advisory nudges</b>. They remind, then let the write proceed. Fail open.
+<div v-click class="px-3 py-2 rounded-lg border border-orange-400/40 bg-orange-400/5">
+<b>🟠 PreToolUse -> ask</b> - a PR stacked on another work branch; a push to <code>main</code> in a solo-trunk repo that shows graduation signals.
 </div>
 
-<div v-click class="p-3 rounded-lg border border-violet-400/40 bg-violet-400/5">
-<b>🟣 The push / PR gate</b> - <b>not a hook at all.</b> It's a rule Claude follows. <b>A human reviewer is the real backstop.</b>
+<div v-click class="px-3 py-2 rounded-lg border border-amber-400/40 bg-amber-400/5">
+<b>🟡 Nudges</b> - spec-first / issue-first on write, an end-of-turn issue check, a format pass and a comment-heavy warning. Advisory, fail open.
+</div>
+
+<div v-click class="px-3 py-2 rounded-lg border border-violet-400/40 bg-violet-400/5">
+<b>🟣 Lifecycle</b> - worktrees inherit <code>mise</code> trust; their Docker services stop at session end and are torn down on removal.
 </div>
 
 </div>
 
-<div v-click class="mt-5 text-center opacity-80">
+<div v-click class="mt-3 text-center opacity-80">
 
-The guarantee comes from **Claude following the rules + you reviewing** - not from a wall of blocks.
+Guaranteed on **Claude Code only** - the rest is **Claude following the rules + you reviewing**.
 
 </div>
+
+<!--
+Deny: check-version-pins.sh reads policy/versions.yml; check-bash-actions.sh
+denies every PR merge path in every repo - a direct "merge it" does not
+authorize it. Ask: the stacked-PR ask fires on every gh pr create/edit whose
+base is a work branch; the trunk-push ask fires once per session, only in a
+declared solo-trunk repo with a deploy workflow, an infra/ tree or a
+promotion branch. The Stop hook's "block" is just its channel to the model -
+it reports, it never reverts. Copilot and Codex run hooks incidentally or not
+at all; no promise there.
+-->
 
 ---
 
 # Commit autonomy & the human gate
 
-<div class="grid grid-cols-2 gap-8 mt-8">
+<div class="grid grid-cols-2 gap-8 mt-6">
 
 <div v-click class="p-6 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 ### ✅ Claude does on its own
-- Works on an `issue/<n>-<slug>` branch (issue work)
-- **Commits autonomously** as it goes
-- Keeps the spec spine & issues in sync
+- Branches off `main` and **commits as it goes**
+- Runs the local gates + the code review
+- **Pushes and opens a draft PR** - never asks "should I?"
+- *Solo trunk:* commits and pushes straight to `main`
+- Keeps the spec spine & the issue in sync
 
 </div>
 
 <div v-click class="p-6 rounded-xl border border-rose-400/30 bg-rose-400/5">
 
-### 🛑 Claude stops for a human
-- **Push** - never unprompted
-- **Open / merge a PR**
+### 🛑 Waits for a human
+- **Mark the draft ready** - you read it first; CI runs then
+- **Merge** - a hook denies it to Claude, every time
 - **Deploy** - always your call
+- **Sign-offs** - High-risk plan, ADR, intent approval
+- Real secrets, `/infra`, protected branches
 
 </div>
 
 </div>
 
-<div v-click class="mt-10 text-center text-xl">
+<div v-click class="mt-8 text-center text-xl">
 
-That pause isn't a bug - it's the **design**. The PR is the hand-off, not a failure.
+That pause isn't a bug - it's the **design**. The draft PR is the hand-off, not a failure.
 
 </div>
 
 ---
 
-# Skills cheat-sheet
+# Ceremony scales with the change
 
-<div class="grid grid-cols-3 gap-x-8 gap-y-2 mt-6 text-base">
+<div class="text-base opacity-70 mb-3">Classified by <b>what the change does</b>, never by line count. Arguable? Take the heavier class.</div>
 
-<div v-click><b class="accent">setup</b> - detect & route</div>
-<div v-click><b class="accent">init</b> / <b class="accent">adopt</b> - scaffold / absorb</div>
-<div v-click><b class="accent">build</b> - PO idea -> app</div>
-<div v-click><b class="accent">spec</b> - shape behavior first</div>
-<div v-click><b class="accent">issues</b> - decompose, triage & status</div>
-<div v-click><b class="accent">work</b> - implement an issue</div>
-<div v-click><b class="accent">intake</b> - absorb a PO doc</div>
-<div v-click><b class="accent">questions</b> - answer open questions</div>
-<div v-click><b class="accent">adr</b> - capture a decision</div>
-<div v-click><b class="accent">audit</b> - standards check</div>
-<div v-click><b class="accent">sync</b> - reconcile state</div>
-<div v-click><b class="accent">protect</b> - branch protection</div>
-<div v-click><b class="accent">next</b> - what to do now, or <code>capabilities</code> to browse</div>
-<div v-click><b class="accent">explain</b> - shareable feature page</div>
-<div v-click><b class="accent">reference</b> - load the deep-dive prose</div>
-<div v-click><b class="accent">standards</b> - load rules by hand</div>
-<div v-click><b class="accent">doctor</b> - diagnose setup</div>
-<div v-click><b class="accent">roadmap</b> - release timeline</div>
-<div v-click><b class="accent">report</b> - file a steer bug upstream</div>
-<div v-click><b class="accent">work tidy</b> - clean up the repo root</div>
+<div class="grid grid-cols-3 gap-3 cls">
+
+<div v-click class="p-3 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+
+### 🟢 Trivial
+No observable behavior change - copy, a refactor, lockfiles. **The PR is the record**: no issue, spec or plan.
 
 </div>
 
-<div v-click class="mt-8 text-center opacity-70">
+<div v-click class="p-3 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
-Don't memorize them. Run <code>/steer:next</code> for the next move, or <code>/steer:next capabilities</code> to browse.
+### 🟡 Behavioral
+Behavior changes for a user, caller or operator. **Tests + `contract.md` in the same PR**; a planned feature gets an approved intent first.
 
 </div>
 
-<style>.accent { color: #38bdf8; }</style>
+<div v-click class="p-3 rounded-xl border border-rose-400/30 bg-rose-400/5">
+
+### 🔴 High-risk
+Auth, permissions, migrations, infra, secrets, deletion, billing, release logic - **at any size**. The dev scopes it before code.
+
+</div>
+
+</div>
+
+<div class="grid grid-cols-3 gap-3 mt-3 cls">
+
+<div v-click class="p-3 rounded-xl border border-sky-400/30 bg-sky-400/5">
+
+### 🔍 Two review gates
+**Code gate** on every non-Trivial change: fresh reviewer agents read the diff before the push, max 4 fix rounds. **Plan gate** before code: automatic on High-risk, `--reviewed` opts in.
+
+</div>
+
+<div v-click class="p-3 rounded-xl border border-violet-400/30 bg-violet-400/5">
+
+### 🛤️ Two delivery modes
+**PR flow** (default): branch + draft PR, merge is the gate. **Solo trunk** (declared, pre-MVP): commit and push to `main`; graduate with `/steer:setup protect`.
+
+</div>
+
+<div v-click class="p-3 rounded-xl border border-rose-400/30 bg-rose-400/5">
+
+### 🚨 Hotfix lane
+`/steer:work --hotfix` - a live production incident only. Issue backfilled, PR opens ready, code gate always. Relaxes **ceremony and ordering, never authority**.
+
+</div>
+
+</div>
+
+<style>
+.cls { font-size: 0.8rem; line-height: 1.4; }
+.cls h3 { font-size: 0.98rem; margin-bottom: 0.2rem; }
+</style>
+
+<!--
+Rule 80-change-class sets the class; Issue-first takes its threshold from it.
+High-risk plan gate: with the dev in the session, Claude asks for sign-off on
+the vetted plan; with no dev, in/out scope recorded on the issue stands in,
+else it asks for scope on the issue and stops. Pre-production work skips the
+sign-off. Solo trunk graduates once the MVP works, you deploy, or a second
+contributor joins. Hotfix needs a deployed production with real users AND an
+active incident - urgent feature work and pre-MVP repos are not hotfixes. It
+works on hotfix/<n>-slug, one reviewer suffices, merge and deploy stay human,
+and the follow-up (issue, spec or ADR, history entry) is mandatory: Definition
+of Done is deferred, never waived.
+-->
+
+---
+
+# Skills cheat-sheet - eight front doors
+
+<div class="grid grid-cols-2 gap-x-8 gap-y-3 mt-4 text-sm cheat">
+
+<div v-click><b class="accent">setup</b> - get a repo onto the standards<div class="modes">init, adopt, sync [--check], doctor, protect, worktrees, advisory</div></div>
+<div v-click><b class="accent">spec</b> - shape behavior before code<div class="modes">clarify, approve, validate, questions, adr, intake, roadmap</div></div>
+<div v-click><b class="accent">work</b> - implement a change, end to end<div class="modes">start, resume, status, finish, queue, debug, qa, promote, review, tidy, walkthrough, issues; --reviewed, --hotfix</div></div>
+<div v-click><b class="accent">audit</b> - read-only standards &amp; drift sweep<div class="modes">code, spec, all; --since &lt;ref&gt;</div></div>
+<div v-click><b class="accent">status</b> - client-ready progress report<div class="modes">this-week, since &lt;date&gt;, milestone, feature &lt;id&gt;</div></div>
+<div v-click><b class="accent">next</b> - the one best next move<div class="modes">capabilities - browse what steer can do</div></div>
+<div v-click><b class="accent">build</b> - a PO's idea -> a working local app<div class="modes">resumes from /spec/BUILD-STATUS.md</div></div>
+<div v-click><b class="accent">standards</b> - load the rules by hand<div class="modes">where no hook runs: Desktop chat, claude.ai web</div></div>
+
+</div>
+
+<div v-click class="mt-6 text-center opacity-70">
+
+Everything else is reached through these - or just ask: <i>"load the gates reference"</i>, <i>"that's a steer bug, report it"</i>. Lost? <code>/steer:next</code>.
+
+</div>
+
+<style>
+.accent { color: #38bdf8; }
+.cheat .modes { opacity: 0.6; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; margin-top: 0.1rem; }
+</style>
 
 ---
 
@@ -819,8 +918,8 @@ class: text-center
 
 ### Devs
 - `steer` = standards, always on
-- Loop: **spec -> issues -> work -> PR**
-- Hooks nudge; **you** are the gate
+- Loop: **spec -> issues -> work -> draft PR**
+- Hooks nudge, merge is denied; **you** are the gate
 - Lost? `/steer:next`
 
 </div>
