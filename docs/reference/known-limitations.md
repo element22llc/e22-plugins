@@ -32,28 +32,49 @@ rules are the one that matters: they're what make Claude follow the standards; t
 [Installation](../getting-started/installation.md) and the
 [Hooks reference](hooks.md).
 
+## Hooks on GitHub Copilot and Codex
+
+steer also installs on the GitHub Copilot CLI and app, Copilot in VS Code and
+OpenAI Codex, but **hook enforcement is guaranteed on Claude Code only**. Those
+surfaces get the skills and the standards; no gate there is one you can count on:
+
+- **Copilot CLI and the Copilot app** (which runs the CLI runtime) run the
+  plugin's `hooks/hooks.json` incidentally. The ruleset injector answers in the
+  shape Copilot reads, but the version-pin gate fails open on the CLI's
+  file-tool payload, and the CLI skips the events it does not know (`CwdChanged`,
+  `WorktreeRemove`).
+- **Copilot in VS Code** runs `hooks/hooks.json` as-is and ignores matchers, so
+  the version-pin gate's hard `deny` happens to fire there - with no parity
+  promise.
+- **Codex** registers only the rule injector (`hooks/codex-hooks.json`), once
+  each user trusts steer's hooks in `/hooks`; no gate runs.
+- On both Copilot surfaces the advisory SessionStart notices emit raw text that
+  is discarded, and neither has the `SessionEnd` / `WorktreeRemove` events the
+  worktree Docker teardown runs on.
+
+The committed `.github/copilot-instructions.md` is the reliable standards path
+for Copilot. Detail: [GitHub Copilot support](../concepts/copilot-support.md#gate-hooks-on-copilot).
+
 ## Knowledge-work mode (non-code folders, e.g. Claude Cowork)
 
 When a session opens a folder that is **confidently not a code project** - no git
 work tree and no code/config markers nearby - steer injects a **lean,
 PO-relevant** ruleset instead of the full engineering manual. This is the typical
 **Claude Cowork** case: a product owner opens a connected folder of specs/docs.
-In that mode only the **unmarked** rules inject - since the 6.6 rule diet that is
-six of eighteen: `00-router`, `03-output`, `05-roles`, `30-spec`, `60-high-risk`
+In that mode only the **unmarked** rules inject - six of nineteen: `00-router`, `03-output`, `05-roles`, `30-spec`, `60-high-risk`
 and `61-gates`. Every rule carrying *any* `inject-when` marker is skipped, whichever
 token it is: the `code-project` set (`35-tracker`, `40-testing`, `45-delivery`,
 `50-done`, `80-change-class`, `85-practices`), the org pack (`10-stack`,
-`15-commands`, `12-stack-infra`), the OpenSpec backend, issue-first, and the
-opt-in loop rule. The skip is **intentional** - it reclaims context budget and
+`15-commands`, `12-stack-infra`), the OpenSpec backend, issue-first, the
+Compose rule (`47-worktree-services`), and the opt-in loop rule. The skip is **intentional** - it reclaims context budget and
 cuts noise - and `orient-session` confirms in plain language that the standards
 are active.
 
 One of the injected rules reads as code-specific and is always-on anyway, by
 design: **high-risk areas** (`60-high-risk`, which since 6.6 also carries the
-secrets standard as a section). Three of the five other surviving rules
-cross-reference it - `05-roles` for the PO guardrails, `30-spec` for what needs
-an ADR, and `61-gates` for what is never promptable - so dropping it would break
-them. Run `mise run rules:preview -- --knowledge` for the authoritative
+secrets standard as a section). Two of the five other surviving rules lean on
+it - `05-roles` for the PO guardrails and `30-spec` for what needs an ADR - so
+dropping it would break them. Run `mise run rules:preview -- --knowledge` for the authoritative
 inject/skip table; the numbers here are from it, not from memory.
 
 The classification is **fail-safe**: a git repo, *any* code/config marker, or any
@@ -145,15 +166,19 @@ which share the full engine.
 
 ## Headless vs. interactive runs
 
-The plugin's gates assume an **interactive human** is present to approve specs
-and merges (pushing the branch and opening the PR are autonomous; only a
-solo-trunk repo's graduation gate (`check-bash-actions.sh`) pauses a push, and only when
-a local signal stands). In headless or scheduled (cron) runs there is no human at
+The plugin's gates assume an **interactive human** is present to approve specs,
+sign off High-risk plans, mark draft PRs ready and merge them. Pushing the branch
+and opening the PR (as a draft) are autonomous; two hooks can pause one - a
+solo-trunk repo's graduation gate on a trunk push, once a local signal stands,
+and the stacked-PR gate on a PR whose base is a work branch (both in
+`check-bash-actions.sh`). With no dev in the session, High-risk work stops before
+any code until scope is recorded on its issue. In headless or scheduled (cron) runs there is no human at
 the gate, and **interactively-authenticated MCP servers may be absent**, so the
 MCP-first tracker path can silently fall back. Don't run the gated workflows
-unattended and expect the approvals to happen - `/steer:loop` is the sanctioned
-scheduled/headless path precisely because it stops at those gates (it never
-merges).
+unattended and expect the approvals to happen - the scheduled loop Claude
+scaffolds when you ask for one (`/steer:loop`, behind the automation opt-in in
+`policy/automation.yml`) is the sanctioned scheduled/headless path precisely
+because it stops at those gates (it opens draft PRs and never merges).
 
 A **cloud scheduled task** (`/schedule`) runs without steer unless the org
 delivers the plugin through server-managed settings: cloud sessions install
@@ -266,8 +291,9 @@ budget entirely - a fresh session is the fix there.
 
 ## What the hooks do (and don't) enforce
 
-Even when hooks fire, only one of them **hard-blocks** an action, and one more
-raises a prompt. Be honest about the tiers:
+Even when hooks fire, only two of them **hard-block** an action - the version-pin
+gate and the merge gate - and two more raise a prompt (the trunk-push and
+stacked-PR gates). Be honest about the tiers:
 
 - **`SessionStart` -> `inject-standards.sh`** injects the rules. Real and load-bearing.
 - **`SessionStart` -> `session-checks.sh`** is otherwise read-only, with **one**
@@ -337,9 +363,10 @@ raises a prompt. Be honest about the tiers:
   already happened and is never reverted.
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that
   never got an issue. A report, not a gate - it cannot undo anything.
-- The **merge gate is not a hook at all** - it's a rule Claude follows
-  (`45-delivery`, `00-router` -> You are not the gate). Nothing technically prevents a
-  PR merge; a human reviewer is the real backstop.
+- The **merge gate** is a hook only where hooks fire: `check-bash-actions.sh`
+  denies the merge paths above on Claude Code. On a hookless surface it is a
+  rule Claude follows (`45-delivery`, `61-gates`), and GitHub branch protection
+  plus the human reviewer are the real backstop.
 
 ## When hooks fail or don't run
 

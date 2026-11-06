@@ -51,7 +51,7 @@ Both roles install the plugin the same way, once, in Claude Code:
 Full details and the surface caveat live in [Installation](installation.md).
 
 If you're a **PO** planning to use [`/steer:build`](../workflows/build.md), you
-also need **Docker Desktop** installed and a supported machine - **macOS, Linux,
+also need **`git`** and **Docker Desktop** installed and a supported machine - **macOS, Linux,
 or Windows**. On Windows, the **Claude Desktop Code tab** needs only
 [Git for Windows](windows-setup.md) (builds run there too - no WSL2); CLI/IDE
 users develop in WSL2. See [Windows setup](windows-setup.md). Claude drives every
@@ -102,8 +102,8 @@ it maps everyday intents to the skill that handles them.
 ## What should I never do?
 
 - **Never merge without a developer's review.** Claude commits, pushes the
-  branch, and opens the PR autonomously; **the merge review is the one human
-  gate** - an open PR is inert behind branch protection, so the review happens
+  branch, and opens the PR autonomously - as a draft its author marks ready;
+  **the merge review is the one human gate** - an open PR is inert behind branch protection, so the review happens
   there, not before the push. (Merge and deploy are never pre-approved.) See the
   [Authorization model](../concepts/authorization-model.md).
 - **Never assume the rules loaded on the Desktop *Chat* tab or web chat.** If you
@@ -122,19 +122,26 @@ it maps everyday intents to the skill that handles them.
   it's about to mutate a GitHub-tracked repo without an issue. These are
   **advisory nudges, not hard blocks** - the write still proceeds; the guarantee
   comes from Claude following the rules, not from the hook stopping it.
-- **Hard-blocks disallowed version pins** - the one deterministic `PreToolUse`
-  gate denies image/runtime pins below the supported floor (`policy/versions.yml`).
+- **Hard-blocks disallowed version pins** - a deterministic `PreToolUse` gate
+  denies image/runtime pins below the supported floor (`policy/versions.yml`).
+- **Hard-blocks a PR merge** - `gh pr merge`, a `gh api` merge or the GitHub
+  MCP merge tool is denied even when you ask for it directly; the merge is
+  left to the reviewer in GitHub.
 - **Asks before a trunk push once a repo shows graduation signals** - in a
   solo-trunk repo that has grown a deploy workflow, an `infra/` tree, or a
   `prod`/`production` branch, the session's **first** `git push` surfaces as a
   `PreToolUse` **ask** (never a hard deny) pointing at `/steer:setup protect`; later
-  pushes in that session carry a non-blocking reminder instead - or, on the Copilot
-  CLI, pass silently, since that envelope carries decisions only. pr-flow repos are
+  pushes in that session carry a non-blocking reminder instead. pr-flow repos are
   untouched.
+- **Asks before opening a stacked PR** - a PR command whose base is another
+  work branch surfaces as an **ask**: stack only when the change needs that
+  branch's unmerged code, else target the default branch (or a `batch/*`
+  branch).
 - **Commits, pushes, and opens the PR autonomously** on a non-`main` branch
   (`/steer:work` defaults to `issue/<number>-<slug>`; otherwise the repo's
-  convention, else `feat/*` / `fix/*`), then **stops before merging** - everything up to the merge is
-  autonomous; the merge review is the backstop, enforced by branch protection.
+  convention, else `feat/*` / `fix/*`). `/steer:work` opens it as a **draft**
+  and stops: its author reads it and marks it ready, which starts CI. Nothing
+  merges without the reviewer - the backstop, enforced by branch protection.
 
 See the [Hooks reference](../reference/hooks.md) and
 [Authorization model](../concepts/authorization-model.md) for the full picture.
@@ -162,8 +169,8 @@ At every decision gate - these are the points where Claude deliberately pauses:
 - **Merge & deploy** - always a human call.
 
 Pushing the branch and opening the PR are **not** gates - Claude does both
-autonomously; the review happens on the open PR, which is inert behind branch
-protection until a human merges.
+autonomously, opening a draft its author marks ready; the review happens on the
+open PR, which is inert behind branch protection until a human merges.
 
 If you're a PO, your build ends at a **hand-off for dev review** by design -
 that's the point, not a failure. In PR flow that hand-off is the v0 PR; in solo

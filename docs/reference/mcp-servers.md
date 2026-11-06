@@ -8,7 +8,9 @@ picks them up centrally and they refresh on `/plugin update` - there is no
 per-repo `.mcp.json` to scaffold, drift, or reconcile. Each server still goes
 through Claude Code's per-server approval the first time it connects, and a repo
 may add its own project `.mcp.json` for product-specific servers (it merges
-additively with the plugin's). This page is kept in sync with the plugin's
+additively with the plugin's). The Copilot CLI gets the same servers from a
+generated copy, `plugins/steer/.github/mcp.json`, without the PAT header (see
+[GitHub Copilot support](../concepts/copilot-support.md#mcp-servers-in-vs-code)). This page is kept in sync with the plugin's
 MCP config and the scaffold `README.md` by `/plugin-docs`; the nav/orphan check
 in `scripts/validate_docs.py` guards that it stays linked, but its
 server-by-server content is reconciled by hand against the source of truth.

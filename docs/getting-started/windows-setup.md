@@ -20,7 +20,8 @@ work from the desktop app. [Git for Windows](https://gitforwindows.org/) ships a
 POSIX `sh` plus the `grep`/`sed`/`awk` the hooks use, so steer's `SessionStart`
 and `PreToolUse` hooks fire and the always-on rules inject. **No WSL2 required** -
 and that includes building: `/steer:build` and `mise run dev:setup` run locally
-under Git Bash (mise ships a native Windows binary and manages node/pnpm/uv; add
+(mise ships a native Windows binary, runs inline tasks through `cmd.exe`, and
+manages node/pnpm/uv; add
 **Docker Desktop** if the repo declares backing services).
 
 1. Install Git for Windows - `winget install Git.Git`, or the installer from
