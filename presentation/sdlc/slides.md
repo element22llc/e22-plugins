@@ -355,7 +355,7 @@ Q-NNN open questions, /steer:spec approve is blocked on blocking questions.
 <div v-click class="p-5 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 🎫 Plan - issue-first
-The approved spec is decomposed into **tracked issues** - triaged, decomposed, prioritized.
+The approved spec is decomposed into **tracked issues** - triaged, prioritized, linked to the spec.
 
 **The rule: tracked work and high-risk work start as an issue.** A planned feature, a tracked bug, a decision to record - anything high-risk - gets a ticket *before* the first line changes. A trivial change lets the reviewed PR be the record.
 

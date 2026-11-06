@@ -559,9 +559,9 @@ Then point Claude at a repo and run `/steer:setup`.
 
 # `/steer:setup` routes you in
 
-<div class="flex justify-center mt-4">
+<div class="flex justify-center">
 
-```mermaid {scale: 0.85}
+```mermaid {scale: 0.6}
 flowchart LR
     S["/steer:setup"] --> Q{repo state?}
     Q -->|brand new| INIT["init mode<br/>scaffold from bundle"]
@@ -576,21 +576,21 @@ flowchart LR
 
 </div>
 
-<div class="grid grid-cols-3 gap-6 mt-6">
+<div class="grid grid-cols-3 gap-6 mt-4 text-sm">
 
-<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="px-4 py-1 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 **`init`** installs the bundled scaffold - CI workflows, `mise.toml` tasks, `compose.yaml`, README quickstart, PR template. The repo starts standards-compliant.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
+<div v-click class="px-4 py-1 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 **`adopt`** brings an existing codebase under the standards without flattening what's already there.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+<div v-click class="px-4 py-1 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 **`sync`** keeps a bootstrapped repo current - reconciles scaffold + spec drift after a plugin update.
 
@@ -598,9 +598,9 @@ flowchart LR
 
 </div>
 
-<div v-click class="mt-4 text-center text-sm opacity-70">
+<div v-click class="mt-3 text-center text-xs opacity-70">
 
-Also under <code>/steer:setup</code>: <code>doctor</code> (machine prerequisites) - <code>protect</code> (branch protection, solo-trunk graduation) - <code>worktrees</code> (parallel worktrees another tool manages) - <code>advisory</code> (standards on code steer should not bootstrap).
+Also under <code>/steer:setup</code>: <code>doctor</code> (prerequisites), <code>protect</code> (branch protection), <code>worktrees</code>, <code>advisory</code> (code steer should not bootstrap).
 
 </div>
 
@@ -612,13 +612,13 @@ layout: center
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.9}
+```mermaid {scale: 0.8}
 flowchart LR
     C["💡 capture"] --> SP["📐 spec"]
     SP --> I["🎫 issues"]
     I --> WK["⚙️ work"]
     WK --> PR["🔀 draft PR"]
-    PR -.->|you mark ready, CI, human review| M["✅ merge"]
+    PR -.->|ready + review| M["✅ merge"]
     style C fill:#0ea5e9,color:#fff,stroke:#0284c7
     style SP fill:#8b5cf6,color:#fff,stroke:#7c3aed
     style I fill:#f59e0b,color:#fff,stroke:#d97706
