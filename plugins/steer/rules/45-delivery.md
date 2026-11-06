@@ -16,7 +16,9 @@ Delivery has **two modes**, keyed to the product `CLAUDE.md` marker
   **push the branch and open the PR without asking**. **Merging the PR is the
   one step that waits for the dev; everything before it does not.** Stack on
   another work branch only for its unmerged code, saying why in the PR; land
-  many fixes as one merge through sibling PRs into a `batch/<slug>` branch. An
+  many fixes as one merge through sibling PRs into a `batch/<slug>` branch. A
+  GitHub native stack (`gh stack`) number names a stack, not an issue or a
+  PR: `/steer:reference stacks`. An
   unprotected `main` is a gap, not a mode: recommend `/steer:setup protect`
   (an ADR where protection is unavailable).
 - **Solo trunk (declared, pre-MVP).** Commit **directly to `main` and push

@@ -345,7 +345,8 @@ stacked-PR gates). Be honest about the tiers:
 - **`PreToolUse` -> `check-version-pins.sh`** is a hard **`deny`** - it
   blocks image/runtime pins below the supported floor.
 - **`PreToolUse` -> `check-bash-actions.sh`** hard-**`deny`**s a PR merge
-  (`gh pr merge`, a `gh api` merge, the MCP `merge_pull_request` tool) - the
+  (`gh pr merge`, `gh stack merge`, a `gh api` merge, the MCP
+  `merge_pull_request` tool) - the
   merge is never promptable, so a deny stalls nothing an agent may do. Its other
   gates are an **`ask`**: in a
   `solo-trunk` repo that has outgrown pre-MVP, the first `git push` to trunk of a

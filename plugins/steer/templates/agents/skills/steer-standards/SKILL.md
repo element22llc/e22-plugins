@@ -64,6 +64,6 @@ Do this now:
    confirm and proceed.
 
 The router (`00-router.md`) points to the on-demand reference skills
-(`/steer-reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`,
+(`/steer-reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo|stacks]`,
 `/steer-setup`) - those work normally on the Chat tab and web chat since skills
 are supported there; only the always-on injection needed this fallback.

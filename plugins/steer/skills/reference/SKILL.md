@@ -1,8 +1,8 @@
 ---
 name: reference
-description: "Load one of steer's full reference docs: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo."
+description: "Load one of steer's full reference docs: conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo, stacks."
 when_to_use: "Reached when a rule or skill names a topic."
-argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]"
+argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo | stacks]"
 # Internal prose loader. The rules and the skills name the topic they need
 # (`/steer:reference conventions`), so the model reaches this skill from a
 # cross-reference rather than the user picking a doc name off a menu - and the
@@ -11,7 +11,7 @@ user-invocable: false
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts,gates,polyrepo -->
+<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts,gates,polyrepo,stacks -->
 
 # Reference prose loader
 
@@ -31,6 +31,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, which Artifact type each skill uses (Docs, Slides, Dashboard) and the hand-written HTML fallback with its mechanics and styling contract, the temp-path write invariant, the fillable-page return leg, and Markdown output (on request or as the fallback). |
 | `gates` | `GATES.md` | Ratifying an ADR, approving an intent, or signing off a plan **in-session**: the three-option prompt, what it must show, how the decision is recorded, and the gates no prompt can satisfy. |
 | `polyrepo` | `POLYREPO.md` | A product spanning several repos: the workspace/member split, where each spec artifact lives, resolving the spine from a member, honest report scope, and what crosses the repo edge (sub-issues and qualified closing keywords yes, drift gates no). |
+| `stacks` | `STACKS.md` | GitHub native stacked PRs and the `gh stack` CLI: telling a stack number from an issue or PR, resolving one read-only, how stacks merge and rebase, and what steer never runs (`gh stack merge`). |
 
 ## Load the file, don't answer from the table
 
@@ -47,6 +48,7 @@ Each topic maps to one file under
 | `artifacts` | `ARTIFACTS.md` |
 | `gates` | `GATES.md` |
 | `polyrepo` | `POLYREPO.md` |
+| `stacks` | `STACKS.md` |
 
 **Read the file itself and answer from it.** The table above (and its `Use for`
 column earlier in this skill) is for *routing* only - it is deliberately not a

@@ -1,0 +1,12 @@
+kind: Added
+body: |-
+    - **Added: GitHub native stacked PRs.** A new `/steer:reference stacks`
+      topic covers `gh stack` and the stack object: a stack number is never
+      an issue or PR number, how to resolve one read-only, how stacks merge
+      (bottom-up) and rebase, and what steer never runs. Rule 45
+      points to it, and `/steer:work review` checks whether a stacked PR is
+      in a native stack, then judges its readiness across the whole stack
+      and leaves restructuring to the author (#865).
+time: 2026-11-06T11:08:00.000000-05:00
+custom:
+    Slug: github-native-stacks

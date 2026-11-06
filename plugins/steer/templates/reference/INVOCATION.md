@@ -72,7 +72,7 @@ Not a user's first move.
 | `/steer:worktrees` | The worktree checker. Reached only through `/steer:setup worktrees`. |
 | `/steer:walkthrough` | The demo-video recorder. Reached only through `/steer:work walkthrough <feature>`. |
 | `/steer:weekly-update` | Applies a week's work to an Artifact-hosted project tracker. Reached from rule 00 for a weekly tracker update. |
-| `/steer:reference <topic>` | The reference-prose loader - conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo. Reached from a rule or a skill that names the topic it needs; the user describes the question instead. |
+| `/steer:reference <topic>` | The reference-prose loader - conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo, stacks. Reached from a rule or a skill that names the topic it needs; the user describes the question instead. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. **Auto-files** with no confirmation step, which is why the model owns the channel: the user reports the misbehaviour in plain language. |
 | `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. Reached when a dev asks for a scheduled sweep in plain language, and named by rule 53, which a repo carries only once it declared the automation opt-in (`policy/automation.yml`). A repo that never opted in is refused by the skill's first step, not by the marker. |
 
