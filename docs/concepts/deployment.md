@@ -38,9 +38,13 @@ flowchart LR
     MAIN -->|reviewed PR| PRODPR{{main -> prod PR<br/>approval = the prod gate}}
     PRODPR -->|merge| PROD[prod]
     PROD -->|auto-deploy| LIVE[Production]
+    PROD -->|incident| HF[hotfix branch<br/>cut from prod]
+    HF --> HFPR{{hotfix -> prod PR<br/>carries a patch cut}}
+    HFPR -->|merge| PROD
+    HFPR -.->|cherry-pick, back-port PR| MAIN
 
     classDef gated fill:#fde,stroke:#c39
-    class PRODPR gated
+    class PRODPR,HFPR gated
 ```
 
 - **Merge to `main` auto-deploys `non-prod`.** Landing on the default branch is
@@ -62,6 +66,26 @@ flowchart LR
   entry alongside the default branch. See
   [GitHub integration](../reference/github-integration.md#production-promotion-gate)
   for how that protection is configured.
+
+## Hotfixes
+
+A production incident ([`/steer:work --hotfix`](../workflows/work.md)) cannot
+ride the normal path: `main` holds work that has not been released, and a fix
+cut from it would ship that work too. So the hotfix path runs beside `prod`:
+
+- **Branch from `prod`, PR into `prod`.** The branch is `hotfix/<n>-slug`; one
+  reviewer approval and green CI, the same gate as a promotion.
+- **The PR carries its own patch release.** Its fragment is cut on the branch
+  (`changie batch patch`), so merging it ships a new patch version - there is no
+  separate promotion to wait for.
+- **Back-port to `main`, always.** Right after the merge, the fix and its
+  changelog entry are cherry-picked onto a branch cut from `main` and land
+  through an ordinary PR - never a PR whose head is `prod`, where resolving a
+  conflict would commit into production. `/steer:work promote` refuses to open
+  the next promotion while a hotfix is missing from `main`.
+
+When `production_gate` is not `prod-branch-pr`, production deploys from the
+default branch, so the hotfix branches from and targets it like any change.
 
 !!! note "This is the graduated end-state, not the solo-trunk start"
     A pre-MVP [solo-trunk](authorization-model.md) repo has no PR wall yet - it

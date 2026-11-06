@@ -43,6 +43,9 @@ assert_eq "ci-changelog: a non-test *.spec.* file still needs one" "${rc}" "1"
 # changie loads only *.yaml: anything else is dropped at merge, so it never counts (#707).
 ci_changelog src/foo.ts .changes/unreleased/fixed-a.yaml
 assert_eq "ci-changelog: a .yaml fragment satisfies it" "${rc}" "0"
+# A hotfix back-port carries the patch cut made on prod, which consumed its fragment.
+ci_changelog src/foo.ts .changes/v1.2.1.md
+assert_eq "ci-changelog: a back-ported release cut needs no new fragment" "${rc}" "0"
 ci_changelog src/foo.ts .changes/unreleased/fixed-a.md
 assert_eq "ci-changelog: a .md 'fragment' fails" "${rc}" "1"
 ci_changelog src/foo.ts .changes/unreleased/fixed-a.yaml .changes/unreleased/fixed-b.yml

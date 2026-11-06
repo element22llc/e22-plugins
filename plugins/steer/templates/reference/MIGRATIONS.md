@@ -94,6 +94,28 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `ci:changelog` passes a hotfix back-port carrying its cut
+
+- **What & why:** a `/steer:work --hotfix` PR into `prod` now cuts its own patch
+  release, and its fix returns to `main` through a cherry-picked back-port PR.
+  That PR changes shipping code but adds no fragment - the cut consumed it - so
+  the old gate failed every back-port. `scripts/ci-changelog.sh` now passes a
+  diff that adds a released version file (`.changes/*.md`).
+- **Precondition:** the installed gate predates the cut check -
+
+  ```sh
+  test -f scripts/ci-changelog.sh && ! grep -q 'carries a release cut' scripts/ci-changelog.sh && echo stale
+  ```
+
+  No output => already migrated, or the repo has no changelog gate => no-op.
+- **Action:** read-then-propose; show the diff. In `scripts/ci-changelog.sh`,
+  splice the template's `cut=` block (the comment, the `git diff
+  --diff-filter=A ... ':(glob).changes/*.md'` lookup and its early `exit 0`)
+  in after the `.changie.yaml` check and before `changed=`. Leave the rest of
+  the file as it is.
+
+  **No history entry is earned.**
+
 ### v7.17.0 - `.claude/settings.json` stops enabling `typescript-lsp`
 
 - **What & why:** the scaffold enabled `typescript-lsp@claude-plugins-official`

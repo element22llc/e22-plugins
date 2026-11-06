@@ -55,6 +55,15 @@ if [ ! -f .changie.yaml ]; then
 	exit 0
 fi
 
+# A diff that adds a released version file carries a cut that consumed its
+# fragments: the back-port of a hotfix that was cut on prod.
+cut="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- ':(glob).changes/*.md' 2>/dev/null ||
+	git diff --diff-filter=A --name-only "${base}" HEAD -- ':(glob).changes/*.md')"
+if [ -n "${cut}" ]; then
+	printf 'ci:changelog - carries a release cut (%s); its fragments were consumed.\n' "$(printf '%s' "${cut}" | tr '\n' ' ')"
+	exit 0
+fi
+
 changed="$(git diff --name-only "${base}...HEAD" 2>/dev/null || git diff --name-only "${base}" HEAD)"
 
 shipping=''
