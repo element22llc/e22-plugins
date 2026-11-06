@@ -26,6 +26,9 @@ changie = "1.26.0"
 biome = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
+# ci:security - any Node or Python product.
+"aqua:aquasecurity/trivy" = "latest"
+"pipx:semgrep" = "latest"
 # ruff = "latest"   # Python products
 # go = "latest"
 # rust = "latest"
@@ -107,6 +110,10 @@ run = "sh scripts/ci-iac.sh"
 description = "Build-only container image check (no push, no credentials)"
 run = "sh scripts/ci-image.sh"
 
+[tasks."ci:security"]
+description = "Security gate: HIGH/CRITICAL dependency CVEs (Trivy) and code findings (Semgrep)"
+run = "sh scripts/ci-security.sh"
+
 [tasks."ci:changelog"]
 description = "A change that ships must bring a changelog fragment (any push or PR; fail-open)"
 run = "sh scripts/ci-changelog.sh"
@@ -131,7 +138,7 @@ depends = ["ci:hygiene", "ci:lint", "ci:typecheck"]
 
 [tasks.ci]
 description = "Full gate: everything the required `ci` status check runs. Run before push / PR."
-depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage", "ci:changelog", "ci:spec"]
+depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:security", "ci:coverage", "ci:changelog", "ci:spec"]
 
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake"

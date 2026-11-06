@@ -452,6 +452,20 @@ else
 	emit "question-gate" "mis-wired" "$qg_files"
 fi
 
+# --- security-gate - HIGH/CRITICAL findings block the required check ---
+# n/a without a Node or Python stack: ci-security.sh has nothing to scan there.
+SG="scripts/ci-security.sh"
+sg_files=".github/workflows/ci.yml,mise.toml,$SG"
+if [ "$stack" = none ]; then
+	emit "security-gate" "n/a" "$sg_files"
+elif ! exists "$SG" && ! has ".github/workflows/ci.yml" "ci:security"; then
+	emit "security-gate" "absent" "$sg_files"
+elif has ".github/workflows/ci.yml" "mise run ci:security" && has "mise.toml" "ci:security" && exists "$SG"; then
+	emit "security-gate" "present-wired" "$sg_files"
+else
+	emit "security-gate" "mis-wired" "$sg_files"
+fi
+
 # --- release-publish - every release is a tag and a GitHub Release ---
 F=".github/workflows/release.yml"
 if exists "$F"; then

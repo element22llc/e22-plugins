@@ -470,6 +470,26 @@ and **Repair**.
   without `.changie.yaml` and `.changes/unreleased/` that instruction has
   nowhere to land and `ci:changelog` has nothing to check.
 
+### security-gate - HIGH/CRITICAL findings block the required check
+- **Files:** `scripts/ci-security.sh`, the `ci:security` task in `mise.toml`
+  (inside the `ci` task's `depends`), the Trivy and Semgrep `[tools]` entries,
+  and its step in `.github/workflows/ci.yml`
+- **Conditional:** a Node or Python stack (`stack` is not `none`); without one
+  there are no dependencies or code to scan, so it is `n/a`.
+- **Wired-when:** `ci.yml` runs `mise run ci:security`, `mise.toml` defines
+  `ci:security`, and `scripts/ci-security.sh` is present.
+- **Repair:** copy the script from the scaffold, add the two `[tools]` entries,
+  the `ci:security` task and its `ci` depends entry to `mise.toml`, and splice
+  the `Security scan` step into `ci.yml` after the image build - additively,
+  never over a product's own steps. Then run `mise run ci:security` and say in
+  the PR what it finds: each finding is fixed, or waived in `.trivyignore.yaml`
+  (with `statement` and `expired_at`) or by a `# nosemgrep: <rule>` with its
+  why-comment - a human's call at review, never a sync's.
+- **Verbatim:** no - a product may adapt the stage.
+- **Why it matters:** Dependabot alerts and secret scanning report, but block
+  nothing. Without this stage a PR can merge a high-severity CVE or an
+  injection-shaped code path with every check green.
+
 ### release-publish - every release is a tag and a GitHub Release
 - **Files:** `.github/workflows/release.yml`
 - **Conditional:** always (GitHub-hosted repos)
