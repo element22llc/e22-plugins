@@ -31,8 +31,8 @@ read-only before acting:
 | Which stack holds PR `N`? | `gh api 'repos/{owner}/{repo}/stacks?pull_request=N'` | `[]` |
 | Is this branch in a stack? | `gh stack view --json` | exit 2 (exit 9: stacks not enabled) |
 
-The response lists the stack's `base.ref` and its `pull_requests` bottom to top,
-each with `number`, `state`, `draft` and `merged_at`. `gh stack checkout`
+The response lists the stack's `base.ref` and its `pull_requests` (observed
+bottom to top; the docs do not state the order), each with `number`, `state`, `draft` and `merged_at`. `gh stack checkout`
 resolves a bare number too, but it switches the working tree - it is not a
 lookup.
 
@@ -58,17 +58,18 @@ error, upgrade both before debugging.
 | Repair after editing a lower layer | `gh stack rebase`, then `gh stack push` |
 | Dissolve | `gh stack unstack [N]` (`--local`: local tracking only) |
 
-**Interactive commands need a TTY** - `init` with no argument, `modify`,
-`switch`. Pass arguments in an agent session; `modify` has no
+**Interactive commands need a TTY** - `init`, `add`, `checkout` and `merge`
+with no argument, `modify`, `switch`. Pass arguments in an agent session; `modify` has no
 non-interactive form, so restructuring is `unstack` and then `init` + `submit`.
 `sync` and `push` force-push with `--force-with-lease`.
 
 ## 3. What steer does differently
 
-- **Never `gh stack merge`.** It merges every PR up to the one named as one
-  all-or-nothing operation - a merge, so never promptable (rule 61), exactly
-  like `gh pr merge` or a `merge-async` API call. Report the stack's state
-  instead.
+- **Never `gh stack merge`.** It merges every PR up to the one named - a
+  merge, so never promptable (rule 61), exactly like `gh pr merge` or a
+  `merge-async` API call. Report the stack's state instead.
+- **No `gh stack alias`.** It installs a wrapper (`gs` by default) that hides
+  `gh stack` from steer's gates; call `gh stack` by its full name.
 - **Drafts.** `gh stack submit --auto` creates new PRs as drafts, matching
   `/steer:work`. Never pass `--open` to `submit` or `link`: it also marks the
   stack's existing PRs ready, which is each author's call.
@@ -86,12 +87,15 @@ non-interactive form, so restructuring is `unstack` and then `init` + `submit`.
   status checks, CODEOWNERS and code scanning are evaluated for every PR as if
   it targeted the trunk; a `pull_request` workflow on the trunk runs for every
   layer. No workflow change is needed, and CI cost grows with stack size.
-- **Merge is bottom-up and atomic.** Merging a PR merges every unmerged PR below
-  it; PRs above stay open and retarget the trunk. A PR is mergeable only when it
-  *and every PR below it* meet the trunk's requirements.
+- **Merge is bottom-up.** Merging a PR merges every unmerged PR below it; PRs
+  above stay open and retarget the trunk. A PR is mergeable only when it *and
+  every PR below it* meet the trunk's requirements. GitHub calls the merge
+  atomic, yet its troubleshooting page says a failure partway stops there,
+  leaving the PRs below it landed; through a merge queue they can land in
+  separate groups.
 - **Linear history is required to merge.** A push to a lower layer, or the trunk
   moving, breaks it: `gh stack rebase` + `gh stack push`. A rebase that leaves a
-  layer's diff unchanged keeps its approvals and re-runs CI.
+  layer's diff unchanged keeps its approvals.
 - **Merge queue.** The stack enters the queue in order; ejecting one PR ejects
   every PR above it.
 - **Some PRs are stuck in the stack.** A merged, merging or queued PR cannot be
@@ -103,5 +107,6 @@ non-interactive form, so restructuring is `unstack` and then `init` + `submit`.
 Review each layer on its own diff (`gh pr diff <n>` shows only that layer), but
 judge **merge readiness** as the stack's: a green, approved layer above an
 unapproved one cannot merge. An independent change riding a native stack is not
-fixed by retargeting one PR - removing it means unstacking and recreating the
-stack, so name it to the author and leave the restructuring to them.
+fixed by retargeting one PR - removing it takes `gh stack modify` (interactive),
+the web UI, or unstacking and recreating the stack, so report it and leave the
+restructuring to the author.

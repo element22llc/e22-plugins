@@ -17,7 +17,7 @@
 #   Merging a PR is the human's step and is never promptable (rules 45, 61):
 #   a direct "merge it" does not authorize it. Hard deny, every time, in
 #   every repo: `gh pr merge`, `gh stack merge` (merges every stacked PR up to
-#   the one named), a `gh api` merge (REST PUT, incl. `merge-async`, or the
+#   the one named; also as `gh extension exec stack`), a `gh api` merge (REST PUT, incl. `merge-async`, or the
 #   GraphQL mutations), and any MCP `*merge_pull_request` tool. Local `git merge` is
 #   untouched. Quoted prose (--body, -m) is blanked before matching.
 #
@@ -142,10 +142,10 @@ if [ -z "${MERGE}" ] && [ "${TOOL}" = "Bash" ] &&
 	printf '%s' "${CMD}" | grep -q '[Mm]erge'; then
 	_bare="$(steer_strip_quoted "${CMD}")"
 	if printf '%s' "${_bare}" |
-		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+pr[[:space:]]+merge([[:space:]]|$)'; then
+		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+pr[[:space:]]+merge([[:space:];&|)]|$)'; then
 		MERGE="gh pr merge"
 	elif printf '%s' "${_bare}" |
-		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+stack[[:space:]]+merge([[:space:]]|$)'; then
+		grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+(ext(ension)?[[:space:]]+exec[[:space:]]+)?stack[[:space:]]+merge([[:space:];&|)]|$)'; then
 		MERGE="gh stack merge"
 	elif printf '%s' "${_bare}" | grep -Eq '(^|[;&|(`[:space:]])gh[[:space:]]+api([[:space:]]|$)' &&
 		printf '%s' "${CMD}" | grep -Eq 'mergePullRequest|enablePullRequestAutoMerge|/pulls/[0-9]+/merge' &&
@@ -219,7 +219,7 @@ fi
 # ---------------------------------------------------------------------------
 if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 	printf '%s' "${CMD}" |
-	grep -Eq '(^|[;&|[:space:]])gh[[:space:]]+(pr[[:space:]]+(create|edit)|stack[[:space:]]+(submit|link))([[:space:]]|$)'; then
+	grep -Eq '(^|[;&|[:space:]])gh[[:space:]]+(pr[[:space:]]+(create|edit)|(ext(ension)?[[:space:]]+exec[[:space:]]+)?stack[[:space:]]+(submit|link))([[:space:];&|]|$)'; then
 
 	CWD="$(steer_field cwd)"
 	[ -n "${CWD}" ] || CWD="."
@@ -234,7 +234,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1
 		}
 		WHAT=""
-		case "$(printf '%s' "${_CMD_BARE}" | sed -nE 's/.*gh[[:space:]]+stack[[:space:]]+(submit|link)([[:space:]].*)?$/\1/p' | head -n 1)" in
+		case "$(printf '%s' "${_CMD_BARE}" | sed -nE 's/.*[[:space:]]stack[[:space:]]+(submit|link)([[:space:];&|].*)?$/\1/p' | head -n 1)" in
 		submit) WHAT="gh stack submit opens PRs that each target the branch below them" ;;
 		link) WHAT="gh stack link chains these PRs into a native stack, each targeting the branch below it" ;;
 		*)

@@ -32,7 +32,7 @@ that exact commit and nothing pushed after it. Empty queue -> say so and stop.
 
 ## Step 2 - triage from metadata, before reading any diff
 
-Compute per PR, from Step 1's JSON alone:
+Compute per PR, from Step 1's JSON (plus one stack lookup for a stacked PR):
 
 - **CI** - green, running, red, or none, from `statusCheckRollup`. A draft's
   skipped checks are not green (`NEXT-ACTION.md`).
@@ -42,8 +42,8 @@ Compute per PR, from Step 1's JSON alone:
   bottom-up; a PR can merge only after the one below it. A `batch/*` base is
   not a stack: its PRs are siblings and merge in any order. When one is
   stacked, check once for a **native** stack (`gh api
-  'repos/{owner}/{repo}/stacks?pull_request=<n>'`, `[]` when not): its PRs
-  merge atomically from the bottom, so judge its readiness across the stack
+  'repos/{owner}/{repo}/stacks?pull_request=<n>'`, `[]` when not): merging a
+  PR merges every PR below it, so judge its readiness across the stack
   (`/steer:reference stacks`).
 - **Risk class** - High-risk when any path touches a rule `60-high-risk` area
   (auth, permissions, migrations, `/infra`, secrets, deletion, billing,
@@ -141,10 +141,11 @@ ones that are yours:
 - **CI red or conflicting** - `/steer:work resume #<issue>` fixes it on its
   branch.
 - **Stacked, independent** - rebase onto the default branch and retarget
-  (`gh pr edit <n> --base <default>`), one PR per run. In a native stack,
-  leaving means unstacking and recreating it: name it to the author instead. Force-push as `git push
+  (`gh pr edit <n> --base <default>`), one PR per run. Force-push as `git push
   --force-with-lease origin <branch>`: the flag ahead of `origin` keeps it out
-  of this skill's `git push origin *` grant, so it asks.
+  of this skill's `git push origin *` grant, so it asks. A **native** stack is
+  not retargeted: report it to the human, since leaving one is a restructuring
+  (`gh stack modify` or unstacking).
 - **No reviewer requested** - ask the human who, then `gh pr edit <n>
   --add-reviewer <login>`. Never pick a reviewer yourself.
 
