@@ -458,16 +458,16 @@ waived.
 
 <div class="text-sm opacity-60 mb-3">"Review <i>is</i> productionization" - the one gate no AI crosses</div>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-2 gap-6 verify-cards">
 
-<div v-click class="p-5 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### ✅ Definition of Done
 Done means all five: **intent understood**, **appropriately tested**, **CI green** (watched), affected contracts and docs updated, **merge and deploy through the human gates** - on every project.
 
 </div>
 
-<div v-click class="p-5 rounded-xl border border-rose-400/30 bg-rose-400/5">
+<div v-click class="p-4 rounded-xl border border-rose-400/30 bg-rose-400/5">
 
 ### 🚩 Drift gates
 Nine classes of sensitive change - intent drift, contract drift, security-sensitive, compliance-impacting, ... - are **flagged in the PR** the moment they're noticed.
@@ -478,11 +478,16 @@ A raised flag **blocks merge** until the human reviewer resolves it - and the AI
 
 </div>
 
-<div v-click class="mt-6 p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5 text-center text-lg">
+<div v-click class="mt-4 px-4 py-2 rounded-xl border border-emerald-400/30 bg-emerald-400/5 text-center text-lg">
 
 A human developer approves every pull request. That's not a formality - it's **the** quality gate the whole lifecycle is built around.
 
 </div>
+
+<style>
+.verify-cards { font-size: 0.9rem; line-height: 1.45; }
+.verify-cards h3 { font-size: 1.1rem; margin-bottom: 0.25rem; }
+</style>
 
 <!--
 Drift gate classes (rule 50-done): intent drift, contract drift, undocumented
@@ -634,7 +639,7 @@ joiner onboarding: read the last quarter of /spec/history/ in five minutes.
 
 <div v-click class="p-4 rounded-xl border border-rose-400/40 bg-rose-400/5 flex gap-4 items-start">
 <div class="text-3xl">🔑</div>
-<div><b>Secrets & settings</b> - real credentials and repository security settings are never written by the AI.</div>
+<div><b>Secrets & settings</b> - real credentials are never written by the AI; repository security settings change only on a human's explicit confirmation.</div>
 </div>
 
 </div>
