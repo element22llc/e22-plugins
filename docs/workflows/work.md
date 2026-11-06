@@ -97,7 +97,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
 | `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR **as a draft** (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - transition to `validate` and stop: the author reads the draft and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. |
-| `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. |
+| `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. Entered automatically when an implement ask names two or more issues. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
 | `debug [#N \| <symptom>]` | Root cause before the fix - see below. With only a symptom and no fix asked, diagnosis only and not issue-scoped. |
 | `qa [#N]` | Opt-in browser QA of the flows the branch diff touches - see below. |
@@ -105,7 +105,10 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 ## Issue queue - `/steer:work queue`
 
 `queue` delivers a list of independent issues in one run, in the order given.
-The session orchestrates and implements nothing itself:
+You don't have to name it: an implement ask naming two or more issues ("fix #12
+and #15", `/steer:work #12 #15`) runs as a queue automatically, unless you ask
+for them combined in one branch. The session orchestrates and implements
+nothing itself:
 
 1. **Triage from metadata** - an issue claimed by someone else, not ready,
    High-risk with no agreed scope, or dependent on another queued issue is set
