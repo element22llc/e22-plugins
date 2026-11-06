@@ -70,17 +70,16 @@ the fragments pending on `main` to be cut again next time, with `CHANGELOG.md`
 permanently divergent between the two branches. You cannot push to a protected
 `main`, so the cut is a normal PR like any other change.
 
-On a `chore/release-<version>` branch off the default branch:
+On a `chore/release-<version>` branch off the default branch, every profile
+cuts semver:
 
 ```sh
-changie batch $(date +%Y.%-m.%-d) && changie merge   # app / service - CalVer, the ship date
-changie batch auto && changie merge                  # library / cli - the artifact version
+changie batch auto && changie merge   # version: changie latest
 ```
 
-`%-m`/`%-d` are load-bearing: changie normalizes `2026.09.15` to a `2026.9.15`
-heading while naming the file `2026.09.15.md`, and the two then disagree
-permanently. The profile decides which line runs - read the `CLAUDE.md`
-`## Profile` marker; absent means `app`.
+`auto` takes the largest bump the pending kinds declare (`Added`/`Changed`
+minor, `Fixed`/`Security` patch). No kind maps to major: when a fragment
+describes a breaking change, say so and cut `changie batch major` instead.
 
 Commit, push, open the PR against the default branch, and **stop there this
 run**. Its merge is an ordinary review, not the production gate.
@@ -93,7 +92,7 @@ exists, update its body rather than opening a second one.
 
 ```sh
 gh pr create --base prod --head main \
-  --title "promote: <version>" --body-file <body>
+  --title "Release v<version>" --body-file <body>
 ```
 
 The body is the changelog section this promotion ships - the text a reviewer

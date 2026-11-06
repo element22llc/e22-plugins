@@ -53,10 +53,10 @@ flowchart LR
   [`/steer:work promote`](../workflows/work.md) opens it and stops; merging it
   auto-deploys production. **Never push directly to `prod`.**
 - **The `prod` promotion is also the release moment.** An app or service deploys
-  continuously and has no artifact version, so its changelog is cut at promotion,
-  from the fragments accumulated since the last one - `changie batch $(date
-  +%Y.%-m.%-d)` then `changie merge` (a CalVer ship date; `library`/`cli` repos cut
-  semver with `changie batch auto` instead). The cut lands first, as its own PR to
+  continuously, so its changelog is cut at promotion, from the fragments
+  accumulated since the last one - `changie batch auto` then `changie merge`,
+  a semver `vX.Y.Z` whose bump the fragments' kinds decide (every profile
+  versions this way). The cut lands first, as its own PR to
   the default branch (`.changes/unreleased/` lives there, and you cannot push to a
   protected `main`); `promote` opens the promotion PR once that has merged. See
   [Repository contract](../reference/repository-contract.md#what-a-managed-repo-carries).

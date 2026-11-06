@@ -512,14 +512,14 @@ is metadata driving the version bump and grouping, and is not rendered.
   written for a reviewer reading a diff; a changelog entry is written for
   someone deciding whether to care. Deriving one from the other gives you neither.
   changie automates assembly and the version bump - never the prose.
-- **Cutting a release.** `library` / `cli`: `changie batch auto`, which reads
-  each kind's `auto:` level and picks the semver bump. `app` / `service`: these
-  deploy continuously and have no artifact version, so the release moment is the
-  **`prod` promotion** (see Deployment & environments) and the version is the
-  ship date - `changie batch $(date +%Y.%-m.%-d)`. Use `%-m`/`%-d`: changie
-  normalizes `2026.09.15` to a `2026.9.15` heading while naming the file
-  `2026.09.15.md`, and the two then disagree permanently. Follow either with
-  `changie merge`.
+- **Cutting a release.** Every profile versions with semver, `vX.Y.Z`:
+  `changie batch auto && changie merge`, where each kind's `auto:` level picks
+  the bump (no kind maps to major - cut `changie batch major` for a breaking
+  change). For an `app` / `service` the release moment is the **`prod`
+  promotion** (see Deployment & environments); a production hotfix cuts
+  `changie batch patch` in its own PR. A repo that cut date versions
+  (`2026.9.15`) before keeps going from its last one - it is valid semver, so
+  `auto` bumps it like any other.
 - **CI enforces it.** `ci:changelog` fails a PR that changes shipping code
   without *adding* a fragment. Editing an existing fragment is amending someone
   else's pending entry, not recording yours. Paths that ship nothing - `spec/`,
