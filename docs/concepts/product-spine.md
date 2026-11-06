@@ -42,8 +42,9 @@ bidirectional link - `/steer:spec validate` flags a promoted question with no
 that folds the answer (or, when the answer becomes an ADR, when that ADR is
 accepted); `/steer:work issues reconcile --all` flags one left open. A
 blocking question still open after 14 days has, by definition, outlived the
-session: the SessionStart hook escalates it (a non-blocking one after 60 days, or
-14 once its feature is `live`), and on a GitHub Issues tracker
+session: on Claude Code the SessionStart hook escalates it (a non-blocking one
+after 60 days, or 14 once its feature is `live`; elsewhere `/steer:spec questions`
+applies the same age test by hand), and on a GitHub Issues tracker
 promotion assigns it to its `owner:` role via the `owners:` map in `tracker.md`.
 On any other tracker - Jira, Linear, `none-yet`, or none declared - the
 escalation is the same but promotion is manual, so the notice says to open the

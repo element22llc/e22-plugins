@@ -99,7 +99,10 @@ resuming once the build is handed off - every box in its handoff gate checked.
     each approved slice instead ships through [`/steer:work`](work.md) as its own
     issue -> delivery - a PR in pr-flow, or a `Closes #N` trunk commit in
     [solo-trunk](../concepts/authorization-model.md) - so there is no separate v0
-    PR. Either way the productionization brief still applies, and merge plus any
+    PR. Either way the hand-off writes the productionization brief to
+    `/spec/PRODUCTIONIZATION.md` - the same artifact `/steer:setup adopt`
+    produces - seeds the app guide (`/spec/app/README.md`) and records the build
+    as a `/spec/history/` entry, and merge plus any
     deploy or promotion to a real environment stay human-gated - the build itself
     never deploys or promotes.
 

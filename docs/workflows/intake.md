@@ -12,7 +12,7 @@ typed on its own.
     tracker - without losing human-authored content. Reach for it whenever a
     re-sent document arrives with no pointer to what was edited.
 
-**Argument hint:** `[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]`
+**Argument hint:** `[<path-to-doc> | clarify <path-to-doc | doc-link> | <source-id> | status]`
 
 ## The problem it solves
 
@@ -53,7 +53,10 @@ extraction semantically, **maps** each unit inline against open questions and th
 feature list, and sorts them into a three-bucket, human-confirmed worklist -
 answers -> `/steer:spec questions`, new scope -> the reconcile rows, unmatched -> surfaced
 for the human (never guessed). The shared front-end (identity, versioned commit,
-action-history record) is unchanged.
+action-history record) is unchanged. In a returned questionnaire, a bare "yes"
+under a question's `> Recommended:` line accepts that recommendation, quoted
+alongside it in the fold; a "yes" to a question that offers options instead
+answers nothing.
 
 ## Modes
 

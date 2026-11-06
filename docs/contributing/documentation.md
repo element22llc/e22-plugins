@@ -39,7 +39,14 @@ flowchart LR
   no orphan pages; internal links resolve; `/steer:` refs
   are valid and no stale `/e22-*` references remain; and no page repeats a
   `##`/`###` heading (a duplicated section is valid Markdown that every other
-  gate passes, so nothing else catches it).
+  gate passes, so nothing else catches it). The **`docs-sync`** pre-commit hook
+  runs the same script on every commit; when it aborts one, run `/plugin-docs`,
+  re-stage `docs/` and commit again, so docs and code land in the same commit.
+- **The strict build** (`mise run docs:build`, `zensical build --strict`) runs
+  in `.github/workflows/docs-deploy.yml` on every PR and push to `main` that
+  touches `docs/`, `mkdocs.yml` or `presentation/` (a push to `main` then
+  deploys to GitHub Pages) - so a broken link or nav entry fails the PR, a gap the
+  structure-only `validate_docs.py` does not cover.
 - **`check_docs_impact.py`** (PR-only, `--base`) fails a PR that changes
   `skills/`, `rules/`, `hooks/`, or `agents/` without touching `docs/`. Two paths are
   exempt: `/tests/` and `/hooks/lib/`. Note that `hooks/lib/` *is* documented (the
