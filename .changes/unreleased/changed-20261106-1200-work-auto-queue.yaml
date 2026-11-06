@@ -11,4 +11,6 @@ body: |-
     and a multi-issue ask was delivered by hand in one session. Asking for the
     issues combined in one branch, or issues that cannot be separated without an
     invalid intermediate state, still deliver together; `status #A #B` stays a
-    read-only report.
+    read-only report. One shift: an issue that merely depends on another in
+    the list was combined into one branch before; the queue's triage now sets
+    it aside, pointing at a stacked or `batch/*` branch.
