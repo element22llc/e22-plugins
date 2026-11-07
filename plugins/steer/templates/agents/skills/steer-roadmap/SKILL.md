@@ -95,7 +95,7 @@ spec, then take **only the expected-unbuilt units** - `Missing` / `Partial`
 whose tracker status is Backlog/To-Do, the "unbuilt roadmap" bucket `/steer-audit spec`
 already separates from **Done-but-Missing defects**. Do **not** put Done-but-Missing
 or Diverged findings on the roadmap - those are drift to resolve via
-`/steer-issues publish-drift`, not planned work. File the expected-unbuilt units the
+`/steer-work issues publish-drift`, not planned work. File the expected-unbuilt units the
 same way `from-features` does - **find-or-create** via
 `/steer-tracker-sync find-or-create` (idempotent on `feature-id`+`kind`; a match
 updates, never a duplicate). These are planned **backlog**, so they are **not**

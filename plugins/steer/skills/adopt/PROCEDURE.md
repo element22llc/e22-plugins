@@ -417,7 +417,7 @@ gate). Run the end-of-session
 checklist.
 
 - **To make selected gaps actionable** (GitHub tracker), run
-  **`/steer:issues publish-adoption`** - it reconciles chosen gaps
+  **`/steer:work issues publish-adoption`** - it reconciles chosen gaps
   into `kind=finding` + `source:adoption` issues (stable `finding-key`, reconcile
   not duplicate). The brief is written here with `> Lifecycle: active-adoption`
   (the resumable state); `publish-adoption` flips it to `published-snapshot`

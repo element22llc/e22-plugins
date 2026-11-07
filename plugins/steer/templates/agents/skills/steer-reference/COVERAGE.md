@@ -226,7 +226,7 @@ It covers, in detail:
   the ingest path, a hand-written page's copied-out document is its only channel -
   either way a machine-keyed document ingested by the owning skill:
   `/steer-spec questions bundle` -> `/steer-spec intake clarify`, the audit triage form ->
-  `/steer-issues publish-audit`);
+  `/steer-work issues publish-audit`);
   and Markdown as the second supported format - on request or where the
   Artifact tool is unavailable; printed inline, saved to temp on request, never
   written under the repo tree.

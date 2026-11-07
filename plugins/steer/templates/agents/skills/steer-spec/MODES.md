@@ -82,10 +82,10 @@ feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
 
 Flag each of these, citing the `Q-NNN` and file:
 
-- **Error:** an **approved** intent (`Status: approved` or `live`)
-  that still contains an `open` `blocking` question with
-  `required_before: intent-approval` (later gates - `contract-approval`,
-  `implementation`, ... - block their own gate, not the already-granted approval);
+- **Error:** an `open` or `investigating` `blocking` question whose
+  `required_before` is a gate the feature has already passed: `intent-approval`
+  once `Status: approved`, every gate once `live` (an approved feature's later
+  gates - `contract-approval`, `implementation`, ... - block their own gate);
 - **Error:** a `deferred` question missing `owner` or `required_before`;
 - **Error:** a `resolved` question with no resolution folded into the spec's normative
   prose (only a `_Resolution:_` line, or nothing);
@@ -102,7 +102,7 @@ Flag each of these, citing the `Q-NNN` and file:
   `non-blocking` one (14 when the feature is `live`). This **warns**, it does
   not block: it mirrors the SessionStart hook's escalation, nudging you to
   promote (assign its owner via the tracker.md map) or defer with a reason;
-- **Warning:** a bare `- [ ]` item under `## Open questions` - the retired format, which
+- **Error:** a bare `- [ ]` item under `## Open questions` - the retired format, which
   `/steer-setup sync` converts to a `### Q-NNN` block;
 - **Error:** an unfilled placeholder seed (`<!-- steer:placeholder -->` on the template's
   bracketed `Q-001`) in a feature past `draft`, or beside real questions -

@@ -53,14 +53,30 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 > materializes into a temp directory when `spec` mode offers it instead of pasting
 > - same temp-dir limit, never under the repo tree. Never use `Write` to create or
 > replace any other file. Findings reach the tracker via
-> `/steer:issues publish-audit` / `/steer:issues publish-drift`, each its own step.
+> `/steer:work issues publish-audit` / `/steer:work issues publish-drift`, each its own step.
 
 Both modes are **non-mutating** - they never change an existing file and never
 commit. The only things either mode may create are the two confirmed outputs
 named above, plus the temp-dir triage export. **Make no code or spec edits, and don't commit.** Publishing
-findings to the tracker is a separate step (`/steer:issues publish-audit` /
+findings to the tracker is a separate step (`/steer:work issues publish-audit` /
 `publish-drift`) - this skill writes no issue itself. Fixing anything is a
 separate, approved step on its own branch + PR.
+
+## Advisory mode - both modes
+
+When the session banner says advisory mode, or the repo's
+`.claude/settings.local.json` declares `STEER_MODE=advisory`, the repo is a
+guest's. This overrides the mode procedures wherever they disagree:
+
+- **No bootstrap route.** Where a procedure sends a spine-less repo to
+  `/steer:setup adopt`, say what cannot run without a `/spec` spine instead:
+  `code` skips dimensions 1 and 11 and continues, `spec` stops.
+- **Nothing lands in the tree.** Skip the `AUDIT-REPORT.md` / `DRIFT-REPORT.md`
+  offer; the report goes to the user in chat or as the temp-only Artifact
+  dashboard, with no triage Doc (nothing ingests it).
+- **No steer routes.** The next-actions table names what to change, never a
+  route that writes to this repo or its tracker (`/steer:work`, `/steer:setup`,
+  `publish-*`). Fixing and filing are the user's call, in this repo's own terms.
 
 ## Coupling rules
 
@@ -78,7 +94,7 @@ govern how each finding gets *resolved*.
   sweep, whole-repo unless `--since <ref>` bounds it: review the codebase across the standards dimensions, **vet**
   every candidate finding against the code it cites, rank survivors by
   **leverage**, **propose** routing into `/spec`, and hand the survivors to
-  `/steer:issues publish-audit` - the separate filing step.
+  `/steer:work issues publish-audit` - the separate filing step.
   -> procedure: [`modes/code.md`](${CLAUDE_PLUGIN_ROOT}/skills/audit/modes/code.md)
 - **`spec`** - **spec-vs-spec** conformance: diff the **as-built `/spec`** (what
   the code actually does, reverse-engineered by `/steer:adopt`) against the

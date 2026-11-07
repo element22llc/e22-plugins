@@ -117,7 +117,7 @@ point, not before.
   filename history so a rename still maps to the same source.
 - **Downstream re-runs reconcile, never duplicate** - the gateways key on
   stable identities (`/steer:tracker-sync` find-or-create on feature-id;
-  `/steer:audit` / `/steer:issues publish-drift` finding-key; spec-scaffold's
+  `/steer:audit` / `/steer:work issues publish-drift` finding-key; spec-scaffold's
   anchor-matched splice). A re-run after partial resolution updates or closes,
   never re-files.
 
