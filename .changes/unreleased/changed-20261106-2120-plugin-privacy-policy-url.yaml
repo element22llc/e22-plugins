@@ -1,0 +1,10 @@
+kind: Changed
+time: 2026-11-06T21:20:00.000000000-05:00
+custom:
+  Slug: plugin-privacy-policy-url
+body: |-
+  - **Changed: the plugin manifest now names a privacy policy.** steer
+    connects to the remote GitHub and Context7 MCP servers, and plugin
+    validation flagged the manifest for declaring no privacy policy URL.
+    `plugin.json` now sets `privacyPolicyUrl` to Element 22's published
+    policy.
