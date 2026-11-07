@@ -3,6 +3,87 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.21.0
+
+- **Fixed: the merge gate and trunk-push ask no longer miss common
+  spellings.** The merge gate now denies `gh pr -R <repo> merge`, a `gh`
+  called by path or as `\gh`, `bash -c` / `sh -c` / `eval` wrappers, and a
+  `$(...)` or backtick inside double quotes. An apostrophe in a comment, a
+  heredoc body or an unterminated quote no longer hides a merge that follows
+  it; comments and heredoc bodies are read as data. The solo-trunk push ask
+  now matches past git global options (`-c k=v`, `--no-pager`), a path to
+  `git`, and a subshell, and a commit message that mentions "git push" no
+  longer spends the once-per-session ask. The stacked-PR ask reads `-B` only
+  from the `gh pr create|edit` segment, so `git checkout -B x && gh pr
+  create` no longer asks. One `steer:allow-pin` marker now exempts only its
+  own line, matching the CI scanner, and hook messages drop control bytes
+  that made their JSON invalid.
+- **Fixed: scaffolded CI stages and the scaffold reconcile.** `ci:coverage`
+  now fails in a Node monorepo: per-package lcov paths are rebased onto the
+  package before diff-cover reads them, where before no changed line ever
+  matched and the gate always passed. `ci:changelog` no longer counts an
+  exempt file with a non-ASCII name (git quoted it) as shipping code, and
+  passes a PR that Dependabot both opened and pushed, so
+  `dependabot-auto-merge` can run;
+  `/steer:setup sync` migrates existing repos. `scaffold_reconcile.py` puts
+  template lines before a repo's own in `.gitattributes`, so its `eol`
+  rules keep winning, and reports a `!` re-include an existing directory
+  ignore would cancel instead of appending it. `scan-capabilities.sh`
+  reports `drift-gate` wired only when every stage `ci.yml` runs has its
+  task and script, treats a set `core.hooksPath` as owning the commit gate,
+  and reads `.changes/unreleased` from the scanned repo, not the caller's
+  directory.
+- **Fixed: a workspace's CI and commit hook ran tasks it never defines.** The
+  `workspace` profile's `mise.toml` is all `ws:`-prefixed, yet it got the core
+  `ci.yml` and a hook calling `mise run pre-commit`, so the required `ci`
+  check failed on every PR and every commit aborted. A workspace now installs
+  `ci-workspace.yml` as its `ci.yml` - hygiene plus the open-question
+  contract across the product spine, and the same Dependabot auto-merge job -
+  backed by new `ws:ci:hygiene`, `ws:ci:spec`, `ws:pre-commit`, `ws:check`
+  and `ws:ci` tasks, and init wires the hook to `ws:pre-commit`. The code
+  stages stay with the members. `/steer:setup sync` reports a workspace
+  still on the core workflow or hook as `mis-wired` and migrates it.
+- **Fixed: three places where skill prose sent you somewhere it could not
+  go.** The audit, adopt, intake and roadmap skills named
+  `/steer:issues publish-audit` / `publish-drift` / `publish-adoption` as the
+  filing step, a command a user cannot type; they now name
+  `/steer:work issues publish-*`. `/steer:audit` gained an advisory-mode
+  section: in a repo declared `STEER_MODE=advisory` it no longer redirects
+  to `/steer:setup adopt`, offers no `AUDIT-REPORT.md` / `DRIFT-REPORT.md`
+  in the tree, and routes nothing to `/steer:work` or the tracker. And
+  `/steer:spec validate` now reports what the `ci:spec` gate fails as an
+  error - a bare `- [ ]` open question, and a blocking question open at any
+  gate its feature has passed (every gate once `live`) - instead of a
+  warning or a narrower check.
+- **Fixed: `steer:allow-comments` now works in SQL and Lua files.** The
+  comment-density notice recognised the waiver only in a `#` or `//`
+  comment, so a `.sql` or `.lua` file, whose only comment syntax is `--`,
+  could not record it. A `-- steer:allow-comments <reason>` line now
+  silences the notice, and like the other markers it no longer counts
+  toward the file's comment ratio.
+- **Fixed: Copilot's infra instructions now say they apply only to the e22
+  org pack.** `.github/instructions/infra.instructions.md` dropped the org
+  pack note, assuming its `applyTo` glob covered the whole scope. The glob
+  covers only the IaC half of rule 12's scope, so Copilot handed the e22
+  infra stack to infra repos on any other pack. The file now carries the
+  same "Applies only to a repo on the e22 org pack" note the flat
+  instructions use, and the Copilot check fails when a path-scoped rule
+  leaves a scope arm unstated.
+- **Changed: the plugin manifest now names steer's own privacy policy.**
+  steer connects to the remote GitHub and Context7 MCP servers, and plugin
+  validation flagged the manifest for declaring no privacy policy URL.
+  `plugin.json` now sets `privacyPolicyUrl` to
+  `https://ai.element-22.com/privacy/`, a plugin-specific policy stating
+  that steer collects nothing, what the two MCP servers receive, and that
+  `/steer:report` files scrubbed defect reports as public issues upstream.
+- **Fixed: two checks that claimed more than they checked.**
+  `scan-capabilities.sh` now reads a `ci.yml` stage run with flags
+  (`mise run --skip-deps ci:coverage`), so a repo missing that task scans
+  `drift-gate` as `mis-wired` instead of `present-wired`.
+  `/steer:spec validate` now errors on everything `ci:spec` fails: a
+  question missing `status:`, an open one missing `impact:`, and an unknown
+  `required_before:`. `--all` also sweeps `spec/PRODUCTIONIZATION.md`.
+
 ## 7.20.0
 
 - **Added: GitHub native stacked PRs.** A new `/steer:reference stacks`

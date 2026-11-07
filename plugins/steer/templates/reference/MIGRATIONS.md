@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - a workspace gets its own `ws:`-prefixed CI
+### v7.21.0 - a workspace gets its own `ws:`-prefixed CI
 
 - **What & why:** the `workspace` profile replaces the core `mise.toml` with one
   whose every task is `ws:`-prefixed, but it still installed the core `ci.yml`
@@ -127,7 +127,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
-### [Unreleased] - CI stages fixed for monorepo coverage, accented paths and Dependabot
+### v7.21.0 - CI stages fixed for monorepo coverage, accented paths and Dependabot
 
 - **What & why:** three shipped stages misbehaved. `scripts/ci-coverage.sh`
   never failed in a Node monorepo: a per-package Vitest run writes lcov paths
