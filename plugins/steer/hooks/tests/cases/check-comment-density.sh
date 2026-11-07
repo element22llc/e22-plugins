@@ -14,7 +14,7 @@ gen_lines() { # <count> <printf-format>  -> <count> lines, %s = index
 	_i=0
 	while [ "${_i}" -lt "$1" ]; do
 		# shellcheck disable=SC2059  # the format string is the point
-		printf "$2\n" "${_i}"
+		printf -- "$2\n" "${_i}"
 		_i=$((_i + 1))
 	done
 }
@@ -124,6 +124,22 @@ assert_ctx "comment-density: bare allow-comments does not silence" "${out}"
 # The marker itself is a steer: directive, so it must not count toward the ratio:
 # 16 of 25 non-blank lines, not 17.
 assert_has "comment-density: marker line not counted" "${out}" '(16 of 25'
+# SQL and Lua take the marker in a `--` comment, the only syntax they have.
+{
+	printf -- '-- steer:allow-comments every line documents a migration constraint\n'
+	gen_lines 16 '-- step %s'
+	gen_lines 8 'SELECT %s;'
+} >"${RCD}/src/waived.sql"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD17 src/waived.sql 'x')")"
+assert_empty "comment-density: -- allow-comments with a reason silences" "${out}"
+{
+	printf -- '-- steer:allow-comments\n'
+	gen_lines 16 '-- step %s'
+	gen_lines 8 'SELECT %s;'
+} >"${RCD}/src/bare.sql"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD18 src/bare.sql 'x')")"
+assert_ctx "comment-density: bare -- allow-comments does not silence" "${out}"
+assert_has "comment-density: -- marker line not counted" "${out}" '(16 of 25'
 # (n) the notice is once per file per session, whatever the file does next: a
 # trimmed file has nothing more to say, and a regressed one was already told.
 {
