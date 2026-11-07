@@ -109,6 +109,11 @@ manage the status band offers an **advisory mode** button (it fills
 **leave advisory**. Run `mise run rules:preview -- --advisory` for the
 inject/skip table.
 
+`/steer:spec` (lite) and `/steer:audit` still run, with their output kept to
+chat or a temp-only Artifact. The audit skips what needs a `/spec` spine instead
+of redirecting to `/steer:setup adopt`, offers no in-tree report, and routes
+nothing to `/steer:work` or the tracker.
+
 ## Claude Cowork's sandbox: no installs, connector-only GitHub
 
 Claude Cowork runs in an **Anthropic-managed, sandboxed Linux VM** (OS-level
