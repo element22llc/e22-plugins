@@ -196,6 +196,7 @@ named `docs` does not also ignore an `apps/docs` inside another member.
 | `mise run ws:list` | List every member the manifest declares - name, repo, branch, profile, local path. |
 | `mise run ws:dev` | Boot every member's services via Compose `include:`. As shipped that is all it does - the dev-server half needs monorepo mode (uncomment `[monorepo]`) plus one `depends` entry per member with a `dev` task; `/steer:init` resolves those from the manifest. |
 | `mise run ws:docker:up` / `ws:docker:down` / `ws:docker:clean` | The aggregated stack alone: start it and wait for health, stop it, or tear it down with its volumes. |
+| `mise run ws:check` / `ws:ci` | The workspace's gates: hygiene, plus the open-question contract across the product spine. The required `ci` check runs the same tasks from `.github/workflows/ci.yml`, installed from `ci-workspace.yml`; `ws:pre-commit` is the commit hook. Lint, tests and coverage belong to the members. |
 
 ### Every workspace task is `ws:`-prefixed - and must stay that way
 

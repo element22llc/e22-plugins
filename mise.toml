@@ -136,6 +136,7 @@ run = [
   # sees it by default - lint it explicitly (also shellchecks its run: blocks).
   # Each runs under the shipped actionlint.yaml, as a consumer repo would.
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/ci.yml",
+  "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/ci-workspace.yml",
   # The on-demand autonomous-loop workflow (instantiated by /steer:loop) also
   # ships outside .github/ - lint it explicitly for the same reason.
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/steer-loop.yml",

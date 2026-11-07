@@ -131,3 +131,32 @@ def test_root_config_installs_the_security_tools_ci_security_runs(path: str) -> 
         pytest.skip(f"{path} runs no ci:security")
     missing = {"aqua:aquasecurity/trivy", "pipx:semgrep"} - set(config.get("tools", {}))
     assert not missing, f"{path} runs ci:security but does not install {sorted(missing)}"
+
+
+_WORKFLOWS = REPO_ROOT / "plugins" / "steer" / "templates" / "github" / "workflows"
+
+
+def test_workspace_config_defines_every_task_its_ci_runs() -> None:
+    """The workspace installs ci-workspace.yml as its ci.yml; every task it runs is ws:-named."""
+    ci = (_WORKFLOWS / "ci-workspace.yml").read_text(encoding="utf-8")
+    runs = set(re.findall(r"^\s*run: mise run ([\w:-]+)\s*$", ci, re.M))
+    tasks = tomllib.loads(
+        (SCAFFOLD / "profiles/workspace/mise.toml").read_text(encoding="utf-8")
+    ).get("tasks", {})
+    assert runs, "ci-workspace.yml runs no mise task"
+    assert all(t.startswith("ws:") for t in runs), f"unprefixed task in ci-workspace.yml: {runs}"
+    missing = sorted(runs - tasks.keys())
+    assert not missing, f"ci-workspace.yml runs tasks the workspace does not define: {missing}"
+
+
+def test_workspace_ci_shares_the_core_setup_and_auto_merge() -> None:
+    """Copied, not shared: a fix to core's checkout, mise setup or auto-merge must land in both."""
+    import yaml
+
+    def load(name: str) -> dict:
+        return yaml.safe_load((_WORKFLOWS / name).read_text(encoding="utf-8"))["jobs"]
+
+    core, ws = load("ci.yml"), load("ci-workspace.yml")
+    assert ws["dependabot-auto-merge"] == core["dependabot-auto-merge"]
+    assert ws["ci"]["steps"][:2] == core["ci"]["steps"][:2]
+    assert ws["ci"]["name"] == "ci", "branch protection requires a check named ci"

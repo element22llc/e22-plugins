@@ -94,6 +94,39 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - a workspace gets its own `ws:`-prefixed CI
+
+- **What & why:** the `workspace` profile replaces the core `mise.toml` with one
+  whose every task is `ws:`-prefixed, but it still installed the core `ci.yml`
+  and the core commit hook. Both call unprefixed tasks (`mise run ci:hygiene`,
+  `mise run pre-commit`) that a workspace never defines, so the required `ci`
+  check failed on every PR and every `git commit` aborted. A workspace now runs
+  `templates/github/workflows/ci-workspace.yml` as its `ci.yml`, backed by
+  `ws:ci:hygiene`, `ws:ci:spec`, `ws:pre-commit`, `ws:check` and `ws:ci`.
+- **Precondition:** a workspace that still runs the core tasks -
+
+  ```sh
+  test -f spec/workspace.yml && grep -q 'mise run ci:hygiene' .github/workflows/ci.yml 2>/dev/null && echo stale
+  test -f spec/workspace.yml && ! grep -q 'ws:pre-commit' mise.toml && echo stale
+  ```
+
+  No output => already migrated, or not a workspace => no-op.
+- **Action:** read-then-propose; show the diff.
+  - `.github/workflows/ci.yml`: **whole-file re-take** from
+    `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci-workspace.yml`. Carry
+    forward any step or job the team added that is not in the core template,
+    renaming a `mise run <task>` it calls to the workspace's `ws:` task.
+  - `mise.toml`: splice in the template's verification block (`ws:ci:hygiene`
+    through `ws:ci`, with its comment) just above `[tasks."convert:doc"]`.
+  - Commit hook: if `.git/hooks/pre-commit` runs `mise run pre-commit`,
+    regenerate it with `mise generate git-pre-commit --task=ws:pre-commit
+    --write`; leave a foreign hook alone.
+  - The code-stage scripts (`scripts/ci-deps.sh`, `ci-lint.sh`, `ci-typecheck.sh`,
+    `ci-test.sh`, `ci-iac.sh`, `ci-image.sh`, `ci-security.sh`, `ci-coverage.sh`)
+    no longer run. Offer to delete them; keep them if the dev prefers.
+
+  **No history entry is earned.**
+
 ### [Unreleased] - CI stages fixed for monorepo coverage, accented paths and Dependabot
 
 - **What & why:** three shipped stages misbehaved. `scripts/ci-coverage.sh`

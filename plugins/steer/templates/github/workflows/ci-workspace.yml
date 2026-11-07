@@ -1,0 +1,125 @@
+# CI for a workspace (polyrepo spine host). Installed as .github/workflows/ci.yml by the
+# `workspace` profile in place of the core ci.yml: this repo holds the product spine and no
+# application code, and every task in its mise.toml is `ws:`-prefixed (an unprefixed name
+# would shadow a member's). Lint, tests, images and coverage belong to the members.
+# Rationale: /steer:reference polyrepo; README.md#branch-protection.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    name: ci
+    # A skipped job satisfies a required check; a draft PR cannot merge anyway.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history, as in the core ci.yml (a check diffing against the base needs it).
+          fetch-depth: 0
+          # Nothing here pushes; leaving the token in .git/config would carry it into
+          # any artifact or nested action that reads the checkout.
+          persist-credentials: false
+
+      # mise-action adds `--locked` whenever mise.lock exists; before /steer:setup init|adopt commits
+      # one, this is a plain unlocked install rather than a failure.
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          install: true
+          cache: true
+
+      - name: Hygiene (actionlint, shellcheck, version-pin policy)
+        run: mise run ws:ci:hygiene
+
+      - name: Spec open-question contract
+        run: mise run ws:ci:spec
+
+  # The documented exception to the human-review gate: a Dependabot patch/minor bump merges once
+  # `ci` passed on this exact head, in this run - no approval, no repo-wide grant, no polling.
+  # Majors, and every repo whose protection requires a review, stay with a human. A job gates
+  # the merge only if it is in `needs`. Rationale: README.md#branch-protection.
+  dependabot-auto-merge:
+    name: dependabot-auto-merge
+    needs: ci
+    # `pull_request.user.login` is the PR's author, `github.actor` whoever pushed this head; a
+    # writer can move either one alone, so both must be Dependabot and the merge step re-checks
+    # every commit. zizmor's bot-conditions flags `github.actor` as spoofable on its own; here it
+    # only narrows the author guard. This is `on: pull_request`, never `pull_request_target`.
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && github.actor == 'dependabot[bot]' # zizmor: ignore[bot-conditions]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    # A Dependabot-triggered run gets exactly these scopes. No checkout: no PR code runs here.
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge the tested head (patch/minor)
+        if: >-
+          ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+              steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Dependabot's own commits have exactly this shape; anything else on the branch means a
+          # writer touched it, and the exception does not extend to their code.
+          foreign="$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/commits" --jq '[.[]
+            | select(.author.login != "dependabot[bot]" or .committer.login != "web-flow"
+                or .commit.verification.verified != true) | .sha] | join(" ")')"
+          if [ -n "$foreign" ]; then
+            echo "::error::Not Dependabot's commits: ${foreign} - not merging."
+            exit 1
+          fi
+          # Empty when protection requires no review; GITHUB_TOKEN cannot read the rule itself.
+          decision="$(gh pr view "$PR_URL" --json reviewDecision --jq .reviewDecision)"
+          case "$decision" in
+          "" | APPROVED) ;;
+          REVIEW_REQUIRED)
+            echo "::notice::ci passed on ${HEAD_SHA} and every commit is Dependabot's, but branch protection requires a review - approve and merge it by hand."
+            exit 0
+            ;;
+          *)
+            echo "::notice::Review decision is ${decision} - leaving the merge to a human."
+            exit 0
+            ;;
+          esac
+          if ! gh pr merge --squash --match-head-commit "$HEAD_SHA" "$PR_URL"; then
+            if [ "$(gh pr view "$PR_URL" --json headRefOid --jq .headRefOid)" != "$HEAD_SHA" ]; then
+              echo "::notice::The PR head moved; the run for the new head decides."
+              exit 0
+            fi
+            echo "::error::Merge refused. A check required outside this workflow may still be pending - put it in this job's \`needs\`."
+            exit 1
+          fi
+
+      - name: Note major update left for human review
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-major' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_URL" \
+            --body "Major version update - **not** auto-merged. steer leaves majors for a human: they can carry breaking changes and may need a \`policy/versions.yml\` decision (\`/steer:spec adr\` if you raise a floor)."

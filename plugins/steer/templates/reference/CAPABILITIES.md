@@ -252,7 +252,9 @@ and **Repair**.
   tasks **and** every `ci:*` stage `ci.yml` runs **and** every `scripts/ci-*.sh` the
   tasks invoke is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
-  checklists). A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
+  checklists). A workspace (`spec/workspace.yml`) spells all of these `ws:`-prefixed
+  - `ws:ci:hygiene`, `ws:check`, `ws:ci` - from the `ci-workspace.yml` template,
+  so a workspace still running the core `ci.yml` is `mis-wired`. A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
   such tasks is the one broken state this capability exists to catch: the required
   check fails on every PR.
 - **Repair:** additively splice the missing job/step, the missing `ci:*`/`check`/`ci`
@@ -312,9 +314,12 @@ and **Repair**.
 - **Files:** `.git/hooks/pre-commit` (**not versioned** - per-clone local state),
   backed by the `pre-commit` task in `mise.toml`
 - **Conditional:** repos whose `mise.toml` defines a `pre-commit` task
-- **Wired-when:** `mise.toml` defines `pre-commit` **and** `.git/hooks/pre-commit`
-  exists and invokes `mise run pre-commit`.
-- **Repair:** run `mise generate git-pre-commit --task=pre-commit --write`. This is
+  (`ws:pre-commit` in a workspace - a repo with `spec/workspace.yml`)
+- **Wired-when:** `mise.toml` defines that task **and** `.git/hooks/pre-commit`
+  exists and invokes it (`mise run pre-commit`, or `mise run ws:pre-commit`). A
+  steer hook calling the other name is `mis-wired`.
+- **Repair:** run `mise generate git-pre-commit --task=pre-commit --write`
+  (`--task=ws:pre-commit` in a workspace). This is
   the one capability whose repair is expected to fire **repeatedly** on a healthy
   repo: `.git/hooks/` is not carried by a clone, so every teammate's first
   `/steer:sync` re-establishes it. That is the point - a commit gate nobody but the
