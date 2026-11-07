@@ -121,6 +121,8 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
 - an `open` or `investigating` `blocking` question whose `required_before` is a
   gate the feature has already passed - `intent-approval` once approved, every
   gate once `live` (an approved feature's later gates block their own gate);
+- a question missing `status:`, an `open` or `investigating` one missing
+  `impact:`, or a `required_before:` that is not a lifecycle gate (**fails**);
 - a `deferred` question missing `owner` or `required_before`;
 - a question with a `tracker:` ref whose issue is closed but `status:` is still
   `open` (the closed-issue / stale-spec trap);

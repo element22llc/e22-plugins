@@ -314,7 +314,7 @@ dg_task() {
 dg_wired() {
 	dg_task "${dg_p}check" && dg_task "${dg_p}ci" && exists "$CIL" || return 1
 	_gap="$(
-		grep -oE "mise run ${dg_p}ci:[a-z][a-z-]*" "$ROOT/$F" | sed 's/^mise run //' | sort -u |
+		grep -oE "mise run( --?[a-z-]+)* ${dg_p}ci:[a-z][a-z-]*" "$ROOT/$F" | sed 's/.* //' | sort -u |
 			while read -r _st; do dg_task "${_st}" || echo "${_st}"; done
 		grep -oE 'scripts/ci-[a-z-]+\.sh' "$ROOT/$MT" 2>/dev/null | sort -u |
 			while read -r _sc; do exists "${_sc}" || echo "${_sc}"; done
