@@ -17,6 +17,7 @@
     "always-on"
   ],
   "repository": "https://github.com/element22llc/e22-plugins",
+  "privacyPolicyUrl": "https://ai.element-22.com/privacy/",
   "userConfig": {
     "github_pat": {
       "type": "string",
