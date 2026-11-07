@@ -57,6 +57,29 @@ push)
 	;;
 esac
 
+# A per-package Vitest run writes lcov SF: paths relative to its package, which
+# diff-cover (run from the root) never matches to a changed file - the gate would
+# pass everything. Rebase them onto the package directory first.
+tmp="$(mktemp -d)"
+trap 'rm -rf "${tmp}"' EXIT
+rebased=''
+for f in ${reports}; do
+	case "${f}" in
+	apps/*/coverage/lcov.info | packages/*/coverage/lcov.info)
+		pkg="${f%/coverage/lcov.info}"
+		out="${tmp}/$(printf '%s' "${pkg}" | tr '/' '_').lcov.info"
+		awk -v p="${pkg}/" '/^SF:/ {
+			s = substr($0, 4); sub(/^\.\//, "", s)
+			if (s !~ /^\// && index(s, p) != 1) s = p s
+			$0 = "SF:" s
+		} { print }' "${f}" >"${out}"
+		rebased="${rebased} ${out}"
+		;;
+	*) rebased="${rebased} ${f}" ;;
+	esac
+done
+reports="${rebased}"
+
 printf '## Coverage (changed lines vs %s)\n' "${base}" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
 # Pinned - this gate can FAIL a PR. If a bump drops --markdown-report, use --format markdown:coverage-diff.md.
 # shellcheck disable=SC2086  # deliberate word-splitting of the collected report paths

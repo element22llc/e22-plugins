@@ -243,13 +243,14 @@ and **Repair**.
 
 ### drift-gate - CI hygiene check + PR drift checklists
 - **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
-  `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
+  `mise.toml`, `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
   `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
   `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** `ci.yml` reaches the hygiene stage - via `mise run ci:hygiene`,
   which runs `scan-version-pins.sh` - **and** `mise.toml` defines the `check` + `ci`
-  tasks **and** every `scripts/ci-*.sh` the tasks invoke is present **and** the PR
+  tasks **and** every `ci:*` stage `ci.yml` runs **and** every `scripts/ci-*.sh` the
+  tasks invoke is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
   checklists). A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
   such tasks is the one broken state this capability exists to catch: the required
@@ -320,7 +321,7 @@ and **Repair**.
   bootstrapper has is not a gate. Never propose committing the hook or setting
   `core.hooksPath` to a tracked directory to dodge this; both are repo-wide
   decisions a sync must not make. A repo that owns its own commit gate - a foreign
-  `pre-commit` hook, or `core.hooksPath` aimed elsewhere - scans as **`n/a`**, not
+  `pre-commit` hook, or `core.hooksPath` set in any git config scope - scans as **`n/a`**, not
   `mis-wired`: that is a decision, not a gap, and proposing the same repair on every
   sync is exactly the nagging this vocabulary exists to avoid. Mention it once and
   move on.

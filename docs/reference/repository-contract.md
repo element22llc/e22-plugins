@@ -216,7 +216,10 @@ and the structured-config files - the line-based `.gitignore` / `.gitattributes`
 `.worktreeinclude` and the JSON configs `.claude/settings.json`, `biome.json` and `tsconfig` -
 reconcile with `scaffold_reconcile.py`, which unions
 JSON arrays and adds missing keys/lines without overwriting, reordering, or
-removing any existing value.
+removing any existing value. In `.gitattributes`, where the last matching line
+wins, the missing lines go above the repo's own so its rules keep deciding; a
+`.gitignore` re-include under a directory the repo ignores whole is reported, not
+written, since git could not honour it.
 
 `.changie.yaml` and `.changes/` follow the same dot-stripping (`changie.yaml`,
 `changes/` in the plugin - `changes/` being the first stripped *directory* beyond
@@ -410,7 +413,7 @@ files the standing invocation-hygiene scan does not - feature `intent.md` files,
 sources, audit reports) keeps the spelling it was written in. The full mapping is
 [Invocation changes](invocation-changes.md).
 
-Twelve entries follow 7.0. **7.1.0** converts legacy `- [ ]` open questions to
+Thirteen entries follow 7.0. **7.1.0** converts legacy `- [ ]` open questions to
 `### Q-NNN` blocks and clears unfilled `Q-001` placeholder seeds from features
 past `draft`. **7.2.1** moves `changelog:new` and `convert:doc` to commands
 `cmd.exe` runs on Windows, and has `dependabot-auto-merge.yml` approve only after
@@ -422,7 +425,10 @@ the scaffold `mise.toml` adopt `min_version`, `usage`, `sources` and
 approving. **7.12.0** drops the PAT prompt from the `.vscode/mcp.json` GitHub
 server, **7.17.0** stops `.claude/settings.json` enabling `typescript-lsp`, and
 **7.20.0** has `scripts/ci-changelog.sh` pass a hotfix back-port that carries
-its release cut.
+its release cut. An unreleased entry has `scripts/ci-coverage.sh` rebase
+per-package lcov paths so the gate can fail in a monorepo, and has
+`scripts/ci-changelog.sh` read non-ASCII paths unquoted and pass a PR Dependabot
+both opened and pushed.
 
 Ledger entries are keyed by the release that **introduced** them, and `/steer:setup sync` skips
 every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut

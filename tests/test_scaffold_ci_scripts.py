@@ -289,10 +289,11 @@ def test_coverage_gates_changed_lines_against_the_base(repo: Repo) -> None:
     base = _repo_with_report(repo)
     r = repo.run("ci-coverage.sh", STEER_CI_BASE=base, COVERAGE_DIFF_MIN="90")
     assert r.code == 0
-    assert r.calls == [
-        "uvx diff-cover@10.4.1 apps/web/coverage/lcov.info --compare-branch "
-        f"{base} --fail-under 90 --markdown-report coverage-diff.md"
-    ]
+    # A package report reaches diff-cover as a rebased temp copy (SF: paths prefixed).
+    [call] = r.calls
+    report, rest = call.removeprefix("uvx diff-cover@10.4.1 ").split(" ", 1)
+    assert report.endswith("/apps_web.lcov.info")
+    assert rest == f"--compare-branch {base} --fail-under 90 --markdown-report coverage-diff.md"
     assert "diff-cover report" in repo.summary.read_text(encoding="utf-8")
 
 

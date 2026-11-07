@@ -97,6 +97,8 @@ jobs:
           STEER_CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           STEER_CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           STEER_CI_BEFORE: ${{ github.event.before }}
+          STEER_CI_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          STEER_CI_ACTOR: ${{ github.actor }}
         run: mise run ci:changelog
 
       - name: Spec open-question contract
@@ -140,7 +142,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           base="${BASE_SHA:-HEAD~1}"
-          files=$(git diff --name-only "$base" HEAD -- '**/DESIGN.md' 'DESIGN.md' || true)
+          files=$(git -c core.quotePath=false diff --name-only "$base" HEAD -- '**/DESIGN.md' 'DESIGN.md' || true)
           {
             echo "files<<EOF"
             echo "$files"
@@ -181,7 +183,7 @@ jobs:
           else
             range="${BEFORE}..${HEAD_SHA}"
           fi
-          changed=$(git diff --name-only "$range" || true)
+          changed=$(git -c core.quotePath=false diff --name-only "$range" || true)
           [ -n "$changed" ] || exit 0
           behavior=$(printf '%s\n' "$changed" \
             | grep -E '^(apps|packages|src|services|lib|app)/' \

@@ -299,12 +299,30 @@ MT="mise.toml"
 CIH="scripts/ci-hygiene.sh"
 CIL="scripts/ci-lib.sh"
 dg_files="$F,$PRT,$MT,$CIH,$CIL"
+# A mise task: a [tasks.<name>] table, an inline `<name> = ...` entry, or a file task.
+dg_task() {
+	grep -Eq "^[[:space:]]*(\[tasks\.\"?$1\"?\]|\"?$1\"?[[:space:]]*=)" "$ROOT/$MT" 2>/dev/null ||
+		[ -f "$ROOT/.mise/tasks/$(printf '%s' "$1" | tr ':' '/')" ] ||
+		[ -f "$ROOT/mise-tasks/$(printf '%s' "$1" | tr ':' '/')" ]
+}
+# Every stage ci.yml runs is a task, `check` and `ci` exist, and every
+# scripts/ci-*.sh mise.toml names is on disk.
+dg_wired() {
+	dg_task check && dg_task ci && exists "$CIL" || return 1
+	_gap="$(
+		grep -oE 'mise run ci:[a-z][a-z-]*' "$ROOT/$F" | sed 's/^mise run //' | sort -u |
+			while read -r _st; do dg_task "${_st}" || echo "${_st}"; done
+		grep -oE 'scripts/ci-[a-z-]+\.sh' "$ROOT/$MT" 2>/dev/null | sort -u |
+			while read -r _sc; do exists "${_sc}" || echo "${_sc}"; done
+	)"
+	[ -z "${_gap}" ]
+}
 if ! exists "$F"; then
 	emit "drift-gate" "absent" "$dg_files"
 elif ! exists "$PRT"; then
 	emit "drift-gate" "mis-wired" "$dg_files"
 elif has "$F" "mise run ci:hygiene"; then
-	if has "$MT" "ci:hygiene" && exists "$CIH" && exists "$CIL"; then
+	if dg_wired; then
 		emit "drift-gate" "present-wired" "$dg_files"
 	else
 		emit "drift-gate" "mis-wired" "$dg_files"
@@ -425,7 +443,7 @@ fi
 # it, and git does not carry an empty directory.
 F=".changie.yaml"
 if exists "$F"; then
-	if [ -d ".changes/unreleased" ]; then
+	if exists ".changes/unreleased"; then
 		emit "changelog-fragments" "present-wired" "$F"
 	else
 		emit "changelog-fragments" "mis-wired" "$F"
@@ -525,6 +543,8 @@ CG_MT="mise.toml"
 cg_files="$CG_MT,.git/hooks/pre-commit"
 cg_hooks="$(git -C "$ROOT" rev-parse --path-format=absolute --git-path hooks 2>/dev/null || true)"
 if ! has "$CG_MT" "tasks.pre-commit"; then
+	emit "commit-gate" "n/a" "$cg_files"
+elif [ -n "$(git -C "$ROOT" config --get core.hooksPath 2>/dev/null)" ]; then
 	emit "commit-gate" "n/a" "$cg_files"
 elif [ -z "$cg_hooks" ] || [ ! -d "$cg_hooks" ]; then
 	emit "commit-gate" "n/a" "$cg_files"

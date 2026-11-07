@@ -94,6 +94,42 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - CI stages fixed for monorepo coverage, accented paths and Dependabot
+
+- **What & why:** three shipped stages misbehaved. `scripts/ci-coverage.sh`
+  never failed in a Node monorepo: a per-package Vitest run writes lcov paths
+  relative to the package, and diff-cover matched none of them to the diff.
+  `scripts/ci-changelog.sh` counted an exempt `spec/` or `docs/` file with a
+  non-ASCII name as shipping code, because git quotes such paths. And it failed
+  every Dependabot npm, pip, docker or terraform bump - which carries no
+  fragment and cannot take one - so `dependabot-auto-merge` never ran.
+- **Precondition:** any of these prints `stale` -
+
+  ```sh
+  test -f scripts/ci-coverage.sh && ! grep -q 'rebased=' scripts/ci-coverage.sh && echo stale
+  test -f scripts/ci-changelog.sh && ! grep -q 'core.quotePath=false' scripts/ci-changelog.sh && echo stale
+  test -f scripts/ci-changelog.sh && ! grep -q 'STEER_CI_ACTOR' scripts/ci-changelog.sh && echo stale
+  grep -q 'mise run ci:changelog' .github/workflows/ci.yml 2>/dev/null && ! grep -q 'STEER_CI_ACTOR' .github/workflows/ci.yml && echo stale
+  ```
+
+  No output => already migrated => no-op.
+- **Action:** read-then-propose; show the diff, and leave the rest of each file
+  as it is.
+  - `scripts/ci-coverage.sh`: splice in the template's `rebased=` block (the
+    comment, `mktemp`/`trap`, the loop and `reports="${rebased}"`) just before
+    the `## Coverage` summary line.
+  - `scripts/ci-changelog.sh`: replace each `git diff ` with
+    `git -c core.quotePath=false diff `, and splice in the template's
+    Dependabot block (`STEER_CI_PR_AUTHOR` + `STEER_CI_ACTOR`) just before the
+    `steer_ci_base` call.
+  - `.github/workflows/ci.yml`: add
+    `STEER_CI_PR_AUTHOR: ${{ github.event.pull_request.user.login }}` and
+    `STEER_CI_ACTOR: ${{ github.actor }}` to the `ci:changelog` step's `env:`, and in the `spec-drift` and `DESIGN.md` steps
+    replace `git diff --name-only` with
+    `git -c core.quotePath=false diff --name-only`.
+
+  **No history entry is earned.**
+
 ### v7.20.0 - `ci:changelog` passes a hotfix back-port carrying its cut
 
 - **What & why:** a `/steer:work --hotfix` PR into `prod` now cuts its own patch

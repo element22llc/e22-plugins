@@ -45,6 +45,14 @@ if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod
 	exit 0
 fi
 
+# A Dependabot bump adds no fragment and cannot take one: dependabot-auto-merge
+# refuses a commit that is not Dependabot's, so requiring one would block every bump.
+# Same guard as that job: author and pusher both Dependabot.
+if [ "${STEER_CI_PR_AUTHOR:-}" = 'dependabot[bot]' ] && [ "${STEER_CI_ACTOR:-}" = 'dependabot[bot]' ]; then
+	printf 'ci:changelog - Dependabot dependency bump; no fragment required.\n'
+	exit 0
+fi
+
 if ! base="$(steer_ci_base)"; then
 	steer_ci_notice 'No base ref to diff against - skipping the changelog gate (fail-open).'
 	exit 0
@@ -57,14 +65,14 @@ fi
 
 # A diff that adds a released version file carries a cut that consumed its
 # fragments: the back-port of a hotfix that was cut on prod.
-cut="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- ':(glob).changes/*.md' 2>/dev/null ||
-	git diff --diff-filter=A --name-only "${base}" HEAD -- ':(glob).changes/*.md')"
+cut="$(git -c core.quotePath=false diff --diff-filter=A --name-only "${base}...HEAD" -- ':(glob).changes/*.md' 2>/dev/null ||
+	git -c core.quotePath=false diff --diff-filter=A --name-only "${base}" HEAD -- ':(glob).changes/*.md')"
 if [ -n "${cut}" ]; then
 	printf 'ci:changelog - carries a release cut (%s); its fragments were consumed.\n' "$(printf '%s' "${cut}" | tr '\n' ' ')"
 	exit 0
 fi
 
-changed="$(git diff --name-only "${base}...HEAD" 2>/dev/null || git diff --name-only "${base}" HEAD)"
+changed="$(git -c core.quotePath=false diff --name-only "${base}...HEAD" 2>/dev/null || git -c core.quotePath=false diff --name-only "${base}" HEAD)"
 
 shipping=''
 while IFS= read -r path; do
@@ -80,8 +88,8 @@ if [ -z "${shipping}" ]; then
 	exit 0
 fi
 
-added="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- '.changes/unreleased/*.yaml' 2>/dev/null ||
-	git diff --diff-filter=A --name-only "${base}" HEAD -- '.changes/unreleased/*.yaml')"
+added="$(git -c core.quotePath=false diff --diff-filter=A --name-only "${base}...HEAD" -- '.changes/unreleased/*.yaml' 2>/dev/null ||
+	git -c core.quotePath=false diff --diff-filter=A --name-only "${base}" HEAD -- '.changes/unreleased/*.yaml')"
 
 if [ -n "${added}" ]; then
 	printf 'ci:changelog - fragment present.\n'
