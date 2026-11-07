@@ -78,7 +78,8 @@ A **local, GitHub-independent** structural check over the open-question contract
 (`SPEC-FRAMEWORK.md`): the defense-in-depth floor that holds even when the
 tracker is unreachable. It is read-only - it reports failures and (with a yes)
 proposes fixes; it never invents a decision. Given a `[feature-id]` it checks one
-feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
+feature; `--all` sweeps every `intent.md`, `vision.md` and
+`PRODUCTIONIZATION.md` in the spine.
 
 Flag each of these, citing the `Q-NNN` and file:
 
@@ -86,6 +87,8 @@ Flag each of these, citing the `Q-NNN` and file:
   `required_before` is a gate the feature has already passed: `intent-approval`
   once `Status: approved`, every gate once `live` (an approved feature's later
   gates - `contract-approval`, `implementation`, ... - block their own gate);
+- **Error:** a question missing `status:`, an `open` or `investigating` one
+  missing `impact:`, or a `required_before:` that is not a lifecycle gate;
 - **Error:** a `deferred` question missing `owner` or `required_before`;
 - **Error:** a `resolved` question with no resolution folded into the spec's normative
   prose (only a `_Resolution:_` line, or nothing);
