@@ -1,0 +1,17 @@
+kind: Fixed
+time: 2026-11-06T20:00:00.000000000-05:00
+custom:
+  Slug: prose-coherence-audit-validate
+body: |-
+  - **Fixed: three places where skill prose sent you somewhere it could not
+    go.** The audit, adopt, intake and roadmap skills named
+    `/steer:issues publish-audit` / `publish-drift` / `publish-adoption` as the
+    filing step, a command a user cannot type; they now name
+    `/steer:work issues publish-*`. `/steer:audit` gained an advisory-mode
+    section: in a repo declared `STEER_MODE=advisory` it no longer redirects
+    to `/steer:setup adopt`, offers no `AUDIT-REPORT.md` / `DRIFT-REPORT.md`
+    in the tree, and routes nothing to `/steer:work` or the tracker. And
+    `/steer:spec validate` now reports what the `ci:spec` gate fails as an
+    error - a bare `- [ ]` open question, and a blocking question open at any
+    gate its feature has passed (every gate once `live`) - instead of a
+    warning or a narrower check.

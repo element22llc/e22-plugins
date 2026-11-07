@@ -118,10 +118,9 @@ that should decide; on promotion it resolves to a GitHub assignee via the
 A local, GitHub-independent structural check over the question contract - the
 defense-in-depth floor that holds even when the tracker is unreachable. It flags:
 
-- an **approved** intent that still contains an `open` `blocking` question with
-  `required_before: intent-approval` (questions gated at later gates -
-  `contract-approval`, `implementation`, ... - block their own gate, not the
-  already-granted intent approval);
+- an `open` or `investigating` `blocking` question whose `required_before` is a
+  gate the feature has already passed - `intent-approval` once approved, every
+  gate once `live` (an approved feature's later gates block their own gate);
 - a `deferred` question missing `owner` or `required_before`;
 - a question with a `tracker:` ref whose issue is closed but `status:` is still
   `open` (the closed-issue / stale-spec trap);
@@ -136,7 +135,7 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `live` feature), with no `tracker:` ref - not yet promoted (**warns**,
   mirroring the closed-issue trap: it nudges you to promote or defer, it does not
   block the gate);
-- a bare `- [ ]` item under `## Open questions` (**warns**: the retired format -
+- a bare `- [ ]` item under `## Open questions` (**fails**: the retired format -
   `/steer:setup sync` converts it);
 - an unfilled placeholder seed in a feature past `draft` or beside real
   questions (**fails** - `/steer:spec approve` removes it at approval, and

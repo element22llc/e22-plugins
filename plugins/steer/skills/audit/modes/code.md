@@ -11,9 +11,9 @@ it never re-runs the focused skills: correctness bugs defer to `/code-review`,
 security to `/security-review`, mechanical cleanup to `/simplify` (name the
 skill; don't run it here). A cluttered repo root is handed to `/steer:work tidy`, not
 reported stray-by-stray. **If there is no `/spec` spine yet,** the spec-coverage
-dimension can't run - note that, redirect to `/steer:setup adopt` for the spec, and
-run the code-health dimensions (2-10) without it; dimension 11 has nothing to
-read either.
+dimension can't run - note that, redirect to `/steer:setup adopt` for the spec
+(never in advisory mode - `SKILL.md`), and run the code-health dimensions (2-10)
+without it; dimension 11 has nothing to read either.
 
 ## When to run
 
@@ -48,7 +48,8 @@ clean bill of health.
 Detect the stack from the repo itself (`package.json` / `pyproject.toml`,
 frameworks, database, auth) - don't trust training-data memory. Map the apps,
 entry points, and user-facing features. Check whether a `/spec` spine exists; if
-not, note it and mark dimension 1 as **not run - redirect to `/steer:setup adopt`**.
+not, note it and mark dimension 1 as **not run - redirect to `/steer:setup adopt`** (advisory
+mode: **not run**, no redirect).
 Decide which dimensions apply.
 
 ## Phase 1 - Audit
@@ -131,7 +132,7 @@ of dimension.
    temp dir; all rendering mechanics live in `/steer:reference artifacts`.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** -> a **two-level** issue set, filed via
-     **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
+     **`/steer:work issues publish-audit`** (which routes through `/steer:tracker-sync`):
      one **audit-run** parent (scope, plugin version, audited SHA, dimensions
      run/skipped, summary, report path) plus selected **finding** children -
      selected in-session or via the filled triage Doc or export - each
@@ -147,12 +148,12 @@ of dimension.
    - **Correctness / security / mechanical cleanup** -> defer per the Boundaries
      note. To turn an unresolved `/code-review` or
      `/security-review` finding into a tracked issue, route it through
-     **`/steer:issues publish-findings --source code-review|security-review`**
+     **`/steer:work issues publish-findings --source code-review|security-review`**
      (`kind=finding` + the matching `source:*`; security findings redact secrets
      / exploit detail and default to human review before public disclosure).
 3. **Make no code or spec edits, and don't commit.** This mode stops at the
    report, the proposed routing, and (with a yes) the optional `AUDIT-REPORT.md`.
-   It opens **no issues itself** - filing is `/steer:issues publish-audit`, its own
+   It opens **no issues itself** - filing is `/steer:work issues publish-audit`, its own
    step. Fixing anything is a separate, approved step on its own branch + PR.
 4. **Recommend the next action.** End with a `## Recommended next actions -
    /steer:audit code` block per
@@ -199,4 +200,4 @@ closed, and each run's `audit-run` parent is immutable history. The canonical
 full lifecycle - both identities, the per-finding transition rules, `audit-id`
 immutability - lives in
 [`ISSUE-WORKFLOW.md`](../../../templates/reference/ISSUE-WORKFLOW.md) -> "Audit &
-drift"; `/steer:issues publish-audit` implements it (markers: `ISSUE-SCHEMA.md`).
+drift"; `/steer:work issues publish-audit` implements it (markers: `ISSUE-SCHEMA.md`).

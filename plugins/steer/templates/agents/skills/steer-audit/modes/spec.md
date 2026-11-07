@@ -10,7 +10,7 @@ description of what the product *actually does*) against the **tracker spec**
 (what it was *supposed* to do, exported from the issue tracker as markdown) and
 surfaces every place the two diverge. Its outputs are a drift report and a
 proposed Rule-5 resolution per finding; anything needing a human decision is
-*proposed* as a `spec-drift` issue, which **`/steer-issues publish-drift` files
+*proposed* as a `spec-drift` issue, which **`/steer-work issues publish-drift` files
 as a separate step** - this mode writes nothing itself. Resolving drift is in
 turn a separate, approved step (see the spec-framework reference, Rule 5).
 
@@ -18,7 +18,7 @@ turn a separate, approved step (see the spec-framework reference, Rule 5).
 it reverse-engineers the as-built `/spec` from the code; the `spec` audit is
 steady-state conformance that **consumes** that spine and diffs it against the
 tracker intent. **If there is no `/spec` spine yet, stop and run `/steer-setup adopt`
-first** - there is no as-built spec to compare against.
+first** (in advisory mode, just stop - `SKILL.md`) - there is no as-built spec to compare against.
 
 ## When to run
 
@@ -35,7 +35,8 @@ first** - there is no as-built spec to compare against.
    *derived from the real code*. A contract's `## Implementation pointers` section
    is **optional and explicitly not a maintained index** - it may name an owning
    app/package, a file, or nothing at all - so never depend on it being there. If
-   the spine itself is absent, redirect to `/steer-setup adopt` and stop.
+   the spine itself is absent, redirect to `/steer-setup adopt` (advisory mode:
+   no redirect) and stop.
 2. **The tracker spec export** - markdown files from any issue tracker (Jira,
    Linear, GitHub Issues, ...), **one file per epic/issue or per story / task**. A
    coarse-grained file (epic, large issue) contains several sub-items with their
@@ -165,7 +166,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    (internal/architectural).
 3. **Nominate `spec-drift`-kind issues** for findings that need a human
    decision, so drift becomes a tracked item rather than a quiet failure - this
-   mode nominates, `/steer-issues publish-drift` files. Scope these to
+   mode nominates, `/steer-work issues publish-drift` files. Scope these to
    *actual* drift - Diverged, Done-but-Missing, and genuine conflicts - **not**
    expected-Missing backlog (those are unbuilt roadmap, not a decision to track).
    Each issue uses the **decision-checklist** body
@@ -173,7 +174,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    says* / *Implementation does* / *Evidence* / *Human decision required* (the
    checklist). The agent may propose a direction but **never resolves behavioural
    drift autonomously** - a PO or dev decides by ownership. On a GitHub tracker,
-   hand this finding set to **`/steer-issues publish-drift`** (which routes through
+   hand this finding set to **`/steer-work issues publish-drift`** (which routes through
    `/steer-tracker-sync`) to file them - idempotent, confirmed once - rather than
    opening them ad hoc; for other trackers, propose the issues for the dev to
    file.
