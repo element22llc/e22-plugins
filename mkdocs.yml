@@ -155,6 +155,7 @@ nav:
       - MCP servers: reference/mcp-servers.md
       - Repository contract: reference/repository-contract.md
       - What moved where (7.0): reference/invocation-changes.md
+      - Privacy policy: privacy.md
   - Team rollout:
       - Known limitations: reference/known-limitations.md
       - Launch checklist: team-rollout/launch-checklist.md
