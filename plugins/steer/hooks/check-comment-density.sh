@@ -49,7 +49,7 @@ COUNTS="$(awk -v style="${STYLE}" '
 	/^[[:space:]]*$/ { next }
 	{ total++ }
 	NR == 1 && /^#!/ { next }
-	/^[[:space:]]*(#|\/\/)[[:space:]]*(shellcheck|noqa|type:|pyright:|mypy:|ruff:|pylint:|flake8:|eslint-|biome-ignore|prettier-ignore|@ts-|steer:)/ { next }
+	/^[[:space:]]*(#|\/\/|--)[[:space:]]*(shellcheck|noqa|type:|pyright:|mypy:|ruff:|pylint:|flake8:|eslint-|biome-ignore|prettier-ignore|@ts-|steer:)/ { next }
 	style == "hash" && /^[[:space:]]*#/ { c++ }
 	style == "slash" && /^[[:space:]]*(\/\/|\/\*|\*)/ { c++ }
 	style == "dash" && /^[[:space:]]*--/ { c++ }
@@ -64,10 +64,7 @@ TOTAL="${COUNTS#* }"
 # File-level opt-out, deliberately unlike the per-line `# steer:allow-pin`:
 # density is a property of the whole file. The reason is required - a bare
 # marker suppresses nothing, so the escape hatch cannot be taken silently.
-# It recognises `#` and `//` markers only, so a `.sql` or `.lua` file cannot
-# silence the notice (#576). Left as is now that the tier is advisory: a reader
-# can see the marker whatever its syntax, and there is nothing to escape.
-if grep -qE '^[[:space:]]*(#|//)[[:space:]]*steer:allow-comments[[:space:]]+[^[:space:]]' "${TARGET}" 2>/dev/null; then
+if grep -qE '^[[:space:]]*(#|//|--)[[:space:]]*steer:allow-comments[[:space:]]+[^[:space:]]' "${TARGET}" 2>/dev/null; then
 	exit 0
 fi
 
