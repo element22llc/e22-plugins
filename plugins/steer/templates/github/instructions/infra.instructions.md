@@ -6,6 +6,8 @@ description: Infrastructure-as-code stack standards - applied when editing Terra
 
 ## Stack - infrastructure / IaC (e22 org pack)
 
+> **Applies only to a repo on the e22 org pack** - `policy/org.yml` with `pack: e22`, which is also what an absent file means. A repo that declares another pack skips this section and follows the vendor-neutral core rules, which name no product.
+
 This repo does infrastructure-as-code and follows the e22 org pack. The
 universal core still applies (mise pinning, the `/spec` spine, CI hygiene); the
 stack below replaces the app defaults. Deviations are ADRs, same as any stack choice.
