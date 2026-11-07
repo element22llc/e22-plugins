@@ -1,0 +1,13 @@
+kind: Fixed
+time: 2026-11-06T21:10:00.000000000-05:00
+custom:
+  Slug: copilot-infra-org-pack-note
+body: |-
+  - **Fixed: Copilot's infra instructions now say they apply only to the e22
+    org pack.** `.github/instructions/infra.instructions.md` dropped the org
+    pack note, assuming its `applyTo` glob covered the whole scope. The glob
+    covers only the IaC half of rule 12's scope, so Copilot handed the e22
+    infra stack to infra repos on any other pack. The file now carries the
+    same "Applies only to a repo on the e22 org pack" note the flat
+    instructions use, and the Copilot check fails when a path-scoped rule
+    leaves a scope arm unstated.

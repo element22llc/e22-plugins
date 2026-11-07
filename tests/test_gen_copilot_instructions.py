@@ -69,7 +69,11 @@ def test_every_shipped_token_is_qualified_routed_or_exempted():
         decided = (
             token in gen.SCOPE_PRECONDITIONS
             or token in gen.UNQUALIFIED_TOKENS
-            or all(r in gen.SCOPED_RULES for r in rules)
+            or all(
+                r in gen.SCOPED_RULES
+                and all(a in gen.SCOPE_PRECONDITIONS for a in gen.ungated_arms(r, token))
+                for r in rules
+            )
         )
         assert decided, f"inject-when={token} ({rules}) is in neither map nor SCOPED_RULES"
 
@@ -80,3 +84,27 @@ def test_path_scoped_files_open_with_frontmatter():
     for name, text in scoped.items():
         assert text.startswith("---\n"), name
         assert "\napplyTo: " in text.split("\n---\n")[0], name
+
+
+def test_scoped_file_states_the_arm_its_glob_cannot_test(tmp_path: Path):
+    # applyTo stands in for has-iac only; rule 12 is also org-e22-gated, and an
+    # infra repo on another pack must be told to skip the e22 stack.
+    rules = _rules(
+        tmp_path,
+        **{
+            "12_stack_infra.md": (
+                "<!-- steer:inject-when=has-iac&org-e22 -->\n## Stack - infra\n\nBody.\n"
+            )
+        },
+    )
+    text = gen.render_scoped(rules)["infra.instructions.md"]
+    assert "## Stack - infra\n\n> **Applies only to a repo on the e22 org pack**" in text
+    assert "infrastructure-as-code** - it has" not in text
+    assert "steer:inject-when" not in text
+
+
+def test_shipped_infra_file_carries_the_org_pack_note():
+    from conftest import REPO_ROOT
+
+    text = (REPO_ROOT / gen.INSTRUCTIONS_DIR / "infra.instructions.md").read_text(encoding="utf-8")
+    assert "Applies only to a repo on the e22 org pack" in text

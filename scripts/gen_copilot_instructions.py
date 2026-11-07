@@ -51,10 +51,12 @@ INSTRUCTIONS_DIR = Path("plugins/steer/templates/github/instructions")
 # `applyTo` glob) that surface only when Copilot works on matching files. We route
 # those rules there instead of the flat file - the Copilot analog of the Claude
 # hook's trait gating, and a tighter fit than dumping infra rules into every
-# repo's always-on context.
+# repo's always-on context. `gated_by` names the token arm the glob stands in
+# for; every other `&` arm still needs its precondition line in the file.
 SCOPED_RULES: dict[str, dict[str, str]] = {
     "12-stack-infra.md": {
         "name": "infra",
+        "gated_by": "has-iac",
         "applyTo": (
             "**/*.tf,**/*.tofu,**/*.hcl,**/*.tfvars,**/*.tf.json,"
             "infra/**,live/**,modules/**,roles/**,playbooks/**,inventory/**"
@@ -206,10 +208,21 @@ def _qualified_body(text: str) -> str:
     if marker is None:
         return body
     precondition = SCOPE_PRECONDITIONS.get(marker.group("token"))
-    if precondition is None:
+    return _under_heading(body, [precondition] if precondition else [])
+
+
+def _under_heading(body: str, preconditions: list[str]) -> str:
+    if not preconditions:
         return body
+    quoted = "\n>\n".join(f"> {p}" for p in preconditions)
     heading, sep, rest = body.partition("\n")
-    return f"{heading}{sep}\n> {precondition}\n{rest}"
+    return f"{heading}{sep}\n{quoted}\n{rest}"
+
+
+def ungated_arms(rule_name: str, token: str) -> list[str]:
+    """The `&` arms of a routed rule's token that its applyTo glob does not cover."""
+    gated_by = SCOPED_RULES[rule_name].get("gated_by")
+    return [arm for arm in token.split("&") if arm != gated_by]
 
 
 def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
@@ -222,9 +235,13 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
         rule_path = rules_dir / rule_name
         if not rule_path.is_file():
             continue
-        # No precondition line here: `applyTo` already gates this file, so the
-        # sentence the flat artifact needs would be redundant.
-        body = _INJECT_WHEN_MARKER.sub("", rule_path.read_text(encoding="utf-8"), count=1).strip()
+        text = rule_path.read_text(encoding="utf-8")
+        marker = _INJECT_WHEN_MARKER.match(text)
+        arms = ungated_arms(rule_name, marker.group("token")) if marker else []
+        body = _under_heading(
+            _INJECT_WHEN_MARKER.sub("", text, count=1).strip(),
+            [SCOPE_PRECONDITIONS[a] for a in arms if a in SCOPE_PRECONDITIONS],
+        )
         front = yaml.safe_dump(
             {"applyTo": spec["applyTo"], "description": spec["description"]},
             default_flow_style=False,

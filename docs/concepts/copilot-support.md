@@ -353,8 +353,10 @@ That gate exists because of [#577](https://github.com/element22llc/e22-plugins/i
 where rule 33 told native `spec/` repos "This repo carries an `openspec/`
 spine".
 
-A **path-scoped** rule (next section) needs none of this: `applyTo` already gates
-the file, so the sentence would be redundant.
+A **path-scoped** rule (next section) drops only the arm its `applyTo` glob
+stands in for, named by `gated_by` in `SCOPED_RULES`. Every other `&` arm of its
+token still gets its precondition: `infra.instructions.md` is gated on IaC files
+by the glob, and still says it applies only to a repo on the e22 org pack.
 
 ## Path-scoped instructions
 

@@ -31,6 +31,7 @@ from gen_copilot_instructions import (
     render,
     render_scoped,
     rule_tokens,
+    ungated_arms,
 )
 
 
@@ -110,6 +111,12 @@ def _unqualified_scoped_rules() -> list[str]:
             continue
         for rule in rules:
             if rule in SCOPED_RULES:
+                problems.extend(
+                    f"{rule} is routed by applyTo, but its inject-when arm {arm} is "
+                    "not in SCOPE_PRECONDITIONS"
+                    for arm in ungated_arms(rule, token)
+                    if arm not in SCOPE_PRECONDITIONS
+                )
                 continue
             problems.append(f"{rule} carries inject-when={token}, which is in neither map")
     return problems
