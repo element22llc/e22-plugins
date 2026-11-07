@@ -292,7 +292,11 @@ fi
 # runs) lives in scripts/ci-hygiene.sh - the workflow no longer names the
 # scanner at all, and the tasks + scripts must be present or every PR fails.
 # LEGACY: a repo that predates that still carries the inlined scanner step; it
-# is wired, not broken, and the MIGRATIONS ledger moves it forward.
+# is wired, not broken, and the MIGRATIONS ledger moves it forward. A workspace
+# (spine host) spells every task `ws:`-prefixed, so a workspace still running the
+# core ci.yml's unprefixed tasks is mis-wired.
+dg_p=""
+if exists "spec/workspace.yml"; then dg_p="ws:"; fi
 F=".github/workflows/ci.yml"
 PRT=".github/pull_request_template.md"
 MT="mise.toml"
@@ -308,9 +312,9 @@ dg_task() {
 # Every stage ci.yml runs is a task, `check` and `ci` exist, and every
 # scripts/ci-*.sh mise.toml names is on disk.
 dg_wired() {
-	dg_task check && dg_task ci && exists "$CIL" || return 1
+	dg_task "${dg_p}check" && dg_task "${dg_p}ci" && exists "$CIL" || return 1
 	_gap="$(
-		grep -oE 'mise run ci:[a-z][a-z-]*' "$ROOT/$F" | sed 's/^mise run //' | sort -u |
+		grep -oE "mise run ${dg_p}ci:[a-z][a-z-]*" "$ROOT/$F" | sed 's/^mise run //' | sort -u |
 			while read -r _st; do dg_task "${_st}" || echo "${_st}"; done
 		grep -oE 'scripts/ci-[a-z-]+\.sh' "$ROOT/$MT" 2>/dev/null | sort -u |
 			while read -r _sc; do exists "${_sc}" || echo "${_sc}"; done
@@ -321,13 +325,13 @@ if ! exists "$F"; then
 	emit "drift-gate" "absent" "$dg_files"
 elif ! exists "$PRT"; then
 	emit "drift-gate" "mis-wired" "$dg_files"
-elif has "$F" "mise run ci:hygiene"; then
+elif has "$F" "mise run ${dg_p}ci:hygiene"; then
 	if dg_wired; then
 		emit "drift-gate" "present-wired" "$dg_files"
 	else
 		emit "drift-gate" "mis-wired" "$dg_files"
 	fi
-elif has "$F" "scan-version-pins.sh"; then
+elif [ -z "$dg_p" ] && has "$F" "scan-version-pins.sh"; then
 	emit "drift-gate" "present-wired" "$dg_files"
 else
 	emit "drift-gate" "mis-wired" "$dg_files"
@@ -542,7 +546,9 @@ fi
 CG_MT="mise.toml"
 cg_files="$CG_MT,.git/hooks/pre-commit"
 cg_hooks="$(git -C "$ROOT" rev-parse --path-format=absolute --git-path hooks 2>/dev/null || true)"
-if ! has "$CG_MT" "tasks.pre-commit"; then
+# The hook must call this repo's own commit-gate task: a workspace's is ws:pre-commit.
+cg_task="${dg_p}pre-commit"
+if ! dg_task "$cg_task"; then
 	emit "commit-gate" "n/a" "$cg_files"
 elif [ -n "$(git -C "$ROOT" config --get core.hooksPath 2>/dev/null)" ]; then
 	emit "commit-gate" "n/a" "$cg_files"
@@ -550,8 +556,10 @@ elif [ -z "$cg_hooks" ] || [ ! -d "$cg_hooks" ]; then
 	emit "commit-gate" "n/a" "$cg_files"
 elif [ ! -f "$cg_hooks/pre-commit" ]; then
 	emit "commit-gate" "absent" "$cg_files"
-elif grep -q "mise run pre-commit" "$cg_hooks/pre-commit" 2>/dev/null; then
+elif grep -Eq "mise run ${cg_task}([[:space:]]|\$)" "$cg_hooks/pre-commit" 2>/dev/null; then
 	emit "commit-gate" "present-wired" "$cg_files"
+elif grep -Eq 'mise run (ws:)?pre-commit' "$cg_hooks/pre-commit" 2>/dev/null; then
+	emit "commit-gate" "mis-wired" "$cg_files"
 else
 	emit "commit-gate" "n/a" "$cg_files"
 fi

@@ -174,7 +174,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `docker:*`/`db:*` tasks - the MANIFEST's `compose.yaml` row).
 
    Then **wire the commit gate**: `mise generate git-pre-commit
-   --task=pre-commit --write`. `.git/hooks/` is not versioned, so this is
+   --task=pre-commit --write` (`--task=ws:pre-commit` in a `workspace`, whose
+   tasks are all `ws:`-prefixed). `.git/hooks/` is not versioned, so this is
    per-clone, not a committed file - say so when you announce it, and point the
    team's other clones at `/steer-setup sync`, which re-establishes it. Linked
    worktrees share the primary checkout's hooks, so `claude --worktree` needs

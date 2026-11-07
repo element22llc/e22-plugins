@@ -95,7 +95,12 @@ instead of overwriting it.
     the Layer-2 dir `profiles/workspace/`: `README.md` and `mise.toml` and
     `compose.yaml` all **replace** their core counterparts, `gitignore` merges
     into `.gitignore`, and `scripts/ws.sh` installs as `scripts/ws.sh`. **Skip
-    Layer 1 entirely** - this repo owns no application code. **Keep** Layer 0's
+    Layer 1 entirely** - this repo owns no application code. CI follows: install
+    `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/github/workflows/ci-workspace.yml` as
+    `.github/workflows/ci.yml` in place of the core one (it runs the `ws:ci:*`
+    tasks), and skip the core code-stage scripts (`ci-deps`, `ci-lint`,
+    `ci-typecheck`, `ci-test`, `ci-iac`, `ci-image`, `ci-security`,
+    `ci-coverage`) - those stages belong to the members. **Keep** Layer 0's
     `scripts/worktree-env.sh`: the workspace boots the members' services
     together and needs its own Compose project name so it never collides with a
     member's standalone stack.

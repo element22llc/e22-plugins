@@ -291,7 +291,8 @@ leading dot - rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `https://github.com/element22llc/e22-plugins/tree/main/plugins/steer/templates/spec/`.
 
 **Wire the commit gate** once `mise.toml` carries the `pre-commit` task: run
-`mise generate git-pre-commit --task=pre-commit --write`. It writes
+`mise generate git-pre-commit --task=pre-commit --write` (`ws:pre-commit` in a
+workspace, whose tasks are all `ws:`-prefixed). It writes
 `.git/hooks/pre-commit`, which is **not** versioned - so it is per-clone, nothing
 to commit, and the team's other clones get it from `/steer-setup sync`. Say that when
 you announce it. Linked worktrees share the primary checkout's hooks, so

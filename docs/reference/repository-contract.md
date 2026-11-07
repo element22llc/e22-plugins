@@ -83,7 +83,10 @@ scaffold layers `/steer:setup init` / `/steer:setup adopt` lay down (later layer
   task, which `/steer:setup init` resolves from the manifest. Every task the workspace
   profile defines is `ws:`-prefixed (bar `convert:doc`) so that it cannot shadow
   a member's own task; its `compose.yaml` declares **no services**
-  and `include:`s each member's file. The member checkouts are git-ignored
+  and `include:`s each member's file. Its CI is `ci-workspace.yml`, installed as
+  `.github/workflows/ci.yml` in place of the core one: hygiene and the
+  open-question contract across the spine, through `ws:ci:*` tasks, with
+  `ws:pre-commit` as the commit hook. The code stages stay with the members. The member checkouts are git-ignored
   clones, not submodules, so nothing pins a member SHA.
 
 So a non-app repo is never skipped at bootstrap - it shares all of Core, and an
@@ -413,7 +416,7 @@ files the standing invocation-hygiene scan does not - feature `intent.md` files,
 sources, audit reports) keeps the spelling it was written in. The full mapping is
 [Invocation changes](invocation-changes.md).
 
-Thirteen entries follow 7.0. **7.1.0** converts legacy `- [ ]` open questions to
+Fourteen entries follow 7.0. **7.1.0** converts legacy `- [ ]` open questions to
 `### Q-NNN` blocks and clears unfilled `Q-001` placeholder seeds from features
 past `draft`. **7.2.1** moves `changelog:new` and `convert:doc` to commands
 `cmd.exe` runs on Windows, and has `dependabot-auto-merge.yml` approve only after
@@ -428,7 +431,8 @@ server, **7.17.0** stops `.claude/settings.json` enabling `typescript-lsp`, and
 its release cut. An unreleased entry has `scripts/ci-coverage.sh` rebase
 per-package lcov paths so the gate can fail in a monorepo, and has
 `scripts/ci-changelog.sh` read non-ASCII paths unquoted and pass a PR Dependabot
-both opened and pushed.
+both opened and pushed; another moves a workspace still running the core
+`ci.yml` and commit hook onto its `ws:`-prefixed CI.
 
 Ledger entries are keyed by the release that **introduced** them, and `/steer:setup sync` skips
 every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut

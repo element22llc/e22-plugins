@@ -355,6 +355,28 @@ git -C "${CRG}" config core.hooksPath .githooks
 capscan "${CRG}"
 assert_eq "cap: core.hooksPath set -> commit-gate n/a" "$(capstatus "${out}" commit-gate)" "n/a"
 
+# A workspace (spec/workspace.yml) runs ws:-prefixed tasks from its own ci.yml.
+CRW="${WORK}/cap-workspace"
+mkdir -p "${CRW}/.github/workflows" "${CRW}/scripts" "${CRW}/spec"
+git -C "${CRW}" init -q
+: >"${CRW}/spec/workspace.yml"
+cp "${PLUGIN}/templates/github/workflows/ci.yml" "${CRW}/.github/workflows/ci.yml"
+cp "${PLUGIN}/templates/github/pull_request_template.md" "${CRW}/.github/pull_request_template.md"
+cp "${PLUGIN}/templates/scaffold/profiles/workspace/mise.toml" "${CRW}/mise.toml"
+cp "${PLUGIN}/templates/scaffold/scripts/"ci-*.sh "${CRW}/scripts/"
+capscan "${CRW}"
+assert_eq "cap: workspace still on the core ci.yml -> drift-gate mis-wired" "$(capstatus "${out}" drift-gate)" "mis-wired"
+cp "${PLUGIN}/templates/github/workflows/ci-workspace.yml" "${CRW}/.github/workflows/ci.yml"
+capscan "${CRW}"
+assert_eq "cap: workspace ci.yml + ws: tasks -> drift-gate present-wired" "$(capstatus "${out}" drift-gate)" "present-wired"
+assert_eq "cap: workspace without a hook -> commit-gate absent" "$(capstatus "${out}" commit-gate)" "absent"
+printf '#!/bin/sh\nexec mise run pre-commit\n' >"${CRW}/.git/hooks/pre-commit"
+capscan "${CRW}"
+assert_eq "cap: workspace hook calling pre-commit -> commit-gate mis-wired" "$(capstatus "${out}" commit-gate)" "mis-wired"
+printf '#!/bin/sh\nexec mise run ws:pre-commit\n' >"${CRW}/.git/hooks/pre-commit"
+capscan "${CRW}"
+assert_eq "cap: workspace hook calling ws:pre-commit -> commit-gate present-wired" "$(capstatus "${out}" commit-gate)" "present-wired"
+
 # changelog-fragments is judged on the scanned repo, not the caller's cwd.
 CRC="${WORK}/cap-changie"
 mkdir -p "${CRC}/.changes/unreleased"

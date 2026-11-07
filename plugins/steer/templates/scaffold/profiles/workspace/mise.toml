@@ -77,6 +77,29 @@ description = "Boot the product's backing services; add per-member depends (mono
 # `depends` resolves in the CALLER's task set, so use `ws:` names here (a bare `docker:up` binds to a member's). Dev servers: add "//<member>:dev" entries.
 depends = ["ws:docker:up"]
 
+# Verification tiers: the same scripts/ci-*.sh stages as the core scaffold, under ws: names,
+# run by .github/workflows/ci.yml. Only the spine-host stages - code checks belong to members.
+[tasks."ws:ci:hygiene"]
+description = "Hygiene: mise task graph, actionlint, shellcheck, version-pin policy"
+run = "sh scripts/ci-hygiene.sh"
+
+[tasks."ws:ci:spec"]
+description = "The open-question contract across the product spine"
+run = "sh scripts/ci-spec.sh"
+
+[tasks."ws:pre-commit"]
+description = "Commit gate. Wired to .git/hooks/pre-commit by /steer:setup init."
+# Install per clone: `mise generate git-pre-commit --task=ws:pre-commit --write`.
+depends = ["ws:ci:hygiene"]
+
+[tasks."ws:check"]
+description = "Fast gate. Run before every commit."
+depends = ["ws:ci:hygiene"]
+
+[tasks."ws:ci"]
+description = "Full gate: everything the required `ci` status check runs. Run before push / PR."
+depends = ["ws:check", "ws:ci:spec"]
+
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake"
 usage = 'arg "<file>" help="The document to convert"'

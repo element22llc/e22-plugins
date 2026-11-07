@@ -198,7 +198,8 @@ describes the code-bearing profiles:
 - **`mise run pre-commit`** - the sub-second commit gate: hygiene + lint, no
   typecheck and no tests. `/steer:init` and `/steer:adopt` wire it to
   `.git/hooks/pre-commit` with `mise generate git-pre-commit
-  --task=pre-commit --write`. `.git/hooks/` is **not versioned**, so this is
+  --task=pre-commit --write` (a workspace's task is `ws:pre-commit`).
+  `.git/hooks/` is **not versioned**, so this is
   per-clone state, not a committed file: a teammate's fresh clone has no hook
   until they run that command or `/steer:sync`. Linked worktrees share the
   primary checkout's hooks, so `claude --worktree` needs nothing extra. It stays

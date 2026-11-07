@@ -33,6 +33,7 @@ mise run ws:code      # generate the multi-root <product>.code-workspace
 mise run ws:dev       # boot every member's backing services (see note below)
 mise run ws:status    # per-member branch/dirty/spine version + manifest drift
 mise run ws:sync      # fast-forward each member to its manifest branch
+mise run ws:ci        # the gate the required `ci` check runs
 ```
 
 **Every task here is `ws:`-prefixed**, including `ws:dev` and

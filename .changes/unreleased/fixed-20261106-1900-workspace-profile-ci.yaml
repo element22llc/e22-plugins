@@ -1,0 +1,15 @@
+kind: Fixed
+time: 2026-11-06T19:00:00.000000000-05:00
+custom:
+  Slug: workspace-profile-ci
+body: |-
+  - **Fixed: a workspace's CI and commit hook ran tasks it never defines.** The
+    `workspace` profile's `mise.toml` is all `ws:`-prefixed, yet it got the core
+    `ci.yml` and a hook calling `mise run pre-commit`, so the required `ci`
+    check failed on every PR and every commit aborted. A workspace now installs
+    `ci-workspace.yml` as its `ci.yml` - hygiene plus the open-question
+    contract across the product spine, and the same Dependabot auto-merge job -
+    backed by new `ws:ci:hygiene`, `ws:ci:spec`, `ws:pre-commit`, `ws:check`
+    and `ws:ci` tasks, and init wires the hook to `ws:pre-commit`. The code
+    stages stay with the members. `/steer:setup sync` reports a workspace
+    still on the core workflow or hook as `mis-wired` and migrates it.
