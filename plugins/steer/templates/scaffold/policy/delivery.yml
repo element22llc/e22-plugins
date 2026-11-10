@@ -10,13 +10,18 @@ environments: [non-prod, prod]
 # What merging to the default branch deploys - an environment name, or `none`.
 deploy_on_merge: non-prod
 
-# How production is approved. `prod-branch-pr` is a reviewed PR from the default
-# branch into a long-lived `prod` branch (the gate /steer:setup protect can apply on any
-# GitHub plan); `github-environment` is a deployment-environment required reviewer
-# (Enterprise for private repos); `manual` is a human running the deploy; `none`
-# says this repo has no production to gate.
+# How production is approved. `prod-branch-pr` is a reviewed PR from a release/*
+# snapshot of the default branch (or a hotfix/* branch) into a long-lived `prod` branch
+# (the gate /steer:setup protect can apply on any GitHub plan); `github-environment`
+# is a deployment-environment required reviewer (Enterprise for private repos);
+# `manual` is a human running the deploy; `none` says this repo has no production to gate.
 # Whatever the value, merging and deploying stay human decisions.
 production_gate: prod-branch-pr
+
+# The environment that holds the default branch while a release PR into prod is open:
+# it runs the release branch instead, so QA tests what will ship while merges to the
+# default branch continue. Deploy jobs ask scripts/release-target.sh. `none` turns it off.
+release_hold: non-prod
 
 # Auto-provisioned per-PR environment, torn down when the PR closes. The
 # mechanism is product-specific - record the choice in an ADR.

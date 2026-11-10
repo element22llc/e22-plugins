@@ -89,8 +89,8 @@
 #   Not stacked, so silent: a base that is the default branch (origin/HEAD,
 #   else `main`), a long-lived integration or environment branch (prod,
 #   production, staging, develop, release/*, batch/* - the sibling-PR way to
-#   land many fixes as one merge), and a `--head` that is the
-#   default branch (the /steer:work promote PR into prod). Silent outside a git
+#   land many fixes as one merge; `prod` takes the /steer:work promote Release PR),
+#   and a `--head` that is the default branch. Silent outside a git
 #   work tree - fail-open.
 #
 # CONSTRAINTS (per repo CLAUDE.md)

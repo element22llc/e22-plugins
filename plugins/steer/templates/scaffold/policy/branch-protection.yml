@@ -1,9 +1,11 @@
 # Branch-protection policy /steer:setup protect diffs against live GitHub settings and applies.
-# Fields map 1:1 to the classic protection API; rationale: /steer:reference conventions.
+# Classic protection fields, plus the ruleset fields on prod and release_branches; rationale: /steer:reference conventions.
 # steer:allow-comments each note names why a protection setting is what it is -- deleting them loses the security rationale, not noise
 
-schema: 6          # every older schema stays valid. v6 drops `actions_can_approve_pull_requests`
+schema: 7          # every older schema stays valid. v6 drops `actions_can_approve_pull_requests`
                    # and `allow_auto_merge`; protect ignores both where a v4 or v5 file carries them.
+                   # v7 adds `require_last_push_approval`, the ruleset fields on `prod`
+                   # (`required_reviewers`, `allowed_merge_methods`) and `release_branches`.
 
 # `team` applies everything below as written; `solo` layers `profiles.solo` on top.
 # GitHub blocks a PR's author from approving it, so on a one-contributor repo the
@@ -26,24 +28,47 @@ enforce_admins: true
 
 required_linear_history: true
 
-# Overrides layered onto EVERY branch in scope. `team` has none.
+# Overrides layered onto EVERY branch in scope, release_branches included. `team` has none.
 profiles:
   solo:
     required_approving_review_count: 0
+    require_last_push_approval: false
+    required_reviewers: []
 
 # Optional. `prod` is the branch-based production gate (environment approvals are
 # Enterprise-only); a branch not yet created is reported, never forced.
 protected_branches:
   - name: prod
     required_pull_request_reviews:
-      required_approving_review_count: 1
+      required_approving_review_count: 2
       dismiss_stale_reviews: true
+      # The approver must not be whoever pushed last, so a QA fix is never self-approved.
+      require_last_push_approval: true
+    # One approval from each team on every Release and hotfix PR. GitHub enforces this
+    # only through a repository ruleset, never classic protection, so protect applies
+    # one beside it. Slugs are per repo; empty asks the dev. Teams need Write access.
+    required_reviewers:
+      - role: po
+        team: ""
+      - role: dev
+        team: ""
+    # Merge commits keep release and hotfix SHAs on prod, which ci:promotion and
+    # backport.yml read to tell what main still lacks.
+    allowed_merge_methods: [merge]
     required_status_checks:
       strict: false
       contexts:
         - ci
     enforce_admins: true
-    required_linear_history: true
+    required_linear_history: false
+
+# The release/* snapshots promote cuts: QA fixes reach them only by PR with a green ci.
+# A pattern, so protect applies it as a ruleset (classic protection takes names only).
+release_branches:
+  pattern: "release/**"
+  required_approving_review_count: 1
+  contexts:
+    - ci
 
 # Repo-level settings, applied via separate settings APIs by /steer:setup protect.
 secret_scanning: true

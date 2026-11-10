@@ -506,6 +506,51 @@ and **Repair**.
 - **Why it matters:** without it a production release leaves no tag and no
   Release, so nothing records which version is running or what it shipped.
 
+### promotion-gate - only release/* and hotfix/* reach prod, dropping nothing
+- **Files:** `scripts/ci-promotion.sh`, the `ci:promotion` task in `mise.toml`
+  (inside the `ci` task's `depends`), and its step in `.github/workflows/ci.yml`
+  with `release/**` among the `pull_request` branches.
+- **Conditional:** `production_gate: prod-branch-pr` (absent means that) and not
+  a workspace; otherwise `n/a`.
+- **Wired-when:** `ci.yml` runs `mise run ci:promotion` and triggers on
+  `release/**`, `mise.toml` defines `ci:promotion`, and the script is present.
+- **Repair:** copy the script from the scaffold, add the task and its `ci`
+  depends entry, splice the `Promotion` step (with its `STEER_CI_*` env,
+  `STEER_CI_HEAD_REF` included) before the spec step, and add `release/**` and
+  the `edited` type to the `pull_request` trigger - additively, never over a
+  product's own steps.
+- **Verbatim:** no
+- **Why it matters:** without it any branch can open a PR into prod, and a
+  release cut before a hotfix's back-port merges ships without that fix.
+
+### release-backport - what prod ships comes back to main
+- **Files:** `.github/workflows/backport.yml`, `scripts/backport.sh`, and
+  `scripts/ci-promotion.sh` (its commit selection).
+- **Conditional:** as `promotion-gate`.
+- **Wired-when:** the workflow exists and runs `scripts/backport.sh`, and both
+  scripts are present.
+- **Repair:** create the three from the scaffold; propose. Nothing to configure
+  under `GITHUB_TOKEN`. Say in the PR that "Allow GitHub Actions to create and
+  approve pull requests" stays off: the workflow comments a link and a human
+  opens the back-port PR.
+- **Verbatim:** no
+- **Why it matters:** QA fixes and hotfixes land on prod first; without a
+  back-port `main` keeps the bug and the next release drops the fix.
+
+### release-hold - the held environment runs the open release branch
+- **Files:** `scripts/release-target.sh` and the `release_hold:` field in
+  `policy/delivery.yml`.
+- **Conditional:** as `promotion-gate`. `release_hold: none` is `disabled`.
+- **Wired-when:** both are present. Whether the product's deploy job calls the
+  script is the product's code - the scan cannot see it, so say so.
+- **Repair:** copy the script and add `release_hold: non-prod` with its comment
+  from the scaffold's `policy/delivery.yml`; then name the deploy-job contract
+  in `infra/README.md` -> Release flow for the dev to wire. Never edit a deploy
+  workflow from a sync.
+- **Verbatim:** no
+- **Why it matters:** without the hold, every merge to `main` during a
+  release's QA redeploys over the build QA is testing.
+
 ### line-ending-normalization - LF pinned for every checkout
 - **Files:** `.gitattributes`
 - **Conditional:** always (every managed repo carries shell scripts, CI, or a

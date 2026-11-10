@@ -112,8 +112,8 @@ own units and is referenced via remote state.
 
 ## Environments
 
-* **non-prod** - shared validation environment. Each app deploys here automatically on merge to `main`. POs validate changes on the relevant app's non-prod surface before production.
-* **prod** - production environment. Each app deploys here automatically on merge to the long-lived **`prod` branch**; that merge is gated by a reviewed PR (see Release flow). Apps may be released independently.
+* **non-prod** - shared validation environment. Each app deploys here automatically on merge to `main`, except while a Release PR is open: then non-prod runs that release branch, so QA tests exactly what will ship (see Release flow). POs validate changes on the relevant app's non-prod surface before production.
+* **prod** - production environment. Each app deploys here automatically on merge to the long-lived **`prod` branch**; that merge is gated by a Release PR from a `release/vX.Y.Z` snapshot (or a hotfix PR from `hotfix/*`), approved by a PO and a dev (see Release flow). Apps may be released independently.
 * **review apps** - each open feature PR gets an isolated, automatically-provisioned environment so the change can be exercised in a deployed-like context, torn down when the PR merges or closes. The mechanism (per-PR ephemeral stack, shared cluster with PR-scoped namespacing, a preview platform, ...) is product-specific - record the choice in an ADR under `/spec/decisions/`.
 
 ## How to extend
@@ -129,27 +129,67 @@ Single account, single region by default.
 Deployment is **branch-driven** - promotion happens by moving code between
 branches, not by manually triggering environments. This gives a real production
 approval gate without GitHub Enterprise (whose deployment-environment approvals
-aren't available on this plan): the gate is the required PR review on `prod`.
+aren't available on this plan): the gate is the required approvals on a PR into
+`prod`.
 
 1. **Feature PR opened** -> a **review app** is provisioned for it; the PO/dev
    exercise the change there.
-2. **PR merged to `main`** -> the change **auto-deploys to non-prod**; the review
-   app is torn down.
-3. **PO validates** the change on non-prod and signals readiness (e.g. `ready
-   to ship` on the issue/PR).
-4. **Promotion PR `main` -> `prod`** is opened and **approved** by a reviewer. This
-   approval is the production gate - no direct pushes to `prod` (enforced by
-   `/steer:setup protect`; see the `prod` entry in `policy/branch-protection.yml`).
-5. **PR merged to `prod`** -> the change **auto-deploys to prod**. Apps may be
-   promoted independently.
-6. **Deployment result is posted back** to the issue/PR.
+2. **PR merged to `main`** (one dev approval) -> the change **auto-deploys to
+   non-prod**, unless a release is in QA (step 4); the review app is torn down.
+3. **`/steer:work promote`** cuts the changelog on `main` (its own PR), then
+   cuts a **`release/vX.Y.Z`** snapshot branch at that cut's merge commit and
+   opens the **Release PR** `release/vX.Y.Z` -> `prod` (a promotion with no
+   version uses `release/<short-sha>`).
+4. **While the Release PR is open, non-prod runs the release branch** (the
+   environment `policy/delivery.yml` names in `release_hold`). Merges into
+   `main` continue but do not deploy until the Release PR closes.
+5. **QA fixes** go into the release branch: a `qa-fix/<n>` PR into
+   `release/vX.Y.Z`, one dev approval, `ci` green, no changelog fragment.
+   Merging it redeploys non-prod and dismisses the Release PR's approvals.
+6. **Once QA signs off on non-prod, the Release PR is approved by a PO team
+   member and a dev team member** - never its author, nor whoever pushed last.
+   This approval is the production gate: a repository ruleset requires both teams, 2 approvals, merge commits
+   only, and no bypass, and nothing is pushed to `prod` directly (applied by
+   `/steer:setup protect`; see the `prod` entry in
+   `policy/branch-protection.yml`). The required `ci` check runs
+   `ci:promotion`: a PR into `prod` must come from `release/*` or `hotfix/*`,
+   and a release must not drop anything `prod` already ships.
+7. **PR merged to `prod`** -> the change **auto-deploys to prod**, `release.yml`
+   tags `vX.Y.Z`, and non-prod returns to `main`. Apps may be promoted
+   independently.
+8. **Back-port.** `.github/workflows/backport.yml` cherry-picks (`-x`) what
+   `main` lacks onto `backport/<pr>-to-main` and comments a link on the merged
+   PR; a dev opens that PR and merges it with **Rebase and merge**, so the
+   cherry-pick trailers reach `main` (one dev approval). A hotfix during QA is
+   back-ported to the open release branch too.
+9. **Deployment result is posted back** to the issue/PR.
 
-**Rollback.** Every prod deploy has a known rollback: revert the `prod` merge (the
-next auto-deploy returns prod to the prior state) or redeploy the previous SHA.
-Database migrations are **expand/contract** - additive first, so the currently
-running version keeps working through the deploy and a rollback never leaves the
-schema ahead of the code. Do not deploy risky changes to production on a Friday
-unless there is an explicit reason and a named rollback owner.
+A **hotfix** follows steps 6-8 from a `hotfix/<n>-slug` branch cut from `prod`:
+same approvers, its own patch cut, then the back-port.
+
+**Deploy-job contract.** Steer ships no deploy workflow - deploys are
+product-specific. A product's non-prod deploy job keeps the hold by:
+
+* **Triggering** on push to `main`, push to `release/**`, and `pull_request`
+  `opened`, `reopened` and `closed` into `prod` (a Release PR opening switches
+  non-prod to its branch; closing switches it back).
+* **Asking** `sh scripts/release-target.sh` from the repo root after checkout.
+  It prints the branch to deploy: the open release branch, else the default
+  branch. It needs `GH_TOKEN` with `pull-requests: read`, and exits non-zero
+  when it cannot tell (the PR list fails, or more than one release PR is open) -
+  deploy nothing then.
+* **Deploying only that branch.** On a push, skip when the pushed branch is not
+  the answer - that is the hold. On a `pull_request` event, check out the branch
+  it names and deploy that.
+
+**Rollback.** Every prod deploy has a known rollback: a revert of the change on
+a `hotfix/*` branch, shipped as a hotfix PR into `prod` (same approvers), or a
+redeploy of the previous SHA. The back-port bot flags a revert for a human to
+decide whether `main` gets it too. Database migrations are **expand/contract** -
+additive first, so the currently running version keeps working through the
+deploy and a rollback never leaves the schema ahead of the code. Do not deploy
+risky changes to production on a Friday unless there is an explicit reason and
+a named rollback owner.
 
 ## Observability
 

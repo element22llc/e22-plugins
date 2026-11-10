@@ -1,0 +1,16 @@
+kind: Changed
+time: 2026-11-10T16:00:00.000000000-05:00
+custom:
+  Slug: release-snapshot-flow
+body: |-
+  - **Changed: a release ships from a `release/vX.Y.Z` snapshot, and QA never
+    blocks `main`.** `/steer:work promote` cuts the snapshot at the changelog
+    cut's merge commit and opens `release/vX.Y.Z -> prod` instead of
+    `main -> prod`, so prod gets exactly what QA tested however long QA takes.
+    While it is open, the environment `policy/delivery.yml` names in the new
+    `release_hold` field (default `non-prod`) runs the release branch, and merges
+    into `main` continue without deploying. QA fixes are PRs into the release
+    branch and need no changelog fragment. A re-run refreshes the open Release
+    PR and never cuts a second release. The `--hotfix` lane now back-ports to
+    the open release branch as well as `main`, and keeps the approvers `prod`
+    requires instead of a single reviewer.

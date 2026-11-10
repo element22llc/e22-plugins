@@ -839,17 +839,41 @@ the scaffold's [`infra/README.md`](../scaffold/infra/README.md).
 
 The fields map onto this shape directly: `environments: [non-prod, prod]`,
 `deploy_on_merge: non-prod`, `production_gate: prod-branch-pr`,
-`review_apps: true`, `observability: [sentry]`. Change a value and the rule
-follows it; only a gate *weaker* than this default needs an ADR.
+`release_hold: non-prod`, `review_apps: true`, `observability: [sentry]`.
+Change a value and the rule follows it; only a gate *weaker* than this default
+needs an ADR.
 
-- **Environments** - `non-prod` (shared validation) and `prod`, plus a **review
-  app** per open feature PR (torn down on merge/close). The review-app mechanism
-  is product-specific - pick one and record it in an ADR.
+- **Environments** - `non-prod` (shared validation; it runs the open release
+  branch while a Release PR is open) and `prod`, plus a **review app** per open
+  feature PR (torn down on merge/close). The review-app mechanism is
+  product-specific - pick one and record it in an ADR.
 - **Branch-driven promotion** - promotion moves code between branches rather than
   triggering environments by hand:
-  - merge to `main` -> **auto-deploy non-prod**;
-  - a reviewed promotion PR from `main` into a long-lived **`prod` branch** is the
-    **production approval gate**, and merging it -> **auto-deploy prod**.
+  - merge to `main` -> **auto-deploy non-prod**, unless a release is open;
+  - **release snapshot** - `/steer:work promote` cuts the changelog on `main`,
+    then a `release/vX.Y.Z` branch at that cut's merge commit, and opens the
+    **Release PR** into a long-lived **`prod` branch**. That PR is the
+    **production approval gate**; merging it -> **auto-deploy prod**. Prod gets
+    exactly what QA tested while `main` keeps taking merges;
+  - **the hold** - while the Release PR is open, the `release_hold` environment
+    runs the release branch; merges into `main` land but deploy only once it
+    closes. Steer ships no deploy workflow: a product's deploy job asks
+    `scripts/release-target.sh` which branch to deploy;
+  - **QA fixes** - a `qa-fix/<n>` PR into the release branch, `ci` green, no
+    changelog fragment (the release's entries describe the work it repairs).
+    Merging it redeploys the held environment and dismisses the Release PR's
+    approvals;
+  - **back-port** - after a `release/*` or `hotfix/*` PR merges into `prod`,
+    `backport.yml` cherry-picks (`-x`) what `main` lacks onto
+    `backport/<pr>-to-main` (and, for a hotfix during QA, onto the release
+    branch) and comments a link; a human opens the PR and merges it with
+    **Rebase and merge**. `ci:promotion` fails a PR into `prod` whose head is
+    not `release/*` or `hotfix/*`, or a release that would drop something
+    `prod` ships (`prod` takes merge commits only, so those SHAs survive);
+  - **who approves** - a PR into `main`, a QA fix and a back-port PR: one dev.
+    A Release PR or hotfix PR into `prod`: a PO team member **and** a dev team
+    member (a repository ruleset, 2 approvals, last-push approval, no bypass;
+    both teams need Write). An author never approves their own PR.
   - **Why a branch, not an environment approval?** GitHub's native
     deployment-environment "required reviewers" gate is Enterprise-only for
     private repos; a protected `prod` branch (required PR review, no direct push,
@@ -872,10 +896,11 @@ follows it; only a gate *weaker* than this default needs an ADR.
   human. "Deployed but unobservable" is not done; capture the wiring in
   `ARCHITECTURE.md`. An empty `observability` list in `policy/delivery.yml` is
   a flag to raise with the dev, not a licence to skip it.
-- **Rollback & migrations** - every prod deploy has a known rollback (revert the
-  `prod` merge / redeploy the prior SHA); migrations are **expand/contract** so the
-  running version survives the deploy and a rollback never leaves schema ahead of
-  code.
+- **Rollback & migrations** - every prod deploy has a known rollback (a revert
+  shipped as a `hotfix/*` PR into `prod`, or a redeploy of the prior SHA; the
+  back-port bot flags a revert for a human); migrations are **expand/contract**
+  so the running version survives the deploy and a rollback never leaves schema
+  ahead of code.
 
 ## Baseline patterns & anti-patterns (full prose)
 

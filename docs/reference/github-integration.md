@@ -125,25 +125,48 @@ deploy non-prod on its own. `/steer:setup sync` keeps the job wired (the
 ## Production promotion gate
 
 Branch protection covers more than the default branch. `policy/branch-protection.yml`
-also describes a long-lived **`prod`** branch, and `/steer:setup protect` applies
-protection to every entry in its `protected_branches` list, not just `main`.
+also describes a long-lived **`prod`** branch and the `release/**` snapshot
+branches, and `/steer:setup protect` applies protection to every entry in its
+`protected_branches` list, not just `main`.
 
 This is how the [deployment standard](../concepts/deployment.md) enforces its
-production gate without GitHub Enterprise. Promotion to production is a **reviewed
-PR from `main` into `prod`**; the required-review approval on that PR *is* the
-production approval - it stands in for the deployment-environment approvals that
-only GitHub Enterprise provides. Merging the `prod` PR auto-deploys production, and
-nothing is ever pushed to `prod` directly.
+production gate without GitHub Enterprise. Promotion to production is a **Release
+PR from a `release/vX.Y.Z` snapshot into `prod`** (an incident fix comes from
+`hotfix/*` instead); the approvals on that PR *are* the production approval - they
+stand in for the deployment-environment approvals that only GitHub Enterprise
+provides. Merging it auto-deploys production, and nothing is ever pushed to
+`prod` directly.
 
-`/steer:setup protect` reads `protected_branches` and configures each branch's rules
-(required PR, required `ci` check, no direct pushes); `/steer:setup sync` keeps the
-policy file and the protection in step as the plugin evolves.
+`/steer:setup protect` configures each branch's classic rules (required PR,
+required `ci` check, no direct pushes) and, from policy schema 7, two repository
+rulesets beside them, because GitHub has no classic equivalent:
 
-Because `ci` is a *required* check on `prod`, the shipped `ci.yml` must trigger on
-PRs targeting `prod` as well as `main` - its `pull_request.branches` is
-`[main, prod]`. A repo whose `ci.yml` predates that (or was forked from it) sees the
-promotion PR wait forever on a check that never reports; add `prod` to the trigger to
-clear it. See
+- **`steer: prod approvals`** on `prod` - 2 approvals with one from the PO team
+  **and** one from the dev team ("required reviewers"), last-push approval,
+  stale-review dismissal, merge commits only, no bypass actors. The team slugs
+  are per repo; protect asks for them when the policy leaves them empty. Both
+  teams need Write access. A user-owned repo has no teams, so it keeps the
+  2-approval count without the per-team rule.
+- **`steer: release branches`** on `release/**` - a QA fix lands only through a
+  PR with one approval and a green `ci`.
+
+`/steer:setup sync` keeps the policy file and the protection in step as the
+plugin evolves.
+
+Because `ci` is a *required* check on `prod` and on the release branches, the
+shipped `ci.yml` must trigger on PRs targeting them as well as `main` - its
+`pull_request.branches` is `[main, prod, "release/**"]`, and its `types` include
+`edited`, so retargeting a PR re-runs `ci`. A repo whose `ci.yml` predates that
+(or was forked from it) sees the Release PR or a QA fix wait forever on a check
+that never reports; add the missing branches to the trigger to clear it. On a PR
+into `prod`, `ci` also runs `ci:promotion`: the head must be `release/*` or
+`hotfix/*`, and a release must not drop a hotfix or QA fix `prod` already ships.
+
+After a release or hotfix PR merges, the scaffold's `backport.yml` pushes
+`backport/<pr>-to-main` and comments a link; a human opens the PR. It does not
+open it itself, because letting `GITHUB_TOKEN` open PRs needs "Allow GitHub
+Actions to create and approve pull requests", the setting protect reports as
+drift. A GitHub App token is the opt-in for opening it automatically. See
 [Deployment & environments](../concepts/deployment.md#promotion) for the full
 promotion model.
 

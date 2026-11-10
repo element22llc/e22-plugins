@@ -94,6 +94,66 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - releases ship from a `release/*` snapshot, back-port themselves, and need a PO and a dev
+
+- **What & why:** `/steer:work promote` now opens the Release PR from a
+  `release/vX.Y.Z` snapshot of `main`, not from `main`, so QA tests exactly what
+  ships for as long as it takes while `main` keeps taking merges. While it is
+  open the `release_hold` environment (default `non-prod`) runs the release
+  branch; QA fixes are PRs into it with no fragment; after the merge
+  `backport.yml` carries QA fixes and hotfixes back to `main`; `ci:promotion`
+  admits only `release/*` and `hotfix/*` into `prod` and fails a release that
+  would drop what `prod` ships. Release and hotfix PRs need a PO team **and** a
+  dev team approval (a repository ruleset), and `prod` takes merge commits so
+  its release and hotfix SHAs stay readable.
+- **Precondition:** the repo promotes through `prod` and lacks the gate -
+
+  ```sh
+  g="$(sed -n 's/^production_gate:[[:space:]]*//p' policy/delivery.yml 2>/dev/null)"
+  [ "${g:-prod-branch-pr}" = prod-branch-pr ] && [ ! -f spec/workspace.yml ] &&
+    ! grep -q 'ci:promotion' .github/workflows/ci.yml 2>/dev/null && echo stale
+  ```
+
+  No output => already migrated, or the repo has no `prod` gate => no-op.
+- **Action:** read-then-propose; show each diff.
+  - Repair the `promotion-gate`, `release-backport` and `release-hold`
+    capabilities (`CAPABILITIES.md`), which add the three scripts,
+    `backport.yml`, the `ci:promotion` task and step, the `release/**` and
+    `edited` triggers in `ci.yml`, and `release_hold: non-prod`.
+  - `scripts/ci-changelog.sh`: splice in the template's `release/*` base block
+    (after the promotion-to-prod block) and its back-port block (the
+    `origin/prod` trailer loop, just before `changed=`). Leave the rest as it is.
+  - `policy/branch-protection.yml`: move the repo copy to `schema: 7` - on the
+    `prod` entry set `required_approving_review_count: 2`,
+    `require_last_push_approval: true`, `required_linear_history: false`, and
+    add `required_reviewers` (team slugs left `""` for `/steer:setup protect` to
+    ask) and `allowed_merge_methods: [merge]`; add `release_branches`; add
+    `require_last_push_approval: false` and `required_reviewers: []` to
+    `profiles.solo`. Carry every value the repo
+    changed forward.
+  - `infra/README.md`: re-take the section from `## Release flow & promotion` to
+    the next `## ` heading from the scaffold, carrying the product's own steps
+    forward, and point the dev at its deploy-job contract - the product's deploy
+    workflow must call `scripts/release-target.sh`; a sync never edits it.
+  - Then name the human follow-ups in the PR: `/steer:setup protect apply`
+    (the rulesets; it asks for the PO and dev team slugs; both teams need
+    Write), GitHub's "Automatically delete head branches" for the release and
+    back-port branches, and that "Allow GitHub Actions to create and approve
+    pull requests" stays off.
+  - **The first release after this migration can conflict.** A `prod` built
+    with linear history holds squash or rebase copies of `main`'s commits, so the
+    first `release/* -> prod` merge may conflict where later work touched the
+    same lines. `ci:promotion` cannot vouch for that history (it reads merge
+    commits only), so a human reviews `git diff origin/release/vX.Y.Z
+    origin/prod` first: every hunk must be a change this release makes. A hunk
+    only `prod` has is a fix `main` never got - back-port it to the release
+    branch before anything else. Only then record `prod` as merged into the
+    release branch without changing its content (`git merge -s ours
+    origin/prod` on a branch from it, through a PR into it), which makes the
+    release tree win. Say so in the PR rather than doing it.
+
+  **No history entry is earned.**
+
 ### v7.21.0 - a workspace gets its own `ws:`-prefixed CI
 
 - **What & why:** the `workspace` profile replaces the core `mise.toml` with one

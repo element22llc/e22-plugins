@@ -1,0 +1,20 @@
+kind: Added
+time: 2026-11-10T16:01:00.000000000-05:00
+custom:
+  Slug: backport-and-prod-approvals
+body: |-
+  - **Added: automated back-ports, a promotion gate, and PO + dev approval on
+    `prod`.** The scaffold's new `.github/workflows/backport.yml` cherry-picks
+    (`-x`) what a merged release or hotfix PR shipped onto a `backport/*`
+    branch for `main` (and an open release branch) and comments a link to open
+    the PR. Under `GITHUB_TOKEN` it never opens PRs itself, so "Allow GitHub
+    Actions to create and approve pull requests" stays off; a GitHub App token
+    is the opt-in. The required `ci` check gains `ci:promotion`: only
+    `release/*` and `hotfix/*` may target `prod`, and a release fails while a
+    hotfix or an earlier QA fix is missing from it. `scripts/release-target.sh`
+    tells a product's deploy job which branch the held environment runs.
+    `policy/branch-protection.yml` schema 7 asks for two approvals on `prod`, one
+    from a PO team and one from a dev team, through a repository ruleset that
+    `/steer:setup protect` now verifies and applies, with last-push approval,
+    merge commits only, and a ruleset on `release/**`. `/steer:setup sync`
+    carries all of it into an installed repo.

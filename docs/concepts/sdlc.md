@@ -33,7 +33,7 @@ flowchart LR
 | **2, Plan** | [`/steer:work issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:setup sync` let the PR be the record |
 | **3, Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR (ready on a clean code gate, else a draft) | Commit autonomy + change classification + high-risk scoping; an independent code gate on every non-Trivial change before the push, and a plan gate before any code on High-risk work (or with `--reviewed`); **merge/deploy never implied** |
 | **4, Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
-| **5, Deliver** | merge -> [deploy](deployment.md); [`/steer:work promote`](../workflows/work.md) opens the production promotion PR; [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
+| **5, Deliver** | merge -> [deploy](deployment.md); [`/steer:work promote`](../workflows/work.md) cuts a `release/vX.Y.Z` snapshot and opens the Release PR into `prod` (approved by a PO and a dev); [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
 | **6, Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `work tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | - (re-enters Plan) |
 
 Non-technical owners enter through [`/steer:build`](../workflows/build.md), which
@@ -46,7 +46,7 @@ A production incident is high-risk *and* time-critical at once - the one case wh
 the phases above genuinely conflict with the clock. [`/steer:work --hotfix`](../workflows/work.md)
 is the **only sanctioned speed lever** (rule `61-gates` -> Hotfix): it opens only for a real
 incident on a deployed system, relaxes *ceremony and ordering* (issue filed
-after-the-fact on a `hotfix/<n>-slug` branch, single-reviewer) while keeping every human
+after-the-fact on a `hotfix/<n>-slug` branch, expedited review) while keeping every human
 authority gate, and requires a **mandatory post-incident follow-up** - backfill the
 issue, write the spec/ADR, add a `/spec/history/` entry - so the phases skipped under
 fire are restored, not waived.

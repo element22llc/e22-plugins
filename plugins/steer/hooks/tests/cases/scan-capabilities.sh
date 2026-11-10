@@ -295,6 +295,28 @@ printf '# App guide\n' >"${CR9}/spec/app/README.md"
 capscan "${CR9}"
 assert_eq "cap: app guide present -> present-wired" "$(capstatus "${out}" app-knowledge-docs)" "present-wired"
 
+# The release flow: n/a off prod-branch-pr, wired from the scaffold, release_hold: none respected.
+CRR="${WORK}/caprel"
+mkdir -p "${CRR}/scripts" "${CRR}/policy" "${CRR}/.github/workflows"
+capscan "${CRR}"
+assert_eq "cap: no release flow -> promotion-gate absent" "$(capstatus "${out}" promotion-gate)" "absent"
+assert_eq "cap: no release flow -> release-backport absent" "$(capstatus "${out}" release-backport)" "absent"
+assert_eq "cap: no release flow -> release-hold absent" "$(capstatus "${out}" release-hold)" "absent"
+for f in ci-promotion.sh backport.sh release-target.sh; do cp "${PLUGIN}/templates/scaffold/scripts/${f}" "${CRR}/scripts/"; done
+cp "${PLUGIN}/templates/scaffold/policy/delivery.yml" "${CRR}/policy/"
+cp "${PLUGIN}/templates/scaffold/mise.toml" "${CRR}/"
+cp "${PLUGIN}/templates/github/workflows/ci.yml" "${PLUGIN}/templates/github/workflows/backport.yml" "${CRR}/.github/workflows/"
+capscan "${CRR}"
+assert_eq "cap: scaffold -> promotion-gate present-wired" "$(capstatus "${out}" promotion-gate)" "present-wired"
+assert_eq "cap: scaffold -> release-backport present-wired" "$(capstatus "${out}" release-backport)" "present-wired"
+assert_eq "cap: scaffold -> release-hold present-wired" "$(capstatus "${out}" release-hold)" "present-wired"
+sed 's/^release_hold:.*/release_hold: none/' "${PLUGIN}/templates/scaffold/policy/delivery.yml" >"${CRR}/policy/delivery.yml"
+capscan "${CRR}"
+assert_eq "cap: release_hold none -> disabled" "$(capstatus "${out}" release-hold)" "disabled"
+sed 's/^production_gate:.*/production_gate: manual/' "${PLUGIN}/templates/scaffold/policy/delivery.yml" >"${CRR}/policy/delivery.yml"
+capscan "${CRR}"
+assert_eq "cap: manual gate -> promotion-gate n/a" "$(capstatus "${out}" promotion-gate)" "n/a"
+
 # Idempotency: repairing a mis-wired settings.json makes the re-scan present-wired.
 printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"
 capscan "${CR1}"

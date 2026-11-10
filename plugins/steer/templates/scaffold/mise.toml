@@ -118,6 +118,10 @@ run = "sh scripts/ci-security.sh"
 description = "A change that ships must bring a changelog fragment (any push or PR; fail-open)"
 run = "sh scripts/ci-changelog.sh"
 
+[tasks."ci:promotion"]
+description = "A PR into prod comes from release/* or hotfix/* and drops nothing prod ships (no-op elsewhere)"
+run = "sh scripts/ci-promotion.sh"
+
 [tasks."ci:spec"]
 description = "Open-question contract: no bare checkboxes, stale seeds, or blocking questions past their gate"
 run = "sh scripts/ci-spec.sh"
@@ -138,7 +142,7 @@ depends = ["ci:hygiene", "ci:lint", "ci:typecheck"]
 
 [tasks.ci]
 description = "Full gate: everything the required `ci` status check runs. Run before push / PR."
-depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:security", "ci:coverage", "ci:changelog", "ci:spec"]
+depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:security", "ci:coverage", "ci:changelog", "ci:promotion", "ci:spec"]
 
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake"
