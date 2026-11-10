@@ -42,8 +42,13 @@ promo feat/x "$(sha HEAD)" "${P1}"
 assert_eq "ci-promotion: a feature branch into prod fails" "${rc}" "1"
 promo release/v1 "$(sha HEAD)" "${P1}"
 assert_eq "ci-promotion: a malformed release name fails" "${rc}" "1"
-promo hotfix/12-crash "$(sha HEAD)" "${P1}"
-assert_eq "ci-promotion: a hotfix branch passes" "${rc}" "0"
+g update-ref refs/remotes/origin/main main
+promo hotfix/12-crash "$(sha prod)" "${P1}"
+assert_eq "ci-promotion: a hotfix cut from prod passes" "${rc}" "0"
+promo hotfix/13-wrong-base "$(sha main)" "${P1}"
+assert_eq "ci-promotion: a hotfix cut from main fails" "${rc}" "1"
+(cd "${R}" && sh scripts/ci-promotion.sh --list-missing no-such-ref "${P1}" >/dev/null 2>&1)
+assert_eq "ci-promotion --list-missing: an unknown ref fails, never reads as nothing missing" "$?" "2"
 (cd "${R}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=main STEER_CI_HEAD_REF=feat/x sh scripts/ci-promotion.sh >/dev/null 2>&1)
 assert_eq "ci-promotion: a PR into main is not its business" "$?" "0"
 
@@ -103,8 +108,10 @@ assert_eq "release-target: gh failing fails closed" "$?" "1"
 # ci-changelog: a QA fix into a release branch, and a pure back-port, need no fragment.
 g switch -q -C probe main~1
 commit src/x.ts shipping
-(cd "${R}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=release/v1.2.0 sh scripts/ci-changelog.sh >/dev/null 2>&1)
+(cd "${R}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=release/v1.2.0 STEER_CI_BASE_SHA="$(sha probe~1)" sh scripts/ci-changelog.sh >/dev/null 2>&1)
 assert_eq "ci-changelog: a QA fix into release/* needs no fragment" "$?" "0"
+(cd "${R}" && STEER_CI_EVENT=pull_request STEER_CI_BASE_REF=main STEER_CI_BASE_SHA="$(sha probe~1)" sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: the same change into main still needs one" "$?" "1"
 g update-ref refs/remotes/origin/prod "${P3}"
 BEFORE_QA="$(sha main~3)"
 g switch -q -C bp "${BEFORE_QA}"
@@ -141,5 +148,15 @@ git -C "${O}" rev-parse --verify --quiet refs/heads/backport/9-to-main >/dev/nul
 git -C "${O}" rev-parse --verify --quiet refs/heads/backport/9-to-release-v1.1.0 >/dev/null && ok || bad "backport: pushed the open release's back-port"
 git -C "${O}" log -1 --format=%B backport/9-to-main | grep -q 'cherry picked from commit' && ok || bad "backport: cherry-picks with -x"
 assert_has "backport: comments a link to open the PR" "$(cat "${WORK}/comment" 2>/dev/null)" "compare/main...backport/9-to-main"
+(cd "${R}" && PATH="${WORK}/bin:${PATH}" PR=9 HEAD_REF=hotfix/9-leak MERGE_SHA="$(sha prod)" REPO=o/r DEFAULT_BRANCH=main GH_TOKEN=x \
+	sh scripts/backport.sh >/dev/null 2>&1)
+assert_has "backport: a re-run reuses the pushed branch" "$(cat "${WORK}/comment" 2>/dev/null)" "already exists from an earlier run"
+g switch -q -c hotfix/10-squash prod
+commit src/sq.ts hotfix10
+g switch -q prod
+g merge -q --squash hotfix/10-squash >/dev/null && g commit -qm "hotfix10 (squash)"
+(cd "${R}" && PATH="${WORK}/bin:${PATH}" PR=10 HEAD_REF=hotfix/10-squash MERGE_SHA="$(sha prod)" REPO=o/r DEFAULT_BRANCH=main GH_TOKEN=x \
+	sh scripts/backport.sh >/dev/null 2>&1)
+assert_has "backport: a squash merge into prod is refused loudly" "$(cat "${WORK}/comment" 2>/dev/null)" "merged without a merge commit"
 
 finish

@@ -28,10 +28,11 @@ enforce_admins: true
 
 required_linear_history: true
 
-# Overrides layered onto EVERY branch in scope. `team` has none.
+# Overrides layered onto EVERY branch in scope, release_branches included. `team` has none.
 profiles:
   solo:
     required_approving_review_count: 0
+    require_last_push_approval: false
     required_reviewers: []
 
 # Optional. `prod` is the branch-based production gate (environment approvals are

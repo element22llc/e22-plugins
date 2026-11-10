@@ -31,6 +31,15 @@ esac
 body="$(mktemp)"
 printf '### Back-port of #%s\n\n' "${PR}" >"${body}"
 
+# The selection reads merge commits; a squash or rebase merge leaves nothing to read.
+if [ -z "$(git rev-list --no-walk --merges "${MERGE_SHA}")" ]; then
+	printf -- '- Not back-ported: #%s merged without a merge commit, so what it carried cannot be told apart from prod. Cherry-pick its commits onto a branch from `%s` by hand (`git cherry-pick -x`), and merge PRs into prod with **Create a merge commit**.\n' \
+		"${PR}" "${DEFAULT_BRANCH}" >>"${body}"
+	gh pr comment "${PR}" --body-file "${body}"
+	rm -f "${body}"
+	exit 0
+fi
+
 only_generated_conflicts() {
 	conflicted="$(git diff --name-only --diff-filter=U)"
 	[ -n "${conflicted}" ] && [ "$(printf '%s\n' "${conflicted}" | grep -vcx 'CHANGELOG.md' || true)" = 0 ]
@@ -44,6 +53,11 @@ for target in ${targets}; do
 		continue
 	fi
 	branch="backport/${PR}-to-$(printf '%s' "${target}" | tr '/' '-')"
+	if git -c "http.extraheader=${auth}" ls-remote --exit-code --heads origin "${branch}" >/dev/null 2>&1; then
+		printf -- '- `%s`: `%s` already exists from an earlier run; [open the PR](https://github.com/%s/compare/%s...%s?expand=1) from it.\n' \
+			"${target}" "${branch}" "${REPO}" "${target}" "${branch}" >>"${body}"
+		continue
+	fi
 	git switch --quiet -C "${branch}" "origin/${target}"
 	status=clean
 	for c in ${picks}; do
@@ -60,7 +74,8 @@ for target in ${targets}; do
 	done
 	reverts="$(for c in ${picks}; do git log -1 --format=%s "${c}"; done | grep -c '^Revert "' || true)"
 	commands="git fetch origin && git switch -c ${branch} origin/${target} && git cherry-pick -x $(printf '%s' "${picks}" | tr '\n' ' ')"
-	if [ "${status}" = clean ] && git -c "http.extraheader=${auth}" push --quiet origin "HEAD:refs/heads/${branch}" 2>/dev/null; then
+	pushlog="$(mktemp)"
+	if [ "${status}" = clean ] && git -c "http.extraheader=${auth}" push --quiet origin "HEAD:refs/heads/${branch}" 2>"${pushlog}"; then
 		if [ "${BACKPORT_OPEN_PR:-false}" = true ] && [ "${reverts}" = 0 ]; then
 			gh pr create --base "${target}" --head "${branch}" --title "backport: #${PR} into ${target}" \
 				--body "Back-port of #${PR}. Merge with **Rebase and merge** so the cherry-pick trailers reach ${target}." >/dev/null
@@ -71,10 +86,11 @@ for target in ${targets}; do
 		fi
 		[ "${reverts}" = 0 ] || printf '  It carries a revert: decide whether `%s` should get it too before opening the PR.\n' "${target}" >>"${body}"
 	else
-		[ "${status}" = clean ] && status='push refused (a workflow file needs a human push)'
+		[ "${status}" = clean ] && status="push refused: $(grep -m 1 . "${pushlog}" | tr -d '`' || true)"
 		printf -- '- `%s`: needs a human (%s). Run:\n\n  ```sh\n  %s\n  ```\n\n  then open a PR into `%s` and merge it with **Rebase and merge**.\n' \
 			"${target}" "${status}" "${commands}" "${target}" >>"${body}"
 	fi
+	rm -f "${pushlog}"
 	git switch --quiet --detach "${MERGE_SHA}"
 done
 

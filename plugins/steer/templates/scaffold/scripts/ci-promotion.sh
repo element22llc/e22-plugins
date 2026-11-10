@@ -50,6 +50,12 @@ if [ "${1:-}" = --list-missing ]; then
 		steer_ci_error 'usage: ci-promotion.sh --list-missing <head> <prod-ref>'
 		exit 2
 	}
+	for ref in "$2" "$3"; do
+		git rev-parse --verify --quiet "${ref}^{commit}" >/dev/null || {
+			steer_ci_error "Not a commit: ${ref} - fetch it first; an empty answer here would read as nothing missing."
+			exit 2
+		}
+	done
 	missing "$2" "$3"
 	exit 0
 fi
@@ -61,10 +67,7 @@ fi
 
 head_ref="${STEER_CI_HEAD_REF:-}"
 case "${head_ref}" in
-hotfix/?*)
-	printf 'ci:promotion - hotfix %s is cut from prod; nothing to drop.\n' "${head_ref}"
-	exit 0
-	;;
+hotfix/?*) ;;
 release/*)
 	if ! printf '%s\n' "${head_ref}" | grep -Eq '^release/(v[0-9]+\.[0-9]+\.[0-9]+|[0-9a-f]{7,40})$'; then
 		steer_ci_error "A release branch into prod is release/vX.Y.Z (or release/<short-sha> for a promotion with no version); got ${head_ref}."
@@ -85,6 +88,20 @@ if ! prod="$(steer_ci_base)"; then
 	steer_ci_notice 'No prod ref to compare against - skipping the drop check (fail-open).'
 	exit 0
 fi
+
+# A hotfix cut from main instead of prod would carry every unreleased main commit.
+case "${head_ref}" in
+hotfix/*)
+	main="origin/${STEER_CI_DEFAULT_BRANCH:-main}"
+	if git rev-parse --verify --quiet "${main}" >/dev/null &&
+		[ "$(git rev-list --count "${prod}..${STEER_CI_HEAD_SHA}")" != "$(git rev-list --count "${prod}..${STEER_CI_HEAD_SHA}" --not "${main}")" ]; then
+		steer_ci_error "${head_ref} carries commits from ${main} that prod does not ship. Cut a hotfix from prod: git switch -c ${head_ref} origin/prod."
+		exit 1
+	fi
+	printf 'ci:promotion - hotfix %s is cut from prod; nothing to drop.\n' "${head_ref}"
+	exit 0
+	;;
+esac
 
 dropped="$(missing "${STEER_CI_HEAD_SHA}" "${prod}")"
 if [ -n "${dropped}" ]; then

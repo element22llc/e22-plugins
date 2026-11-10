@@ -65,12 +65,19 @@ When rules are drifted or absent:
      state lists it: `"target":"branch"`, `"enforcement":"active"`,
      `"bypass_actors":[]`, `conditions.ref_name.include` the branch or pattern,
      and `rules` of type `pull_request` (with `required_reviewers` carrying each
-     team's numeric `reviewer.id`, `"type":"Team"`), `required_status_checks`
-     and, for prod, `non_fast_forward` and `deletion`. Show the exact JSON
+     team's numeric `reviewer.id`, `"type":"Team"`, plus the parameters the API
+     requires even when the policy is silent: `require_code_owner_review:
+     false`, `required_review_thread_resolution: false`),
+     `required_status_checks` (with `strict_required_status_checks_policy`
+     from the policy's `strict`) and, for prod, `non_fast_forward` and
+     `deletion`. Show the exact JSON
      before running it, as for the protection PUT. Under `solo`, skip the
      `required_reviewers` entries. A `422` naming `required_reviewers` means the
      plan or the repo owner does not support it: say so, apply the rest, and
-     keep the classic review count as the only approval gate.
+     keep the classic review count as the only approval gate - and say that PRs
+     into `prod` must then be merged with **Create a merge commit** by hand:
+     `ci:promotion` and `backport.yml` read prod's merge commits, and
+     `backport.yml` refuses a squash merge rather than guess.
 4. After applying, re-run the verify diff and report the new state.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a

@@ -164,7 +164,8 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   there and keep the classic review count.
 - **Profile.** Read `profile:` (schema 3 - `team` when absent, as in older
   policies). For any profile other than `team`, overlay that profile's map from
-  `profiles:` onto **every** branch in scope before diffing - under `solo`,
+  `profiles:` onto **every** branch in scope - `release_branches` included -
+  before diffing - under `solo`,
   `required_approving_review_count` becomes 0 on the default branch and on
   `prod` alike. The overlaid values *are* the desired state: a `solo` repo whose
   live protection requires 0 approvals is **compliant**, not drifted. An

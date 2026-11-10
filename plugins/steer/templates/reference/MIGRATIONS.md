@@ -128,7 +128,8 @@ Name the file and say what to carry forward.
     `require_last_push_approval: true`, `required_linear_history: false`, and
     add `required_reviewers` (team slugs left `""` for `/steer:setup protect` to
     ask) and `allowed_merge_methods: [merge]`; add `release_branches`; add
-    `required_reviewers: []` to `profiles.solo`. Carry every value the repo
+    `require_last_push_approval: false` and `required_reviewers: []` to
+    `profiles.solo`. Carry every value the repo
     changed forward.
   - `infra/README.md`: re-take the section from `## Release flow & promotion` to
     the next `## ` heading from the scaffold, carrying the product's own steps
@@ -142,13 +143,14 @@ Name the file and say what to carry forward.
   - **The first release after this migration can conflict.** A `prod` built
     with linear history holds squash or rebase copies of `main`'s commits, so the
     first `release/* -> prod` merge may conflict where later work touched the
-    same lines. Once `sh scripts/ci-promotion.sh --list-missing origin/main
-    origin/prod` and the version-file check
-    (`git diff --name-only --diff-filter=A origin/main origin/prod -- '.changes/*.md'`)
-    both print nothing - every hotfix is on `main` - record `prod` as merged into
-    the release branch without changing its content (`git merge -s ours
-    origin/prod` on a branch from it, through a PR into it). Say so in the PR
-    rather than doing it.
+    same lines. `ci:promotion` cannot vouch for that history (it reads merge
+    commits only), so a human reviews `git diff origin/release/vX.Y.Z
+    origin/prod` first: every hunk must be a change this release makes. A hunk
+    only `prod` has is a fix `main` never got - back-port it to the release
+    branch before anything else. Only then record `prod` as merged into the
+    release branch without changing its content (`git merge -s ours
+    origin/prod` on a branch from it, through a PR into it), which makes the
+    release tree win. Say so in the PR rather than doing it.
 
   **No history entry is earned.**
 

@@ -84,7 +84,7 @@ What changes versus the normal flow:
   First, when the fix went into `prod`, **back-port it** the moment that PR
   merges - to `main`, and to the open `release/*` branch when a release is in
   QA - or the next release ships without it (`ci:promotion` fails that Release
-  PR until it lands). `.github/workflows/backport.yml` does the cherry-picks on
+  PR until it lands, once its checks re-run). `.github/workflows/backport.yml` does the cherry-picks on
   merge and comments a link per target; a human opens each PR and merges it with
   **Rebase and merge**, so the `-x` trailers survive. By hand (no workflow, or it
   reported a conflict), per target - never a PR with `prod` as its head:

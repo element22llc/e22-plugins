@@ -165,8 +165,10 @@ Say this once, in the handoff, so the team knows the rules of the window:
   held environment and dismisses the Release PR's approvals (stale-review
   dismissal on `prod`), so QA re-tests and the approvers look again.
 - **A hotfix during QA** reaches the release branch too: `backport.yml` opens
-  that back-port beside the one into `main`, and `ci:promotion` fails the
-  Release PR until it lands.
+  that back-port beside the one into `main`. The Release PR's last green `ci`
+  predates the hotfix, so **re-run its checks** (or merge that back-port, which
+  re-runs them) before approving: `ci:promotion` then fails it until the fix is
+  on the release branch.
 - **Who approves the Release PR**: a member of the PO team **and** a member of
   the dev team (the `prod` ruleset, `/steer-setup protect`); never its author.
 
