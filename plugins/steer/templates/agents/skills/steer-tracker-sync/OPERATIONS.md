@@ -114,8 +114,17 @@ is no less bounded by it.
   call moves the lifecycle. One op, because both are the same read-modify-write
   against the same body - follow the concurrency-safe protocol in
   `ISSUE-SCHEMA.md` (re-fetch before write, stop on a second concurrent change,
-  fail closed on duplicate/malformed blocks), and preserve every byte outside the
-  block.
+  fail closed on duplicate/malformed blocks or an empty or altered candidate),
+  and preserve every byte outside the block.
+
+  **GitHub arm:** on the `gh` path, never hand-roll the read-modify-write; run
+  `sh "${STEER_PLUGIN_ROOT}/scripts/issue-body.sh" marker-set <n> <key> <value>`
+  (one marker - `state`, and the `claim` / `link-delivery` markers too) or
+  `... managed-replace <n> <block-file>` (the block's contents), with `--repo`
+  for a tracker in another repo. Exit 3 is a fail-closed refusal and 4 a
+  concurrent-edit conflict: report either, never retry around it. The MCP arm
+  builds its candidate with `--in <body-file>`, which prints it and writes
+  nothing.
 
   A call that moves `steer:state` honors the **authority table** in
   `ISSUE-WORKFLOW.md` - perform only where permitted; a progress rewrite that

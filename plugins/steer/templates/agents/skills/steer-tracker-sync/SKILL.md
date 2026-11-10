@@ -13,6 +13,13 @@ user-invocable: false
 
 **When to use.** Reached via the owning skills, never directly.
 
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
+> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
+> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
+> `element22llc/e22-plugins`. With no local copy, skip the step and say what it
+> would have reported. Never download a helper and run it from a URL.
+
 <!-- steer:modes pull,push -->
 
 # Sync the /spec spine with GitHub Issues
