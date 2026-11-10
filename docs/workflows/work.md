@@ -357,4 +357,8 @@ Claude Code's own delivery tools fit this flow without moving the merge gate.
   `update-state`, `claim`, `comment`, `link-delivery`, `close`. They key off
   the `steer:*` markers in the issue body rather than GitHub-native metadata,
   so `link-delivery` records the PR in pr-flow and the closing trunk commit in
-  solo-trunk.
+  solo-trunk. Every body write is a guarded read-modify-write that fails
+  closed: an empty candidate, or one that changes anything outside the managed
+  block and the markers, is refused, never written. On the `gh` path the
+  bundled `scripts/issue-body.sh` (`marker-set`, `managed-replace`) performs it
+  byte for byte, so no agent hand-rolls the rewrite in shell.
