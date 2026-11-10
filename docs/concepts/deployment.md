@@ -62,8 +62,8 @@ flowchart LR
   the snapshot at the changelog cut's merge commit on `main`, opens the Release
   PR and stops; merging it auto-deploys production. Prod receives exactly what QA
   tested while `main` keeps taking merges. **Never push directly to `prod`.**
-- **While the Release PR is open, non-prod runs the release branch.** Merges
-  into `main` continue but deploy only once the Release PR closes. The
+- **While the Release PR is open, non-prod runs the release branch**, and the
+  PO tests it there for as long as QA needs. Merges into `main` continue but deploy only once the Release PR closes. The
   environment held is `policy/delivery.yml`'s `release_hold` (default
   `non-prod`; `none` turns it off). Steer ships no deploy workflow - deploys are
   product-specific - so each product's deploy job asks
@@ -87,6 +87,9 @@ flowchart LR
   workflow tags that commit `vX.Y.Z` and publishes a GitHub Release with the
   version's changelog entries and the list of merged PRs. A repo that deploys
   from `main` (any other `production_gate`) publishes from `main` instead.
+  GitHub then deletes the merged release branch: `/steer:setup protect` turns on
+  `delete_branch_on_merge`, so a `release/*` branch exists only while its
+  release is in QA.
 - **What prod ships comes back to `main`.** After a `release/*` or `hotfix/*` PR
   merges into `prod`, the scaffold's `backport.yml` cherry-picks (`-x`) what
   `main` lacks onto `backport/<pr>-to-main` and comments a link on the merged PR;
@@ -109,6 +112,18 @@ flowchart LR
   GitHub Enterprise would otherwise provide. See
   [GitHub integration](../reference/github-integration.md#production-promotion-gate)
   for how that protection is configured.
+
+### Who acts at each step
+
+| Step | Who acts | What happens |
+|---|---|---|
+| 1. Feature PR | Dev | A second dev approves; the merge deploys non-prod. |
+| 2. Cut the release branch | Dev | `/steer:work promote` cuts the changelog, then a temporary `release/vX.Y.Z` from `main`, and opens the Release PR into `prod`. |
+| 3. QA on non-prod | PO, dev | Non-prod runs the release branch; the PO tests, a dev fixes by a `qa-fix/<n>` PR into it. `main` keeps merging. |
+| 4. Approve the Release PR | PO, dev | One PO team member and one dev team member approve; never the author. |
+| 5. Ship and tag | Automation | The merge deploys prod, `release.yml` tags `vX.Y.Z` and publishes the Release, GitHub deletes the release branch. |
+| 6. Hotfix | Dev, PO | Cut from `prod`; the same PO and dev approvals as a Release PR. |
+| 7. Back-port | Automation, dev | `backport.yml` cherry-picks to `main` and posts a link; a dev opens and merges the PR. The next release fails `ci:promotion` until it lands. |
 
 ## Hotfixes
 

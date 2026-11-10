@@ -143,8 +143,8 @@ reported - **never force-pushed**: it may carry QA fixes.
 
 The body is the changelog section this release ships - the text a reviewer
 needs to decide - followed by `git log --oneline origin/prod..origin/release/v<version>`,
-then a short **QA** paragraph: the held environment now runs this branch, QA
-fixes come as PRs into it, and who must approve (Step 6). Then say, in one line,
+then a short **QA** paragraph: the held environment now runs this branch, the
+PO tests it there, QA fixes come as PRs into it, and who must approve (Step 6). Then say, in one line,
 that merging it deploys production and is the human's call.
 
 Do not watch CI to green here and call the work done: on a Release PR the
@@ -154,7 +154,8 @@ meaningful signal is the approval, not the run.
 
 Say this once, in the handoff, so the team knows the rules of the window:
 
-- **The held environment runs the release branch.** Product deploy jobs ask
+- **The held environment runs the release branch, and the PO tests it there**
+  for as long as QA needs. Product deploy jobs ask
   `scripts/release-target.sh` which branch to deploy (`infra/README.md` ->
   Release flow). Merges into `main` keep landing; they deploy once the Release
   PR closes. `release_hold: none` turns this off.
@@ -180,10 +181,10 @@ cherry-picked `-x` and comments a link on the merged PR; a human opens that PR
 and merges it with **Rebase and merge**, so the cherry-pick trailers reach
 `main` (`ci:promotion` reads them). No `backport.yml` installed, or it
 reported a conflict -> the commands are in its comment, else
-`modes/hotfix.md` -> follow-up applies the same way. The release branch is
-deleted by GitHub's "Automatically delete head branches"; without it, name the
-merged `release/*` branches for a human to delete - `promote` never deletes a
-branch.
+`modes/hotfix.md` -> follow-up applies the same way. GitHub deletes the merged
+release branch (`delete_branch_on_merge`, applied by `/steer:setup protect`);
+with that setting off, name the merged `release/*` branches for a human to
+delete - `promote` never deletes a branch.
 
 ## Recommend the next action
 
@@ -197,6 +198,6 @@ Per `NEXT-ACTIONS.md`, derived from where the run stopped:
 | Prod ships a change `main` lacks | Human decision required | A dev merges the open back-port PR into `main` (no command) |
 | Default branch red | Blocking now | Fix the build before promoting |
 | Changelog cut PR open | Human decision required | A dev reviews and merges the cut (no command) |
-| Release PR open, in QA | Human decision required | QA signs off; a PO and a dev approve and merge - **that merge deploys production** (no command) |
+| Release PR open, in QA | Human decision required | The PO tests on the held environment and signs off; a PO and a dev approve and merge - **that merge deploys production** (no command) |
 | Release merged, back-port pending | Human decision required | A dev opens and merges the back-port PR from the bot's link (no command) |
 | Nothing unreleased | Complete | `No action is currently required.` |

@@ -136,9 +136,9 @@ Name the file and say what to carry forward.
     forward, and point the dev at its deploy-job contract - the product's deploy
     workflow must call `scripts/release-target.sh`; a sync never edits it.
   - Then name the human follow-ups in the PR: `/steer:setup protect apply`
-    (the rulesets; it asks for the PO and dev team slugs; both teams need
-    Write), GitHub's "Automatically delete head branches" for the release and
-    back-port branches, and that "Allow GitHub Actions to create and approve
+    (the rulesets and `delete_branch_on_merge`, which deletes merged release,
+    hotfix and back-port branches; it asks for the PO and dev team slugs; both
+    teams need Write), and that "Allow GitHub Actions to create and approve
     pull requests" stays off.
   - **The first release after this migration can conflict.** A `prod` built
     with linear history holds squash or rebase copies of `main`'s commits, so the

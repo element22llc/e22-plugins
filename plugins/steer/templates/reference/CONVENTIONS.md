@@ -856,8 +856,8 @@ needs an ADR.
     **production approval gate**; merging it -> **auto-deploy prod**. Prod gets
     exactly what QA tested while `main` keeps taking merges;
   - **the hold** - while the Release PR is open, the `release_hold` environment
-    runs the release branch; merges into `main` land but deploy only once it
-    closes. Steer ships no deploy workflow: a product's deploy job asks
+    runs the release branch and the PO tests it there, for as long as QA needs;
+    merges into `main` land but deploy only once it closes. Steer ships no deploy workflow: a product's deploy job asks
     `scripts/release-target.sh` which branch to deploy;
   - **QA fixes** - a `qa-fix/<n>` PR into the release branch, `ci` green, no
     changelog fragment (the release's entries describe the work it repairs).
@@ -873,7 +873,9 @@ needs an ADR.
   - **who approves** - a PR into `main`, a QA fix and a back-port PR: one dev.
     A Release PR or hotfix PR into `prod`: a PO team member **and** a dev team
     member (a repository ruleset, 2 approvals, last-push approval, no bypass;
-    both teams need Write). An author never approves their own PR.
+    both teams need Write). An author never approves their own PR. After the
+    merge, automation deploys, tags and publishes, and GitHub deletes the
+    release branch (`delete_branch_on_merge`).
   - **Why a branch, not an environment approval?** GitHub's native
     deployment-environment "required reviewers" gate is Enterprise-only for
     private repos; a protected `prod` branch (required PR review, no direct push,
