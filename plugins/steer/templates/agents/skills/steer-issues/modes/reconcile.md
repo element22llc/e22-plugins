@@ -77,6 +77,12 @@ existing human body; do not rewrite or guess the issue's content, and leave a
 genuinely human-authored issue (one a human typed directly) for `triage` to
 label rather than treating it as drift.
 
+**Out-of-enum marker values** - a `steer:source`, `steer:state` or `steer:kind`
+value outside its enum (`ENUMS.md`). Propose the replacement only when the
+issue's own content settles it, and apply it on a yes with `/steer-tracker-sync
+update-state`; otherwise list it for the human to choose. Never map a value by
+rule of thumb.
+
 **Delivered-but-open - a merged PR that never closed its issue.** The common
 cause is a PR with no closing keyword, or, in a polyrepo, a member PR whose bare
 `Closes #N` named the member's own `#N`. Read `/steer-tracker-sync
