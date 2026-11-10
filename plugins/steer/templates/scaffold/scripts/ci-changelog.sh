@@ -45,6 +45,16 @@ if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod
 	exit 0
 fi
 
+# A QA fix into a release branch repairs work this release's entries already describe.
+case "${STEER_CI_BASE_REF:-}" in
+release/*)
+	[ "${STEER_CI_EVENT:-}" = pull_request ] && {
+		printf 'ci:changelog - QA fix into %s; the release entries cover it.\n' "${STEER_CI_BASE_REF}"
+		exit 0
+	}
+	;;
+esac
+
 # A Dependabot bump adds no fragment and cannot take one: dependabot-auto-merge
 # refuses a commit that is not Dependabot's, so requiring one would block every bump.
 # Same guard as that job: author and pusher both Dependabot.
@@ -70,6 +80,24 @@ cut="$(git -c core.quotePath=false diff --diff-filter=A --name-only "${base}...H
 if [ -n "${cut}" ]; then
 	printf 'ci:changelog - carries a release cut (%s); its fragments were consumed.\n' "$(printf '%s' "${cut}" | tr '\n' ' ')"
 	exit 0
+fi
+
+# A back-port of a release's QA fixes: every commit is a `cherry-pick -x` of a commit prod
+# ships, and those fixes carry no fragment. The trailer must name a real prod commit.
+if git rev-parse --verify --quiet origin/prod >/dev/null 2>&1; then
+	commits="$(git rev-list --no-merges "${base}..HEAD" 2>/dev/null || true)"
+	backport="${commits:+yes}"
+	for c in ${commits}; do
+		src="$(git log -1 --format=%B "${c}" | sed -n 's/.*(cherry picked from commit \([0-9a-f]\{40\}\)).*/\1/p' | head -n 1)"
+		if [ -z "${src}" ] || ! git merge-base --is-ancestor "${src}" origin/prod 2>/dev/null; then
+			backport=''
+			break
+		fi
+	done
+	if [ -n "${backport}" ]; then
+		printf 'ci:changelog - back-port of commits prod ships; their release covers them.\n'
+		exit 0
+	fi
 fi
 
 changed="$(git -c core.quotePath=false diff --name-only "${base}...HEAD" 2>/dev/null || git -c core.quotePath=false diff --name-only "${base}" HEAD)"

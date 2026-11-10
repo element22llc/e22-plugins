@@ -19,7 +19,9 @@ AWS/Terragrunt specifics live in each product's `/infra/README.md`.
 
 ## Environments
 
-- **`non-prod`** - a shared environment for integration and validation.
+- **`non-prod`** - a shared environment for integration and validation. It
+  runs `main`, except while a Release PR is open: then it runs that release
+  branch, so QA tests exactly what will ship.
 - **`prod`** - production.
 - **Review apps** - every feature PR also gets an isolated, auto-provisioned
   environment, torn down when the PR merges or closes. The review-app mechanism is
@@ -33,42 +35,78 @@ Promotion is driven by branches, never by pushing to an environment directly:
 ```mermaid
 flowchart LR
     PR[Feature PR] -->|opens| RA[Review app<br/>auto-provisioned]
-    PR -->|merge| MAIN[main]
-    MAIN -->|auto-deploy| NONPROD[non-prod]
-    MAIN -->|reviewed PR| PRODPR{{main -> prod PR<br/>approval = the prod gate}}
-    PRODPR -->|merge| PROD[prod]
+    PR -->|merge, 1 dev| MAIN[main]
+    MAIN -->|auto-deploy<br/>no release open| NONPROD[non-prod]
+    MAIN -->|promote cuts a snapshot| REL[release/vX.Y.Z]
+    REL -->|auto-deploy<br/>while in QA| NONPROD
+    QA[qa-fix PR, 1 dev] -->|merge| REL
+    REL --> RELPR{{Release PR -> prod<br/>PO + dev approve}}
+    RELPR -->|merge commit| PROD[prod]
     PROD -->|auto-deploy| LIVE[Production]
     PROD -->|incident| HF[hotfix branch<br/>cut from prod]
-    HF --> HFPR{{hotfix -> prod PR<br/>carries a patch cut}}
-    HFPR -->|merge| PROD
-    HFPR -.->|cherry-pick, back-port PR| MAIN
+    HF --> HFPR{{hotfix -> prod PR<br/>PO + dev approve}}
+    HFPR -->|merge commit| PROD
+    RELPR -.->|back-port, 1 dev| MAIN
+    HFPR -.->|back-port, 1 dev| MAIN
+    HFPR -.->|back-port during QA| REL
 
     classDef gated fill:#fde,stroke:#c39
-    class PRODPR,HFPR gated
+    class RELPR,HFPR gated
 ```
 
 - **Merge to `main` auto-deploys `non-prod`.** Landing on the default branch is
-  the trigger; there is no separate "deploy to staging" step.
-- **Prod is gated by a reviewed PR from `main` into a long-lived `prod` branch.**
-  [`/steer:work promote`](../workflows/work.md) opens it and stops; merging it
-  auto-deploys production. **Never push directly to `prod`.**
+  the trigger; there is no separate "deploy to staging" step - unless a release
+  is in QA (below).
+- **Prod is gated by a Release PR from a `release/vX.Y.Z` snapshot into a
+  long-lived `prod` branch.** [`/steer:work promote`](../workflows/work.md) cuts
+  the snapshot at the changelog cut's merge commit on `main`, opens the Release
+  PR and stops; merging it auto-deploys production. Prod receives exactly what QA
+  tested while `main` keeps taking merges. **Never push directly to `prod`.**
+- **While the Release PR is open, non-prod runs the release branch.** Merges
+  into `main` continue but deploy only once the Release PR closes. The
+  environment held is `policy/delivery.yml`'s `release_hold` (default
+  `non-prod`; `none` turns it off). Steer ships no deploy workflow - deploys are
+  product-specific - so each product's deploy job asks
+  `scripts/release-target.sh` which branch to deploy (the contract is in the
+  scaffold's `infra/README.md`).
+- **QA fixes land on the release branch.** A `qa-fix/<n>` PR into
+  `release/vX.Y.Z`: one dev approval, `ci` green, no changelog fragment (the
+  release's entries already describe the work it repairs). Merging it redeploys
+  non-prod and dismisses the Release PR's approvals, so QA re-tests and the
+  approvers look again.
 - **The `prod` promotion is also the release moment.** An app or service deploys
   continuously, so its changelog is cut at promotion, from the fragments
   accumulated since the last one - `changie batch auto` then `changie merge`,
   a semver `vX.Y.Z` whose bump the fragments' kinds decide (every profile
   versions this way). The cut lands first, as its own PR to
   the default branch (`.changes/unreleased/` lives there, and you cannot push to a
-  protected `main`); `promote` opens the promotion PR once that has merged. See
+  protected `main`); `promote` cuts the release branch once that has merged. See
   [Repository contract](../reference/repository-contract.md#what-a-managed-repo-carries).
 - **Every release is tagged and published automatically.** When a new version
   reaches `prod` - a promotion or a hotfix - the scaffold's `release.yml`
   workflow tags that commit `vX.Y.Z` and publishes a GitHub Release with the
   version's changelog entries and the list of merged PRs. A repo that deploys
   from `main` (any other `production_gate`) publishes from `main` instead.
-- **The branch-protection approval on `prod` *is* the production gate.** It stands
-  in for the deployment-environment approvals that GitHub Enterprise would
-  otherwise provide, which is why `policy/branch-protection.yml` carries a `prod`
-  entry alongside the default branch. See
+- **What prod ships comes back to `main`.** After a `release/*` or `hotfix/*` PR
+  merges into `prod`, the scaffold's `backport.yml` cherry-picks (`-x`) what
+  `main` lacks onto `backport/<pr>-to-main` and comments a link on the merged PR;
+  a human opens that PR and merges it with **Rebase and merge**, so the
+  cherry-pick trailers reach `main`. It does not open the PR itself with
+  `GITHUB_TOKEN`: that needs "Allow GitHub Actions to create and approve pull
+  requests", which also lets any workflow approve a PR. A GitHub App token is the
+  opt-in for opening it automatically.
+- **Nothing `prod` ships is dropped.** The required `ci` check runs
+  `ci:promotion`: a PR into `prod` must come from `release/*` or `hotfix/*`, and
+  a release fails while a hotfix or an earlier QA fix is not yet back on `main`.
+  `prod` takes merge commits only, so the SHAs it reads survive.
+- **Who approves what.** A PR into `main`, a QA fix and a back-port PR: one dev.
+  A Release PR or a hotfix PR into `prod`: a member of the PO team **and** a
+  member of the dev team - 2 approvals, never the author nor whoever pushed last,
+  no bypass. GitHub enforces the two-team rule only through a repository ruleset
+  ("required reviewers"), which `/steer:setup protect` applies beside classic
+  branch protection; both teams need Write access. That approval *is* the
+  production gate: it stands in for the deployment-environment approvals that
+  GitHub Enterprise would otherwise provide. See
   [GitHub integration](../reference/github-integration.md#production-promotion-gate)
   for how that protection is configured.
 
@@ -78,16 +116,18 @@ A production incident ([`/steer:work --hotfix`](../workflows/work.md)) cannot
 ride the normal path: `main` holds work that has not been released, and a fix
 cut from it would ship that work too. So the hotfix path runs beside `prod`:
 
-- **Branch from `prod`, PR into `prod`.** The branch is `hotfix/<n>-slug`; one
-  reviewer approval and green CI, the same gate as a promotion.
+- **Branch from `prod`, PR into `prod`.** The branch is `hotfix/<n>-slug`; a PO
+  and a dev approve and CI is green, the same gate as a Release PR.
 - **The PR carries its own patch release.** Its fragment is cut on the branch
   (`changie batch patch`), so merging it ships a new patch version - there is no
   separate promotion to wait for.
-- **Back-port to `main`, always.** Right after the merge, the fix and its
-  changelog entry are cherry-picked onto a branch cut from `main` and land
-  through an ordinary PR - never a PR whose head is `prod`, where resolving a
-  conflict would commit into production. `/steer:work promote` refuses to open
-  the next promotion while a hotfix is missing from `main`.
+- **Back-port to `main`, always.** Right after the merge, `backport.yml`
+  cherry-picks the fix and its changelog entry onto a branch cut from `main`
+  (and, while a release is in QA, onto the open release branch) for a human to
+  open as an ordinary PR - never a PR whose head is `prod`, where resolving a
+  conflict would commit into production. `/steer:work promote` refuses to cut
+  the next release, and `ci:promotion` fails its Release PR, while a hotfix is
+  missing from `main`.
 
 When `production_gate` is not `prod-branch-pr`, production deploys from the
 default branch, so the hotfix branches from and targets it like any change.
@@ -134,8 +174,10 @@ close rather than a failure to fix now.
 
 ## Rollback
 
-Every prod deploy has a **known rollback** before it ships - either revert the
-`prod` merge or redeploy the prior SHA. Database migrations follow an
+Every prod deploy has a **known rollback** before it ships - either a revert
+shipped as a hotfix (a `hotfix/*` PR into `prod`, same approvers) or a redeploy
+of the prior SHA. The back-port bot flags a revert for a human to decide whether
+`main` gets it too. Database migrations follow an
 **expand/contract** pattern so the previous version keeps running through a deploy,
 which is what makes a clean rollback possible.
 

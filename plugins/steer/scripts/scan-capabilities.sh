@@ -496,6 +496,56 @@ else
 	emit "release-publish" "absent" "$F"
 fi
 
+# --- the release flow - n/a unless production is a reviewed PR into prod ---
+# A workspace (spine host) deploys nothing of its own.
+prod_pr=true
+_gate="$(sed -n 's/^production_gate:[[:space:]]*\([^[:space:]#]*\).*/\1/p' "$ROOT/policy/delivery.yml" 2>/dev/null)"
+[ "${_gate:-prod-branch-pr}" = prod-branch-pr ] || prod_pr=false
+exists "spec/workspace.yml" && prod_pr=false
+
+# --- promotion-gate - only release/* and hotfix/* reach prod, dropping nothing ---
+PG="scripts/ci-promotion.sh"
+pg_files=".github/workflows/ci.yml,mise.toml,$PG"
+if ! $prod_pr; then
+	emit "promotion-gate" "n/a" "$pg_files"
+elif ! exists "$PG" && ! has ".github/workflows/ci.yml" "ci:promotion"; then
+	emit "promotion-gate" "absent" "$pg_files"
+elif has ".github/workflows/ci.yml" "mise run ci:promotion" && has ".github/workflows/ci.yml" 'release/\*\*' &&
+	has "mise.toml" "ci:promotion" && exists "$PG"; then
+	emit "promotion-gate" "present-wired" "$pg_files"
+else
+	emit "promotion-gate" "mis-wired" "$pg_files"
+fi
+
+# --- release-backport - what prod ships comes back to main ---
+BW=".github/workflows/backport.yml"
+bw_files="$BW,scripts/backport.sh,$PG"
+if ! $prod_pr; then
+	emit "release-backport" "n/a" "$bw_files"
+elif ! exists "$BW"; then
+	emit "release-backport" "absent" "$bw_files"
+elif has "$BW" "scripts/backport.sh" && exists "scripts/backport.sh" && exists "$PG"; then
+	emit "release-backport" "present-wired" "$bw_files"
+else
+	emit "release-backport" "mis-wired" "$bw_files"
+fi
+
+# --- release-hold - the held environment runs the open release branch ---
+RT="scripts/release-target.sh"
+rh_files="policy/delivery.yml,$RT"
+_hold="$(sed -n 's/^release_hold:[[:space:]]*\([^[:space:]#]*\).*/\1/p' "$ROOT/policy/delivery.yml" 2>/dev/null)"
+if ! $prod_pr; then
+	emit "release-hold" "n/a" "$rh_files"
+elif [ "$_hold" = none ]; then
+	emit "release-hold" "disabled" "$rh_files"
+elif [ -z "$_hold" ] && ! exists "$RT"; then
+	emit "release-hold" "absent" "$rh_files"
+elif [ -n "$_hold" ] && exists "$RT"; then
+	emit "release-hold" "present-wired" "$rh_files"
+else
+	emit "release-hold" "mis-wired" "$rh_files"
+fi
+
 # --- line-ending-normalization - LF pinned for every checkout ---
 # Presence-only: whether the file's CONTENT carries the current pins is step 5's
 # additive reconcile, not a capability gap. This entry exists solely to close the

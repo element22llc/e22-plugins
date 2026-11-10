@@ -33,8 +33,8 @@ When rules are drifted or absent:
    and the policy does not carry it) -
    `policy/branch-protection.yml` is the source of truth, and the body above shows
    its *current* values only as an illustration. Read each field from the policy for
-   the branch in scope (`strict`, `contexts`, the review counts, `enforce_admins`,
-   `required_linear_history`) exactly as you already resolve the `ci` context name
+   the branch in scope (`strict`, `contexts`, the review counts, `require_last_push_approval`,
+   `enforce_admins`, `required_linear_history`) exactly as you already resolve the `ci` context name
    from the workflow - with the selected **profile** overlaid (under `solo` the
    review count is `0`, on `prod` too). Emitting a value this example hardcodes while the policy says
    otherwise makes the step-4 re-verify report permanent drift on a branch you just
@@ -57,6 +57,20 @@ When rules are drifted or absent:
      own branch.
      `echo '{"can_approve_pull_request_reviews":false}' | gh api -X PUT
      "repos/${OWNER}/${REPO}/actions/permissions/workflow" --input -`.
+   - **The schema 7 rulesets** - `steer: prod approvals` and `steer: release
+     branches`, created with `gh api -X POST "repos/${OWNER}/${REPO}/rulesets"
+     --input -` or updated with `gh api -X PUT
+     "repos/${OWNER}/${REPO}/rulesets/<id>" --input -` (write flags first, as
+     above). The body is built from the policy as `SKILL.md` -> Resolve desired
+     state lists it: `"target":"branch"`, `"enforcement":"active"`,
+     `"bypass_actors":[]`, `conditions.ref_name.include` the branch or pattern,
+     and `rules` of type `pull_request` (with `required_reviewers` carrying each
+     team's numeric `reviewer.id`, `"type":"Team"`), `required_status_checks`
+     and, for prod, `non_fast_forward` and `deletion`. Show the exact JSON
+     before running it, as for the protection PUT. Under `solo`, skip the
+     `required_reviewers` entries. A `422` naming `required_reviewers` means the
+     plan or the repo owner does not support it: say so, apply the rest, and
+     keep the classic review count as the only approval gate.
 4. After applying, re-run the verify diff and report the new state.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a

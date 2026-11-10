@@ -160,7 +160,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at PRs. Automatic for two or more issues. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
 | **`qa [#N]`** | Opt-in: drive the flows the branch diff touches in a real browser, fix small breakage via `debug`, file the rest. Read `modes/qa.md` first. |
-| **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
+| **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the changelog, and opens the `release/*` -> `prod` Release PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
 | **`walkthrough <feature>`** | **Not issue-scoped** - record a captioned walkthrough video of the running app that proves an approved intent: plan scenes from it, commit a re-recordable script and a `mise run demo:record` task, verify the frames, hand over the MP4. |
@@ -194,7 +194,7 @@ Two or more issues -> `queue` (Multiple issues).
   for High-risk work, where the sign-off is the rule `60-high-risk` scoping.
   -> procedure: [`modes/reviewed.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/reviewed.md)
 - **`--hotfix`** - the production-incident fast path (rule `61-gates` -> Hotfix): a
-  `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
+  `hotfix/<n>-slug` branch, issue after-the-fact, an expedited review, and a
   mandatory traceability follow-up. Relaxes ceremony, never the human gates.
   **Only** for an active incident on a confirmed-deployed production; else normal flow.
   -> procedure: [`modes/hotfix.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/hotfix.md)

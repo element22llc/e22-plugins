@@ -30,7 +30,7 @@ one of:
   question - which deployed environment is down, and since when - and stay on
   the normal flow until the dev's answer names one. "Can't confirm" is this
   branch, not a caveat on the lane: the plan and the handoff use
-  `issue/<n>-slug` and normal review, never `hotfix/` or one reviewer.
+  `issue/<n>-slug` and normal review, never `hotfix/` or the expedited lane.
 
 The ask's own wording is never the confirmation; that is the self-assessment
 rule `61-gates` rules out.
@@ -61,15 +61,17 @@ What changes versus the normal flow:
 - **Issue after-the-fact.** Don't block the fix on find-or-create. File or backfill
   the issue as soon as practical and reference it from the PR/commit - the hook
   won't nag a `hotfix/` branch, but the issue is still required by the follow-up.
-- **Single-reviewer, expedited.** One reviewer approval is sufficient (it relaxes
-  the high-risk scoping ceremony of rules 60 and 80) - it does **not**
-  remove the PR/merge human gate. No self-merge.
+- **Expedited review, same approvers.** The PR goes to the front of the review
+  queue, but its base decides who approves - into `prod`, a PO team member
+  **and** a dev team member (the `prod` ruleset, `/steer:setup protect`). It
+  relaxes the high-risk scoping ceremony of rules 60 and 80, never who approves
+  or the PR/merge human gate. No self-merge.
 - **Cause before fix, faster.** [`debug.md`](debug.md) still governs the fix:
   the incident gets a stated causal chain, never a guess shipped under pressure.
 - **Local gates, no draft.** Run the local gates before the push as `finish`
   does - a red CI round-trip is slower than a local run - and its code gate,
-  whatever the diff's size: an incident fix is High-risk, and one expedited
-  human reviewer is exactly when an independent pass matters. Open the PR ready
+  whatever the diff's size: an incident fix is High-risk, and an expedited
+  human review is exactly when an independent pass matters. Open the PR ready
   for review whatever the gate left open - `finish` opens a draft unless it
   came back clean - and watch its CI to conclusion yourself.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under `45-delivery` ->
@@ -80,19 +82,25 @@ What changes versus the normal flow:
   human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up.** Once the fire is out, restore traceability.
   First, when the fix went into `prod`, **back-port it** the moment that PR
-  merges, or the next promotion's changelog and `main` both lack it. Never
-  open a PR with `prod` as its head: resolving a conflict there commits into
-  `prod`.
+  merges - to `main`, and to the open `release/*` branch when a release is in
+  QA - or the next release ships without it (`ci:promotion` fails that Release
+  PR until it lands). `.github/workflows/backport.yml` does the cherry-picks on
+  merge and comments a link per target; a human opens each PR and merges it with
+  **Rebase and merge**, so the `-x` trailers survive. By hand (no workflow, or it
+  reported a conflict), per target - never a PR with `prod` as its head:
+  resolving a conflict there commits into `prod`.
 
   ```sh
-  git fetch origin main prod && git switch -c hotfix/<n>-backport origin/main
-  git cherry-pick <the hotfix's commit on prod>   # add -m 1 if it is a merge commit
-  gh pr create --base main --title "backport: <version>" ...
+  git fetch origin <target> prod && git switch -c backport/<pr>-to-<target> origin/<target>
+  git cherry-pick -x $(sh scripts/ci-promotion.sh --list-missing origin/<target> origin/prod)
+  gh pr create --base <target> --title "backport: #<pr> into <target>" ...
   ```
 
   A `CHANGELOG.md` conflict (a cut already on `main`) is resolved by running
   `changie merge`, never by hand. `ci:changelog` passes the PR without a new
-  fragment because it adds the hotfix's version file, which consumed it.
+  fragment because it adds the hotfix's version file, which consumed it. A
+  hotfix that **reverts** a change is back-ported only on a human's call: the
+  bot's comment flags it.
   Then backfill/finish the issue, write the spec/ADR if a durable decision was made,
   put the incident's root cause on the enforcement ladder (`finish` in
   `modes/subcommands.md` - an incident is the strongest trigger, and a regression

@@ -50,7 +50,7 @@ an unrelated question.
 | `/steer:spec roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
 | `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
 | `/steer:setup worktrees` | Checks worktrees another tool manages; writes trust, port and boot-file fixes on confirmation. |
-| `/steer:work promote` | Cuts the consumer changelog and opens the production promotion PR; stops at the merge. |
+| `/steer:work promote` | Cuts the consumer changelog, snapshots it as `release/vX.Y.Z` and opens the Release PR into `prod`; stops at the merge. |
 | `/steer:work review` | Batches the PR review queue. |
 | `/steer:work walkthrough <feature>` | Records a captioned demo video; commits a re-recordable script and a `mise run demo:record` task. |
 

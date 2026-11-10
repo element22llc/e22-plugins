@@ -2,11 +2,12 @@ name: CI
 
 on:
   pull_request:
-    # `prod` too: branch-protection makes `ci` a required check on the main -> prod promotion PR.
-    branches: [main, prod]
-    # `ready_for_review` is what starts CI on a PR opened as a draft. The other three are
+    # `prod` and `release/**` too: `ci` is required on the release/* -> prod PR and on a QA fix into a release branch.
+    branches: [main, prod, "release/**"]
+    # `ready_for_review` starts CI on a PR opened as a draft; `edited` re-runs it when a PR is
+    # retargeted, so a run against main never stands in for ci:promotion. The other three are
     # the defaults, restated because naming `types` at all replaces them.
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
   push:
     branches: [main]
   # Adding `workflow_call`? Every caller job must grant `contents: write` + `pull-requests: write`
@@ -100,6 +101,15 @@ jobs:
           STEER_CI_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           STEER_CI_ACTOR: ${{ github.actor }}
         run: mise run ci:changelog
+
+      - name: Promotion (release/* or hotfix/* into prod, nothing prod ships dropped)
+        env:
+          STEER_CI_EVENT: ${{ github.event_name }}
+          STEER_CI_BASE_REF: ${{ github.base_ref }}
+          STEER_CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          STEER_CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          STEER_CI_HEAD_REF: ${{ github.head_ref }}
+        run: mise run ci:promotion
 
       - name: Spec open-question contract
         run: mise run ci:spec

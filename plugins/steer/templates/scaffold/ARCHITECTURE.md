@@ -70,7 +70,7 @@ One line each, linking the owning ADR or contract:
 - **Auth & tenancy** - [model; ADR-NNNN]
 - **Persistence & migrations** - [strategy; expand/contract; ADR-NNNN, see `/spec/reference/`]
 - **Config & secrets** - [where they live: SSM Parameter Store `SecureString` by default / Secrets Manager when warranted; never committed]
-- **Deployment & environments** - [non-prod auto on `main`; prod auto on the `prod` branch behind a reviewed promotion PR; review app per feature PR; see `/infra/README.md`]
+- **Deployment & environments** - [non-prod auto on `main`, running the release branch while a Release PR is open; prod auto on the `prod` branch behind a `release/*` Release PR approved by a PO and a dev; review app per feature PR; see `/infra/README.md`]
 - **Observability** - [logs store; metrics + alarms; error tracking (e.g. Sentry); health-check endpoint; **where alerts go** (on-call/channel)]
 
 ## Where to look next

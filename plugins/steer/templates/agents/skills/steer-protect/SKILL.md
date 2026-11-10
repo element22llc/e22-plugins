@@ -144,6 +144,24 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   branch deliberately. What `production_gate` changes is what steer *proposes* and
   what it reports as missing - never the gate itself, which stays human in every
   model.
+- **Ruleset fields (schema 7).** `required_reviewers` and `allowed_merge_methods`
+  on a `protected_branches` entry, and the `release_branches` pattern, exist only
+  in GitHub **repository rulesets** - classic protection has no such rule and
+  takes no patterns. They resolve to two rulesets protect owns by name:
+  `steer: prod approvals` (target `refs/heads/prod`: the review count,
+  `dismiss_stale_reviews_on_push`, `require_last_push_approval`, one
+  `required_reviewers` entry per team with `minimum_approvals: 1` and
+  `file_patterns: ["**"]`, the merge methods, `ci`, no bypass actors) and
+  `steer: release branches` (target `refs/heads/<release_branches.pattern>`: a
+  PR with its approval count and `ci`, no bypass). A `team` slug left `""` is
+  **not resolved yet**: ask the dev for the PO and the dev team slugs, write them
+  into the repo's policy copy (as `APPLY.md` step 0 writes `profile:`), then
+  resolve each to its numeric id (`gh api orgs/<org>/teams/<slug> --jq .id`).
+  Both teams need **Write** on the repo, or their approvals do not count. Warn
+  when the dev team has fewer than two members: the Release PR's author and the
+  last pusher cannot approve, so one dev and one PO can never merge.
+  A **user-owned** repo has no teams: say required reviewers are unavailable
+  there and keep the classic review count.
 - **Profile.** Read `profile:` (schema 3 - `team` when absent, as in older
   policies). For any profile other than `team`, overlay that profile's map from
   `profiles:` onto **every** branch in scope before diffing - under `solo`,
@@ -178,6 +196,14 @@ Plus the repo-level settings the policy declares, read from
 Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
+
+For the **schema 7 rulesets**, read `gh api repos/${OWNER}/${REPO}/rulesets`, find
+each one by its `steer:` name, then `gh api repos/${OWNER}/${REPO}/rulesets/<id>`
+for its rules, and diff them field by field like the classic protection. A
+missing ruleset is `absent`; an edited one is `drifted`. The required-reviewers
+rule is new on GitHub (GA 2026-02): after the first apply on a repo, say so and
+ask the dev to confirm on one Release PR that a PO **and** a dev approval are
+both required before it can merge.
 
 Read `can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
 `true` is the grant steer's retired approve-based auto-merge asked for: it lets
@@ -248,10 +274,14 @@ confirmation.
 
 ## Notes
 
-- **Classic branch protection** is used because its fields map 1:1 to the policy.
-  Repository **rulesets** are the modern equivalent with the same intent; if the
-  repo already governs the branch via a ruleset, report it as compliant rather
-  than forcing a second mechanism.
+- **Classic branch protection** carries every field it can express, because those
+  map 1:1 to the policy; the schema 7 ruleset fields go to the two `steer:`
+  rulesets, and GitHub applies the most restrictive of both layers. If the repo
+  already governs a branch through a ruleset of its own that meets the policy,
+  report it as compliant rather than forcing a second one.
+- **`backport.yml` never needs** "Allow GitHub Actions to create and approve pull
+  requests": with `GITHUB_TOKEN` it pushes a branch and comments a link, and a
+  human opens the PR. Keep reporting that setting as drift.
 - This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
   changes repo **settings** via `gh api`; `apply --solo` / `--team` sets
   `profile:` in the repo's own `policy/branch-protection.yml` (`APPLY.md` step

@@ -191,6 +191,6 @@ def test_standalone_workflow_and_approval_grant_are_retired():
         REPO_ROOT / "plugins/steer/policy/branch-protection.yml",
     ):
         data = yaml.safe_load(policy.read_text(encoding="utf-8"))
-        assert data["schema"] == 6
+        assert data["schema"] == 7
         assert "actions_can_approve_pull_requests" not in data
         assert "allow_auto_merge" not in data
