@@ -19,6 +19,7 @@
       "Bash(git commit:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue edit:*)",
+      "Bash(sh *scripts/issue-body.sh*)",
       "Bash(gh issue comment:*)",
       "Bash(gh issue list:*)",
       "Bash(gh issue view:*)",

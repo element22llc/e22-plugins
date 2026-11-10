@@ -82,6 +82,12 @@ The update is therefore a guarded read-modify-write, never a blind overwrite:
 2. **Preserve** that exact body as the merge input (bytes outside the block are
    carried forward verbatim).
 3. **Produce** the candidate body (managed block rewritten; everything else kept).
+   **Verify it before any write - fail closed:** an **empty** candidate, or one
+   whose bytes outside the managed block and the `steer:` markers differ from
+   the original, aborts the update and is reported. A failed transform must
+   never reach the tracker as a body. On the `gh` arm,
+   `scripts/issue-body.sh` runs steps 1-6 with these checks; use it rather than
+   a hand-written rewrite.
 4. **Re-read** the issue immediately before writing.
 5. If the body **changed** since step 1, recompute the candidate from the new
    version.
@@ -404,7 +410,9 @@ Rules:
   `audit-finding` kind is accepted and migrated to `finding` + `source:audit`.
 - **Schema migration is explicit.** It happens only through `/steer:sync` or
   `/steer:work issues reconcile` and is reported - never silently during an
-  unrelated command.
+  unrelated command. A marker value outside its enum (an unknown `steer:source`
+  or `steer:state`) is the same kind of repair: `triage` reports it and never
+  rewrites it; the fix goes through those two paths.
 
 ## Human-created issues - original content is immutable
 

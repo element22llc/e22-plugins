@@ -67,6 +67,7 @@ allowed-tools:
   - Bash(gh search issues:*)
   - Bash(gh auth status:*)
   - Bash(gh api graphql:*)
+  - Bash(sh *scripts/issue-body.sh*)
 ---
 <!-- steer:modes pull,push -->
 
