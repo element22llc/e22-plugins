@@ -253,7 +253,8 @@ from `DESIGN.md` unless one of them is declared upstream:
   Change the code, then re-sync the system; never edit it by hand to match.
   A system whose index names a CI pipeline as its last change is republished
   by that pipeline: an edit made on its page may be overwritten.
-- **Neither is declared:** read the system's index
+- **Neither is declared**, for a recorded system this session can read and a
+  mismatch it has actually found: read the system's index
   (`project/design-system.json`, by path, for this question only) and, where
   it serves a token file, that file's source note; then ask the dev which side
   leads, and flag no mismatch as drift until they have answered. Record the

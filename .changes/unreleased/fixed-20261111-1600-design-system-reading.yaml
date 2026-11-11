@@ -14,11 +14,11 @@ body: |-
     `quickstart` result, the type's instructions or the README name; never its
     page, a file listing or, for a render, its index. A path that is not
     served is skipped and named, and only a system whose README and token
-    files all fail is unreadable. `/steer:reference artifacts` says what the
-    install carries (the token file where served, the fonts and pictures the
-    page uses, a record in the page's index) and that a conflict inside a
-    system, or between it and the ASCII rule, is named in one line rather than
-    settled silently. `/steer:reference design-sources` adds, for distilling
+    files all fail is unreadable. `/steer:reference artifacts` leaves the
+    install to each type's own instructions, re-reads a default system's README
+    by path when the `quickstart` result clipped it, and says that a conflict
+    inside a system, or between it and the ASCII rule, is named in one line
+    rather than settled silently.`/steer:reference design-sources` adds, for distilling
     into `DESIGN.md`: record every theme, keep the system's values exact and
     turn a failing contrast pair or a self-contradiction into an open
     question, treat a pipeline-republished system as code-upstream, ask which
