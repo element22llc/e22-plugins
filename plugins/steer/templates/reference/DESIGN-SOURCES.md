@@ -212,9 +212,10 @@ Design System as the product's identity:
   System type's, not `DESIGN.md`'s: translate it, never paste it. What the
   system does not define goes to `## Open questions`, never an invented value.
 - **Keep its values exact, and flag what is off.** A color pair that misses
-  accessible contrast, or a README that contradicts the files the system
-  ships, stays as the system has it and becomes an open question for its
-  owner. Never re-tint a brand or pick a side silently.
+  accessible contrast stays as the system has it. Where its README
+  contradicts the files it ships, record what the README's author states.
+  Either one becomes an open question for the system's owner: never re-tint a
+  brand or settle it silently.
 - **Record the link** in `spec/design/source.md` -> `Design system`, with the
   date it was read and which side is upstream - the bare link, never a share
   key (`?sk=...`). A `source.md` that predates the section gains it at the
@@ -253,8 +254,9 @@ from `DESIGN.md` unless one of them is declared upstream:
   A system whose index names a CI pipeline as its last change is republished
   by that pipeline: an edit made on its page may be overwritten.
 - **Neither is declared:** read the system's index
-  (`project/design-system.json`, by path, for this question only) and its
-  token file's source note, then ask the dev which side leads. Record the
+  (`project/design-system.json`, by path, for this question only) and, where
+  it serves a token file, that file's source note; then ask the dev which side
+  leads, and flag no mismatch as drift until they have answered. Record the
   answer in `spec/design/source.md`.
 
 A system carried over from standalone Claude Design may still show a pending
