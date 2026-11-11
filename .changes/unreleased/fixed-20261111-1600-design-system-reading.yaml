@@ -1,0 +1,26 @@
+kind: Fixed
+time: 2026-11-11T16:00:00.000000000-05:00
+custom:
+  Slug: design-system-reading
+body: |-
+  - **Fixed: a Design System with no `tokens.json` is still used.** Both
+    references told a session to read a system's `project/README.md` and
+    `project/tokens.json`, and to fall back to the type's own look when a
+    system "cannot be read". A system carried over from standalone Claude
+    Design keeps its tokens in stylesheets and serves no `tokens.json`, so a
+    literal reading dropped an organization's default system. The guidance now
+    follows the Design System and Slides types as published: read a system by
+    file path only, the README first and whole, then the token files the
+    `quickstart` result, the type's instructions or the README name; never its
+    page, a file listing or, for a render, its index. A path that is not
+    served is skipped and named, and only a system whose README and token
+    files all fail is unreadable. `/steer:reference artifacts` leaves the
+    install to each type's own instructions, re-reads a default system's README
+    by path when the `quickstart` result clipped it, and says that a conflict
+    inside a system, or between it and the ASCII rule, is named in one line
+    rather than settled silently.`/steer:reference design-sources` adds, for distilling
+    into `DESIGN.md`: record every theme, keep the system's values exact and
+    turn a failing contrast pair or a self-contradiction into an open
+    question, treat a pipeline-republished system as code-upstream, ask which
+    side leads when neither is declared, and never start a carried-over
+    system's pending clean-up as a side effect.

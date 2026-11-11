@@ -137,8 +137,10 @@ Key points (read the file for the full detail):
   export) so every feature stays uniform; feature-specific details stay in the
   feature's `intent.md`.
 - **Design System Artifacts** - never required, and never asked for. How to
-  read one as the source of `DESIGN.md` (distill, record the link, the repo
-  file stays what the code builds against), what a session that cannot read
+  read one as the source of `DESIGN.md` (by file path, README first, then the
+  token files it names; a system with no `tokens.json` is still readable;
+  distill, record the link, the repo file stays what the code builds against),
+  what a session that cannot read
   one does (builds from `DESIGN.md`, no blocker, no drift flag), which side is
   upstream when it drifts, and why publishing a repo's system is the user's to
   start.
@@ -223,7 +225,9 @@ It covers, in detail:
 - **Design systems** - which Design System Artifact a deck or a mock-up is
   built on: the one the user names, then the product's, then the account
   default, then the type's own look. None is a prerequisite: with no system
-  listed or recorded, the render proceeds without a question.
+  listed or recorded, the render proceeds without a question. A system is
+  read by file path, README first; one that serves no token file is still
+  used, and a conflict inside it is named, never settled silently.
 - **The write-location invariant** - any local file a render needs (the HTML page,
   a Dashboard's dataset JSON) goes to a system temp dir (never under the repo tree), on a deterministic per-subject filename so a
   same-session re-run redeploys the same URL (hedged for forked skills); and how
