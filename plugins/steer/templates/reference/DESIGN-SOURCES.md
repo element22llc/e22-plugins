@@ -209,8 +209,9 @@ Design System as the product's identity:
   goes to `## Open questions`, never an invented value.
 - **Record the link** in `spec/design/source.md` -> `Design system`, with the
   date it was read and which side is upstream - the bare link, never a share
-  key (`?sk=...`). Add the section to a `source.md` that predates it, and
-  create the file from the bundled template where the repo has none. This is a
+  key (`?sk=...`). A `source.md` that predates the section gains it at the
+  next `/steer:setup sync`; add it by hand until then, and create the file
+  from the bundled template where the repo has none. This is a
   design source, so the link is kept; the rule against persisting a page URL
   covers rendered views, not sources.
 - **`DESIGN.md` stays the record the code builds against.** Product code and CI

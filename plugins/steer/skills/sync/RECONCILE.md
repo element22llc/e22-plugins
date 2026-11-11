@@ -65,7 +65,7 @@ is visible rather than silent.
    (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` -> "Template
    reconciliation") across the copied-in files this repo has -
    `PRODUCTIONIZATION.md`, each feature's `intent.md` / `contract.md`,
-   `tracker.md`, `app/README.md`, and the scaffold files
+   `tracker.md`, `app/README.md`, `design/source.md`, and the scaffold files
    (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, ...): for each, run
    that convention's diff command and splice in only what's missing, additive-only
    (never overwrite, reorder, or delete a dev/PO-added row). The helper reports
@@ -78,6 +78,10 @@ is visible rather than silent.
    are numbered only when a later change touches them; the template's `R-001`
    seed is placeholder-marked, so the diff never asks for it. At most, report
    which contracts still carry unnumbered rules.
+   **A spliced optional section stays unfilled.** `design/source.md` gains
+   its `## Design system` section this way; splice the heading and its
+   template lines as they are, and never fill, ask about or flag it
+   (`/steer:reference design-sources`).
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.
