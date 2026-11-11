@@ -188,6 +188,13 @@ README (the brand book), tokens (colors per theme, type scale and fonts,
 spacing, radius), components with previews, and assets. It plays three roles
 for a managed repo, and they stay separate.
 
+**A Design System is never required.** Most products have none, and a team
+whose sessions cannot use Claude Artifacts at all (`/steer:reference artifacts`
+-> "Markdown output" lists where) cannot have one. `DESIGN.md` and its other
+three origins are complete without it: never ask for one, never report its
+absence as a gap or a finding, and leave the `Design system` section of
+`spec/design/source.md` unfilled.
+
 **1. A design source for `DESIGN.md` and the UI.** When the PO or dev names a
 Design System as the product's identity:
 
@@ -213,6 +220,13 @@ Design System as the product's identity:
   script bundle that mounts its components inside Artifacts. Product code never
   imports it: realize the components in the standard stack, exactly as for a
   design export.
+- **Where it cannot be read** - the session has no `Artifact` tool, its
+  account lists no Design System type, or the signed-in user cannot open the
+  link - never web-fetch it and never stall on it. A `DESIGN.md` that already
+  carries the tokens is the complete record: build from it and treat the
+  recorded link as provenance. A system named but not yet distilled is said so
+  in one line: someone who can open it distills it in their own session, and
+  until then `DESIGN.md` takes one of its other origins.
 
 **2. Which way changes flow.** A Design System is edited live, so it drifts
 from `DESIGN.md` unless one of them is declared upstream:
@@ -225,13 +239,19 @@ from `DESIGN.md` unless one of them is declared upstream:
   read-only, or its token file records the repository it was built from.
   Change the code, then re-sync the system; never edit it by hand to match.
 
+A session that cannot read the system has no drift to check: `DESIGN.md` is
+current for it, and the re-read or re-sync waits for someone who can open the
+system. It is never a blocker, and never a drift flag.
+
 **3. Publishing a repo's design system.** Building or refreshing a Design
 System Artifact from a repo's tokens and component library is the Design
 System type's own flow (and, in Claude Code, `/design-sync`). The user starts
 it; the type's flow only reads the repository, and runs the repo's build only
 on the user's go-ahead. steer adds no step of its own: do not start one as a
-side effect of `/steer:setup adopt` or a feature build; offer it once where a
-product has a real component library and no Design System yet.
+side effect of `/steer:setup adopt` or a feature build. Offer it once, and
+only where the session's own type listing shows a Design System type, the
+product has a real component library and it has no Design System yet. Where
+the session cannot publish one, do not mention it.
 
 The **look of a steer-rendered page** - which Design System a deck or a
 mock-up is built on - is a different question, answered in

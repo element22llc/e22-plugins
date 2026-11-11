@@ -38,8 +38,9 @@ the spec. Link to the real artifact; the spec is what carries forward.
    extraction is the record.
 2. **Extraction source** - a locally-committed artifact Claude can actually read.
 
-It can also name the product's **Design System** Artifact, the upstream that
-`DESIGN.md` is distilled from.
+Where the product has one, it can also name its **Design System** Artifact,
+which `DESIGN.md` is then distilled from. That is optional: `DESIGN.md` is the
+record with or without it.
 
 Acceptable extraction sources:
 

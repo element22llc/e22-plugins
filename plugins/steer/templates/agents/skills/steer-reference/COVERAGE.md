@@ -136,10 +136,12 @@ Key points (read the file for the full detail):
   as you build (one of its four origins: established while building without an
   export) so every feature stays uniform; feature-specific details stay in the
   feature's `intent.md`.
-- **Design System Artifacts** - how to read one as the source of `DESIGN.md`
-  (distill, record the link, the repo file stays what the code builds
-  against), which side is upstream when it drifts, and why publishing a repo's
-  system is the user's to start.
+- **Design System Artifacts** - never required, and never asked for. How to
+  read one as the source of `DESIGN.md` (distill, record the link, the repo
+  file stays what the code builds against), what a session that cannot read
+  one does (builds from `DESIGN.md`, no blocker, no drift flag), which side is
+  upstream when it drifts, and why publishing a repo's system is the user's to
+  start.
 
 ## `context-hygiene`
 
@@ -220,7 +222,8 @@ It covers, in detail:
   and what stays true of it.
 - **Design systems** - which Design System Artifact a deck or a mock-up is
   built on: the one the user names, then the product's, then the account
-  default, then the type's own look.
+  default, then the type's own look. None is a prerequisite: with no system
+  listed or recorded, the render proceeds without a question.
 - **The write-location invariant** - any local file a render needs (the HTML page,
   a Dashboard's dataset JSON) goes to a system temp dir (never under the repo tree), on a deterministic per-subject filename so a
   same-session re-run redeploys the same URL (hedged for forked skills); and how
