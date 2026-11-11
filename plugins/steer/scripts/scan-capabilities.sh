@@ -506,7 +506,8 @@ exists "spec/workspace.yml" && prod_pr=false
 # --- promotion-gate - only release/* and hotfix/* reach prod, dropping nothing ---
 PG="scripts/ci-promotion.sh"
 pg_files=".github/workflows/ci.yml,mise.toml,$PG"
-if ! $prod_pr; then
+# Not gated on prod_pr: the core ci.yml and mise.toml call the script on every gate.
+if exists "spec/workspace.yml"; then
 	emit "promotion-gate" "n/a" "$pg_files"
 elif ! exists "$PG" && ! has ".github/workflows/ci.yml" "ci:promotion"; then
 	emit "promotion-gate" "absent" "$pg_files"
