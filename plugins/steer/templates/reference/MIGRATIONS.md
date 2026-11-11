@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - releases ship from a `release/*` snapshot, merge prod back into `main`, and need a PO and a dev
+### v7.22.0 - releases ship from a `release/*` snapshot, merge prod back into `main`, and need a PO and a dev
 
 - **What & why:** `/steer:work promote` now opens the Release PR from a
   `release/vX.Y.Z` snapshot of `main`, not from `main`, so QA tests exactly what
