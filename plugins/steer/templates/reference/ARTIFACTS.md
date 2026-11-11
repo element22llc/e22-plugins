@@ -256,6 +256,12 @@ is applied - Slides and Design install its tokens into the new Artifact - so
 follow them rather than restating the values by hand. A system that cannot be
 read is said so plainly, and the render takes the type's own look.
 
+**No step is a prerequisite.** Where the order yields no system at all - none
+named, none recorded for the product, and no listing or none in it - the
+render takes the type's own look, with nothing asked beyond step 4's one
+question and nothing noted. Never ask anyone to create a Design System so that
+a page can render.
+
 **Dashboard** and **Motion** carry their own design-system guidance: follow
 what their instructions say about whether and how a system applies, and where
 they ask which one, answer with steps 1 and 2 above. A Doc or a Sheet takes its
@@ -327,7 +333,9 @@ skill that otherwise writes.
   theme and a design-system listing marks a default, read its
   `project/README.md` and `project/tokens.json` and inline the tokens the same
   way ([Design systems](#design-systems-the-look-of-a-render)). Do not ask
-  about design systems for a hand-written page.
+  about design systems for a hand-written page. No listing, a refused one, or
+  one that marks no default means the house default, silently: that is the
+  normal case, not a fallback to explain.
 - **House default otherwise** - the `artifact-design` + `dataviz` guidance.
   `/steer:next capabilities` always uses the house default: it renders steer's
   own capability set, not a product's state.
