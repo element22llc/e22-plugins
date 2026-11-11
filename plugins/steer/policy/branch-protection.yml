@@ -5,8 +5,9 @@
 schema: 7          # every older schema stays valid. v6 drops `actions_can_approve_pull_requests`
                    # and `allow_auto_merge`; protect ignores both where a v4 or v5 file carries them.
                    # v7 adds `require_last_push_approval`, the ruleset fields on `prod`
-                   # (`required_reviewers`, `allowed_merge_methods`), `release_branches` and
-                   # `delete_branch_on_merge`.
+                   # (`required_reviewers`, `allowed_merge_methods`), `release_branches`,
+                   # `delete_branch_on_merge` and `allow_merge_commit`, and turns linear
+                   # history off on the default branch.
 
 # `team` applies everything below as written; `solo` layers `profiles.solo` on top.
 # GitHub blocks a PR's author from approving it, so on a one-contributor repo the
@@ -27,7 +28,9 @@ required_status_checks:
 
 enforce_admins: true
 
-required_linear_history: true
+# Off so prod's merge-back lands as a merge commit; features still squash, and a squashed
+# merge-back is caught by ci:promotion at the next release.
+required_linear_history: false
 
 # Overrides layered onto EVERY branch in scope, release_branches included. `team` has none.
 profiles:
@@ -53,8 +56,7 @@ protected_branches:
         team: ""
       - role: dev
         team: ""
-    # Merge commits keep release and hotfix SHAs on prod, which ci:promotion and
-    # backport.yml read to tell what main still lacks.
+    # Merge commits keep prod's history the release's own, so each merge-back is a clean merge.
     allowed_merge_methods: [merge]
     required_status_checks:
       strict: false
@@ -79,8 +81,11 @@ dependabot_alerts: true
 dependabot_security_updates: true
 
 # GitHub deletes a merged PR's branch, so every release/* left is a release still in
-# QA, and merged hotfix/* and backport/* branches never pile up.
+# QA, and merged hotfix/* and merge-back/* branches never pile up.
 delete_branch_on_merge: true
+
+# The merge-back PR needs the "Create a merge commit" button.
+allow_merge_commit: true
 
 # Review-gate exception: ci.yml's dependabot-auto-merge job merges a Dependabot patch/minor
 # bump once `ci` passed on that head, without an approval - so it fires only where the

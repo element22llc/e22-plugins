@@ -43,7 +43,7 @@ while the subcommands below read an issue and deliver it.
     answer names one. The lane
     relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
     `hotfix/<n>-slug` branch cut from and merged into `prod` (carrying its own
-    patch cut, then back-ported to `main` - see
+    patch cut, then merged back into `main` - see
     [Deployment](../concepts/deployment.md#hotfixes)), and the PR goes to the front of the review queue with the same approvers as a release (a PO and a dev) - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
     opening the PR are autonomous, as everywhere). It still runs the local
@@ -113,7 +113,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
 | `debug [#N \| <symptom>]` | Root cause before the fix - see below. With only a symptom and no fix asked, diagnosis only and not issue-scoped. |
 | `qa [#N]` | Opt-in browser QA of the flows the branch diff touches - see below. |
-| `promote` | Not issue-scoped - ships what is already merged. Reads `policy/delivery.yml`'s `production_gate` (absent -> `prod-branch-pr`), shows what would ship, cuts the changelog in its own PR to the default branch, then, once that has merged, cuts a `release/vX.Y.Z` snapshot branch at the cut's merge commit, opens the Release PR `release/vX.Y.Z` -> `prod`, and stops: merging it deploys production and is the human's gate, approved by a PO team member and a dev team member. While it is open, non-prod runs the release branch for the PO to test, QA fixes go in as `qa-fix/<n>` PRs into it, and `main` keeps taking merges that deploy once it closes; after the merge, `backport.yml` prepares the back-port to `main` for a human to open. Any other gate value (`github-environment`, `manual`, `none`) stops there: there is no promotion PR to open. |
+| `promote` | Not issue-scoped - ships what is already merged. Run by a dev or the PO. Reads `policy/delivery.yml`'s `production_gate` (absent -> `prod-branch-pr`), shows what would ship, cuts the changelog in its own PR to the default branch, then, once that has merged, cuts a `release/vX.Y.Z` snapshot branch at the cut's merge commit, opens the Release PR `release/vX.Y.Z` -> `prod`, and stops: merging it deploys production and is the human's gate, approved by a PO team member and a dev team member. While it is open, non-prod runs the release branch for the PO to test, QA fixes go in as `qa-fix/<n>` PRs into it, and `main` keeps taking merges that deploy once it closes; after the merge, `merge-back.yml` pushes a merge-back branch at prod's tip for a dev to merge into `main` with a merge commit; the next Release PR fails `ci:promotion` until it lands. Any other gate value (`github-environment`, `manual`, `none`) stops there: there is no promotion PR to open. |
 | `tidy` | Not issue-scoped - sweeps loose files at the repo root into `/spec/reference` and `/spec/design`: confidently classified strays move now, every rename and delete waits for a yes. Changes where files live, never behavior. |
 
 ## Issue queue - `/steer:work queue`

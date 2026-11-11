@@ -169,7 +169,7 @@ steer is advisory in the local session - it won't *block* a push to `main`. The
 real gate is **GitHub branch protection** on the default branch, and the required
 rules are the single source of truth in [`policy/branch-protection.yml`](policy/branch-protection.yml):
 a PR before merging, 1 approval, dismiss stale approvals on new commits, the `ci`
-status check, linear history, and no bypassing - even for admins. A **one-person
+status check, and no bypassing - even for admins. A **one-person
 repo** selects the policy's `solo` profile (`profile: solo`, or
 `/steer:setup protect apply --solo`): same wall, approvals 0, because an author cannot
 approve their own PR and would otherwise be locked out of merging. In **Settings ->

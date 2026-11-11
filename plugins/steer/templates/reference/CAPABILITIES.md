@@ -521,21 +521,20 @@ and **Repair**.
   product's own steps.
 - **Verbatim:** no
 - **Why it matters:** without it any branch can open a PR into prod, and a
-  release cut before a hotfix's back-port merges ships without that fix.
+  release cut before a hotfix's merge-back merges ships without that fix.
 
-### release-backport - what prod ships comes back to main
-- **Files:** `.github/workflows/backport.yml`, `scripts/backport.sh`, and
-  `scripts/ci-promotion.sh` (its commit selection).
+### release-merge-back - prod is merged back into main
+- **Files:** `.github/workflows/merge-back.yml` and `scripts/merge-back.sh`.
 - **Conditional:** as `promotion-gate`.
-- **Wired-when:** the workflow exists and runs `scripts/backport.sh`, and both
-  scripts are present.
-- **Repair:** create the three from the scaffold; propose. Nothing to configure
+- **Wired-when:** the workflow exists and runs `scripts/merge-back.sh`, and the
+  script is present.
+- **Repair:** create both from the scaffold; propose. Nothing to configure
   under `GITHUB_TOKEN`. Say in the PR that "Allow GitHub Actions to create and
   approve pull requests" stays off: the workflow comments a link and a human
-  opens the back-port PR.
+  opens the merge-back PR.
 - **Verbatim:** no
 - **Why it matters:** QA fixes and hotfixes land on prod first; without a
-  back-port `main` keeps the bug and the next release drops the fix.
+  merge-back `main` keeps the bug and the next release fails `ci:promotion`.
 
 ### release-hold - the held environment runs the open release branch
 - **Files:** `scripts/release-target.sh` and the `release_hold:` field in

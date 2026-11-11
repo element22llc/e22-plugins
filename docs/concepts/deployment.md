@@ -46,9 +46,8 @@ flowchart LR
     PROD -->|incident| HF[hotfix branch<br/>cut from prod]
     HF --> HFPR{{hotfix -> prod PR<br/>PO + dev approve}}
     HFPR -->|merge commit| PROD
-    RELPR -.->|back-port, 1 dev| MAIN
-    HFPR -.->|back-port, 1 dev| MAIN
-    HFPR -.->|back-port during QA| REL
+    PROD -.->|merge-back PR<br/>merge commit, 1 dev| MAIN
+    PROD -.->|merge-back during QA| REL
 
     classDef gated fill:#fde,stroke:#c39
     class RELPR,HFPR gated
@@ -90,19 +89,21 @@ flowchart LR
   GitHub then deletes the merged release branch: `/steer:setup protect` turns on
   `delete_branch_on_merge`, so a `release/*` branch exists only while its
   release is in QA.
-- **What prod ships comes back to `main`.** After a `release/*` or `hotfix/*` PR
-  merges into `prod`, the scaffold's `backport.yml` cherry-picks (`-x`) what
-  `main` lacks onto `backport/<pr>-to-main` and comments a link on the merged PR;
-  a human opens that PR and merges it with **Rebase and merge**, so the
-  cherry-pick trailers reach `main`. It does not open the PR itself with
+- **Prod is merged back into `main`.** After a `release/*` or `hotfix/*` PR
+  merges into `prod`, the scaffold's `merge-back.yml` pushes
+  `merge-back/<pr>-to-main` at prod's tip and comments a link on the merged PR;
+  a dev opens that PR and merges it with **Create a merge commit**, never
+  squash. A conflict is resolved on the merge-back branch, never on `prod`.
+  Features still squash, so these merge commits are the only ones `main`
+  takes (linear history is off there). It does not open the PR itself with
   `GITHUB_TOKEN`: that needs "Allow GitHub Actions to create and approve pull
   requests", which also lets any workflow approve a PR. A GitHub App token is the
   opt-in for opening it automatically.
 - **Nothing `prod` ships is dropped.** The required `ci` check runs
   `ci:promotion`: a PR into `prod` must come from `release/*` or `hotfix/*`, and
-  a release fails while a hotfix or an earlier QA fix is not yet back on `main`.
-  `prod` takes merge commits only, so the SHAs it reads survive.
-- **Who approves what.** A PR into `main`, a QA fix and a back-port PR: one dev.
+  a release must contain `prod`. It fails while a merge-back is unmerged, or
+  was squashed.
+- **Who approves what.** A PR into `main`, a QA fix and a merge-back PR: one dev.
   A Release PR or a hotfix PR into `prod`: a member of the PO team **and** a
   member of the dev team - 2 approvals, never the author nor whoever pushed last,
   no bypass. GitHub enforces the two-team rule only through a repository ruleset
@@ -118,12 +119,12 @@ flowchart LR
 | Step | Who acts | What happens |
 |---|---|---|
 | 1. Feature PR | Dev | A second dev approves; the merge deploys non-prod. |
-| 2. Cut the release branch | Dev | `/steer:work promote` cuts the changelog, then a temporary `release/vX.Y.Z` from `main`, and opens the Release PR into `prod`. |
+| 2. Cut the release branch | Dev or PO | `/steer:work promote` cuts the changelog, then a temporary `release/vX.Y.Z` from `main`, and opens the Release PR into `prod`. |
 | 3. QA on non-prod | PO, dev | Non-prod runs the release branch; the PO tests, a dev fixes by a `qa-fix/<n>` PR into it. `main` keeps merging. |
 | 4. Approve the Release PR | PO, dev | One PO team member and one dev team member approve; never the author. |
 | 5. Ship and tag | Automation | The merge deploys prod, `release.yml` tags `vX.Y.Z` and publishes the Release, GitHub deletes the release branch. |
 | 6. Hotfix | Dev, PO | Cut from `prod`; the same PO and dev approvals as a Release PR. |
-| 7. Back-port | Automation, dev | `backport.yml` cherry-picks to `main` and posts a link; a dev opens and merges the PR. The next release fails `ci:promotion` until it lands. |
+| 7. Merge-back | Automation, dev | `merge-back.yml` pushes a branch at prod's tip and posts a link; a dev opens the PR and merges it with a merge commit. The next release fails `ci:promotion` until it lands. |
 
 ## Hotfixes
 
@@ -136,13 +137,12 @@ cut from it would ship that work too. So the hotfix path runs beside `prod`:
 - **The PR carries its own patch release.** Its fragment is cut on the branch
   (`changie batch patch`), so merging it ships a new patch version - there is no
   separate promotion to wait for.
-- **Back-port to `main`, always.** Right after the merge, `backport.yml`
-  cherry-picks the fix and its changelog entry onto a branch cut from `main`
-  (and, while a release is in QA, onto the open release branch) for a human to
-  open as an ordinary PR - never a PR whose head is `prod`, where resolving a
-  conflict would commit into production. `/steer:work promote` refuses to cut
-  the next release, and `ci:promotion` fails its Release PR, while a hotfix is
-  missing from `main`.
+- **Merge back into `main`, always.** Right after the merge, `merge-back.yml`
+  pushes a `merge-back/*` branch at prod's tip for `main` (and, while a release
+  is in QA, one for the open release branch) for a dev to open as an ordinary
+  PR - never a PR whose head is `prod`, where resolving a conflict would commit
+  into production. `/steer:work promote` refuses to cut the next release, and
+  `ci:promotion` fails its Release PR, while a hotfix is missing from it.
 
 When `production_gate` is not `prod-branch-pr`, production deploys from the
 default branch, so the hotfix branches from and targets it like any change.
@@ -191,8 +191,8 @@ close rather than a failure to fix now.
 
 Every prod deploy has a **known rollback** before it ships - either a revert
 shipped as a hotfix (a `hotfix/*` PR into `prod`, same approvers) or a redeploy
-of the prior SHA. The back-port bot flags a revert for a human to decide whether
-`main` gets it too. Database migrations follow an
+of the prior SHA. The merge-back bot flags a revert for a human to decide whether
+`main` keeps it. Database migrations follow an
 **expand/contract** pattern so the previous version keeps running through a deploy,
 which is what makes a clean rollback possible.
 
