@@ -1,8 +1,0 @@
-kind: Changed
-time: 2026-11-11T12:00:00.000000000-05:00
-custom:
-  Slug: po-runs-promote
-body: |-
-  - **Changed: a PO can run `/steer:work promote`.** Cutting the release branch
-    opens PRs and changes no code, so a dev or the PO runs it; with a PO it
-    speaks plainly and drives git itself. The approvals are unchanged.
