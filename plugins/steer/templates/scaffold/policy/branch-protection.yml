@@ -5,7 +5,8 @@
 schema: 7          # every older schema stays valid. v6 drops `actions_can_approve_pull_requests`
                    # and `allow_auto_merge`; protect ignores both where a v4 or v5 file carries them.
                    # v7 adds `require_last_push_approval`, the ruleset fields on `prod`
-                   # (`required_reviewers`, `allowed_merge_methods`) and `release_branches`.
+                   # (`required_reviewers`, `allowed_merge_methods`), `release_branches` and
+                   # `delete_branch_on_merge`.
 
 # `team` applies everything below as written; `solo` layers `profiles.solo` on top.
 # GitHub blocks a PR's author from approving it, so on a one-contributor repo the
@@ -76,6 +77,10 @@ secret_scanning_push_protection: true
 
 dependabot_alerts: true
 dependabot_security_updates: true
+
+# GitHub deletes a merged PR's branch, so every release/* left is a release still in
+# QA, and merged hotfix/* and backport/* branches never pile up.
+delete_branch_on_merge: true
 
 # Review-gate exception: ci.yml's dependabot-auto-merge job merges a Dependabot patch/minor
 # bump once `ci` passed on that head, without an approval - so it fires only where the

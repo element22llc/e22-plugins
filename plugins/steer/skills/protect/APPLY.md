@@ -49,7 +49,7 @@ When rules are drifted or absent:
    the same way as the protection PUT:
    - secret scanning + push protection **and** Dependabot security updates in one
      `gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
-     block;
+     block, plus `delete_branch_on_merge` at the top level of the same body;
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
    - **Actions approving PRs off** - only when verify diffed it. Say what it

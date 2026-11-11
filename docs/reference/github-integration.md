@@ -150,6 +150,10 @@ rulesets beside them, because GitHub has no classic equivalent:
 - **`steer: release branches`** on `release/**` - a QA fix lands only through a
   PR with one approval and a green `ci`.
 
+It also turns on the repo setting `delete_branch_on_merge`, so a merged release,
+hotfix or back-port branch is deleted and the release snapshot lives only as
+long as its Release PR.
+
 `/steer:setup sync` keeps the policy file and the protection in step as the
 plugin evolves.
 

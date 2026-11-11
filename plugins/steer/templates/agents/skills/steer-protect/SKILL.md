@@ -191,8 +191,9 @@ drift, and move on without failing.
 Plus the repo-level settings the policy declares, read from
 `gh api repos/${OWNER}/${REPO}`:
 
-- secret scanning + push protection (the `security_and_analysis` block);
-- Dependabot security updates (`security_and_analysis.dependabot_security_updates`).
+- secret scanning + push protection and Dependabot security updates (the
+  `security_and_analysis` block);
+- `delete_branch_on_merge`.
 
 Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
