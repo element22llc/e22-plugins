@@ -315,7 +315,16 @@ capscan "${CRR}"
 assert_eq "cap: release_hold none -> disabled" "$(capstatus "${out}" release-hold)" "disabled"
 sed 's/^production_gate:.*/production_gate: manual/' "${PLUGIN}/templates/scaffold/policy/delivery.yml" >"${CRR}/policy/delivery.yml"
 capscan "${CRR}"
-assert_eq "cap: manual gate -> promotion-gate n/a" "$(capstatus "${out}" promotion-gate)" "n/a"
+assert_eq "cap: manual gate -> promotion-gate still wired" "$(capstatus "${out}" promotion-gate)" "present-wired"
+assert_eq "cap: manual gate -> release-merge-back n/a" "$(capstatus "${out}" release-merge-back)" "n/a"
+assert_eq "cap: manual gate -> release-hold n/a" "$(capstatus "${out}" release-hold)" "n/a"
+# The core ci.yml calls the script on every gate, so a missing one is a red ci check, not n/a.
+rm "${CRR}/scripts/ci-promotion.sh"
+capscan "${CRR}"
+assert_eq "cap: manual gate, script missing -> promotion-gate mis-wired" "$(capstatus "${out}" promotion-gate)" "mis-wired"
+mkdir -p "${CRR}/spec" && : >"${CRR}/spec/workspace.yml"
+capscan "${CRR}"
+assert_eq "cap: workspace -> promotion-gate n/a" "$(capstatus "${out}" promotion-gate)" "n/a"
 
 # Idempotency: repairing a mis-wired settings.json makes the re-scan present-wired.
 printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"

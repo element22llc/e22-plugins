@@ -510,8 +510,9 @@ and **Repair**.
 - **Files:** `scripts/ci-promotion.sh`, the `ci:promotion` task in `mise.toml`
   (inside the `ci` task's `depends`), and its step in `.github/workflows/ci.yml`
   with `release/**` among the `pull_request` branches.
-- **Conditional:** `production_gate: prod-branch-pr` (absent means that) and not
-  a workspace; otherwise `n/a`.
+- **Conditional:** not a workspace; otherwise `n/a`. Every `production_gate`
+  needs it, because the core `ci.yml` and `mise.toml` call it; it no-ops off a
+  PR into `prod`.
 - **Wired-when:** `ci.yml` runs `mise run ci:promotion` and triggers on
   `release/**`, `mise.toml` defines `ci:promotion`, and the script is present.
 - **Repair:** copy the script from the scaffold, add the task and its `ci`
@@ -525,7 +526,8 @@ and **Repair**.
 
 ### release-merge-back - prod is merged back into main
 - **Files:** `.github/workflows/merge-back.yml` and `scripts/merge-back.sh`.
-- **Conditional:** as `promotion-gate`.
+- **Conditional:** `production_gate: prod-branch-pr` (absent means that) and not
+  a workspace; otherwise `n/a`.
 - **Wired-when:** the workflow exists and runs `scripts/merge-back.sh`, and the
   script is present.
 - **Repair:** create both from the scaffold; propose. Nothing to configure
@@ -539,7 +541,7 @@ and **Repair**.
 ### release-hold - the held environment runs the open release branch
 - **Files:** `scripts/release-target.sh` and the `release_hold:` field in
   `policy/delivery.yml`.
-- **Conditional:** as `promotion-gate`. `release_hold: none` is `disabled`.
+- **Conditional:** as `release-merge-back`. `release_hold: none` is `disabled`.
 - **Wired-when:** both are present. Whether the product's deploy job calls the
   script is the product's code - the scan cannot see it, so say so.
 - **Repair:** copy the script and add `release_hold: non-prod` with its comment
