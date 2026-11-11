@@ -49,7 +49,8 @@ it. Then:
 - **`prod` is protected.** If `/steer-setup protect verify` shows no
   required review on `prod`, say the Release PR would merge without an
   approval, and recommend `/steer-setup protect` before continuing. Offer to
-  continue anyway only if whoever runs `promote` says so; record that they did.
+  continue anyway only if a dev says so - it is the production gate, so a PO
+  running `promote` asks one; record who did.
 - **One release at a time.** `gh pr list --base prod --state open --json
   number,headRefName,url`:
   - a `release/*` head -> that release is **in QA**. Refresh its body (Step 5's
@@ -131,6 +132,12 @@ git push origin "${cut}:refs/heads/release/v<version>"
 gh pr create --base prod --head release/v<version> \
   --title "Release v<version>" --body-file <body>
 ```
+
+Prod moved after the cut (`git merge-base --is-ancestor origin/prod "${cut}"`
+fails - a hotfix landed in between) -> open the Release PR anyway, say so, and
+push `merge-back/<short-sha>-to-release-v<version>` at `origin/prod` for a dev
+to open into the release branch; `ci:promotion` fails the Release PR until it
+merges.
 
 The cut PR cannot be found by name (merged elsewhere, renamed) -> use the
 default-branch commit that added `.changes/v<version>.md`
