@@ -22,7 +22,7 @@ A locally-committed artifact that Claude can open directly. For a Design Artifac
 
 ## Design system
 
-Optional - fill it only where a Design System Artifact holds this product's (or its brand's) identity. A product without one, or a team that does not use Claude Artifacts, leaves this section as is or deletes it. Where one is recorded, `DESIGN.md` is distilled from it and stays the record the code builds against, complete on its own for anyone who cannot open the link (`/steer:reference design-sources`).
+Optional - fill it only where a Design System Artifact holds this product's (or its brand's) identity. A product without one, or a team that does not use Claude Artifacts, leaves this section unfilled. Where one is recorded, `DESIGN.md` is distilled from it and stays the record the code builds against, complete on its own for anyone who cannot open the link (`/steer:reference design-sources`).
 
 - **Link:** [Design System Artifact link without any share key, or "none"]
 - **Upstream:** [the Design System | the code]
