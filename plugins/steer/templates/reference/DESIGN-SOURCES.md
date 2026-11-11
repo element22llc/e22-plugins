@@ -224,9 +224,12 @@ Design System as the product's identity:
   account lists no Design System type, or the signed-in user cannot open the
   link - never web-fetch it and never stall on it. A `DESIGN.md` that already
   carries the tokens is the complete record: build from it and treat the
-  recorded link as provenance. A system named but not yet distilled is said so
-  in one line: someone who can open it distills it in their own session, and
-  until then `DESIGN.md` takes one of its other origins.
+  recorded link as provenance. A system named but not yet distilled: record
+  its bare link with `Last read: not yet`, say in one line in the session that
+  it could not be read here, and let `DESIGN.md` take one of its other origins
+  meanwhile. Whoever can open it distills it in their own session, flagging
+  each value where `DESIGN.md` and the system differ rather than taking either
+  silently.
 
 **2. Which way changes flow.** A Design System is edited live, so it drifts
 from `DESIGN.md` unless one of them is declared upstream:
