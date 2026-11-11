@@ -33,12 +33,19 @@ the spec. Link to the real artifact; the spec is what carries forward.
 
 `source.md` captures **two artifacts**:
 
-1. **Traceability link** - where a human can re-open the design (e.g. a Claude
-   Design URL). Claude cannot fetch authenticated URLs, so this is reference only.
+1. **Traceability link** - where a human can re-open the design (e.g. a Design
+   Artifact link or a Claude Design URL). Reference only: the committed
+   extraction is the record.
 2. **Extraction source** - a locally-committed artifact Claude can actually read.
+
+It can also name the product's **Design System** Artifact, the upstream that
+`DESIGN.md` is distilled from.
 
 Acceptable extraction sources:
 
+- The **canvas files of a Design Artifact** (`claude.ai/artifact/...`), which
+  Claude reads from the link with the `Artifact` tool and commits at
+  `spec/design/claude-design/`.
 - A **Claude Design ZIP/HTML export** committed at `spec/design/claude-design/`
   (extracted) or `spec/design/claude-design-export.zip`. Produced via the
   **Download zip** action in Claude Design.
@@ -49,10 +56,12 @@ Acceptable extraction sources:
 
 ### Why both link and export?
 
-Claude Design URLs (`https://claude.ai/design/...`) return `403 Forbidden` to
-anonymous fetchers - they require a signed-in browser session. The URL is worth
-keeping for human traceability, but it cannot be the thing Claude reads. The
-committed export is.
+Standalone Claude Design URLs (`https://claude.ai/design/...`) return
+`403 Forbidden` to anonymous fetchers - they require a signed-in browser session.
+A Design Artifact link is readable, but only in a session with the `Artifact`
+tool and a user who can open it, and the canvas keeps changing. Either link is
+worth keeping for human traceability; neither can be what CI, a teammate or a
+later session reads. The committed export is.
 
 ## If an export was dropped in the wrong place
 

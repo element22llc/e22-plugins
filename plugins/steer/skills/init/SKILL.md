@@ -113,9 +113,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
 1. **Confirm the mode.** Verify there's no `/spec`, and that this is genuinely
    greenfield (you're writing the code from scratch), not reverse-engineering
-   a pre-existing app - that would be `/steer:adopt`. If a design export/URL or
+   a pre-existing app - that would be `/steer:adopt`. If a design export/URL, a Design System Artifact or
    screenshots are the input, read them via `/steer:reference design-sources` first (never
-   fetch a Claude Design URL - it 403s). If the dev arrived with a brief or spec
+   web-fetch a Claude Design link; that reference says how each kind is read). If the dev arrived with a brief or spec
    and wants to scope it, do that scoping **here, as this setup's interview**
    (steps 3-4) rather than ahead of the spine - bootstrap is the first move, not
    an afterthought. Every decision the scoping produces (stack, auth, a locked

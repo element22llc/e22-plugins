@@ -192,7 +192,11 @@ explicitly accepts it; generic approval of the adoption PR does **not** ratify i
 CLI) - note "no UI surface - no `DESIGN.md`" in `PRODUCTIONIZATION.md` and move
 on. Otherwise reverse-engineer the product's visual identity from the **real
 code** into a root `DESIGN.md`, the same way Phase 5 reverse-engineers the spec -
-**a Claude Design export is not required**; the running UI is the source. First
+**a Claude Design export is not required**; the running UI is the source. Where
+the dev names a Design System Artifact as the brand's source, the as-built UI
+still seeds `DESIGN.md`: read the system per `/steer-reference design-sources`,
+record its link, and flag every value where code and system differ for the dev
+rather than taking either silently. First
 pull the format schema into context (`npx @google/design.md spec`) so the file is
 valid - don't guess the token shape. Then read what the code actually defines: the
 Tailwind theme config, CSS custom properties / `:root` variables, the global

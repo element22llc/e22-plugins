@@ -32,9 +32,9 @@ Related issue: [tracker ref(s) per `/spec/tracker.md` - e.g. `PROJ-123`, `#123`,
 
 If this feature was explored in Claude Design or another design tool, link the source here so future readers can trace back, and point to the locally-readable artifact Claude actually extracts from. Optional - omit the section if there is no design artifact.
 
-- **Traceability link:** [Claude Design URL | Figma URL | other] - human-only; Claude cannot fetch authenticated URLs.
-- **Extraction source (path):** [e.g., `spec/features/[id]/design-export/` or `spec/design/claude-design/`] - the ZIP/HTML export or screenshots committed in the repo.
-- **Type:** [Claude Design ZIP/HTML export | screenshots | screen recording | walkthrough doc | none]
+- **Traceability link:** [Design Artifact link | Claude Design URL | Figma URL | other] - for humans; the committed extraction below is what the spec is written from.
+- **Extraction source (path):** [e.g., `spec/features/[id]/design-export/` or `spec/design/claude-design/`] - the canvas files, ZIP/HTML export or screenshots committed in the repo.
+- **Type:** [Design Artifact canvas files | Claude Design ZIP/HTML export | screenshots | screen recording | walkthrough doc | none]
 - **Captured by:** [@po-handle]
 - **Date:** YYYY-MM-DD
 
