@@ -70,6 +70,10 @@ GUI-first tools as the *source of truth*:
 - **Excalidraw / draw.io** - GUI whiteboards; their files are JSON/XML that neither a
   human nor Claude edits meaningfully in review. Fine for throwaway sketching, wrong
   for a living artifact.
+- **A Claude Whiteboard Artifact** - the same class: a live, hand-arranged board
+  outside the repo. Good for sketching an architecture *with* people; what the
+  sketch settles is carried into the text diagram in a PR, and the board is never
+  linked as the diagram (`/steer:reference artifacts`).
 - **ReactFlow** - a React *library for building* node-based editors, not a diagram
   format. Wrong altitude: you would be maintaining app code or hand-written node/edge
   JSON, not a diagram.

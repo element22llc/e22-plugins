@@ -1,0 +1,35 @@
+kind: Changed
+time: 2026-11-11T10:00:00.000000000-05:00
+custom:
+  Slug: artifact-types-design-systems
+body: |-
+  - **Changed: steer follows the current Claude Artifact types, and uses Design
+    System Artifacts.** `/steer:reference artifacts` now covers every published
+    type. Whiteboard, Sheets, Design and Motion are used on request, each with
+    the rule that keeps it a derived view: a Whiteboard is a working surface
+    people rearrange, never a record or an ingest channel, and what it settles
+    reaches the spine only through the owning skill. The Dashboard type is
+    listed as "Data" on current accounts, so a render goes by what the
+    `quickstart` result says to start from; a dashboard's page and datasets are
+    written to its store, and its attached file is readable by everyone who can
+    open it. A new precedence picks the Design System a deck or a mock-up is
+    built on: the one the user names, then the product's own (recorded in
+    `spec/design/source.md`), then the account default, then the type's own
+    look. A hand-written page falls back to the account default before the
+    house style. Comments on a published page are feedback, never an
+    answer to a human gate.
+    `/steer:reference design-sources` now tells a Design Artifact link, which
+    Claude reads with the `Artifact` tool and commits before writing a spec
+    from it, from a standalone Claude Design URL, which stays human-only while
+    that product is retired. It adds the Design System Artifact as a fourth
+    origin of `DESIGN.md`: read its README and tokens, distill them into
+    `DESIGN.md`, record the link and which side is upstream, and never import
+    its preview bundle into product code. `/steer:setup init` and
+    `/steer:setup adopt` route a named Design System there. Publishing a repo's
+    design system stays the user's to start. The `spec/design/` templates and
+    the feature intent's `Design source` block name the new link and extraction
+    kinds, and `source.md` gains an optional `Design system` section. No
+    migration entry: the reworded template lines are descriptive, the old
+    "Download zip" instruction still holds for a standalone URL, and a session
+    that records a Design System adds the section to a `source.md` that
+    predates it.

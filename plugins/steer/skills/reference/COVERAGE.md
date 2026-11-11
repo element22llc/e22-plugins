@@ -106,9 +106,11 @@ Key points (read the file for the full detail):
 - **Most features have no export, or only a partial one - that is normal.** A
   committed export is one useful input; its absence is not a blocker. The
   constant across every path is the product's `DESIGN.md` (below).
-- A **Claude Design URL** is a human-only traceability link - Claude **cannot**
-  fetch it (it returns `403`). The **local committed export** (ZIP/HTML) is what
-  you actually read.
+- A **Claude Design link** is traceability; the **committed extraction** is the
+  record you write the spec from. A Design Artifact link (a canvas made in
+  Claude) is read with the `Artifact` tool and its files committed first; a
+  standalone Claude Design URL is human-only (it returns `403`) and needs a
+  committed ZIP/HTML export.
 - Where artifacts live: Greenfield product-level -> `spec/design/`; feature-level
   -> `spec/features/[id]/design-export/` and the `intent.md` `Design source`
   section.
@@ -131,9 +133,13 @@ Key points (read the file for the full detail):
   (Next + TS + Tailwind), and accessibility. It fills gaps; it never overrides a
   screen a committed export already designed.
 - Reusable product-wide UI rules live in the product's `DESIGN.md` - populated
-  as you build (third origin: established while building without an export) so
-  every feature stays uniform; feature-specific details stay in the feature's
-  `intent.md`.
+  as you build (one of its four origins: established while building without an
+  export) so every feature stays uniform; feature-specific details stay in the
+  feature's `intent.md`.
+- **Design System Artifacts** - how to read one as the source of `DESIGN.md`
+  (distill, record the link, the repo file stays what the code builds
+  against), which side is upstream when it drifts, and why publishing a repo's
+  system is the user's to start.
 
 ## `context-hygiene`
 
@@ -209,6 +215,12 @@ It covers, in detail:
   Dashboard), discovery through the Artifact tool's `quickstart`, then the
   hand-written HTML tier, then the Markdown tier; Docs, Dashboard and Slides
   mechanics, and the publish heads-up.
+- **Types on request** - Whiteboard (a working surface people rearrange, never
+  a record or an ingest channel), Sheets, Design and Motion: when each is used
+  and what stays true of it.
+- **Design systems** - which Design System Artifact a deck or a mock-up is
+  built on: the one the user names, then the product's, then the account
+  default, then the type's own look.
 - **The write-location invariant** - any local file a render needs (the HTML page,
   a Dashboard's dataset JSON) goes to a system temp dir (never under the repo tree), on a deterministic per-subject filename so a
   same-session re-run redeploys the same URL (hedged for forked skills); and how
@@ -217,8 +229,8 @@ It covers, in detail:
   for charts); build visuals inline, scripts only from the Artifact tool's
   allowlisted CDNs at a pinned version; theme- and width-awareness.
 - **The styling contract** - derive the page's look from the working repo's
-  `DESIGN.md` tokens when it declares them, else the `artifact-design`/`dataviz`
-  house default; light/dark support and semantic chart encodings stay
+  `DESIGN.md` tokens when it declares them, else the account's default design
+  system, else the `artifact-design`/`dataviz` house default; light/dark support and semantic chart encodings stay
   non-negotiable either way.
 - **Interactivity, fillable pages, and Markdown output** - lead with the gist
   and disclose on demand; the permission-free copy-out floor a hand-written

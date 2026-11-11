@@ -234,7 +234,8 @@ polyrepo member (`spec/PRODUCT.md` present) skip them - `vision.md`, `users.md`,
    product clearly needs. Keep scope honest - flag anything ambiguous in that
    feature's `intent.md` -> `## Open questions` instead of guessing.
 3. If a Claude Design export exists, read the **local export** (run
-   `/steer:reference design-sources`) - never fetch the URL (it 403s). The design is
+   `/steer:reference design-sources`) - never web-fetch the link; a Design
+   Artifact link is read with the `Artifact` tool and committed first. The design is
    authoritative for visual behavior; the spec for what the system does. Flag
    conflicts in the relevant feature's `intent.md` -> `## Open questions`.
 4. Get PO approval on the intent specs before broad implementation, then build
