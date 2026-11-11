@@ -26,7 +26,7 @@ Optional - fill it only where a Design System Artifact holds this product's (or 
 
 - **Link:** [Design System Artifact link without any share key, or "none"]
 - **Upstream:** [the Design System | the code]
-- **Last read:** YYYY-MM-DD
+- **Last read:** [YYYY-MM-DD, or "not yet"]
 
 ## Supporting material
 

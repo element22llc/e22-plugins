@@ -13,8 +13,9 @@ body: |-
     Design System, nobody is asked for one, and its absence is never a gap or a
     finding. Where a recorded system cannot be read, `DESIGN.md` is the complete
     record to build from and the link is provenance; a system named but not yet
-    distilled is said so in one line while `DESIGN.md` takes one of its other
-    origins. Such a session has no drift to check against the system, and the
+    distilled has its link recorded with `Last read: not yet` and is said so in
+    one line, while `DESIGN.md` takes one of its other origins. Such a session
+    has no drift to check against the system, and the
     offer to publish a repo's design system is made only where the session's
     own type listing shows a Design System type.
     `/steer:reference artifacts` states that no step of the design-system
