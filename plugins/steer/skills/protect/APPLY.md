@@ -25,7 +25,7 @@ When rules are drifted or absent:
    prompt. The piped form below has no terminator and pastes safely at any
    indentation (single-quote the JSON so the shell does not expand `$`):
    ```sh
-   echo '{"required_status_checks":{"strict":false,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":true,"restrictions":null}' \
+   echo '{"required_status_checks":{"strict":false,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":false,"restrictions":null}' \
      | gh api -X PUT "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --input -
    ```
    **Every *policy* value in that body comes from the policy file, not from this
@@ -49,7 +49,8 @@ When rules are drifted or absent:
    the same way as the protection PUT:
    - secret scanning + push protection **and** Dependabot security updates in one
      `gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
-     block, plus `delete_branch_on_merge` at the top level of the same body;
+     block, plus `delete_branch_on_merge` and `allow_merge_commit` at the top
+     level of the same body;
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
    - **Actions approving PRs off** - only when verify diffed it. Say what it
@@ -75,9 +76,8 @@ When rules are drifted or absent:
      `required_reviewers` entries. A `422` naming `required_reviewers` means the
      plan or the repo owner does not support it: say so, apply the rest, and
      keep the classic review count as the only approval gate - and say that PRs
-     into `prod` must then be merged with **Create a merge commit** by hand:
-     `ci:promotion` and `backport.yml` read prod's merge commits, and
-     `backport.yml` refuses a squash merge rather than guess.
+     into `prod` must then be merged with **Create a merge commit** by hand, so
+     prod's history stays the release's own and each merge-back merges clean.
 4. After applying, re-run the verify diff and report the new state.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a

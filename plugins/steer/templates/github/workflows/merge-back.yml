@@ -1,14 +1,14 @@
-name: Back-port
+name: Merge-back
 
-# Carries what a merged release/* or hotfix/* PR shipped to prod back to main (and, for a
-# hotfix, to an open release branch). Logic: scripts/backport.sh. Rationale:
+# After a release/* or hotfix/* PR merges into prod, pushes a merge-back/* branch at prod's tip for
+# main (and, for a hotfix, an open release branch). Logic: scripts/merge-back.sh. Rationale:
 # /steer:reference conventions -> "Deployment & environments".
 #
-# With GITHUB_TOKEN it pushes backport/* and comments a link for a human to open the PR:
+# With GITHUB_TOKEN it pushes merge-back/* and comments a link for a human to open the PR:
 # letting this token open PRs needs "Allow GitHub Actions to create and approve pull
 # requests", which also lets any workflow approve one. To have it open the PR itself, mint a
 # GitHub App token (actions/create-github-app-token) into GH_TOKEN and set
-# BACKPORT_OPEN_PR: "true".
+# MERGE_BACK_OPEN_PR: "true".
 
 on:
   pull_request:
@@ -18,12 +18,12 @@ on:
 permissions: {}
 
 concurrency:
-  group: backport-${{ github.event.pull_request.number }}
+  group: merge-back-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
-  backport:
-    name: backport
+  merge-back:
+    name: merge-back
     if: >-
       github.event.pull_request.merged == true &&
       github.event.pull_request.head.repo.full_name == github.repository &&
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     permissions:
-      contents: write # pushes the backport/* branch
+      contents: write # pushes the merge-back/* branch
       pull-requests: write # comments the link on the merged PR
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,13 +41,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-        with:
-          install_args: changie
-          cache: true
-
-      - name: Back-port
+      - name: Merge-back
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
@@ -55,5 +49,5 @@ jobs:
           MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           REPO: ${{ github.repository }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          BACKPORT_OPEN_PR: "false"
-        run: sh scripts/backport.sh
+          MERGE_BACK_OPEN_PR: "false"
+        run: sh scripts/merge-back.sh

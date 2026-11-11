@@ -6,6 +6,6 @@ body: |-
   - **Changed: a merged release branch is deleted, and the PO is named as the
     release tester.** `/steer:setup protect` now verifies and applies
     `delete_branch_on_merge` (policy schema 7), so GitHub deletes a merged
-    `release/*`, `hotfix/*` or `backport/*` branch and a release snapshot lives
+    `release/*`, `hotfix/*` or `merge-back/*` branch and a release snapshot lives
     only as long as its Release PR. `/steer:work promote` says the PO tests the
     release on the held environment.

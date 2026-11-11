@@ -136,7 +136,7 @@ aren't available on this plan): the gate is the required approvals on a PR into
    exercise the change there.
 2. **PR merged to `main`** (one dev approval) -> the change **auto-deploys to
    non-prod**, unless a release is in QA (step 4); the review app is torn down.
-3. **`/steer:work promote`** cuts the changelog on `main` (its own PR), then
+3. **`/steer:work promote`**, run by a dev or the PO, cuts the changelog on `main` (its own PR), then
    cuts a **`release/vX.Y.Z`** snapshot branch at that cut's merge commit and
    opens the **Release PR** `release/vX.Y.Z` -> `prod` (a promotion with no
    version uses `release/<short-sha>`).
@@ -153,19 +153,20 @@ aren't available on this plan): the gate is the required approvals on a PR into
    `/steer:setup protect`; see the `prod` entry in
    `policy/branch-protection.yml`). The required `ci` check runs
    `ci:promotion`: a PR into `prod` must come from `release/*` or `hotfix/*`,
-   and a release must not drop anything `prod` already ships.
+   and a release must contain `prod`, so it drops nothing `prod` ships.
 7. **PR merged to `prod`** -> the change **auto-deploys to prod**, `release.yml`
    tags `vX.Y.Z`, and non-prod returns to `main`. Apps may be promoted
    independently.
-8. **Back-port.** `.github/workflows/backport.yml` cherry-picks (`-x`) what
-   `main` lacks onto `backport/<pr>-to-main` and comments a link on the merged
-   PR; a dev opens that PR and merges it with **Rebase and merge**, so the
-   cherry-pick trailers reach `main` (one dev approval). A hotfix during QA is
-   back-ported to the open release branch too.
+8. **Merge-back.** `.github/workflows/merge-back.yml` pushes
+   `merge-back/<pr>-to-main` at prod's tip and comments a link on the merged PR;
+   a dev opens that PR and merges it with **Create a merge commit**, never
+   squash (one dev approval). A conflict is resolved on the merge-back branch,
+   never on `prod`. A hotfix during QA is merged back into the open release
+   branch too. The next Release PR fails `ci:promotion` until this lands.
 9. **Deployment result is posted back** to the issue/PR.
 
 A **hotfix** follows steps 6-8 from a `hotfix/<n>-slug` branch cut from `prod`:
-same approvers, its own patch cut, then the back-port.
+same approvers, its own patch cut, then the merge-back.
 
 **Deploy-job contract.** Steer ships no deploy workflow - deploys are
 product-specific. A product's non-prod deploy job keeps the hold by:
@@ -184,8 +185,8 @@ product-specific. A product's non-prod deploy job keeps the hold by:
 
 **Rollback.** Every prod deploy has a known rollback: a revert of the change on
 a `hotfix/*` branch, shipped as a hotfix PR into `prod` (same approvers), or a
-redeploy of the previous SHA. The back-port bot flags a revert for a human to
-decide whether `main` gets it too. Database migrations are **expand/contract** -
+redeploy of the previous SHA. The merge-back bot flags a revert for a human to
+decide whether `main` keeps it. Database migrations are **expand/contract** -
 additive first, so the currently running version keeps working through the
 deploy and a rollback never leaves the schema ahead of the code. Do not deploy
 risky changes to production on a Friday unless there is an explicit reason and

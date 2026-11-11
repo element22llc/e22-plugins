@@ -74,7 +74,7 @@ if [ ! -f .changie.yaml ]; then
 fi
 
 # A diff that adds a released version file carries a cut that consumed its
-# fragments: the back-port of a hotfix that was cut on prod.
+# fragments: the merge-back of a hotfix that was cut on prod.
 cut="$(git -c core.quotePath=false diff --diff-filter=A --name-only "${base}...HEAD" -- ':(glob).changes/*.md' 2>/dev/null ||
 	git -c core.quotePath=false diff --diff-filter=A --name-only "${base}" HEAD -- ':(glob).changes/*.md')"
 if [ -n "${cut}" ]; then
@@ -82,22 +82,13 @@ if [ -n "${cut}" ]; then
 	exit 0
 fi
 
-# A back-port of a release's QA fixes: every commit is a `cherry-pick -x` of a commit prod
-# ships, and those fixes carry no fragment. The trailer must name a real prod commit.
-if git rev-parse --verify --quiet origin/prod >/dev/null 2>&1; then
-	commits="$(git rev-list --no-merges "${base}..HEAD" 2>/dev/null || true)"
-	backport="${commits:+yes}"
-	for c in ${commits}; do
-		src="$(git log -1 --format=%B "${c}" | sed -n 's/.*(cherry picked from commit \([0-9a-f]\{40\}\)).*/\1/p' | head -n 1)"
-		if [ -z "${src}" ] || ! git merge-base --is-ancestor "${src}" origin/prod 2>/dev/null; then
-			backport=''
-			break
-		fi
-	done
-	if [ -n "${backport}" ]; then
-		printf 'ci:changelog - back-port of commits prod ships; their release covers them.\n'
-		exit 0
-	fi
+# A merge-back: every commit it brings is already on prod, whose release covers it. A conflict
+# resolved by merging the target in adds only merge commits; a commit of its own still counts.
+if git rev-parse --verify --quiet origin/prod >/dev/null 2>&1 &&
+	[ -n "$(git rev-list --no-merges "${base}..HEAD" 2>/dev/null | head -n 1)" ] &&
+	[ -z "$(git rev-list --no-merges "${base}..HEAD" --not origin/prod 2>/dev/null | head -n 1)" ]; then
+	printf 'ci:changelog - merge-back of what prod ships; its release covers it.\n'
+	exit 0
 fi
 
 changed="$(git -c core.quotePath=false diff --name-only "${base}...HEAD" 2>/dev/null || git -c core.quotePath=false diff --name-only "${base}" HEAD)"

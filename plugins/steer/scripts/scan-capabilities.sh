@@ -517,17 +517,17 @@ else
 	emit "promotion-gate" "mis-wired" "$pg_files"
 fi
 
-# --- release-backport - what prod ships comes back to main ---
-BW=".github/workflows/backport.yml"
-bw_files="$BW,scripts/backport.sh,$PG"
+# --- release-merge-back - prod is merged back into main ---
+MB=".github/workflows/merge-back.yml"
+mb_files="$MB,scripts/merge-back.sh"
 if ! $prod_pr; then
-	emit "release-backport" "n/a" "$bw_files"
-elif ! exists "$BW"; then
-	emit "release-backport" "absent" "$bw_files"
-elif has "$BW" "scripts/backport.sh" && exists "scripts/backport.sh" && exists "$PG"; then
-	emit "release-backport" "present-wired" "$bw_files"
+	emit "release-merge-back" "n/a" "$mb_files"
+elif ! exists "$MB"; then
+	emit "release-merge-back" "absent" "$mb_files"
+elif has "$MB" "scripts/merge-back.sh" && exists "scripts/merge-back.sh"; then
+	emit "release-merge-back" "present-wired" "$mb_files"
 else
-	emit "release-backport" "mis-wired" "$bw_files"
+	emit "release-merge-back" "mis-wired" "$mb_files"
 fi
 
 # --- release-hold - the held environment runs the open release branch ---

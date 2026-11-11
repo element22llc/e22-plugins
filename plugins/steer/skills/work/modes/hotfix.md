@@ -81,26 +81,25 @@ What changes versus the normal flow:
   autonomous (Commit autonomy), while `gh pr merge` and any deploy stay
   human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up.** Once the fire is out, restore traceability.
-  First, when the fix went into `prod`, **back-port it** the moment that PR
-  merges - to `main`, and to the open `release/*` branch when a release is in
-  QA - or the next release ships without it (`ci:promotion` fails that Release
-  PR until it lands, once its checks re-run). `.github/workflows/backport.yml` does the cherry-picks on
-  merge and comments a link per target; a human opens each PR and merges it with
-  **Rebase and merge**, so the `-x` trailers survive. By hand (no workflow, or it
-  reported a conflict), per target - never a PR with `prod` as its head:
-  resolving a conflict there commits into `prod`.
+  First, when the fix went into `prod`, **merge prod back** the moment that PR
+  merges - into `main`, and into the open `release/*` branch when a release is
+  in QA - or the next release ships without it (`ci:promotion` fails that
+  Release PR until it lands, once its checks re-run). `.github/workflows/merge-back.yml`
+  pushes a `merge-back/<pr>-to-<target>` branch at prod's tip and comments a
+  link per target; a dev opens each PR and merges it with **Create a merge
+  commit**, never squash. By hand (no workflow), per target:
 
   ```sh
-  git fetch origin <target> prod && git switch -c backport/<pr>-to-<target> origin/<target>
-  git cherry-pick -x $(sh scripts/ci-promotion.sh --list-missing origin/<target> origin/prod)
-  gh pr create --base <target> --title "backport: #<pr> into <target>" ...
+  git fetch origin prod && git push origin origin/prod:refs/heads/merge-back/<pr>-to-<target>
+  gh pr create --base <target> --head merge-back/<pr>-to-<target> --title "merge-back: #<pr> into <target>" ...
   ```
 
-  A `CHANGELOG.md` conflict (a cut already on `main`) is resolved by running
-  `changie merge`, never by hand. `ci:changelog` passes the PR without a new
-  fragment because it adds the hotfix's version file, which consumed it. A
-  hotfix that **reverts** a change is back-ported only on a human's call: the
-  bot's comment flags it.
+  Never a PR with `prod` as its head: a conflict is resolved on the merge-back
+  branch by merging the target into it (`git merge origin/<target>`, with
+  `changie merge` for a `CHANGELOG.md` conflict), never with a commit of its own.
+  `ci:changelog` passes the PR without a new fragment: everything it brings is
+  already on `prod`. A hotfix that **reverts** a change reaches `main` too; the
+  bot's comment flags it so a human decides whether `main` keeps it.
   Then backfill/finish the issue, write the spec/ADR if a durable decision was made,
   put the incident's root cause on the enforcement ladder (`finish` in
   `modes/subcommands.md` - an incident is the strongest trigger, and a regression

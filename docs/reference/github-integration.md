@@ -150,9 +150,11 @@ rulesets beside them, because GitHub has no classic equivalent:
 - **`steer: release branches`** on `release/**` - a QA fix lands only through a
   PR with one approval and a green `ci`.
 
-It also turns on the repo setting `delete_branch_on_merge`, so a merged release,
-hotfix or back-port branch is deleted and the release snapshot lives only as
-long as its Release PR.
+It also turns on the repo settings `delete_branch_on_merge`, so a merged release,
+hotfix or merge-back branch is deleted and the release snapshot lives only as
+long as its Release PR, and `allow_merge_commit`, which the merge-back PR needs.
+Linear history is off on the default branch for the same reason: features still
+squash, and the merge-back is the one merge commit `main` takes.
 
 `/steer:setup sync` keeps the policy file and the protection in step as the
 plugin evolves.
@@ -164,10 +166,12 @@ shipped `ci.yml` must trigger on PRs targeting them as well as `main` - its
 (or was forked from it) sees the Release PR or a QA fix wait forever on a check
 that never reports; add the missing branches to the trigger to clear it. On a PR
 into `prod`, `ci` also runs `ci:promotion`: the head must be `release/*` or
-`hotfix/*`, and a release must not drop a hotfix or QA fix `prod` already ships.
+`hotfix/*`, and a release must contain `prod`, so it never drops a hotfix or QA
+fix `prod` already ships.
 
-After a release or hotfix PR merges, the scaffold's `backport.yml` pushes
-`backport/<pr>-to-main` and comments a link; a human opens the PR. It does not
+After a release or hotfix PR merges, the scaffold's `merge-back.yml` pushes
+`merge-back/<pr>-to-main` at prod's tip and comments a link; a dev opens the PR
+and merges it with **Create a merge commit**. It does not
 open it itself, because letting `GITHUB_TOKEN` open PRs needs "Allow GitHub
 Actions to create and approve pull requests", the setting protect reports as
 drift. A GitHub App token is the opt-in for opening it automatically. See

@@ -11,12 +11,16 @@ snapshot branch, and opens the Release PR. **Merging the Release PR is the
 production gate and stays human** (rule `45-delivery` -> Deployment &
 environments) - never `gh pr merge` here, never deploy, never push to `prod`.
 
+**Who runs it.** A dev or the PO: it opens PRs and changes no code. With a PO,
+speak plainly and drive git and `gh` yourself; each merge still goes to its
+approvers.
+
 **The shape.** The Release PR comes from a `release/vX.Y.Z` snapshot of the
 default branch, never from `main` itself, so prod receives exactly what QA
 tested while `main` keeps taking merges. While it is open, the held environment
 (`policy/delivery.yml` `release_hold`, default `non-prod`) runs the release
 branch instead of `main`; QA fixes land on the release branch; after the merge,
-`.github/workflows/backport.yml` carries them back to `main`.
+prod is merged back into `main` (`.github/workflows/merge-back.yml`).
 
 ## Step 1 - read the declared gate
 
@@ -44,33 +48,31 @@ it. Then:
   looks real and is not.
 - **`prod` is protected.** If `/steer:setup protect verify` shows no
   required review on `prod`, say the Release PR would merge without an
-  approval, and recommend `/steer:setup protect` before continuing. Offer to continue
-  anyway only if the dev says so; record that they did.
+  approval, and recommend `/steer:setup protect` before continuing. Offer to
+  continue anyway only if whoever runs `promote` says so; record that they did.
 - **One release at a time.** `gh pr list --base prod --state open --json
   number,headRefName,url`:
   - a `release/*` head -> that release is **in QA**. Refresh its body (Step 5's
     body, its commit list from the release branch) and run the drop check
     below against it, report it, and **stop** - no new cut, no second
     snapshot. Pending fragments on `main` belong to the next release.
-  - a `main` head (left by the earlier flow) -> **stop** and ask the dev to
-    close it before a snapshot replaces it; close it (`gh pr close`) only on
-    their yes.
-- **Nothing prod ships is dropped.** Prod's merges carry QA fixes and hotfixes
-  that reach `main` only through their back-port; a release cut before that
-  lands would ship without them. Copy the repo's checker and run it:
+  - a `main` head (left by the earlier flow) -> **stop** and ask to close it
+    before a snapshot replaces it; close it (`gh pr close`) only on a yes.
+- **Prod is merged back.** Every merge into `prod` is merged back into `main`
+  (and into a release in QA) by a merge-back PR; a release cut before that lands
+  would ship without a hotfix or a QA fix:
 
   ```sh
   git fetch origin main prod
-  sh scripts/ci-promotion.sh --list-missing origin/main origin/prod
+  git merge-base --is-ancestor origin/prod origin/main || git log --oneline origin/main..origin/prod
   ```
 
   For a release already in QA, check its branch instead of `origin/main`.
-  Any output -> stop: name the open `backport/*` PR for a human to merge, or
-  follow `modes/hotfix.md` -> follow-up to open it. The required `ci` check runs
-  the same test (`ci:promotion`) on the Release PR. No `scripts/ci-promotion.sh`
-  yet -> fall back to the version files:
-  `git diff --name-only --diff-filter=A origin/main origin/prod -- '.changes/*.md'`,
-  and recommend `/steer:setup sync`.
+  Any output -> stop: name the open `merge-back/*` PR for a dev to merge with
+  **Create a merge commit**. None open -> push one at prod's tip
+  (`git push origin origin/prod:refs/heads/merge-back/<short-sha>-to-main`)
+  and open its PR into `main`. The required `ci` check runs the same test
+  (`ci:promotion`) on the Release PR.
 - **The default branch is green.** `gh pr checks` on the last merged PR, or
   `gh run list --branch main --limit 1`. A red default branch is not promotable;
   report it and stop.
@@ -165,26 +167,26 @@ Say this once, in the handoff, so the team knows the rules of the window:
   repairs (`ci:changelog` passes PRs into `release/*`). The merge redeploys the
   held environment and dismisses the Release PR's approvals (stale-review
   dismissal on `prod`), so QA re-tests and the approvers look again.
-- **A hotfix during QA** reaches the release branch too: `backport.yml` opens
-  that back-port beside the one into `main`. The Release PR's last green `ci`
-  predates the hotfix, so **re-run its checks** (or merge that back-port, which
-  re-runs them) before approving: `ci:promotion` then fails it until the fix is
-  on the release branch.
+- **A hotfix during QA** reaches the release branch too: `merge-back.yml`
+  pushes a merge-back branch into it beside the one into `main`. The Release
+  PR's last green `ci` predates the hotfix, so **re-run its checks** (or merge
+  that merge-back, which re-runs them) before approving: `ci:promotion` fails it
+  until prod is merged back into the release branch.
 - **Who approves the Release PR**: a member of the PO team **and** a member of
   the dev team (the `prod` ruleset, `/steer:setup protect`); never its author.
 
 ## Step 7 - after the merge
 
 Merging deploys production and `release.yml` tags `vX.Y.Z`. Then
-`.github/workflows/backport.yml` pushes `backport/<pr>-to-main` with each QA fix
-cherry-picked `-x` and comments a link on the merged PR; a human opens that PR
-and merges it with **Rebase and merge**, so the cherry-pick trailers reach
-`main` (`ci:promotion` reads them). No `backport.yml` installed, or it
-reported a conflict -> the commands are in its comment, else
-`modes/hotfix.md` -> follow-up applies the same way. GitHub deletes the merged
-release branch (`delete_branch_on_merge`, applied by `/steer:setup protect`);
-with that setting off, name the merged `release/*` branches for a human to
-delete - `promote` never deletes a branch.
+`.github/workflows/merge-back.yml` pushes `merge-back/<pr>-to-main` at prod's
+tip and comments a link on the merged PR; a dev opens that PR and merges it with
+**Create a merge commit**, never squash - a squashed merge-back leaves prod out
+of `main`, and the next Release PR fails `ci:promotion`. A conflict is resolved
+on the merge-back branch by merging `main` into it, never on `prod`. No
+`merge-back.yml` installed -> push the branch by hand (Step 2). GitHub deletes
+the merged release branch (`delete_branch_on_merge`, applied by `/steer:setup
+protect`); with that setting off, name the merged `release/*` branches for a
+human to delete - `promote` never deletes a branch.
 
 ## Recommend the next action
 
@@ -194,10 +196,10 @@ Per `NEXT-ACTIONS.md`, derived from where the run stopped:
 |---|---|---|
 | `production_gate` is not `prod-branch-pr` | Human decision required | The declared gate is the human's own step (no command) |
 | No `prod` branch, or it is unprotected | Blocking now | `/steer:setup protect` |
-| An old `main -> prod` PR is open | Human decision required | A dev closes it so a snapshot can replace it (no command) |
-| Prod ships a change `main` lacks | Human decision required | A dev merges the open back-port PR into `main` (no command) |
+| An old `main -> prod` PR is open | Human decision required | Close it so a snapshot can replace it (no command) |
+| Prod is not merged back into `main` | Human decision required | A dev merges the open merge-back PR with **Create a merge commit** (no command) |
 | Default branch red | Blocking now | Fix the build before promoting |
 | Changelog cut PR open | Human decision required | A dev reviews and merges the cut (no command) |
 | Release PR open, in QA | Human decision required | The PO tests on the held environment and signs off; a PO and a dev approve and merge - **that merge deploys production** (no command) |
-| Release merged, back-port pending | Human decision required | A dev opens and merges the back-port PR from the bot's link (no command) |
+| Release merged, merge-back pending | Human decision required | A dev opens the merge-back PR from the bot's link and merges it with **Create a merge commit** (no command) |
 | Nothing unreleased | Complete | `No action is currently required.` |

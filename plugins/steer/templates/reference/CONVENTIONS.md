@@ -863,14 +863,16 @@ needs an ADR.
     changelog fragment (the release's entries describe the work it repairs).
     Merging it redeploys the held environment and dismisses the Release PR's
     approvals;
-  - **back-port** - after a `release/*` or `hotfix/*` PR merges into `prod`,
-    `backport.yml` cherry-picks (`-x`) what `main` lacks onto
-    `backport/<pr>-to-main` (and, for a hotfix during QA, onto the release
-    branch) and comments a link; a human opens the PR and merges it with
-    **Rebase and merge**. `ci:promotion` fails a PR into `prod` whose head is
-    not `release/*` or `hotfix/*`, or a release that would drop something
-    `prod` ships (`prod` takes merge commits only, so those SHAs survive);
-  - **who approves** - a PR into `main`, a QA fix and a back-port PR: one dev.
+  - **merge-back** - after a `release/*` or `hotfix/*` PR merges into `prod`,
+    `merge-back.yml` pushes `merge-back/<pr>-to-main` at prod's tip (and, for a
+    hotfix during QA, one for the release branch) and comments a link; a dev
+    opens the PR and merges it with **Create a merge commit**, never squash.
+    Conflicts are resolved on the merge-back branch, never on `prod`. Features
+    still squash, so `main` gains only these merge commits. `ci:promotion` fails
+    a PR into `prod` whose head is not `release/*` or `hotfix/*`, or a release
+    that does not contain `prod` - a squashed merge-back is caught there;
+  - **who runs promote** - a dev or the PO;
+  - **who approves** - a PR into `main`, a QA fix and a merge-back PR: one dev.
     A Release PR or hotfix PR into `prod`: a PO team member **and** a dev team
     member (a repository ruleset, 2 approvals, last-push approval, no bypass;
     both teams need Write). An author never approves their own PR. After the
@@ -900,7 +902,7 @@ needs an ADR.
   a flag to raise with the dev, not a licence to skip it.
 - **Rollback & migrations** - every prod deploy has a known rollback (a revert
   shipped as a `hotfix/*` PR into `prod`, or a redeploy of the prior SHA; the
-  back-port bot flags a revert for a human); migrations are **expand/contract**
+  merge-back bot flags a revert for a human); migrations are **expand/contract**
   so the running version survives the deploy and a rollback never leaves schema
   ahead of code.
 

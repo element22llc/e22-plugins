@@ -193,7 +193,7 @@ Plus the repo-level settings the policy declares, read from
 
 - secret scanning + push protection and Dependabot security updates (the
   `security_and_analysis` block);
-- `delete_branch_on_merge`.
+- `delete_branch_on_merge` and `allow_merge_commit`.
 
 Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
@@ -281,7 +281,7 @@ confirmation.
   rulesets, and GitHub applies the most restrictive of both layers. If the repo
   already governs a branch through a ruleset of its own that meets the policy,
   report it as compliant rather than forcing a second one.
-- **`backport.yml` never needs** "Allow GitHub Actions to create and approve pull
+- **`merge-back.yml` never needs** "Allow GitHub Actions to create and approve pull
   requests": with `GITHUB_TOKEN` it pushes a branch and comments a link, and a
   human opens the PR. Keep reporting that setting as drift.
 - This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it

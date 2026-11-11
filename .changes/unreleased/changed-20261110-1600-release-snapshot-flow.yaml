@@ -11,6 +11,6 @@ body: |-
     `release_hold` field (default `non-prod`) runs the release branch, and merges
     into `main` continue without deploying. QA fixes are PRs into the release
     branch and need no changelog fragment. A re-run refreshes the open Release
-    PR and never cuts a second release. The `--hotfix` lane now back-ports to
-    the open release branch as well as `main`, and keeps the approvers `prod`
-    requires instead of a single reviewer.
+    PR and never cuts a second release. The `--hotfix` lane now merges `prod`
+    back into the open release branch as well as `main`, and keeps the
+    approvers `prod` requires instead of a single reviewer.
