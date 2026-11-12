@@ -59,7 +59,7 @@ jobs:
       - name: Detect changes
         id: changed
         run: |
-          if git diff --quiet -- plugins/steer/templates/github/workflows; then
+          if git diff --quiet -- plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh; then
             echo "changed=0" >> "$GITHUB_OUTPUT"
           else
             echo "changed=1" >> "$GITHUB_OUTPUT"

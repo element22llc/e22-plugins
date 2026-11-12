@@ -126,7 +126,10 @@ Name the file and say what to carry forward.
      `scripts/ci-hygiene.sh`. Give the hygiene step in `ci.yml` the template's
      `env:` - `GH_TOKEN: ${{ github.token }}` and `STEER_CI_ACTIONS_LOCK: verify`.
   3. Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` and commit
-     `actions.lock` with the workflows; list the locked commits in the PR. If it
+     `actions.lock` with the workflows; list the locked commits in the PR. It also
+     locks the product's own workflows and narrows their partial tags (`@v4` ->
+     `@v4.2.1`) - the one edit to them this entry makes, required because CI's
+     verify step fails on any unlocked workflow; show it in the diff. If it
      fails, drop this entry's changes and report why (scaffold MANIFEST -> "Lock
      every workflow you install or change"): step 2 without a lockfile turns CI red.
   4. If `gh api repos/{owner}/{repo}/actions/permissions --jq .allowed_actions`

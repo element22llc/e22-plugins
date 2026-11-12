@@ -28,7 +28,9 @@ informational fingerprints, `stack` (`node | python | polyglot | none`) and
 `## Profile` marker). **Keep the capability set in that script in lockstep with
 the entries below** (the hook test suite asserts every id the script emits is
 documented here, exempting the `stack`/`profile` fingerprints). This doc owns the
-repair semantics + conditionality the script can't decide.
+repair semantics + conditionality the script can't decide. A repair that writes
+under `.github/workflows/` locks it in the same change (scaffold `MANIFEST.md` ->
+"Lock every workflow you install or change").
 
 **Profile and capability conditionality.** Capabilities are conditioned on the
 `stack` fingerprint, not on `profile` - and `stack=none` already does the right

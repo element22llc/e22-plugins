@@ -26,7 +26,7 @@ if [ -z "$f" ]; then
 fi
 
 if ! command -v gh >/dev/null 2>&1; then
-	echo "lock-workflows: gh is not installed, so the workflows cannot be locked. Install GitHub CLI (/steer:setup doctor), then rerun." >&2
+	echo "lock-workflows: gh is not installed, so the workflows cannot be locked. Install GitHub CLI (https://cli.github.com), then rerun." >&2
 	exit 3
 fi
 if ! gh auth status >/dev/null 2>&1; then
