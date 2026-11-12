@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer - stack-agnostic CI hygiene: mise task graph, workflow lint, shell lint, version-pin policy.
+# steer - stack-agnostic CI hygiene: mise task graph, workflow lint, actions lockfile, shell lint, version-pin policy.
 # Runs in every repo regardless of stack. Invoked by `mise run ci:hygiene`.
 set -eu
 
@@ -35,6 +35,10 @@ if [ -d .github/workflows ]; then
 	actionlint -color
 	steer_ci_endgroup
 fi
+
+steer_ci_group 'actions lockfile'
+steer_ci_actions_lock
+steer_ci_endgroup
 
 steer_ci_group 'shellcheck'
 if [ -n "$(git ls-files '*.sh' '*.bash')" ]; then

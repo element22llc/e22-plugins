@@ -153,7 +153,8 @@ manager.
 This applies to **every** lockfile in the repo, not just mise's:
 
 - `mise.lock` (toolchain), `pnpm-lock.yaml` (Node workspaces), `uv.lock`
-  (Python), `.terraform.lock.hcl` (infra providers) - all are **committed and
+  (Python), `.terraform.lock.hcl` (infra providers),
+  `.github/workflows/actions.lock` (GitHub Actions) - all are **committed and
   kept in sync** with their config file as part of the change that touches it.
   Adding/removing a dependency or tool without the matching lockfile diff is an
   incomplete change.
@@ -167,6 +168,15 @@ This applies to **every** lockfile in the repo, not just mise's:
   lockfile change is a smell, not noise. The scaffold `.gitattributes` marks
   them `-diff` so generated churn stays collapsed in review; expand it when the
   change is the lockfile.
+- **`actions.lock` is regenerated, never hand-edited.** After adding or
+  changing a `uses:`, run `gh actions-lock` (`scripts/lock-workflows.sh` from the
+  plugin installs the pinned extension) and commit the lockfile with the
+  workflow. It locks every workflow in the repo and narrows a partial tag
+  (`@v4` -> `@v4.2.1`). A run that fails at startup with no job log - "This run
+  likely failed because of a workflow file issue" - usually means an action is
+  missing from the lockfile; the `ci:hygiene` lockfile check cannot report it
+  when the broken workflow is `ci.yml` itself. Keep it out of the `-diff` set:
+  a changed commit in it is new code your CI will run.
 - **pnpm's `minimumReleaseAge` guard stays on.** pnpm 11 refuses packages
   published in the last 24 h by default. A plain `pnpm install` self-heals
   (resolves aged transitives and adds too-fresh *direct* deps to

@@ -28,6 +28,7 @@ allowed-tools:
   # lints it; scoped to that one package rather than a blanket `npx *`.
   - Bash(npx @google/design.md *)
   - Bash(sh *scripts/template-reconcile.sh*)
+  - Bash(sh *scripts/lock-workflows.sh*)
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 

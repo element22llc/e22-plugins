@@ -94,6 +94,51 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - shipped workflows use exact tags, locked in `actions.lock`
+
+- **What & why:** GitHub Actions workflow lockfiles (GA 2026-10-28) record the
+  commit every `uses:` runs, transitive dependencies included, in
+  `.github/workflows/actions.lock`. The runner runs those commits and refuses a
+  listed workflow whose action has no entry. The shipped templates now carry
+  exact `vX.Y.Z` tags instead of `@<sha> # vX.Y.Z`: each repo generates its own
+  lockfile, Dependabot regenerates its entries with each bump, and `ci:hygiene`
+  checks it (`gh actions-lock --verify` in CI). Checked on a private repo on the
+  Team plan before shipping.
+- **Precondition:** the repo has workflows and no lockfile -
+
+  ```sh
+  ls .github/workflows/*.yml .github/workflows/*.yaml >/dev/null 2>&1 &&
+    [ ! -f .github/workflows/actions.lock ] && echo stale
+  ```
+
+  No output => already migrated, or no workflows => no-op.
+- **Action:** read-then-propose, one PR; show each diff.
+  1. **Steer-shipped workflows only** (`ci.yml`, `claude.yml`, `release.yml`,
+     `merge-back.yml`, `steer-loop.yml`, `copilot-setup-steps.yml`): rewrite
+     `uses: <action>@<40-hex sha> # vX.Y.Z` to `uses: <action>@vX.Y.Z`, keeping a
+     `# zizmor: ignore[...]` as the trailing comment. Rewrite only where the
+     comment names an exact version, and never change the version. A SHA pin
+     with no such comment stays (`gh actions-lock` locks it and warns
+     `sha-as-ref`). A workflow the product wrote is theirs: suggest the rewrite in
+     the PR, don't make it.
+  2. Splice `STEER_ACTIONS_LOCK_VERSION` and `steer_ci_actions_lock` from the
+     template `scripts/ci-lib.sh`, and the `actions lockfile` group from
+     `scripts/ci-hygiene.sh`. Give the hygiene step in `ci.yml` the template's
+     `env:` - `GH_TOKEN: ${{ github.token }}` and `STEER_CI_ACTIONS_LOCK: verify`.
+  3. Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` and commit
+     `actions.lock` with the workflows; list the locked commits in the PR. It also
+     locks the product's own workflows and narrows their partial tags (`@v4` ->
+     `@v4.2.1`) - the one edit to them this entry makes, required because CI's
+     verify step fails on any unlocked workflow; show it in the diff. If it
+     fails, drop this entry's changes and report why (scaffold MANIFEST -> "Lock
+     every workflow you install or change"): step 2 without a lockfile turns CI red.
+  4. If `gh api repos/{owner}/{repo}/actions/permissions --jq .allowed_actions`
+     prints `selected`, warn in the PR: once a workflow is in the lockfile the
+     allowed-actions list is matched against locked SHAs, so a tag entry such as
+     `actions/checkout@v7` stops matching. The dev switches those to wildcards or
+     SHAs before merge - a settings change, never made here.
+  5. No history entry - CI scaffolding `/steer:sync` carries forward.
+
 ### [Unreleased] - `.claude/settings.json` retires the over-wide `Bash(git remote:*)` allow
 
 - **What & why:** scaffolds before v3.10.0 allowed `Bash(git remote:*)`.
@@ -967,14 +1012,18 @@ Name the file and say what to carry forward.
   owner can repoint at any commit, so every managed repo was executing whatever
   that tag meant on the day CI ran. These are copied into every managed repo, so
   one flaw multiplies across the org. Tracked as issue #492.
-- **Precondition:** any steer-shipped workflow still references an action by tag -
-  `grep -nE 'uses: [^@]+@v[0-9]' .github/workflows/{ci,claude,copilot-setup-steps,dependabot-auto-merge,steer-loop}.yml` -
+- **Precondition:** any steer-shipped workflow still references an action by tag
+  while `.github/workflows/actions.lock` is absent -
+  `[ ! -f .github/workflows/actions.lock ] && grep -nE 'uses: [^@]+@v[0-9]' .github/workflows/{ci,claude,copilot-setup-steps,dependabot-auto-merge,steer-loop}.yml` -
   **or** `dependabot-auto-merge.yml` still contains `github.actor ==`. A repo
   with none of those files is `n/a`.
 - **Action:** read-then-propose, show the diff. **Only** the five steer-shipped
   files above; a workflow the product wrote is theirs, and hardening it is a
   suggestion to make in the PR description, never an edit.
-  1. **Pin each `uses:` to a commit SHA with a `# vX.Y.Z` trailing comment.**
+  1. **Superseded - skip this step.** Leave tag refs as they are; the
+     "shipped workflows use exact tags" entry locks them, and a SHA written here would
+     only be rewritten back to its tag. Historical text, kept for the record:
+     **Pin each `uses:` to a commit SHA with a `# vX.Y.Z` trailing comment.**
      Resolve the SHA **live** (`gh api repos/<owner>/<repo>/git/ref/tags/<tag>`,
      dereferencing an annotated tag via `git/tags/<sha>`) - never copy a SHA from
      this entry or from memory, which is how a stale or wrong pin spreads. **Never

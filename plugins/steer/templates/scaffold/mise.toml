@@ -79,7 +79,7 @@ description = "Reassemble CHANGELOG.md from .changes/ (run after a release cut)"
 run = "changie merge"
 
 [tasks."ci:hygiene"]
-description = "Stack-agnostic hygiene: mise task graph, actionlint, shellcheck, version-pin policy"
+description = "Stack-agnostic hygiene: mise task graph, actionlint, actions lockfile, shellcheck, version-pin policy"
 run = "sh scripts/ci-hygiene.sh"
 
 [tasks."ci:deps"]

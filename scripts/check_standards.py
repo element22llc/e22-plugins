@@ -1629,6 +1629,33 @@ def check_gh_pr_checks_scopes(errors: list[str]) -> None:
                 )
 
 
+_TEMPLATE_USES = re.compile(r"^\s*(?:-\s+)?uses:\s*[\"']?(?P<ref>[^\s\"'#]+)", re.MULTILINE)
+_EXACT_TAG_REF = re.compile(r"[\w.-]+/[\w./-]+@v\d+\.\d+\.\d+")
+
+
+def check_template_action_refs(errors: list[str]) -> None:
+    """Assert every shipped workflow ``uses:`` is an exact ``owner/repo@vX.Y.Z`` tag.
+
+    A consumer locks the commit in its own ``actions.lock`` (scaffold MANIFEST ->
+    "Lock every workflow you install or change"). A SHA hides the release from
+    Dependabot's lockfile sync, and a partial tag like ``@v4`` drifts between
+    installs - zizmor's ref-pin policy for this tier accepts both, so this is the gate.
+    """
+    wf_dir = PLUGIN_ROOT / "templates" / "github" / "workflows"
+    for path in sorted(wf_dir.glob("*.yml")):
+        text = path.read_text(encoding="utf-8")
+        for m in _TEMPLATE_USES.finditer(text):
+            ref = m.group("ref")
+            if ref.startswith(("./", "$/")) or _EXACT_TAG_REF.fullmatch(ref):
+                continue
+            lineno = text.count("\n", 0, m.start("ref")) + 1
+            errors.append(
+                f"templates/github/workflows/{path.name}:{lineno}: `uses: {ref}` is not an "
+                f"exact `owner/repo@vX.Y.Z` tag - shipped workflows reference actions by "
+                f"exact tag and each consumer locks the commit in its actions.lock."
+            )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -1655,6 +1682,7 @@ def run_checks(errors: list[str]) -> None:
     check_workspace_task_namespace(errors)
     check_migration_precondition_converges(errors)
     check_gh_pr_checks_scopes(errors)
+    check_template_action_refs(errors)
     check_internal_skill_reachability(errors, skills)
 
 

@@ -1,0 +1,8 @@
+# zizmor policy for the SHIPPED workflow templates (mise.toml -> actions-security).
+# They carry exact vX.Y.Z tags: each consumer repo locks the commits in its own
+# actions.lock, which cannot exist here. check_standards.py enforces exact tags.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "*": ref-pin

@@ -55,15 +55,12 @@ description = "Static SECURITY analysis of GitHub Actions workflows (zizmor)"
 run = [
   # HARD gate on this repo's own workflows. Clean today, so this is a ratchet.
   "uv run zizmor --no-online-audits .github/workflows/",
-  # HARD on the SHIPPED workflow templates too, since issue #492 hardened them:
-  # they are copied into every managed repo, so one flaw there multiplies across
-  # the org -- which is why they were audited rather than excluded even while the
-  # tier was advisory. Clean today (SHA-pinned `uses:`, least-privilege
-  # `permissions:`, no credential persistence bar two documented exceptions), so
-  # this is a ratchet: a regression now fails here instead of being reported and
-  # scrolled past. The two `# zizmor: ignore[artipacked]` lines in claude.yml and
-  # steer-loop.yml each carry their reason inline.
-  "uv run zizmor --no-online-audits plugins/steer/templates/github/workflows/*.yml",
+  # HARD on the SHIPPED workflow templates too (#492): they are copied into every
+  # managed repo, so one flaw multiplies across the org. Their `uses:` are exact
+  # tags locked per consumer repo, so this tier allows ref pins
+  # (.github/zizmor-templates.yml) and check_standards.py rejects SHAs and partial
+  # tags. The two `# zizmor: ignore[artipacked]` lines carry their reason inline.
+  "uv run zizmor --no-online-audits --config .github/zizmor-templates.yml plugins/steer/templates/github/workflows/*.yml",
 ]
 
 [tasks.plugin-check]

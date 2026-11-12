@@ -46,7 +46,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           # Full history: the coverage step diffs changed lines against the base branch.
           fetch-depth: 0
@@ -57,7 +57,7 @@ jobs:
       # mise-action adds `--locked` whenever mise.lock exists; before /steer:setup init|adopt commits
       # one, this is a plain unlocked install rather than a failure.
       - name: Setup mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        uses: jdx/mise-action@v4.3.0
         with:
           install: true
           cache: true
@@ -68,7 +68,10 @@ jobs:
       # this file and the local gate. Rationale: mise.toml -> "Verification tasks".
       # Secret scanning is GitHub-native (Settings -> Code security), not a CI step.
 
-      - name: Hygiene (actionlint, shellcheck, version-pin policy)
+      - name: Hygiene (actionlint, actions lockfile, shellcheck, version-pin policy)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STEER_CI_ACTIONS_LOCK: verify
         run: mise run ci:hygiene
 
       - name: Lint + format check (Biome / Ruff)
@@ -141,7 +144,7 @@ jobs:
     runs-on: ubuntu-26.04
     continue-on-error: true
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -227,7 +230,7 @@ jobs:
       # below - `scan` already exits 1 on findings or score < ci.failBelow. Findings land as PR
       # annotations + a step summary, which cost nothing; code scanning is a paid feature on private
       # repos. On a repo with GitHub Code Security, `--sarif` + `github/codeql-action/upload-sarif` works too.
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@v7.0.0
         id: node
         if: github.event_name == 'pull_request'
         continue-on-error: true
@@ -314,7 +317,7 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        uses: dependabot/fetch-metadata@v3.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

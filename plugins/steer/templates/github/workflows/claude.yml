@@ -33,13 +33,13 @@ jobs:
         # checkout of its own - it commits and pushes in the workspace THIS step created, so
         # dropping the credential can break the action's own delivery. The scope is bounded by
         # the `permissions:` block above. Revisit if the action gains its own token-based clone.
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] - v7.0.1
+        uses: actions/checkout@v7.0.1 # zizmor: ignore[artipacked]
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@cfc3eb22bfed5c26ef66e3223c982af27e4524de # v1.0.231
+        uses: anthropics/claude-code-action@v1.0.231
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 

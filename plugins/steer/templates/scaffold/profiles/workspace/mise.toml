@@ -80,7 +80,7 @@ depends = ["ws:docker:up"]
 # Verification tiers: the same scripts/ci-*.sh stages as the core scaffold, under ws: names,
 # run by .github/workflows/ci.yml. Only the spine-host stages - code checks belong to members.
 [tasks."ws:ci:hygiene"]
-description = "Hygiene: mise task graph, actionlint, shellcheck, version-pin policy"
+description = "Hygiene: mise task graph, actionlint, actions lockfile, shellcheck, version-pin policy"
 run = "sh scripts/ci-hygiene.sh"
 
 [tasks."ws:ci:spec"]

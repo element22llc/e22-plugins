@@ -26,7 +26,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           # Full history, as in the core ci.yml (a check diffing against the base needs it).
           fetch-depth: 0
@@ -37,12 +37,15 @@ jobs:
       # mise-action adds `--locked` whenever mise.lock exists; before /steer:setup init|adopt commits
       # one, this is a plain unlocked install rather than a failure.
       - name: Setup mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        uses: jdx/mise-action@v4.3.0
         with:
           install: true
           cache: true
 
-      - name: Hygiene (actionlint, shellcheck, version-pin policy)
+      - name: Hygiene (actionlint, actions lockfile, shellcheck, version-pin policy)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STEER_CI_ACTIONS_LOCK: verify
         run: mise run ws:ci:hygiene
 
       - name: Spec open-question contract
@@ -69,7 +72,7 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        uses: dependabot/fetch-metadata@v3.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

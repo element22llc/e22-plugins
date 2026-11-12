@@ -114,3 +114,43 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 finish
+
+# steer_ci_actions_lock: CI verifies provenance online, a laptop checks coverage offline
+# when the extension is installed, and a repo without workflows never calls gh.
+AL="${WORK}/cilock"
+mkdir -p "${AL}/scripts" "${AL}/bin"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${AL}/scripts/"
+printf '#!/bin/sh
+echo "$*" >>"${AL_LOG}"
+case "$*" in
+"actions-lock --help") [ -n "${AL_HAS_EXT:-}" ] ;;
+"extension install"*) exit 0 ;;
+"actions-lock --verify"*) exit "${AL_RC:-0}" ;;
+*) exit 9 ;;
+esac
+' >"${AL}/bin/gh"
+chmod +x "${AL}/bin/gh"
+AL_LOG="${AL}/gh.log"
+AL_VER="$(sed -n 's/^STEER_ACTIONS_LOCK_VERSION=//p' "${AL}/scripts/ci-lib.sh")"
+export AL_LOG
+actions_lock() { # [VAR=value...] -> rc, out, calls
+	: >"${AL_LOG}"
+	out="$(cd "${AL}" && env PATH="${AL}/bin:${PATH}" "$@" sh -c '. scripts/ci-lib.sh; steer_ci_actions_lock' 2>&1)"
+	rc=$?
+	calls="$(tr '\n' '|' <"${AL_LOG}")"
+}
+actions_lock STEER_CI_ACTIONS_LOCK=verify
+assert_eq "actions-lock: no workflows passes" "${rc}" "0"
+assert_eq "actions-lock: no workflows never calls gh" "${calls}" ""
+mkdir -p "${AL}/.github/workflows" && : >"${AL}/.github/workflows/ci.yml"
+actions_lock STEER_CI_ACTIONS_LOCK=verify
+assert_eq "actions-lock: CI passes on a current lock" "${rc}" "0"
+assert_eq "actions-lock: CI installs the pinned extension, then verifies online" "${calls}" "actions-lock --help|extension install github/gh-actions-lock --pin ${AL_VER}|actions-lock --verify|"
+actions_lock STEER_CI_ACTIONS_LOCK=verify AL_HAS_EXT=1 AL_RC=1
+assert_eq "actions-lock: a stale lock fails CI" "${rc}" "1"
+case "${out}" in *"Run 'gh actions-lock'"*) ok ;; *) bad "actions-lock: failure says how to fix it (got '${out}')" ;; esac
+actions_lock AL_HAS_EXT=1
+assert_eq "actions-lock: locally an installed extension checks offline" "${calls}" "actions-lock --help|actions-lock --verify-local|"
+actions_lock
+assert_eq "actions-lock: locally without the extension passes" "${rc}" "0"
+case "${out}" in *"CI alone checks the actions lockfile"*) ok ;; *) bad "actions-lock: missing extension is a notice (got '${out}')" ;; esac

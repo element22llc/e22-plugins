@@ -1,8 +1,9 @@
-"""Tests for the shipped-template action-pin refresher.
+"""Tests for the shipped-template action-tag refresher.
 
 Every lookup is injected, so the suite never touches the network: what is under
-test is the pin rewrite (including the zizmor-suppression comment form), the
-bump-up-only rule, and that a failed lookup is loud rather than a silent no-op.
+test is the tag rewrite (including a trailing zizmor-suppression comment), the
+gh-actions-lock extension pin, the bump-up-only rule, and that a failed lookup is
+loud rather than a silent no-op.
 """
 
 from __future__ import annotations
@@ -11,23 +12,14 @@ from pathlib import Path
 
 import refresh_template_pins as rtp
 
-RELEASES = "repos/{}/releases?per_page=100"
 
-
-def _fetch(tags: dict[str, list[str]], commits: dict[str, str], fail: set[str] | None = None):
+def _fetch(tags: dict[str, list[str]], fail: set[str] | None = None):
     def fetch(path: str):
-        action = path.split("repos/", 1)[1].split("/git/", 1)[0].split("/releases", 1)[0]
+        action = path.split("repos/", 1)[1].split("/releases", 1)[0]
         if fail and action in fail:
             raise LookupError("boom")
-        if "/releases" in path:
-            return [{"tag_name": t, "draft": False, "prerelease": False} for t in tags[action]]
-        if "/git/ref/tags/" in path:
-            tag = path.rsplit("/", 1)[1]
-            return {"object": {"type": "tag", "sha": f"annotated-{tag}"}}
-        if "/git/tags/" in path:
-            tag = path.rsplit("annotated-", 1)[1]
-            return {"object": {"sha": commits[f"{action}@{tag}"]}}
-        raise AssertionError(path)
+        assert path.endswith("/releases?per_page=100"), path
+        return [{"tag_name": t, "draft": False, "prerelease": False} for t in tags[action]]
 
     return fetch
 
@@ -39,62 +31,65 @@ def _wf(tmp_path: Path, body: str) -> Path:
     return d
 
 
-OLD = "a" * 40
-NEW = "b" * 40
+def _refresh(wf: Path, fetch, pins: tuple[Path, ...] = ()):
+    return rtp.refresh(wf, write=True, fetch=fetch, extension_pins=pins)
 
 
-def test_bumps_a_stale_pin(tmp_path: Path):
-    wf = _wf(tmp_path, f"      - uses: acme/act@{OLD} # v1.0.1\n")
-    fetch = _fetch({"acme/act": ["v1.0.2", "v1.0.1"]}, {"acme/act@v1.0.2": NEW})
-    bumps, failures = rtp.refresh(wf, write=True, fetch=fetch)
+def test_bumps_a_stale_tag(tmp_path: Path):
+    wf = _wf(tmp_path, "      - uses: acme/act@v1.0.1\n")
+    bumps, failures = _refresh(wf, _fetch({"acme/act": ["v1.0.2", "v1.0.1"]}))
     assert failures == []
     assert bumps == ["- ci.yml: acme/act v1.0.1 -> v1.0.2"]
-    assert (wf / "ci.yml").read_text() == f"      - uses: acme/act@{NEW} # v1.0.2\n"
+    assert (wf / "ci.yml").read_text() == "      - uses: acme/act@v1.0.2\n"
 
 
-def test_preserves_a_zizmor_suppression_comment(tmp_path: Path):
-    # The version sits at the END of the comment on a suppressed line, so a
-    # regex anchored right after the `#` would silently skip these pins.
-    wf = _wf(tmp_path, f"      - uses: acme/act@{OLD} # zizmor: ignore[artipacked] - v1.0.1\n")
-    fetch = _fetch({"acme/act": ["v1.0.2"]}, {"acme/act@v1.0.2": NEW})
-    rtp.refresh(wf, write=True, fetch=fetch)
+def test_preserves_a_trailing_zizmor_comment(tmp_path: Path):
+    wf = _wf(tmp_path, "        uses: acme/act@v1.0.1 # zizmor: ignore[artipacked]\n")
+    _refresh(wf, _fetch({"acme/act": ["v1.0.2"]}))
     assert (
         wf / "ci.yml"
-    ).read_text() == f"      - uses: acme/act@{NEW} # zizmor: ignore[artipacked] - v1.0.2\n"
+    ).read_text() == "        uses: acme/act@v1.0.2 # zizmor: ignore[artipacked]\n"
 
 
-def test_never_moves_a_pin_backwards(tmp_path: Path):
-    body = f"      - uses: acme/act@{OLD} # v2.0.0\n"
+def test_never_moves_a_tag_backwards(tmp_path: Path):
+    body = "      - uses: acme/act@v2.0.0\n"
     wf = _wf(tmp_path, body)
-    fetch = _fetch({"acme/act": ["v1.9.9"]}, {"acme/act@v1.9.9": NEW})
-    bumps, _ = rtp.refresh(wf, write=True, fetch=fetch)
+    bumps, _ = _refresh(wf, _fetch({"acme/act": ["v1.9.9"]}))
     assert bumps == []
     assert (wf / "ci.yml").read_text() == body
 
 
 def test_ignores_a_moving_major_tag(tmp_path: Path):
-    # anthropics/claude-code-action publishes `v1` alongside vX.Y.Z, and
-    # releases/latest returns it - a tag whose commit moves under the pin.
-    wf = _wf(tmp_path, f"      - uses: acme/act@{OLD} # v1.0.1\n")
-    fetch = _fetch({"acme/act": ["v1", "v1.0.2"]}, {"acme/act@v1.0.2": NEW})
-    bumps, failures = rtp.refresh(wf, write=True, fetch=fetch)
+    # anthropics/claude-code-action publishes `v1` alongside vX.Y.Z.
+    wf = _wf(tmp_path, "      - uses: acme/act@v1.0.1\n")
+    bumps, failures = _refresh(wf, _fetch({"acme/act": ["v1", "v1.0.2"]}))
     assert failures == []
     assert bumps == ["- ci.yml: acme/act v1.0.1 -> v1.0.2"]
 
 
 def test_a_failed_lookup_is_reported_not_swallowed(tmp_path: Path):
-    body = f"      - uses: acme/act@{OLD} # v1.0.1\n"
+    body = "      - uses: acme/act@v1.0.1\n"
     wf = _wf(tmp_path, body)
-    fetch = _fetch({}, {}, fail={"acme/act"})
-    bumps, failures = rtp.refresh(wf, write=True, fetch=fetch)
+    bumps, failures = _refresh(wf, _fetch({}, fail={"acme/act"}))
     assert bumps == []
     assert failures and "acme/act" in failures[0]
     assert (wf / "ci.yml").read_text() == body
 
 
+def test_bumps_the_extension_pin_in_every_copy(tmp_path: Path):
+    wf = _wf(tmp_path, "")
+    pins = (tmp_path / "ci-lib.sh", tmp_path / "lock-workflows.sh")
+    for p in pins:
+        p.write_text("x=1\nSTEER_ACTIONS_LOCK_VERSION=v0.4.1\n", encoding="utf-8")
+    bumps, failures = _refresh(wf, _fetch({rtp.LOCK_EXTENSION: ["v0.5.0"]}), pins)
+    assert failures == []
+    assert len(bumps) == 2
+    for p in pins:
+        assert p.read_text() == "x=1\nSTEER_ACTIONS_LOCK_VERSION=v0.5.0\n"
+
+
 def test_real_templates_parse():
-    # Guards the regex against the pins actually shipped: a form it cannot match
-    # is a pin this job would silently never refresh.
+    # A `uses:` the regex cannot match is a tag this job would never refresh.
     from conftest import REPO_ROOT
 
     found = set()
@@ -102,6 +97,19 @@ def test_real_templates_parse():
         for line in path.read_text(encoding="utf-8").splitlines():
             if "uses:" in line and "@" in line:
                 m = rtp.PIN.search(line)
-                assert m, f"{path.name}: unparsed pin {line.strip()!r}"
+                assert m, f"{path.name}: unparsed tag {line.strip()!r}"
                 found.add(m["action"])
     assert "actions/checkout" in found
+
+
+def test_real_extension_pins_agree():
+    # CI verifies with ci-lib.sh's version and installs lock with the helper's;
+    # different versions could disagree on the lockfile format.
+    from conftest import REPO_ROOT
+
+    versions = set()
+    for rel in rtp.EXTENSION_PINS:
+        m = rtp.EXTENSION_PIN.search((REPO_ROOT / rel).read_text(encoding="utf-8"))
+        assert m, f"{rel}: no STEER_ACTIONS_LOCK_VERSION line"
+        versions.add(m["ver"])
+    assert len(versions) == 1, versions

@@ -223,7 +223,7 @@ sanctioned exception to routing all tracker I/O through the issue-scoped
 
 - gh-aw is a self-described **research demonstrator** - *"not a product, not even
   a technical preview."* Committing it into every product repo would couple
-  steer's deterministic, SHA-pinned, human-gated posture to a preview tool.
+  steer's deterministic, pinned, human-gated posture to a preview tool.
 - It overlaps with steer's own issue lifecycle. `/steer:work issues triage` (via
   `/steer:tracker-sync`) already triages interactively. Run **one** of the two,
   not both, or you double-triage every issue.

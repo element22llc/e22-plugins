@@ -85,7 +85,7 @@ run = "terragrunt run --all plan"
 # The `ci:*` stages are the core scaffold's, verbatim: `.github/workflows/ci.yml` runs
 # each by name, and each script no-ops for a stack it does not detect.
 [tasks."ci:hygiene"]
-description = "Stack-agnostic hygiene: mise task graph, actionlint, shellcheck, version-pin policy"
+description = "Stack-agnostic hygiene: mise task graph, actionlint, actions lockfile, shellcheck, version-pin policy"
 run = "sh scripts/ci-hygiene.sh"
 
 [tasks."ci:deps"]

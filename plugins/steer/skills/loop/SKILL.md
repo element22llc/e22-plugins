@@ -22,6 +22,7 @@ allowed-tools:
   - Bash(git push origin *)
   - Bash(gh pr create *)
   - Bash(gh auth status *)
+  - Bash(sh *scripts/lock-workflows.sh*)
   - Bash(gh repo view *)
   - Bash(gh secret list *)
 ---
@@ -114,8 +115,11 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    to cross the merge violates rule
    53. If the dev wants the loop to merge, that's a human decision made per-PR,
    not something this skill bakes in.
-5. **Deliver the workflow like any change.** Commit
-   `.github/workflows/steer-loop.yml` and `policy/automation.yml` on a `feat/*` branch, push, and open the
+5. **Deliver the workflow like any change.** First run
+   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` - it locks the new workflow's actions in
+   `.github/workflows/actions.lock`; if it fails, stop and report why, committing
+   nothing (MANIFEST -> "Lock every workflow you install or change"). Commit
+   `.github/workflows/steer-loop.yml`, the lockfile and `policy/automation.yml` on a `feat/*` branch, push, and open the
    PR without asking, announcing it (Commit autonomy - the merge review is the
    dev's gate). Arming an unattended agent on the repo is a repo-level event:
    where step 1 took the opt-in decision this session, write the

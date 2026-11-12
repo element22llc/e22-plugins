@@ -31,4 +31,4 @@ mechanics and the other profiles are in `/steer:reference conventions`.
 checker; Drizzle Kit or SQLAlchemy + Alembic; Server Components, `NEXT_PUBLIC_*`
 for public values only; shared modules in `packages/`; unexpected errors to
 Sentry; lockfiles `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
-`.terraform.lock.hcl`; dependencies in `package.json`, `pyproject.toml`.
+`.terraform.lock.hcl`, `.github/workflows/actions.lock`; dependencies in `package.json`, `pyproject.toml`.

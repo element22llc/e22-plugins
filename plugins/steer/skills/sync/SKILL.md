@@ -27,6 +27,7 @@ allowed-tools:
   - Bash(sh *scripts/scan-capabilities.sh*)
   - Bash(sh *scripts/scan-invocations.sh*)
   - Bash(sh *scripts/template-reconcile.sh*)
+  - Bash(sh *scripts/lock-workflows.sh*)
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 

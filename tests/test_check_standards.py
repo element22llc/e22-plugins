@@ -394,6 +394,39 @@ def test_gh_pr_checks_scopes_ignores_workflows_that_do_not_run_it(monkeypatch, t
     assert errors == []
 
 
+_WF_USES = """jobs:
+  ci:
+    steps:
+      - uses: actions/checkout@v7.0.1 # zizmor: ignore[artipacked]
+      - name: Setup
+        uses: "jdx/mise-action@v4.3.0"
+      - uses: ./.github/actions/build
+      - uses: $/.github/actions/lint
+"""
+
+
+def test_template_action_refs_accepts_exact_tags_and_local_actions(monkeypatch, tmp_path: Path):
+    _write_wf(tmp_path, _WF_USES)
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_template_action_refs(errors)
+    assert errors == []
+
+
+def test_template_action_refs_rejects_shas_and_partial_tags(monkeypatch, tmp_path: Path):
+    sha = "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    body = _WF_USES.replace("checkout@v7.0.1", f"checkout@{sha}").replace(
+        "mise-action@v4.3.0", "mise-action@v4"
+    )
+    _write_wf(tmp_path, body)
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_template_action_refs(errors)
+    assert len(errors) == 2
+    assert f"actions/checkout@{sha}" in errors[0] and ":4:" in errors[0]
+    assert "jdx/mise-action@v4`" in errors[1] and ":6:" in errors[1]
+
+
 def test_parse_modes_defaults_owner_to_the_mode_name():
     f = check_standards._parse_modes
     assert f("init,adopt,sync") == {"init": "init", "adopt": "adopt", "sync": "sync"}

@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
-"""Keep the SHIPPED workflow templates' action pins current.
+"""Keep the SHIPPED workflow templates' action tags and gh-actions-lock pin current.
 
-``plugins/steer/templates/github/workflows/*.yml`` SHA-pin every ``uses:`` with
-the tag in a trailing comment. Dependabot cannot maintain those pins: its
+``plugins/steer/templates/github/workflows/*.yml`` reference every action by an
+exact ``vX.Y.Z`` tag; each consumer repo locks the commit in its own
+``actions.lock``. Dependabot cannot maintain the templates: its
 ``github-actions`` ecosystem only scans ``/.github/workflows`` and a root
-``action.yml``, and the ``directory`` key has no escape hatch for a templates
-tree (#548). A consumer repo self-heals - once installed, its own shipped
-``dependabot.yml`` covers ``.github/workflows/`` - so what rots is the *initial*
-pin a freshly bootstrapped repo receives.
+``action.yml`` (#548). A consumer self-heals once installed - its Dependabot
+bumps the tag and regenerates the lock entry - so what rots is the *initial*
+tag a freshly bootstrapped repo receives. The same holds for the pinned
+``gh-actions-lock`` extension version in ``EXTENSION_PINS``.
 
-This script closes that window: it resolves each pinned tag's successor upstream,
-rewrites the pin **bump-up only**, and reports what moved.
-``template-pin-refresh.yml`` runs it weekly and opens one human-reviewed PR, the
-same shape as ``version-policy-refresh.yml`` for the EOL floors. Nothing enforces
-pins at build time; a stale pin is not a failure, it is a PR waiting to be opened.
+This script resolves each tag's successor upstream, rewrites it **bump-up
+only**, and reports what moved. ``template-pin-refresh.yml`` runs it weekly and
+opens one human-reviewed PR, the same shape as ``version-policy-refresh.yml``
+for the EOL floors. A stale tag is not a failure, it is a PR waiting to be opened.
 
 Run from the repo root::
 
     uv run python scripts/refresh_template_pins.py            # report only
-    uv run python scripts/refresh_template_pins.py --write    # rewrite the pins
+    uv run python scripts/refresh_template_pins.py --write    # rewrite the tags
 
-Exit status: 0 pins current, 1 bumps found (and applied under ``--write``),
-2 a lookup failed - never a silent no-op, since "no bumps" and "could not ask"
-must not look the same.
+Exit status: 0 current, 1 bumps found (and applied under ``--write``), 2 a
+lookup failed - never a silent no-op, since "no bumps" and "could not ask" must
+not look the same.
 """
 
 from __future__ import annotations
@@ -36,14 +36,15 @@ from collections.abc import Callable
 from pathlib import Path
 
 WORKFLOWS = Path("plugins/steer/templates/github/workflows")
-
-# `uses: owner/repo@<40-hex> # ... vX.Y.Z` - the trailing comment may carry a
-# zizmor suppression before the version (`# zizmor: ignore[artipacked] - v7.0.1`),
-# so the version is matched at the end rather than right after the `#`.
-PIN = re.compile(
-    r"(?P<head>uses:\s*)(?P<action>[\w.-]+/[\w.-]+)@(?P<sha>[0-9a-f]{40})"
-    r"(?P<comment>\s*#[^\n]*?)(?P<ver>v\d+\.\d+\.\d+)(?P<tail>\s*)$"
+LOCK_EXTENSION = "github/gh-actions-lock"
+EXTENSION_PINS = (
+    Path("plugins/steer/templates/scaffold/scripts/ci-lib.sh"),
+    Path("plugins/steer/scripts/lock-workflows.sh"),
 )
+
+# `uses: owner/repo@vX.Y.Z`, optionally quoted, with any trailing comment.
+PIN = re.compile(r"uses:\s*[\"']?(?P<action>[\w.-]+/[\w.-]+)@(?P<ver>v\d+\.\d+\.\d+)\b")
+EXTENSION_PIN = re.compile(r"^STEER_ACTIONS_LOCK_VERSION=(?P<ver>v\d+\.\d+\.\d+)$", re.MULTILINE)
 
 Fetch = Callable[[str], object]
 
@@ -66,7 +67,7 @@ def latest_release(action: str, fetch: Fetch = gh_api) -> str:
 
     Deliberately NOT ``releases/latest``: several actions publish a moving major
     tag, and ``anthropics/claude-code-action`` returns ``v1`` there - a tag whose
-    commit changes under a pin, which is the whole thing SHA-pinning prevents.
+    commit moves between installs, which is what an exact tag prevents.
     """
     releases = fetch(f"repos/{action}/releases?per_page=100")
     if not isinstance(releases, list):
@@ -82,67 +83,59 @@ def latest_release(action: str, fetch: Fetch = gh_api) -> str:
     return "v" + ".".join(str(p) for p in best)
 
 
-def tag_commit(action: str, tag: str, fetch: Fetch = gh_api) -> str:
-    """The commit a tag points at, dereferencing an annotated tag object."""
-    ref = fetch(f"repos/{action}/git/ref/tags/{tag}")
-    if not isinstance(ref, dict):
-        raise LookupError(f"{action}@{tag}: unexpected ref payload")
-    obj = ref["object"]
-    if obj["type"] == "tag":
-        annotated = fetch(f"repos/{action}/git/tags/{obj['sha']}")
-        if not isinstance(annotated, dict):
-            raise LookupError(f"{action}@{tag}: unexpected tag payload")
-        return str(annotated["object"]["sha"])
-    return str(obj["sha"])
+def _bump(
+    action: str, cur_ver: str, where: str, resolved: dict[str, str], fetch: Fetch
+) -> tuple[str | None, str | None]:
+    """(new tag or None, failure line or None) for one occurrence."""
+    if action not in resolved:
+        try:
+            resolved[action] = latest_release(action, fetch)
+        except (LookupError, KeyError, TypeError) as exc:
+            return None, f"{where}: {action} - {exc}"
+    tag = resolved[action]
+    cur, new = _semver(cur_ver), _semver(tag)
+    # Bump-up only: a tag ahead of the newest release is a deliberate pick (a
+    # pre-release, an unreleased fix), never something to undo.
+    if cur is None or new is None or new <= cur:
+        return None, None
+    return tag, None
 
 
 def refresh(
-    workflows: Path = WORKFLOWS, *, write: bool = False, fetch: Fetch = gh_api
+    workflows: Path = WORKFLOWS,
+    *,
+    write: bool = False,
+    fetch: Fetch = gh_api,
+    extension_pins: tuple[Path, ...] = EXTENSION_PINS,
 ) -> tuple[list[str], list[str]]:
     """Return (bumps, failures) as report lines, rewriting the files under ``write``."""
     bumps: list[str] = []
     failures: list[str] = []
-    resolved: dict[str, tuple[str, str]] = {}
-    for path in sorted(workflows.glob("*.yml")):
+    resolved: dict[str, str] = {}
+    targets = [(p, PIN, None) for p in sorted(workflows.glob("*.yml"))]
+    targets += [(p, EXTENSION_PIN, LOCK_EXTENSION) for p in extension_pins]
+    for path, pattern, fixed_action in targets:
         text = path.read_text(encoding="utf-8")
-        out_lines = []
-        changed = False
-        for line in text.splitlines(keepends=True):
-            m = PIN.search(line.rstrip("\n"))
-            if m is None:
-                out_lines.append(line)
-                continue
-            action, cur_ver, cur_sha = m["action"], m["ver"], m["sha"]
-            if action not in resolved:
-                try:
-                    tag = latest_release(action, fetch)
-                    resolved[action] = (tag, tag_commit(action, tag, fetch))
-                except (LookupError, KeyError, TypeError) as exc:
-                    failures.append(f"{path.name}: {action} - {exc}")
-                    out_lines.append(line)
-                    continue
-            tag, sha = resolved[action]
-            cur, new = _semver(cur_ver), _semver(tag)
-            # Bump-up only: a pin ahead of the newest release is a deliberate
-            # pick (a pre-release, an unreleased fix), never something to undo.
-            if cur is None or new is None or new <= cur or sha == cur_sha:
-                out_lines.append(line)
-                continue
-            bumps.append(f"- {path.name}: {action} {cur_ver} -> {tag}")
-            out_lines.append(
-                line.replace(f"{action}@{cur_sha}", f"{action}@{sha}").replace(
-                    f"{m['comment']}{cur_ver}", f"{m['comment']}{tag}"
-                )
-            )
-            changed = True
-        if changed and write:
-            path.write_text("".join(out_lines), encoding="utf-8")
+
+        def sub(m: re.Match[str], path: Path = path, fixed: str | None = fixed_action) -> str:
+            action = fixed or m["action"]
+            tag, failure = _bump(action, m["ver"], path.name, resolved, fetch)
+            if failure:
+                failures.append(failure)
+            if tag is None:
+                return m[0]
+            bumps.append(f"- {path.name}: {action} {m['ver']} -> {tag}")
+            return m[0].replace(m["ver"], tag)
+
+        new_text = pattern.sub(sub, text)
+        if write and new_text != text:
+            path.write_text(new_text, encoding="utf-8")
     return bumps, failures
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Refresh the shipped templates' action pins.")
-    parser.add_argument("--write", action="store_true", help="Rewrite the pins in place.")
+    parser = argparse.ArgumentParser(description="Refresh the shipped templates' action tags.")
+    parser.add_argument("--write", action="store_true", help="Rewrite the tags in place.")
     parser.add_argument("--workflows", type=Path, default=WORKFLOWS)
     args = parser.parse_args(argv)
 
