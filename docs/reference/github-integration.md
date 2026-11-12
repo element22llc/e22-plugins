@@ -114,7 +114,15 @@ the bump waits for a human approval like any PR.
 
 `/steer:setup protect` enables Dependabot **alerts** and **security updates** (so
 security PRs get opened) alongside secret scanning. The exception needs no other
-repo setting. protect reports a live **"Allow GitHub Actions to create and approve
+repo setting.
+
+!!! note "Secret scanning is paid on a private repo"
+    On a private or internal repo, secret scanning and push protection need
+    GitHub Secret Protection, billed per active committer, and the API enables
+    it without a cost prompt. protect reports them there as `licensed - not
+    enabled` rather than drift, and enables them only when the dev asks after
+    the cost is named. The scaffold's `ci:security` stage runs gitleaks over
+    every commit, so each repo has a secret gate on any plan. protect reports a live **"Allow GitHub Actions to create and approve
 pull requests"** as drift - the retired approve-based design asked for it, and it
 lets any workflow approve any PR - and turns it off on confirmation. A
 `GITHUB_TOKEN` merge triggers no `push` workflows, so a bot-merged bump does not
