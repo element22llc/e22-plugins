@@ -11,10 +11,11 @@ HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 # shellcheck source=ci-lib.sh
 . "${HERE}/ci-lib.sh"
 
-# Every commit, not the working tree: the git-ignored .env never fails a local run, and a
-# secret committed then deleted is still caught. --redact keeps it out of the CI log.
-steer_ci_group 'gitleaks (committed secrets, full history)'
-gitleaks git --no-banner --redact .
+# Commits, not the working tree: the git-ignored .env never fails a local run, and a secret
+# committed then deleted is still caught. HEAD only - a bare run walks every fetched branch,
+# so one unmerged branch would fail everyone's PR. --redact keeps the secret out of the log.
+steer_ci_group 'gitleaks (committed secrets, HEAD history)'
+gitleaks git --no-banner --redact --log-opts=HEAD .
 steer_ci_endgroup
 
 if ! steer_ci_has_node && ! steer_ci_has_python; then

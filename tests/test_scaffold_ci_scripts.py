@@ -184,7 +184,7 @@ def test_image_fails_when_a_build_fails(repo: Repo) -> None:
     assert repo.run("ci-image.sh", STUB_FAIL="docker").code != 0
 
 
-_GITLEAKS = "gitleaks git --no-banner --redact ."
+_GITLEAKS = "gitleaks git --no-banner --redact --log-opts=HEAD ."
 _TRIVY = "trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1"
 _SEMGREP = "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet"
 

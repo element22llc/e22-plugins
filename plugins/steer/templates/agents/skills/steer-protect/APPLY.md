@@ -55,9 +55,9 @@ When rules are drifted or absent:
      repo, propose it like the rest. On a `private` or `internal` repo, propose
      it only when the dev asks for it, and only after naming the cost: it turns
      on GitHub Secret Protection, billed per active committer, and the API shows
-     no price. A `403` or `422` on this call means the plan has no Secret
-     Protection: report it, leave the rest applied, and name the `ci:security`
-     gitleaks pass as the secret gate;
+     no price. A rejection whose message names secret scanning or Advanced
+     Security means the plan has no Secret Protection: report it, leave the
+     rest applied, and name the `ci:security` gitleaks pass as the secret gate;
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
    - **Actions approving PRs off** - only when verify diffed it. Say what it

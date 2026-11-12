@@ -110,7 +110,7 @@ Name the file and say what to carry forward.
   No output => already migrated, or no stage => no-op.
 - **Action:** read-then-propose; show the diff and apply on a yes. Section
   re-take of `scripts/ci-security.sh`: insert the scaffold's `gitleaks` group
-  (comment, `steer_ci_group`, `gitleaks git --no-banner --redact .`,
+  (comment, `steer_ci_group`, `gitleaks git --no-banner --redact --log-opts=HEAD .`,
   `steer_ci_endgroup`) directly after the `ci-lib.sh` source line, ahead of the
   stack check; carry every other line forward unchanged. Add
   `"aqua:gitleaks/gitleaks" = "latest"` to `mise.toml` `[tools]` beside the
@@ -118,7 +118,8 @@ Name the file and say what to carry forward.
   Run `mise run ci:security` and report what it finds. A finding in history
   is a compromised secret: the dev rotates it, then its fingerprint goes in
   `.gitleaksignore`. A deliberate fake in a fixture takes a trailing
-  `gitleaks:allow` comment instead. Both are the reviewer's call, never the
+  `gitleaks:allow` comment, or a `.gitleaks.toml` path allowlist in a file
+  with no comments. Both are the reviewer's call, never the
   sync's.
 
   **No history entry is earned.**

@@ -796,8 +796,8 @@ fail", the Definition of Done, and review.
 
 `ci:security` blocks the required check on **high and critical** findings:
 
-- **Secrets** - gitleaks over every commit, in every repo. It reads git history,
-  not the working tree, so a git-ignored `.env` never fails a local run, and a
+- **Secrets** - gitleaks over every commit reachable from `HEAD`, in every
+  repo. It reads git history, not the working tree, so a git-ignored `.env` never fails a local run, and a
   secret committed then deleted still fails: it is compromised, so rotate it.
   This is the secret gate on every plan; GitHub secret scanning on a private
   repo needs the paid Secret Protection add-on.
@@ -810,10 +810,12 @@ fail", the Definition of Done, and review.
   `.trivyignore.yaml` with a `statement` (why) and an `expired_at` date, so it
   comes back for review on its own; a code finding by `# nosemgrep: <rule-id>`
   with a why-comment. A deliberate fake secret (a test fixture) takes a trailing
-  `gitleaks:allow` comment on its line; a rotated secret already on the default
-  branch takes its fingerprint in `.gitleaksignore`. A fingerprint names its
-  commit, so it never survives a squash merge: use it only for history. All of
-  them land through a reviewed PR, which is the approval.
+  `gitleaks:allow` comment on its line, or - in a file with no comments, like
+  JSON - a path in a `.gitleaks.toml` `[[allowlists]]` block beside
+  `[extend] useDefault = true`. A rotated secret no longer in the tree takes its
+  fingerprint in `.gitleaksignore`; a fingerprint names its commit, so a squash
+  merge re-commits a line still in the tree under a new one. All of them land
+  through a reviewed PR, which is the approval.
 - **Not here:** container base-image packages (scan them at the registry, e.g.
   ECR scan-on-push) and IaC misconfiguration.
 

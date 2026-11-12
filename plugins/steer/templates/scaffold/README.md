@@ -172,8 +172,10 @@ a PR before merging, 1 approval, dismiss stale approvals on new commits, the `ci
 status check, and no bypassing - even for admins. A **one-person
 repo** selects the policy's `solo` profile (`profile: solo`, or
 `/steer:setup protect apply --solo`): same wall, approvals 0, because an author cannot
-approve their own PR and would otherwise be locked out of merging. In **Settings ->
-Code security**, enable Secret scanning + push protection.
+approve their own PR and would otherwise be locked out of merging. On a public
+repo, enable Secret scanning + push protection in **Settings -> Code security**;
+on a private one they are GitHub Secret Protection, billed per active committer.
+The `ci:security` stage scans committed secrets either way.
 
 Protection is also what buys agent delivery autonomy: with the wall up, Claude
 pushes branches and opens PRs on its own (`.claude/settings.json` pre-approves
