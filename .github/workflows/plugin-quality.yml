@@ -37,7 +37,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh extension install github/gh-actions-lock --pin v0.4.1
+          ver="$(sed -n 's/^STEER_ACTIONS_LOCK_VERSION=//p' plugins/steer/templates/scaffold/scripts/ci-lib.sh)"
+          gh extension install github/gh-actions-lock --pin "${ver}"
           gh actions-lock --verify
 
       - name: Install mise

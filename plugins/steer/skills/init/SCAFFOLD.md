@@ -33,7 +33,10 @@ GitHub-templates section maps the Issue Forms, workflows, PR template, and the
 full generated Copilot/VS Code surface - `copilot-instructions.md`,
 `agents/*.agent.md` (custom agents), and
 `instructions/*.instructions.md` (path-scoped standards) - into `.github/`;
-the opt-in `copilot-setup-steps.yml` is **not** auto-installed), copy
+the opt-in `copilot-setup-steps.yml` is **not** auto-installed; then run
+`sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` and commit `.github/workflows/actions.lock` with them, or leave the
+workflows out when it fails - MANIFEST -> "Lock every workflow you install or
+change"), copy
 `${CLAUDE_PLUGIN_ROOT}/templates/agents/skills/` to `.agents/skills/`
 **verbatim** (the cross-tool skill surface - the real skill bodies Copilot,
 Cursor, Gemini CLI and Codex read natively as `/steer-<skill>`; steer-managed,

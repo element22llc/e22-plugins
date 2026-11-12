@@ -172,8 +172,9 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   plugins/steer`, docs-sync, actionlint, zizmor, shellcheck/shfmt), while
   `check` adds `check_standards.py`, the copilot sync checks, the changelog
   release validator, the marketplace-manifest validation, and the zizmor tier over the
-  shipped workflow templates - a **hard** gate: those templates are SHA-pinned
-  and least-privilege, and a regression fails `check`. **Keep the superset property:** when you add
+  shipped workflow templates - a **hard** gate: those templates use exact
+  `vX.Y.Z` tags (each consumer locks the commits in its `actions.lock`) and are
+  least-privilege, and a regression fails `check`. **Keep the superset property:** when you add
   a pre-commit hook, wire its `mise` task into `check`'s `depends`, and keep the
   `shell` task's globs covering every `*.sh` that pre-commit's `types: [shell]`
   matches.

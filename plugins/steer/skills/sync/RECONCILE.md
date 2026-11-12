@@ -85,6 +85,11 @@ is visible rather than silent.
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.
+   When a change lands under `.github/workflows/`, run
+   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` and commit
+   `.github/workflows/actions.lock` with it; when the helper fails, propose no
+   workflow change and say why (MANIFEST -> "Lock every workflow you install or
+   change").
    For the **non-Markdown** scaffold files the heading/checklist convention can't
    parse - the line-based `.gitignore`, `.gitattributes` and `.worktreeinclude`,
    and the JSON configs (`.claude/settings.json`,

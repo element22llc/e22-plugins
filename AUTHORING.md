@@ -35,7 +35,7 @@ regardless - this matrix is for tight iteration on a single failure.
 | any other `*.sh` - `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck and shfmt are hard gates everywhere) |
 | `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
 | `.github/workflows/**` | `actions` + `actions-security`; CI's `gh actions-lock --verify` | `actionlint && uv run zizmor --no-online-audits .github/workflows/`. A changed or added `uses:` is an exact `vX.Y.Z` tag: run `gh actions-lock` (extension `github/gh-actions-lock`) and commit `.github/workflows/actions.lock` with it - never hand-edit the lock. |
-| `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** - reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
+| `plugins/steer/templates/github/workflows/**` | `actions` + `actions-security` (ref-pin policy, `.github/zizmor-templates.yml`) + `plugin-check` (exact `vX.Y.Z` tags) | `mise run actions-security && uv run python scripts/check_standards.py` |
 | `.changes/` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
 | `scripts/release_cut.py`, `scripts/release_preflight.py`, `scripts/reflow_release_notes.py` (the release path) | `lint` + `typecheck` + `test` | `uv run pytest tests/test_release_cut.py tests/test_release_preflight.py tests/test_reflow_release_notes.py`; then `uv run python scripts/release_cut.py cut X.Y.Z --dry-run` and `... release_preflight.py --report --offline --no-fetch` against the real tree |
 | `.claude/skills/{release,quick-release,audit-loop}/**`, `.claude/audit/**`, `.claude/workflows/**` | `plugin-check` (`claude plugin validate .claude/skills --strict`); the workflow has no gate | `claude plugin validate .claude/skills --strict`; for the workflow, `node -e` a syntax parse or run `/pre-release-audit` on a small delta |
@@ -518,14 +518,19 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - Keep `plugins/steer/templates/scaffold/MANIFEST.md` in sync - it maps each
   stored file (including the `../github/` and `../spec/` topic-dir rows) to its
   install path. Update it in the same change that adds a template file.
-- **Action pins in the shipped workflows refresh on a schedule, not by hand.**
-  Dependabot cannot see `templates/github/workflows/` (it scans only
-  `/.github/workflows`), so `.github/workflows/template-pin-refresh.yml` runs
+- **Action tags in the shipped workflows refresh on a schedule, not by hand.**
+  The templates reference actions by exact `vX.Y.Z` tag (`check_standards.py`
+  rejects a SHA or a partial tag); each consumer locks the commits in its own
+  `.github/workflows/actions.lock`. Dependabot cannot see
+  `templates/github/workflows/` (it scans only `/.github/workflows`), so
+  `.github/workflows/template-pin-refresh.yml` runs
   `scripts/refresh_template_pins.py --write` weekly and opens one human-reviewed
   PR - bump-up only, never auto-merged, the same shape as
-  `version-policy-refresh.yml`. Nothing gates pins at build time: a stale pin is
-  a PR waiting to be opened, not a red build. Run the script yourself
-  (no `--write`) to see what is behind.
+  `version-policy-refresh.yml`. It also bumps the pinned `gh-actions-lock`
+  version (`STEER_ACTIONS_LOCK_VERSION` in `ci-lib.sh` and
+  `scripts/lock-workflows.sh`, kept equal by a test). A stale tag is a PR waiting
+  to be opened, not a red build. Run the script yourself (no `--write`) to see
+  what is behind.
 - Version-governance files exist in two byte-identical copies (e.g.
   `scaffold/scripts/scan-version-pins.sh` <-> `scripts/scan-version-pins.sh`;
   `scaffold/scripts/version-policy.sh` <-> `hooks/lib/version-policy.sh`;

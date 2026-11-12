@@ -3,6 +3,7 @@
 # profile), where they wait for a human approval; majors stay with a human and are ignored for
 # policy-governed ecosystems. `cooldown` holds a version update until the release is 7 days old, so a
 # compromised publish is usually caught before auto-merge can land it; security updates are not delayed.
+# A github-actions bump also regenerates its entry in .github/workflows/actions.lock, in the same PR.
 # Rationale: README.md#branch-protection.
 version: 2
 

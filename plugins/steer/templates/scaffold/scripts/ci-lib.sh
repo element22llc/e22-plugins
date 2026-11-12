@@ -42,6 +42,31 @@ steer_ci_endgroup() {
 	printf '::endgroup::\n'
 }
 
+# Pinned gh-actions-lock for the online check; scripts/refresh_template_pins.py bumps it.
+STEER_ACTIONS_LOCK_VERSION=v0.4.1
+
+# Every action a workflow uses must be locked in .github/workflows/actions.lock, or the
+# runner refuses the run at startup with no job log. CI sets STEER_CI_ACTIONS_LOCK=verify
+# and checks provenance online; locally an installed extension checks coverage offline.
+steer_ci_actions_lock() {
+	set -- .github/workflows/*.yml .github/workflows/*.yaml
+	[ -e "$1" ] || [ -e "$2" ] || return 0
+	if [ "${STEER_CI_ACTIONS_LOCK:-}" = verify ]; then
+		if ! gh actions-lock --help >/dev/null 2>&1; then
+			gh extension install github/gh-actions-lock --pin "${STEER_ACTIONS_LOCK_VERSION}" || return 1
+		fi
+		set -- --verify
+	elif gh actions-lock --help >/dev/null 2>&1; then
+		set -- --verify-local
+	else
+		steer_ci_notice "gh-actions-lock is not installed, so CI alone checks the actions lockfile. Install it: gh extension install github/gh-actions-lock"
+		return 0
+	fi
+	gh actions-lock "$@" && return 0
+	steer_ci_error "The actions lockfile is missing or stale. Run 'gh actions-lock' and commit .github/workflows/actions.lock with the workflow change; never hand-edit it."
+	return 1
+}
+
 # Resolve the git ref a changed-files gate should diff against, echoing it on
 # stdout. Echoes nothing and returns 1 when no base is resolvable - every caller
 # must then FAIL OPEN (skip the gate), never fail the build: a gate that cannot

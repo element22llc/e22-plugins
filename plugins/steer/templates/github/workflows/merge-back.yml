@@ -35,7 +35,7 @@ jobs:
       contents: write # pushes the merge-back/* branch
       pull-requests: write # comments the link on the merged PR
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
