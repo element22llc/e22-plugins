@@ -94,6 +94,31 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `.claude/settings.json` retires the over-wide `Bash(git remote:*)` allow
+
+- **What & why:** scaffolds before v3.10.0 allowed `Bash(git remote:*)`.
+  v3.10.0 split it into the read-only `Bash(git remote -v)`,
+  `Bash(git remote show:*)` and `Bash(git remote get-url:*)` allows plus denies
+  for `set-url`, `add`, `remove` and `rename`. The settings reconcile only
+  unions permission lists, so the wide allow survived every sync, and it still
+  lets `git remote prune`, `set-head`, `set-branches` and `update` run without
+  a prompt.
+- **Precondition:** the installed file still allows the wide pattern -
+
+  ```sh
+  test -f .claude/settings.json && \
+    python3 -c "import json,sys; p=json.load(open('.claude/settings.json')).get('permissions',{}).get('allow',[]); sys.exit(0 if 'Bash(git remote:*)' in p else 1)" && echo pending
+  ```
+
+  No output => already migrated, or no file => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes. Remove
+  `"Bash(git remote:*)"` from `permissions.allow` and add each of the three
+  read-only allows it lacks. Leave every other entry. If the repo relies on an
+  unprompted mutating `git remote` form (an ADR, or a script an agent runs),
+  surface the conflict instead of applying.
+
+  **No history entry is earned.**
+
 ### [Unreleased] - `.claude/settings.json` retires the wide `Bash(git add*.env*)` deny
 
 - **What & why:** scaffolds before v3.8.0 denied `Bash(git add*.env*)`. v3.8.0

@@ -38,10 +38,11 @@ def _fires(cmd: str, repo: Path) -> bool:
     return bool(out.stdout.strip())
 
 
-def _settings(repo: Path, deny: list[str]) -> None:
+def _settings(repo: Path, deny: list[str], allow: list[str] | None = None) -> None:
     (repo / ".claude").mkdir()
+    perms = {"deny": deny, "allow": allow or []}
     (repo / ".claude/settings.json").write_text(
-        json.dumps({"permissions": {"deny": deny}}, indent=2), encoding="utf-8"
+        json.dumps({"permissions": perms}, indent=2), encoding="utf-8"
     )
 
 
@@ -70,3 +71,30 @@ def test_wide_env_deny_precondition_is_silent_on_the_current_template(tmp_path):
     (tmp_path / ".claude").mkdir()
     (tmp_path / ".claude/settings.json").write_bytes(TEMPLATE_SETTINGS.read_bytes())
     assert not _fires(_precondition(WIDE_ENV_DENY), tmp_path)
+
+
+WIDE_REMOTE_ALLOW = "retires the over-wide `Bash(git remote:*)` allow"
+
+
+@pytest.mark.parametrize(
+    ("allow", "deny", "expected"),
+    [
+        (["Bash(git remote:*)"], [], True),
+        (["Bash(git remote -v)", "Bash(git remote:*)"], [], True),
+        (["Bash(git remote -v)", "Bash(git remote show:*)"], [], False),
+        ([], ["Bash(git remote:*)"], False),
+    ],
+)
+def test_wide_remote_allow_precondition(tmp_path, allow, deny, expected):
+    _settings(tmp_path, deny, allow)
+    assert _fires(_precondition(WIDE_REMOTE_ALLOW), tmp_path) is expected
+
+
+def test_wide_remote_allow_precondition_without_settings(tmp_path):
+    assert not _fires(_precondition(WIDE_REMOTE_ALLOW), tmp_path)
+
+
+def test_wide_remote_allow_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude/settings.json").write_bytes(TEMPLATE_SETTINGS.read_bytes())
+    assert not _fires(_precondition(WIDE_REMOTE_ALLOW), tmp_path)
