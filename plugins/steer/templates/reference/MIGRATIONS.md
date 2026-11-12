@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `ci:security` scans committed secrets with gitleaks
+### v7.23.0 - `ci:security` scans committed secrets with gitleaks
 
 - **What & why:** the stage gained a gitleaks pass over every commit, run before
   the Node/Python check so every repo gets it. GitHub secret scanning on a
@@ -124,7 +124,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
-### [Unreleased] - shipped workflows use exact tags, locked in `actions.lock`
+### v7.23.0 - shipped workflows use exact tags, locked in `actions.lock`
 
 - **What & why:** GitHub Actions workflow lockfiles (GA 2026-10-28) record the
   commit every `uses:` runs, transitive dependencies included, in
@@ -169,7 +169,7 @@ Name the file and say what to carry forward.
      SHAs before merge - a settings change, never made here.
   5. No history entry - CI scaffolding `/steer:sync` carries forward.
 
-### [Unreleased] - `.claude/settings.json` retires the over-wide `Bash(git remote:*)` allow
+### v7.23.0 - `.claude/settings.json` retires the over-wide `Bash(git remote:*)` allow
 
 - **What & why:** scaffolds before v3.10.0 allowed `Bash(git remote:*)`.
   v3.10.0 split it into the read-only `Bash(git remote -v)`,
@@ -194,7 +194,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
-### [Unreleased] - `.claude/settings.json` retires the wide `Bash(git add*.env*)` deny
+### v7.23.0 - `.claude/settings.json` retires the wide `Bash(git add*.env*)` deny
 
 - **What & why:** scaffolds before v3.8.0 denied `Bash(git add*.env*)`. v3.8.0
   narrowed it to `Bash(git add*.env)`, because the wide glob also

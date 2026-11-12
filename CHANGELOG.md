@@ -3,6 +3,49 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.23.0
+
+- **Changed: shipped workflows reference actions by exact tag, locked in
+  `actions.lock`.** GitHub Actions workflow lockfiles (GA 2026-10-28) record the
+  commit every `uses:` runs, transitive dependencies included, and the runner
+  refuses a locked workflow whose action has no entry. The workflow templates
+  drop `@<sha> # vX.Y.Z` for readable `@vX.Y.Z` tags. `/steer:setup` init, adopt
+  and sync and `/steer:loop` run the new `scripts/lock-workflows.sh` and commit
+  `.github/workflows/actions.lock` with the workflows, or leave the workflows
+  out when it cannot run (no `gh`, not signed in). The `ci:hygiene` stage
+  checks the lockfile: `gh actions-lock --verify` in CI, an offline coverage
+  check locally when the extension is installed. The weekly template refresh
+  bumps tags and the pinned `gh-actions-lock` version; Dependabot regenerates a
+  consumer's lock entries with each bump. A migration converts existing repos
+  and warns when an allowed-actions list holds tag entries, which stop matching
+  once a workflow is locked. Checked on a private Team-plan repo.
+- **Added: `ci:security` fails on a committed secret.** The stage runs
+  gitleaks over every commit reachable from `HEAD` before its Node/Python check, so every repo
+  that carries it gets a secret gate, infra included. It reads git history,
+  not the working tree: a git-ignored `.env` never fails a local run, and a
+  secret committed then deleted still fails. Findings are redacted from the
+  log. A deliberate fake secret takes a trailing `gitleaks:allow` comment or
+  a `.gitleaks.toml` path allowlist; a rotated secret no longer in the tree
+  takes its fingerprint in `.gitleaksignore`. The scaffold `mise.toml` pins `aqua:gitleaks/gitleaks`,
+  and a migration adds the pass to repos carrying the older script. **Expect
+  the first PR after the sync to fail** if history holds a secret: rotate it,
+  then record the fingerprint.
+- **Changed: `/steer:setup protect` no longer turns on paid secret scanning
+  unasked.** On a private or internal repo, secret scanning and push
+  protection need GitHub Secret Protection, billed per active committer, and
+  the API enables it with no cost prompt. Verify now reports them as
+  `licensed - not enabled` instead of drift there, and apply sends them in
+  their own PATCH, proposed only when the dev asks after the cost is named,
+  so a plan that rejects them no longer blocks the other repo settings.
+- **Fixed: `/steer:setup sync` retires two permission patterns the scaffold
+  superseded.** The settings reconcile only adds entries, so repos scaffolded
+  before the narrowing kept them forever. The old `Bash(git add*.env*)` deny
+  refused every `git add` naming `.env.example`; a migration replaces it with
+  the narrow `Bash(git add*.env)`. The old `Bash(git remote:*)` allow let
+  `git remote prune`, `set-head`, `set-branches` and `update` run unprompted;
+  a migration swaps it for the read-only `-v`, `show` and `get-url` allows.
+  Both show a diff before they apply.
+
 ## 7.22.0
 
 - **Changed: a release ships from a `release/vX.Y.Z` snapshot, and QA never
