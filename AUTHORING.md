@@ -34,7 +34,7 @@ regardless - this matrix is for tight iteration on a single failure.
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
 | any other `*.sh` - `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck and shfmt are hard gates everywhere) |
 | `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
-| `.github/workflows/**` | `actions` + `actions-security` | `actionlint && uv run zizmor --no-online-audits .github/workflows/` |
+| `.github/workflows/**` | `actions` + `actions-security`; CI's `gh actions-lock --verify` | `actionlint && uv run zizmor --no-online-audits .github/workflows/`. A changed or added `uses:` is an exact `vX.Y.Z` tag: run `gh actions-lock` (extension `github/gh-actions-lock`) and commit `.github/workflows/actions.lock` with it - never hand-edit the lock. |
 | `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** - reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
 | `.changes/` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
 | `scripts/release_cut.py`, `scripts/release_preflight.py`, `scripts/reflow_release_notes.py` (the release path) | `lint` + `typecheck` + `test` | `uv run pytest tests/test_release_cut.py tests/test_release_preflight.py tests/test_reflow_release_notes.py`; then `uv run python scripts/release_cut.py cut X.Y.Z --dry-run` and `... release_preflight.py --report --offline --no-fetch` against the real tree |
