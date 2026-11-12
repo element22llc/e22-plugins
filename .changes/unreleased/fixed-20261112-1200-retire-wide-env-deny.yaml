@@ -1,0 +1,13 @@
+kind: Fixed
+time: 2026-11-12T12:00:00.000000000-05:00
+custom:
+  Slug: retire-wide-env-deny
+body: |-
+  - **Fixed: `/steer:setup sync` retires two permission patterns the scaffold
+    superseded.** The settings reconcile only adds entries, so repos scaffolded
+    before the narrowing kept them forever. The old `Bash(git add*.env*)` deny
+    refused every `git add` naming `.env.example`; a migration replaces it with
+    the narrow `Bash(git add*.env)`. The old `Bash(git remote:*)` allow let
+    `git remote prune`, `set-head`, `set-branches` and `update` run unprompted;
+    a migration swaps it for the read-only `-v`, `show` and `get-url` allows.
+    Both show a diff before they apply.
