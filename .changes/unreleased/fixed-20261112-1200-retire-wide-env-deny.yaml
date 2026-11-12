@@ -1,0 +1,10 @@
+kind: Fixed
+time: 2026-11-12T12:00:00.000000000-05:00
+custom:
+  Slug: retire-wide-env-deny
+body: |-
+  - **Fixed: `/steer:setup sync` retires the old `Bash(git add*.env*)` deny.**
+    Repos scaffolded before the deny was narrowed to `Bash(git add*.env)` kept
+    the wide glob forever, because the settings reconcile only adds entries,
+    and it refused every `git add` naming `.env.example`. A new migration
+    replaces it with the narrow deny, shown as a diff before it applies.

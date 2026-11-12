@@ -94,6 +94,32 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `.claude/settings.json` retires the wide `Bash(git add*.env*)` deny
+
+- **What & why:** scaffolds before v3.8.0 denied `Bash(git add*.env*)`. v3.8.0
+  narrowed it to `Bash(git add*.env)`, because the wide glob also
+  matches the committed `.env.example`; `.env.local` and `.env.*.local` stay
+  covered by the scaffold `.gitignore` and the `git add -f` / `--force` denies.
+  The settings reconcile only unions permission lists, so the wide deny
+  survived every sync, and `deny` outranks every `allow`: any `git add` that
+  names `.env.example` is refused, which blocks the same-change `.env.example`
+  update a new variable requires.
+- **Precondition:** the installed file still carries the wide deny -
+
+  ```sh
+  grep -nF '"Bash(git add*.env*)"' .claude/settings.json 2>/dev/null
+  ```
+
+  No output => already migrated, or no file => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes. In
+  `permissions.deny`, replace `"Bash(git add*.env*)"` in place with
+  `"Bash(git add*.env)"`, or drop it when the narrow entry is already there, so
+  the file is never left without a `.env` deny. Leave every other entry. If
+  the repo kept the wide deny on purpose (an ADR or a comment in the PR that
+  added it), surface the conflict instead of applying.
+
+  **No history entry is earned.**
+
 ### v7.22.0 - releases ship from a `release/*` snapshot, merge prod back into `main`, and need a PO and a dev
 
 - **What & why:** `/steer:work promote` now opens the Release PR from a
