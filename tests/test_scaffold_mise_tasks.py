@@ -129,7 +129,9 @@ def test_root_config_installs_the_security_tools_ci_security_runs(path: str) -> 
     config = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8"))
     if "ci:security" not in config.get("tasks", {}):
         pytest.skip(f"{path} runs no ci:security")
-    missing = {"aqua:aquasecurity/trivy", "pipx:semgrep"} - set(config.get("tools", {}))
+    missing = {"aqua:gitleaks/gitleaks", "aqua:aquasecurity/trivy", "pipx:semgrep"} - set(
+        config.get("tools", {})
+    )
     assert not missing, f"{path} runs ci:security but does not install {sorted(missing)}"
 
 

@@ -94,6 +94,36 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `ci:security` scans committed secrets with gitleaks
+
+- **What & why:** the stage gained a gitleaks pass over every commit, run before
+  the Node/Python check so every repo gets it. GitHub secret scanning on a
+  private repo needs the paid Secret Protection add-on, so without this a
+  private repo had no secret gate at all. The `security-gate` capability only
+  checks wiring, so a repo already carrying the older script never picks it up.
+- **Precondition:** the script exists without the secret pass -
+
+  ```sh
+  test -f scripts/ci-security.sh && ! grep -q gitleaks scripts/ci-security.sh && echo pending
+  ```
+
+  No output => already migrated, or no stage => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes. Section
+  re-take of `scripts/ci-security.sh`: insert the scaffold's `gitleaks` group
+  (comment, `steer_ci_group`, `gitleaks git --no-banner --redact --log-opts=HEAD .`,
+  `steer_ci_endgroup`) directly after the `ci-lib.sh` source line, ahead of the
+  stack check; carry every other line forward unchanged. Add
+  `"aqua:gitleaks/gitleaks" = "latest"` to `mise.toml` `[tools]` beside the
+  Trivy entry, then run `mise install` and commit the refreshed `mise.lock`.
+  Run `mise run ci:security` and report what it finds. A finding in history
+  is a compromised secret: the dev rotates it, then its fingerprint goes in
+  `.gitleaksignore`. A deliberate fake in a fixture takes a trailing
+  `gitleaks:allow` comment, or a `.gitleaks.toml` path allowlist in a file
+  with no comments. Both are the reviewer's call, never the
+  sync's.
+
+  **No history entry is earned.**
+
 ### [Unreleased] - shipped workflows use exact tags, locked in `actions.lock`
 
 - **What & why:** GitHub Actions workflow lockfiles (GA 2026-10-28) record the

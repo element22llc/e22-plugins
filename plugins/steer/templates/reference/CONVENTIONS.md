@@ -794,17 +794,28 @@ fail", the Definition of Done, and review.
 
 #### Security scanning
 
-`ci:security` blocks the required check on **high and critical** findings, in
-every repo with a Node or Python stack:
+`ci:security` blocks the required check on **high and critical** findings:
 
+- **Secrets** - gitleaks over every commit reachable from `HEAD`, in every
+  repo. It reads git history, not the working tree, so a git-ignored `.env` never fails a local run, and a
+  secret committed then deleted still fails: it is compromised, so rotate it.
+  This is the secret gate on every plan; GitHub secret scanning on a private
+  repo needs the paid Secret Protection add-on.
 - **Dependencies** - Trivy reads `pnpm-lock.yaml` and `uv.lock` (production
   dependencies). A CVE with no fixed version yet does not block: it stays a
   Dependabot alert until a fix exists.
 - **Code** - Semgrep's `p/default` rules at `ERROR` (high) severity.
+- Dependencies and code are scanned only with a Node or Python stack.
 - **Waivers are the exceptions register.** A dependency finding is waived in
   `.trivyignore.yaml` with a `statement` (why) and an `expired_at` date, so it
   comes back for review on its own; a code finding by `# nosemgrep: <rule-id>`
-  with a why-comment. Both land through a reviewed PR, which is the approval.
+  with a why-comment. A deliberate fake secret (a test fixture) takes a trailing
+  `gitleaks:allow` comment on its line, or - in a file with no comments, like
+  JSON - a path in a `.gitleaks.toml` `[[allowlists]]` block beside
+  `[extend] useDefault = true`. A rotated secret no longer in the tree takes its
+  fingerprint in `.gitleaksignore`; a fingerprint names its commit, so a squash
+  merge re-commits a line still in the tree under a new one. All of them land
+  through a reviewed PR, which is the approval.
 - **Not here:** container base-image packages (scan them at the registry, e.g.
   ECR scan-on-push) and IaC misconfiguration.
 

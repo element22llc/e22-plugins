@@ -74,6 +74,7 @@ release_branches:
     - ci
 
 # Repo-level settings, applied via separate settings APIs by /steer:setup protect.
+# Free on a public repo only; on a private one protect asks first (billed per committer).
 secret_scanning: true
 secret_scanning_push_protection: true
 

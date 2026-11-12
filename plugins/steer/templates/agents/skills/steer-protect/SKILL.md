@@ -195,6 +195,11 @@ Plus the repo-level settings the policy declares, read from
   `security_and_analysis` block);
 - `delete_branch_on_merge` and `allow_merge_commit`.
 
+**Secret scanning is free only on a public repo.** Elsewhere it is paid Secret
+Protection (`APPLY.md` step 3): report `disabled` as **`licensed - not
+enabled`**, not drift; `ci:security`'s gitleaks pass is the secret gate. A
+`null` `security_and_analysis` (no admin) is `unreadable`.
+
 Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
@@ -202,10 +207,7 @@ disabled). These back the documented Dependabot auto-merge exception (see Notes)
 For the **schema 7 rulesets**, read `gh api repos/${OWNER}/${REPO}/rulesets`, find
 each one by its `steer:` name, then `gh api repos/${OWNER}/${REPO}/rulesets/<id>`
 for its rules, and diff them field by field like the classic protection. A
-missing ruleset is `absent`; an edited one is `drifted`. The required-reviewers
-rule is new on GitHub (GA 2026-02): after the first apply on a repo, say so and
-ask the dev to confirm on one Release PR that a PO **and** a dev approval are
-both required before it can merge.
+missing ruleset is `absent`; an edited one is `drifted`.
 
 Read `can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
 `true` is the grant steer's retired approve-based auto-merge asked for: it lets
@@ -281,9 +283,6 @@ confirmation.
   rulesets, and GitHub applies the most restrictive of both layers. If the repo
   already governs a branch through a ruleset of its own that meets the policy,
   report it as compliant rather than forcing a second one.
-- **`merge-back.yml` never needs** "Allow GitHub Actions to create and approve pull
-  requests": with `GITHUB_TOKEN` it pushes a branch and comments a link, and a
-  human opens the PR. Keep reporting that setting as drift.
 - This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
   changes repo **settings** via `gh api`; `apply --solo` / `--team` sets
   `profile:` in the repo's own `policy/branch-protection.yml` (`APPLY.md` step

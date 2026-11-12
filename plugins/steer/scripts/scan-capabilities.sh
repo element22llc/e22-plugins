@@ -475,7 +475,8 @@ else
 fi
 
 # --- security-gate - HIGH/CRITICAL findings block the required check ---
-# n/a without a Node or Python stack: ci-security.sh has nothing to scan there.
+# n/a without a Node or Python stack, so sync never proposes it to a workspace; a stack-less
+# repo that carries it (the infra profile) still gets the secret scan.
 SG="scripts/ci-security.sh"
 sg_files=".github/workflows/ci.yml,mise.toml,$SG"
 if [ "$stack" = none ]; then

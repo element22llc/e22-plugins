@@ -28,6 +28,7 @@ STUBBED = (
     "shellcheck",
     "trivy",
     "semgrep",
+    "gitleaks",
 )
 _STUB = """#!/bin/sh
 name="$(basename "$0")"
@@ -183,33 +184,41 @@ def test_image_fails_when_a_build_fails(repo: Repo) -> None:
     assert repo.run("ci-image.sh", STUB_FAIL="docker").code != 0
 
 
+_GITLEAKS = "gitleaks git --no-banner --redact --log-opts=HEAD ."
 _TRIVY = "trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1"
 _SEMGREP = "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet"
 
 
-def test_security_skips_without_a_stack(repo: Repo) -> None:
+def test_security_scans_secrets_even_without_a_stack(repo: Repo) -> None:
     r = repo.run("ci-security.sh")
-    assert (r.code, r.calls) == (0, [])
+    assert (r.code, r.calls) == (0, [_GITLEAKS])
     assert "::notice::No Node or Python stack detected" in r.out
 
 
-def test_security_scans_dependencies_then_code(repo: Repo) -> None:
+def test_security_scans_secrets_then_dependencies_then_code(repo: Repo) -> None:
     repo.write("package.json", "{}")
-    assert repo.run("ci-security.sh").calls == [f"{_TRIVY} .", _SEMGREP]
+    assert repo.run("ci-security.sh").calls == [_GITLEAKS, f"{_TRIVY} .", _SEMGREP]
+
+
+def test_security_fails_on_a_committed_secret(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    r = repo.run("ci-security.sh", STUB_FAIL="gitleaks")
+    assert r.code != 0
+    assert r.calls == [_GITLEAKS]
 
 
 def test_security_honours_the_expiring_ignore_file(repo: Repo) -> None:
     repo.write("pyproject.toml")
     repo.write(".trivyignore.yaml", "vulnerabilities: []\n")
     calls = repo.run("ci-security.sh").calls
-    assert calls[0] == f"{_TRIVY} --ignorefile .trivyignore.yaml ."
+    assert calls[1] == f"{_TRIVY} --ignorefile .trivyignore.yaml ."
 
 
 def test_security_fails_on_a_dependency_finding(repo: Repo) -> None:
     repo.write("package.json", "{}")
     r = repo.run("ci-security.sh", STUB_FAIL="trivy")
     assert r.code != 0
-    assert r.calls == [f"{_TRIVY} ."]
+    assert r.calls == [_GITLEAKS, f"{_TRIVY} ."]
 
 
 def test_security_fails_on_a_code_finding(repo: Repo) -> None:

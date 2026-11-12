@@ -47,10 +47,17 @@ When rules are drifted or absent:
 3. Apply the repo-level settings as **separate** calls - once for the repo, not
    per branch - surfaced and confirmed
    the same way as the protection PUT:
-   - secret scanning + push protection **and** Dependabot security updates in one
-     `gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
-     block, plus `delete_branch_on_merge` and `allow_merge_commit` at the top
-     level of the same body;
+   - Dependabot security updates in one `gh api -X PATCH "repos/${OWNER}/${REPO}"`
+     with the `security_and_analysis` block, plus `delete_branch_on_merge` and
+     `allow_merge_commit` at the top level of the same body;
+   - secret scanning + push protection in a PATCH **of their own**, so a plan
+     that rejects them cannot take the settings above down with it. On a public
+     repo, propose it like the rest. On a `private` or `internal` repo, propose
+     it only when the dev asks for it, and only after naming the cost: it turns
+     on GitHub Secret Protection, billed per active committer, and the API shows
+     no price. A rejection whose message names secret scanning or Advanced
+     Security means the plan has no Secret Protection: report it, leave the
+     rest applied, and name the `ci:security` gitleaks pass as the secret gate;
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
    - **Actions approving PRs off** - only when verify diffed it. Say what it
@@ -78,7 +85,10 @@ When rules are drifted or absent:
      keep the classic review count as the only approval gate - and say that PRs
      into `prod` must then be merged with **Create a merge commit** by hand, so
      prod's history stays the release's own and each merge-back merges clean.
-4. After applying, re-run the verify diff and report the new state.
+4. After applying, re-run the verify diff and report the new state. The
+   required-reviewers rule is new on GitHub (GA 2026-02): after the first apply
+   on a repo, say so and ask the dev to confirm on one Release PR that a PO
+   **and** a dev approval are both required before it can merge.
 5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
    `SKILL.md` describes): if the `## Delivery mode` section also carries a
    graduation waiver - `<!-- steer:graduation=waived -->` - **delete that line**

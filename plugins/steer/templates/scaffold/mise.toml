@@ -26,7 +26,8 @@ changie = "1.26.0"
 biome = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
-# ci:security - any Node or Python product.
+# ci:security - gitleaks for every repo; Trivy and Semgrep for any Node or Python product.
+"aqua:gitleaks/gitleaks" = "latest"
 "aqua:aquasecurity/trivy" = "latest"
 "pipx:semgrep" = "latest"
 # ruff = "latest"   # Python products
@@ -111,7 +112,7 @@ description = "Build-only container image check (no push, no credentials)"
 run = "sh scripts/ci-image.sh"
 
 [tasks."ci:security"]
-description = "Security gate: HIGH/CRITICAL dependency CVEs (Trivy) and code findings (Semgrep)"
+description = "Security gate: committed secrets (gitleaks), HIGH/CRITICAL dependency CVEs (Trivy), code findings (Semgrep)"
 run = "sh scripts/ci-security.sh"
 
 [tasks."ci:changelog"]
