@@ -24,15 +24,24 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # full history so the changelog behaviour gate can diff the base
           # No git credential is needed after checkout (nothing here pushes), so
           # don't leave one in .git/config for later steps to inherit (zizmor artipacked).
           persist-credentials: false
 
+      - name: Verify the actions lockfile
+        # Fails when .github/workflows/actions.lock is missing an entry, is stale,
+        # or a locked commit no longer verifies upstream.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install github/gh-actions-lock --pin v0.4.1
+          gh actions-lock --verify
+
       - name: Install mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        uses: jdx/mise-action@v4.3.0
 
       - name: Sync Python environment
         run: uv sync --locked
@@ -72,7 +81,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           # No git credential is needed after checkout (nothing here pushes), so
           # don't leave one in .git/config for later steps to inherit (zizmor artipacked).

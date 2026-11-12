@@ -36,7 +36,7 @@ jobs:
       # $branch`, below), so it is the one place `persist-credentials: false`
       # would break the workflow rather than harden it. Scope is bounded by the
       # `permissions:` block above and the branch name is generated, not input.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] - v7.0.1
+      - uses: actions/checkout@v7.0.1 # zizmor: ignore[artipacked]
 
       - name: Raise floors behind upstream EOL
         id: refresh

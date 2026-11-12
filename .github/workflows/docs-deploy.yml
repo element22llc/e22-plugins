@@ -63,14 +63,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           # No git credential is needed after checkout (nothing here pushes), so
           # don't leave one in .git/config for later steps to inherit (zizmor artipacked).
           persist-credentials: false
 
       - name: Install mise
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        uses: jdx/mise-action@v4.3.0
 
       - name: Build docs (strict)
         # Reuse the single-source-of-truth task: uv run --group docs
@@ -107,7 +107,7 @@ jobs:
           mise exec -- pnpm exec slidev build --base /presentation/sdlc/ --out ../../site/presentation/sdlc
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: site
 
@@ -127,4 +127,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        uses: actions/deploy-pages@v5.0.1
