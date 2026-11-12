@@ -480,23 +480,26 @@ and **Repair**.
 
 ### security-gate - HIGH/CRITICAL findings block the required check
 - **Files:** `scripts/ci-security.sh`, the `ci:security` task in `mise.toml`
-  (inside the `ci` task's `depends`), the Trivy and Semgrep `[tools]` entries,
+  (inside the `ci` task's `depends`), the gitleaks, Trivy and Semgrep `[tools]` entries,
   and its step in `.github/workflows/ci.yml`
 - **Conditional:** a Node or Python stack (`stack` is not `none`); without one
-  there are no dependencies or code to scan, so it is `n/a`.
+  it is `n/a`, so sync never proposes it to a workspace. A stack-less repo that
+  carries the stage (the infra profile) still runs its secret scan.
 - **Wired-when:** `ci.yml` runs `mise run ci:security`, `mise.toml` defines
   `ci:security`, and `scripts/ci-security.sh` is present.
-- **Repair:** copy the script from the scaffold, add the two `[tools]` entries,
+- **Repair:** copy the script from the scaffold, add the three `[tools]` entries,
   the `ci:security` task and its `ci` depends entry to `mise.toml`, and splice
   the `Security scan` step into `ci.yml` after the image build - additively,
   never over a product's own steps. Then run `mise run ci:security` and say in
   the PR what it finds: each finding is fixed, or waived in `.trivyignore.yaml`
-  (with `statement` and `expired_at`) or by a `# nosemgrep: <rule>` with its
-  why-comment - a human's call at review, never a sync's.
+  (with `statement` and `expired_at`), by a `# nosemgrep: <rule>` with its
+  why-comment, or - for a secret - rotated and listed in `.gitleaksignore` - a
+  human's call at review, never a sync's.
 - **Verbatim:** no - a product may adapt the stage.
-- **Why it matters:** Dependabot alerts and secret scanning report, but block
-  nothing. Without this stage a PR can merge a high-severity CVE or an
-  injection-shaped code path with every check green.
+- **Why it matters:** Dependabot alerts report but block nothing, and GitHub
+  secret scanning on a private repo needs a paid add-on. Without this stage a PR
+  can merge a committed secret, a high-severity CVE or an injection-shaped code
+  path with every check green.
 
 ### release-publish - every release is a tag and a GitHub Release
 - **Files:** `.github/workflows/release.yml`

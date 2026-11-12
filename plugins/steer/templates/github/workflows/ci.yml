@@ -66,7 +66,6 @@ jobs:
       # validates on a laptop: `mise run check` (fast) / `mise run ci` (everything here).
       # The logic lives in scripts/ci-*.sh - shellcheck-gated, and never duplicated between
       # this file and the local gate. Rationale: mise.toml -> "Verification tasks".
-      # Secret scanning is GitHub-native (Settings -> Code security), not a CI step.
 
       - name: Hygiene (actionlint, actions lockfile, shellcheck, version-pin policy)
         env:
@@ -90,7 +89,7 @@ jobs:
       - name: Build container image(s)
         run: mise run ci:image
 
-      - name: Security scan (HIGH/CRITICAL dependency CVEs + code findings)
+      - name: Security scan (committed secrets, HIGH/CRITICAL dependency CVEs, code findings)
         run: mise run ci:security
 
       # Same workflow context as coverage; locally the script falls back to origin/main.
