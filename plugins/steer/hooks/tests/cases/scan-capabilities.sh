@@ -478,6 +478,22 @@ assert_eq "cap: task in a default dir the includes list hides -> question-gate m
 printf '[task_config]\nincludes = ["/elsewhere/tasks"]\n' >"${CRT}/mise.toml"
 capscan_nomise "${CRT}"
 assert_eq "cap: includes with nothing readable still hides the default dirs" "$(capstatus "${out}" question-gate)" "mis-wired"
+printf '[task_config] # c\nincludes = [\n  # old: ".mise/tasks"\n  "tasks",\n]\n' >"${CRT}/mise.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: comments in [task_config] neither hide includes nor add one" "$(capstatus "${out}" question-gate)" "mis-wired"
+rm "${CRT}/.mise/tasks/spec.toml"
+mkdir -p "${CRT}/tasks/ci"
+printf "['ci:spec']\nrun = 'sh scripts/ci-spec.sh'\n" >"${CRT}/tasks/ci/spec.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: single-quoted task in a nested include -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+printf 'task_config.includes = ["{{config_root}}/tasks/ci/*.toml"]\n' >"${CRT}/mise.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: dotted-key glob include under config_root -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+printf '      - run: mise run ci:specs\n' >"${CRT}/.github/workflows/ci.yml"
+capscan_nomise "${CRT}"
+assert_eq "cap: CI runs ci:specs, not ci:spec -> question-gate mis-wired" "$(capstatus "${out}" question-gate)" "mis-wired"
+printf '      - run: mise run ci:spec\n' >"${CRT}/.github/workflows/ci.yml"
+rm -r "${CRT}/tasks"
 
 # The scanner never asks mise, even when the files show no task: in a trusted repo
 # mise evaluates the repo's config, and this helper never executes repo content.

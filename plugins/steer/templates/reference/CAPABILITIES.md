@@ -253,7 +253,7 @@ and **Repair**.
   via `mise run ci:hygiene`, which runs `scan-version-pins.sh` - **and** mise
   defines the `check` + `ci` tasks (in `mise.toml`, a task include such as
   `.mise/tasks/*.toml`, or a file task) **and** every `ci:*` stage CI runs **and**
-  every `scripts/ci-*.sh` CI or the tasks invoke is present **and** the PR
+  every `scripts/ci-*.sh` that CI or a TOML task file names is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
   checklists). A workspace (`spec/workspace.yml`) spells all of these `ws:`-prefixed
   - `ws:ci:hygiene`, `ws:check`, `ws:ci` - from the `ci-workspace.yml` template,

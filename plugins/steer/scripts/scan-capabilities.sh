@@ -307,14 +307,16 @@ dg_files="$F,$PRT,$MT,$CIH,$CIL"
 # to nothing loadable), else from its default dirs. Each holds file tasks and TOML
 # files whose top-level tables are tasks. `@` marks that the key was found.
 dg_incs="$(awk '
-	/^[[:space:]]*\[/ { sect = $0; gsub(/[[:space:]]/, "", sect) }
-	sect == "[task_config]" && /^[[:space:]]*includes[[:space:]]*=/ { on = 1; print "@" }
+	/^[[:space:]]*\[/ { sect = $0; sub(/#.*/, "", sect); gsub(/[[:space:]]/, "", sect) }
+	(sect == "[task_config]" && /^[[:space:]]*includes[[:space:]]*=/) ||
+		(sect == "" && /^[[:space:]]*task_config\.includes[[:space:]]*=/) { on = 1; print "@" }
 	on {
 		s = $0
+		sub(/#.*/, "", s)
+		if (index(s, "]")) on = 0
 		while (match(s, /["\047][^"\047]*["\047]/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) }
-		if (index($0, "]")) on = 0
 	}
-' "$ROOT/$MT" 2>/dev/null | sed 's|^\./||' | grep -Ev '^/|\.\.')"
+' "$ROOT/$MT" 2>/dev/null | sed 's|^{{[[:space:]]*config_root[[:space:]]*}}/||; s|^\./||' | grep -Ev '^/|\.\.')"
 case "$dg_incs" in
 @*) dg_incs="${dg_incs#@}" ;;
 *) dg_incs="$(printf '%s\n' mise-tasks .mise-tasks mise/tasks .mise/tasks .config/mise/tasks)" ;;
@@ -323,13 +325,21 @@ dg_defs="$MT"
 while IFS= read -r _i; do
 	case "$_i" in
 	"") ;;
-	*.toml) [ -f "$ROOT/$_i" ] && dg_defs="$dg_defs
-$_i" ;;
-	*)
-		for _t in "$ROOT/$_i"/*.toml; do
+	*.toml)
+		# Unquoted on purpose: an include may be a glob such as tasks/*.toml.
+		# shellcheck disable=SC2086
+		for _t in "$ROOT"/$_i; do
 			[ -f "$_t" ] && dg_defs="$dg_defs
 ${_t#"$ROOT"/}"
 		done
+		;;
+	*)
+		while IFS= read -r _t; do
+			[ -n "$_t" ] && dg_defs="$dg_defs
+${_t#"$ROOT"/}"
+		done <<-FIND
+			$(find "$ROOT/$_i" -type f -name '*.toml' 2>/dev/null)
+		FIND
 		;;
 	esac
 done <<-EOF
@@ -340,7 +350,7 @@ EOF
 # trusted repo that evaluates its config, and this scanner never executes repo content.
 dg_task() {
 	_tp="$(printf '%s' "$1" | tr ':' '/')"
-	grep -Eq "^[[:space:]]*(\[tasks\.\"?$1\"?\]|\"?$1\"?[[:space:]]*=)" "$ROOT/$MT" 2>/dev/null && return 0
+	grep -Eq "^[[:space:]]*(\[tasks\.[\"']?$1[\"']?\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$MT" 2>/dev/null && return 0
 	while IFS= read -r _i; do
 		[ -n "$_i" ] && [ -f "$ROOT/$_i/$_tp" ] && return 0
 	done <<-EOF
@@ -348,7 +358,7 @@ dg_task() {
 	EOF
 	while IFS= read -r _d; do
 		[ "$_d" != "$MT" ] &&
-			grep -Eq "^[[:space:]]*(\[\"?$1\"?\]|\"?$1\"?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
+			grep -Eq "^[[:space:]]*(\[[\"']?$1[\"']?\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
 	done <<-EOF
 		$dg_defs
 	EOF
