@@ -804,7 +804,9 @@ fail", the Definition of Done, and review.
 - **Dependencies** - Trivy reads `pnpm-lock.yaml` and `uv.lock` (production
   dependencies). A CVE with no fixed version yet does not block: it stays a
   Dependabot alert until a fix exists.
-- **Code** - Semgrep's `p/default` rules at `ERROR` (high) severity.
+- **Code** - Semgrep's `p/default` rules at `ERROR` (high) severity. The log
+  shows each finding's rule id, path and line only, never the matched source;
+  run Semgrep locally to see the match.
 - Dependencies and code are scanned only with a Node or Python stack.
 - **Waivers are the exceptions register.** A dependency finding is waived in
   `.trivyignore.yaml` with a `statement` (why) and an `expired_at` date, so it

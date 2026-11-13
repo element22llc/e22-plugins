@@ -8,6 +8,7 @@ tool failure fails the gate, without the toolchain installed.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from dataclasses import dataclass
@@ -52,7 +53,9 @@ class Repo:
         self.bin = root.parent / "bin"
         self.log = root.parent / "calls.log"
         self.summary = root.parent / "summary.md"
+        self.tmp = root.parent / "tmp"
         (root / "scripts").mkdir(parents=True)
+        self.tmp.mkdir()
         self.bin.mkdir()
         for name in STUBBED:
             stub = self.bin / name
@@ -88,6 +91,7 @@ class Repo:
             "GIT_CONFIG_GLOBAL": os.devnull,
             "STUB_LOG": str(self.log),
             "GITHUB_STEP_SUMMARY": str(self.summary),
+            "TMPDIR": str(self.tmp),
         }
         proc = subprocess.run(
             ["sh", f"scripts/{script}"],
@@ -186,7 +190,11 @@ def test_image_fails_when_a_build_fails(repo: Repo) -> None:
 
 _GITLEAKS = "gitleaks git --no-banner --redact --log-opts=HEAD ."
 _TRIVY = "trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1"
-_SEMGREP = "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet"
+# The argv ends in the per-run temp file Semgrep writes its findings to.
+_SEMGREP = (
+    "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet"
+    " --json --output "
+)
 
 
 def test_security_scans_secrets_even_without_a_stack(repo: Repo) -> None:
@@ -197,7 +205,12 @@ def test_security_scans_secrets_even_without_a_stack(repo: Repo) -> None:
 
 def test_security_scans_secrets_then_dependencies_then_code(repo: Repo) -> None:
     repo.write("package.json", "{}")
-    assert repo.run("ci-security.sh").calls == [_GITLEAKS, f"{_TRIVY} .", _SEMGREP]
+    r = repo.run("ci-security.sh")
+    assert r.code == 0
+    calls = r.calls
+    assert calls[:2] == [_GITLEAKS, f"{_TRIVY} ."]
+    assert len(calls) == 3
+    assert calls[2].startswith(_SEMGREP)
 
 
 def test_security_fails_on_a_committed_secret(repo: Repo) -> None:
@@ -221,9 +234,77 @@ def test_security_fails_on_a_dependency_finding(repo: Repo) -> None:
     assert r.calls == [_GITLEAKS, f"{_TRIVY} ."]
 
 
-def test_security_fails_on_a_code_finding(repo: Repo) -> None:
+def test_security_propagates_a_semgrep_failure_without_its_output(repo: Repo) -> None:
     repo.write("package.json", "{}")
-    assert repo.run("ci-security.sh", STUB_FAIL="semgrep").code != 0
+    r = repo.run("ci-security.sh", STUB_FAIL="semgrep")
+    assert r.code == 3
+    assert "Semgrep failed (exit 3)" in r.out
+
+
+_FAKE_TOKEN = "fake_token_DO_NOT_USE_0000000000000000000000000000000000000000"
+# Shaped like semgrep 1.184 `--json`: the match reaches extra.message (metavariable
+# interpolation), extra.lines (when logged in) and a syntax error's message.
+_FINDINGS = {
+    "version": "1.184.0",
+    "results": [
+        {
+            "check_id": "generic.secrets.security.detected-npm-token",
+            "path": ".npmrc",
+            "start": {"line": 3, "col": 1, "offset": 40},
+            "end": {"line": 3, "col": 90, "offset": 129},
+            "extra": {
+                "message": f"npm token {_FAKE_TOKEN} detected",
+                "severity": "ERROR",
+                "lines": f"//registry.example/:_authToken={_FAKE_TOKEN}",
+            },
+        },
+        {
+            "check_id": "javascript.lang.security.audit.eval",
+            "path": "src/a.js",
+            "start": {"line": 12, "col": 5, "offset": 300},
+            "end": {"line": 12, "col": 30, "offset": 325},
+            "extra": {
+                "message": f"eval of {_FAKE_TOKEN}",
+                "severity": "ERROR",
+                "lines": _FAKE_TOKEN,
+            },
+        },
+    ],
+    "errors": [
+        {
+            "code": 3,
+            "level": "warn",
+            "type": "Syntax error",
+            "message": f'Syntax error at line bad.js:1:\n `t = "{_FAKE_TOKEN}"` was unexpected',
+            "path": "bad.js",
+        }
+    ],
+}
+# Prints the token on both streams, as text-mode semgrep does, and writes the JSON
+# wherever --output points.
+_SEMGREP_FINDINGS_STUB = """#!/bin/sh
+printf '%s\\n' "semgrep $*" >>"${STUB_LOG}"
+printf '   1| //registry.example/:_authToken=%s\\n' "${FAKE_TOKEN}"
+printf '%s\\n' "${FAKE_TOKEN}" >&2
+while [ $# -gt 0 ]; do
+	if [ "$1" = --output ]; then cp "${FINDINGS_JSON}" "$2"; fi
+	shift
+done
+exit 1
+"""
+
+
+def test_security_reports_code_findings_without_the_matched_source(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    findings = repo.root.parent / "findings.json"
+    findings.write_text(json.dumps(_FINDINGS, separators=(",", ":")), encoding="utf-8")
+    (repo.bin / "semgrep").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
+    r = repo.run("ci-security.sh", FAKE_TOKEN=_FAKE_TOKEN, FINDINGS_JSON=str(findings))
+    assert r.code == 1
+    assert _FAKE_TOKEN not in r.out
+    assert "generic.secrets.security.detected-npm-token .npmrc:3" in r.out
+    assert "javascript.lang.security.audit.eval src/a.js:12" in r.out
+    assert list(repo.tmp.iterdir()) == []
 
 
 def test_hygiene_on_an_empty_repo_still_validates_tasks(repo: Repo) -> None:

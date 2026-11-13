@@ -32,6 +32,23 @@ steer_ci_group 'trivy fs (dependency CVEs, HIGH/CRITICAL)'
 trivy "$@" .
 steer_ci_endgroup
 
+# Every Semgrep output format and error message can quote the matched source, and
+# GitHub's masking misses a wrapped secret: only rule id, path and line reach the log.
+# The rule id leads so a PR-controlled path cannot start a `::` workflow command.
+findings="$(mktemp)"
+trap 'rm -f "${findings}"' EXIT
+# dash skips the EXIT trap on a signal, which would leave the matches on disk.
+trap 'exit 1' HUP INT TERM
 steer_ci_group 'semgrep (code findings, ERROR = high)'
-semgrep scan --config p/default --severity ERROR --error --metrics off --quiet
+rc=0
+semgrep scan --config p/default --severity ERROR --error --metrics off --quiet --json --output "${findings}" >/dev/null 2>&1 || rc=$?
+grep -oE '"check_id":"[^"]*","path":"([^"\\]|\\.)*","start":[{]"line":[0-9]+' "${findings}" |
+	sed 's/^"check_id":"\([^"]*\)","path":"\(.*\)","start":{"line":\([0-9]*\)$/\1 \2:\3/'
 steer_ci_endgroup
+case "${rc}" in
+0) ;;
+127) steer_ci_error "semgrep is not installed: run 'mise install'." ;;
+1) steer_ci_error "Semgrep found ERROR-severity code findings, listed above as rule id and path:line. The log withholds the matched source: run 'semgrep scan --config p/default --severity ERROR' locally to see it. Fix each, or waive it with '# nosemgrep: <rule-id>' and a why-comment." ;;
+*) steer_ci_error "Semgrep failed (exit ${rc}) before finishing the scan. Its output is withheld because it can quote scanned source: run 'semgrep scan --config p/default' locally to see why." ;;
+esac
+exit "${rc}"

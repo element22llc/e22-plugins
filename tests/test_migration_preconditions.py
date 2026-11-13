@@ -98,3 +98,26 @@ def test_wide_remote_allow_precondition_is_silent_on_the_current_template(tmp_pa
     (tmp_path / ".claude").mkdir()
     (tmp_path / ".claude/settings.json").write_bytes(TEMPLATE_SETTINGS.read_bytes())
     assert not _fires(_precondition(WIDE_REMOTE_ALLOW), tmp_path)
+
+
+SEMGREP_LOG = "keeps Semgrep's matched source out of the CI log"
+TEMPLATE_CI_SECURITY = REPO_ROOT / "plugins/steer/templates/scaffold/scripts/ci-security.sh"
+
+
+def test_semgrep_log_precondition_fires_on_the_v7_23_script(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(
+        "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet\n",
+        encoding="utf-8",
+    )
+    assert _fires(_precondition(SEMGREP_LOG), tmp_path)
+
+
+def test_semgrep_log_precondition_without_the_script(tmp_path):
+    assert not _fires(_precondition(SEMGREP_LOG), tmp_path)
+
+
+def test_semgrep_log_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_bytes(TEMPLATE_CI_SECURITY.read_bytes())
+    assert not _fires(_precondition(SEMGREP_LOG), tmp_path)
