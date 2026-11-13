@@ -121,6 +121,39 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
+### [Unreleased] - `ci-iac.sh` runs yamllint when any one config exists
+
+- **What & why:** the Ansible check ran yamllint only when
+  `ls .yamllint .yamllint.yml .yamllint.yaml` succeeded, which needs all three
+  files to exist, so a repo with one config never ran yamllint. The scaffold now
+  tests each file. `scripts/ci-iac.sh` is materialized per repo, and capability
+  repair only checks that it is present, so the fix needs this rewrite.
+- **Precondition:** the old check is still in the script -
+
+  ```sh
+  grep -nF 'ls .yamllint .yamllint.yml .yamllint.yaml' scripts/ci-iac.sh 2>/dev/null
+  ```
+
+  No output => already migrated, or no stage => no-op.
+- **Action - an in-file token rewrite** of `scripts/ci-iac.sh`; show the diff
+  and replace only this line, keeping its indentation:
+
+  ```sh
+  if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
+  ```
+
+  with:
+
+  ```sh
+  if [ -f .yamllint ] || [ -f .yamllint.yml ] || [ -f .yamllint.yaml ]; then
+  ```
+
+  yamllint then runs for the first time in a repo with a config. Run
+  `mise run ci:iac` and report what it finds in the PR: fixing a finding or
+  relaxing the config is the dev's call, never the sync's.
+
+  **No history entry is earned.**
+
 ### v7.23.0 - `ci:security` scans committed secrets with gitleaks
 
 - **What & why:** the stage gained a gitleaks pass over every commit, run before

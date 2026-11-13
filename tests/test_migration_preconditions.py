@@ -144,3 +144,25 @@ def test_lockfile_precondition_fires_under_zsh(tmp_path, entry):
         ["zsh", "-f", "-c", _precondition(entry)], cwd=tmp_path, capture_output=True, text=True
     )
     assert out.stdout.strip() == "stale"
+
+
+YAMLLINT_CONFIG = "runs yamllint when any one config exists"
+TEMPLATE_CI_IAC = REPO_ROOT / "plugins/steer/templates/scaffold/scripts/ci-iac.sh"
+
+
+def test_yamllint_config_precondition_fires_on_the_old_check(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-iac.sh").write_text(
+        "\tif ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then\n", encoding="utf-8"
+    )
+    assert _fires(_precondition(YAMLLINT_CONFIG), tmp_path)
+
+
+def test_yamllint_config_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-iac.sh").write_bytes(TEMPLATE_CI_IAC.read_bytes())
+    assert not _fires(_precondition(YAMLLINT_CONFIG), tmp_path)
+
+
+def test_yamllint_config_precondition_without_the_script(tmp_path):
+    assert not _fires(_precondition(YAMLLINT_CONFIG), tmp_path)

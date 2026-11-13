@@ -22,6 +22,21 @@ echo "tofu $*"
 out="$(cd "${CI}" && PATH="${CI}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
 case "${out}" in *"tofu fmt -check"*) ok ;; *) bad "ci-iac: resolvable tofu runs fmt (got '${out}')" ;; esac
 
+# ci-iac: one yamllint config is enough - `ls a b c` fails unless all three exist.
+AN="${WORK}/ciiac-ansible"
+mkdir -p "${AN}/scripts" "${AN}/bin"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/ci-iac.sh" "${AN}/scripts/"
+(cd "${AN}" && git init -q && : >ansible.cfg)
+printf '#!/bin/sh
+echo "uvx $*"
+' >"${AN}/bin/uvx"
+chmod +x "${AN}/bin/uvx"
+out="$(cd "${AN}" && PATH="${AN}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
+case "${out}" in *"uvx yamllint"*) bad "ci-iac: no yamllint config skips yamllint (got '${out}')" ;; *"uvx ansible-lint"*) ok ;; *) bad "ci-iac: ansible-lint runs (got '${out}')" ;; esac
+: >"${AN}/.yamllint.yml"
+out="$(cd "${AN}" && PATH="${AN}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
+case "${out}" in *"uvx yamllint"*) ok ;; *) bad "ci-iac: a lone .yamllint.yml runs yamllint (got '${out}')" ;; esac
+
 # ci-changelog: colocated tests ship nothing, so a test-only PR needs no fragment (#661).
 CC="${WORK}/cichangelog"
 mkdir -p "${CC}/scripts" "${CC}/src"
