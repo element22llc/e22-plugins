@@ -1,0 +1,13 @@
+kind: Fixed
+time: 2026-11-13T12:00:00.000000000-05:00
+custom:
+  Slug: version-scan-git-files
+body: |-
+  - **Fixed: the version-pin scanner no longer reports pins in git-ignored
+    files.** Inside a git work tree `scripts/scan-version-pins.sh` now reads
+    only tracked and untracked-but-not-ignored files, so a vendored directory
+    such as `.helm-plugins/` drops out once it is in `.gitignore`. Outside git
+    it walks the tree as before. Submodule and nested-repo contents are no
+    longer scanned. The script is a verbatim copy, so a repo that kept a local
+    path skip reads `mis-wired`: move the skipped path into `.gitignore`, then
+    let `/steer:setup sync` re-copy the script.
