@@ -303,20 +303,90 @@ MT="mise.toml"
 CIH="scripts/ci-hygiene.sh"
 CIL="scripts/ci-lib.sh"
 dg_files="$F,$PRT,$MT,$CIH,$CIL"
-# A mise task: a [tasks.<name>] table, an inline `<name> = ...` entry, or a file task.
+# mise reads task includes from `[task_config] includes` when the key is set (even
+# to nothing loadable), else from its default dirs. Each holds file tasks and TOML
+# files whose top-level tables are tasks. `@` marks that the key was found.
+dg_incs="$(awk '
+	/^[[:space:]]*\[/ { sect = $0; sub(/#.*/, "", sect); gsub(/[[:space:]]/, "", sect) }
+	(sect == "[task_config]" && /^[[:space:]]*includes[[:space:]]*=/) ||
+		(sect == "" && /^[[:space:]]*task_config\.includes[[:space:]]*=/) { on = 1; print "@" }
+	on {
+		s = $0
+		sub(/#.*/, "", s)
+		if (index(s, "]")) on = 0
+		while (match(s, /["\047][^"\047]*["\047]/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) }
+	}
+' "$ROOT/$MT" 2>/dev/null | sed 's|^{{[[:space:]]*config_root[[:space:]]*}}/||; s|^\./||' | grep -Ev '^/|\.\.')"
+case "$dg_incs" in
+@*) dg_incs="${dg_incs#@}" ;;
+*) dg_incs="$(printf '%s\n' mise-tasks .mise-tasks mise/tasks .mise/tasks .config/mise/tasks)" ;;
+esac
+dg_defs="$MT"
+while IFS= read -r _i; do
+	case "$_i" in
+	"") ;;
+	*.toml)
+		# Unquoted on purpose: an include may be a glob such as tasks/*.toml.
+		# shellcheck disable=SC2086
+		for _t in "$ROOT"/$_i; do
+			[ -f "$_t" ] && dg_defs="$dg_defs
+${_t#"$ROOT"/}"
+		done
+		;;
+	*)
+		while IFS= read -r _t; do
+			[ -n "$_t" ] && dg_defs="$dg_defs
+${_t#"$ROOT"/}"
+		done <<-FIND
+			$(find "$ROOT/$_i" -type f -name '*.toml' 2>/dev/null)
+		FIND
+		;;
+	esac
+done <<-EOF
+	$dg_incs
+EOF
+# A mise task: a [tasks.<name>] table or inline entry in mise.toml, a top-level table
+# or inline entry in an include, or a file task. Never asked of mise itself: in a
+# trusted repo that evaluates its config, and this scanner never executes repo content.
 dg_task() {
-	grep -Eq "^[[:space:]]*(\[tasks\.\"?$1\"?\]|\"?$1\"?[[:space:]]*=)" "$ROOT/$MT" 2>/dev/null ||
-		[ -f "$ROOT/.mise/tasks/$(printf '%s' "$1" | tr ':' '/')" ] ||
-		[ -f "$ROOT/mise-tasks/$(printf '%s' "$1" | tr ':' '/')" ]
+	_tp="$(printf '%s' "$1" | tr ':' '/')"
+	grep -Eq "^[[:space:]]*(\[tasks\.[\"']?$1[\"']?\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$MT" 2>/dev/null && return 0
+	while IFS= read -r _i; do
+		[ -n "$_i" ] && [ -f "$ROOT/$_i/$_tp" ] && return 0
+	done <<-EOF
+		$dg_incs
+	EOF
+	while IFS= read -r _d; do
+		[ "$_d" != "$MT" ] &&
+			grep -Eq "^[[:space:]]*(\[[\"']?$1[\"']?\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
+	done <<-EOF
+		$dg_defs
+	EOF
+	return 1
 }
-# Every stage ci.yml runs is a task, `check` and `ci` exist, and every
-# scripts/ci-*.sh mise.toml names is on disk.
+# What CI runs: ci.yml plus each repo script it names, one hop. A script's comment
+# lines are dropped: the stage scripts' headers name the `mise run` task calling them.
+dg_ci_text() {
+	cat "$ROOT/$F" 2>/dev/null
+	grep -oE '[A-Za-z0-9_./-]+\.sh' "$ROOT/$F" 2>/dev/null | sed 's|^\./||' | sort -u |
+		while IFS= read -r _s; do
+			case "$_s" in /* | *..*) continue ;; esac
+			[ -f "$ROOT/$_s" ] && sed '/^[[:space:]]*#/d' "$ROOT/$_s"
+		done
+}
+dg_reach="$(dg_ci_text)"
+reaches() { printf '%s\n' "$dg_reach" | grep -Eq "$1"; }
+# Every stage CI runs is a task, `check` and `ci` exist, and every scripts/ci-*.sh
+# CI or a task file names is on disk.
 dg_wired() {
 	dg_task "${dg_p}check" && dg_task "${dg_p}ci" && exists "$CIL" || return 1
 	_gap="$(
-		grep -oE "mise run( --?[a-z-]+)* ${dg_p}ci:[a-z][a-z-]*" "$ROOT/$F" | sed 's/.* //' | sort -u |
+		printf '%s\n' "$dg_reach" | grep -oE "mise run( --?[a-z-]+)* ${dg_p}ci:[a-z][a-z-]*" | sed 's/.* //' | sort -u |
 			while read -r _st; do dg_task "${_st}" || echo "${_st}"; done
-		grep -oE 'scripts/ci-[a-z-]+\.sh' "$ROOT/$MT" 2>/dev/null | sort -u |
+		{
+			printf '%s\n' "$dg_reach"
+			printf '%s\n' "$dg_defs" | while IFS= read -r _d; do cat "$ROOT/$_d" 2>/dev/null; done
+		} | grep -oE 'scripts/ci-[a-z-]+\.sh' | sort -u |
 			while read -r _sc; do exists "${_sc}" || echo "${_sc}"; done
 	)"
 	[ -z "${_gap}" ]
@@ -325,7 +395,7 @@ if ! exists "$F"; then
 	emit "drift-gate" "absent" "$dg_files"
 elif ! exists "$PRT"; then
 	emit "drift-gate" "mis-wired" "$dg_files"
-elif has "$F" "mise run ${dg_p}ci:hygiene"; then
+elif reaches "mise run( --?[a-z-]+)* ${dg_p}ci:hygiene([^a-z:-]|\$)"; then
 	if dg_wired; then
 		emit "drift-gate" "present-wired" "$dg_files"
 	else
@@ -465,9 +535,10 @@ QP="scripts/spec-questions.sh"
 qg_files=".github/workflows/ci.yml,mise.toml,$QS,$QP"
 if ! exists "spec/.version"; then
 	emit "question-gate" "n/a" "$qg_files"
-elif ! exists "$QS" && ! has ".github/workflows/ci.yml" "ci:spec"; then
+elif ! exists "$QS" && ! reaches "ci:spec"; then
 	emit "question-gate" "absent" "$qg_files"
-elif has ".github/workflows/ci.yml" "mise run ci:spec" && has "mise.toml" "ci:spec" && exists "$QS" &&
+elif { reaches "mise run( --?[a-z-]+)* ${dg_p}ci:spec([^a-z:-]|\$)" || reaches 'scripts/ci-spec\.sh'; } &&
+	dg_task "${dg_p}ci:spec" && exists "$QS" &&
 	cmp -s "$ROOT/$QP" "$PLUGIN/hooks/lib/questions.sh" 2>/dev/null; then
 	emit "question-gate" "present-wired" "$qg_files"
 else

@@ -249,10 +249,11 @@ and **Repair**.
   `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
   `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
 - **Conditional:** always (GitHub-hosted repos)
-- **Wired-when:** `ci.yml` reaches the hygiene stage - via `mise run ci:hygiene`,
-  which runs `scan-version-pins.sh` - **and** `mise.toml` defines the `check` + `ci`
-  tasks **and** every `ci:*` stage `ci.yml` runs **and** every `scripts/ci-*.sh` the
-  tasks invoke is present **and** the PR
+- **Wired-when:** `ci.yml`, or a repo script it calls, reaches the hygiene stage -
+  via `mise run ci:hygiene`, which runs `scan-version-pins.sh` - **and** mise
+  defines the `check` + `ci` tasks (in `mise.toml`, a task include such as
+  `.mise/tasks/*.toml`, or a file task) **and** every `ci:*` stage CI runs **and**
+  every `scripts/ci-*.sh` that CI or a TOML task file names is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
   checklists). A workspace (`spec/workspace.yml`) spells all of these `ws:`-prefixed
   - `ws:ci:hygiene`, `ws:check`, `ws:ci` - from the `ci-workspace.yml` template,
@@ -291,8 +292,9 @@ and **Repair**.
   in `mise.toml`, and its step in `.github/workflows/ci.yml`
 - **Conditional:** the repo has a spine (`spec/.version`); without one there is
   no contract to check, so it is `n/a`.
-- **Wired-when:** `ci.yml` runs `mise run ci:spec`, `mise.toml` defines `ci:spec`
-  (inside the `ci` task's `depends`), `scripts/ci-spec.sh` is present, and
+- **Wired-when:** `ci.yml`, or a repo script it calls, runs `mise run ci:spec` (or
+  `scripts/ci-spec.sh`), mise defines `ci:spec` (inside the `ci` task's `depends`;
+  `ws:ci:spec` in a workspace), `scripts/ci-spec.sh` is present, and
   `scripts/spec-questions.sh` is byte-identical to
   `${CLAUDE_PLUGIN_ROOT}/hooks/lib/questions.sh`.
 - **Repair:** copy the two scripts from the scaffold, add the `ci:spec` task and

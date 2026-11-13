@@ -398,8 +398,11 @@ cp "${PLUGIN}/templates/github/workflows/ci.yml" "${CRW}/.github/workflows/ci.ym
 cp "${PLUGIN}/templates/github/pull_request_template.md" "${CRW}/.github/pull_request_template.md"
 cp "${PLUGIN}/templates/scaffold/profiles/workspace/mise.toml" "${CRW}/mise.toml"
 cp "${PLUGIN}/templates/scaffold/scripts/"ci-*.sh "${CRW}/scripts/"
+printf '7.0.0\n' >"${CRW}/spec/.version"
+cp "${PLUGIN}/hooks/lib/questions.sh" "${CRW}/scripts/spec-questions.sh"
 capscan "${CRW}"
 assert_eq "cap: workspace still on the core ci.yml -> drift-gate mis-wired" "$(capstatus "${out}" drift-gate)" "mis-wired"
+assert_eq "cap: workspace still on the core ci.yml -> question-gate mis-wired" "$(capstatus "${out}" question-gate)" "mis-wired"
 cp "${PLUGIN}/templates/github/workflows/ci-workspace.yml" "${CRW}/.github/workflows/ci.yml"
 capscan "${CRW}"
 assert_eq "cap: workspace ci.yml + ws: tasks -> drift-gate present-wired" "$(capstatus "${out}" drift-gate)" "present-wired"
@@ -410,6 +413,103 @@ assert_eq "cap: workspace hook calling pre-commit -> commit-gate mis-wired" "$(c
 printf '#!/bin/sh\nexec mise run ws:pre-commit\n' >"${CRW}/.git/hooks/pre-commit"
 capscan "${CRW}"
 assert_eq "cap: workspace hook calling ws:pre-commit -> commit-gate present-wired" "$(capstatus "${out}" commit-gate)" "present-wired"
+assert_eq "cap: workspace ci.yml runs ws:ci:spec -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+
+# Tasks in a mise task include, reached through one gate script CI calls (#929).
+# PATH without mise: the grep alone must see them.
+capscan_nomise() { out="$(env PATH=/usr/bin:/bin sh "${CAPSCAN}" "$1" "${PLUGIN}" 2>/dev/null)"; }
+CRI="${WORK}/cap-includes"
+mkdir -p "${CRI}/.github/workflows" "${CRI}/scripts" "${CRI}/spec" "${CRI}/.mise/tasks"
+git -C "${CRI}" init -q
+: >"${CRI}/spec/workspace.yml"
+printf '7.0.0\n' >"${CRI}/spec/.version"
+cp "${PLUGIN}/templates/github/pull_request_template.md" "${CRI}/.github/pull_request_template.md"
+cp "${PLUGIN}/templates/scaffold/scripts/"ci-*.sh "${CRI}/scripts/"
+cp "${PLUGIN}/hooks/lib/questions.sh" "${CRI}/scripts/spec-questions.sh"
+printf '[tools]\n' >"${CRI}/mise.toml"
+printf 'jobs:\n  gate:\n    steps:\n      - run: sh ./scripts/gate.sh\n' >"${CRI}/.github/workflows/ci.yml"
+printf '#!/bin/sh\nmise run ws:ci:hygiene\nsh scripts/ci-spec.sh\n' >"${CRI}/scripts/gate.sh"
+cat >"${CRI}/.mise/tasks/repo.toml" <<'EOF'
+["ws:ci:hygiene"]
+run = "sh scripts/ci-hygiene.sh"
+["ws:ci:lint"]
+run = "sh scripts/ci-lint.sh"
+["ws:ci:spec"]
+run = "sh scripts/ci-spec.sh"
+["ws:check"]
+depends = ["ws:ci:hygiene", "ws:ci:lint"]
+["ws:ci"]
+depends = ["ws:check", "ws:ci:spec"]
+["ws:pre-commit"]
+depends = ["ws:ci:hygiene"]
+EOF
+capscan_nomise "${CRI}"
+assert_eq "cap: include tasks + gate script -> drift-gate present-wired" "$(capstatus "${out}" drift-gate)" "present-wired"
+assert_eq "cap: include tasks + gate script -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+assert_eq "cap: ws:pre-commit in an include -> commit-gate absent, not n/a" "$(capstatus "${out}" commit-gate)" "absent"
+rm "${CRI}/scripts/ci-hygiene.sh"
+capscan_nomise "${CRI}"
+assert_eq "cap: a stage script only an include names is missing -> drift-gate mis-wired" "$(capstatus "${out}" drift-gate)" "mis-wired"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-hygiene.sh" "${CRI}/scripts/"
+printf '#!/bin/sh\nmise run ws:ci:hygiene\n# sh scripts/ci-spec.sh\n' >"${CRI}/scripts/gate.sh"
+capscan_nomise "${CRI}"
+assert_eq "cap: gate script names the spec stage only in a comment -> question-gate mis-wired" "$(capstatus "${out}" question-gate)" "mis-wired"
+printf '#!/bin/sh\nmise run ws:ci:hygiene\nmise run ws:ci:spec\n' >"${CRI}/scripts/gate.sh"
+sed 's/^\["ws:ci:spec"\]/["ws:ci:other"]/' "${CRI}/.mise/tasks/repo.toml" >"${CRI}/.mise/tasks/repo.toml.new"
+mv "${CRI}/.mise/tasks/repo.toml.new" "${CRI}/.mise/tasks/repo.toml"
+capscan_nomise "${CRI}"
+assert_eq "cap: CI runs ws:ci:spec but no include defines it -> question-gate mis-wired" "$(capstatus "${out}" question-gate)" "mis-wired"
+assert_eq "cap: CI runs ws:ci:spec but no include defines it -> drift-gate mis-wired" "$(capstatus "${out}" drift-gate)" "mis-wired"
+
+# [task_config] includes replaces mise's default task dirs.
+CRT="${WORK}/cap-task-config"
+mkdir -p "${CRT}/.github/workflows" "${CRT}/scripts" "${CRT}/spec" "${CRT}/tasks" "${CRT}/.mise/tasks"
+printf '7.0.0\n' >"${CRT}/spec/.version"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-spec.sh" "${CRT}/scripts/"
+cp "${PLUGIN}/hooks/lib/questions.sh" "${CRT}/scripts/spec-questions.sh"
+printf '      - run: mise run ci:spec\n' >"${CRT}/.github/workflows/ci.yml"
+printf '[task_config]\nincludes = [\n  "./tasks",\n]\n' >"${CRT}/mise.toml"
+printf '["ci:spec"]\nrun = "sh scripts/ci-spec.sh"\n' >"${CRT}/tasks/spec.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: task in a [task_config] include dir -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+mv "${CRT}/tasks/spec.toml" "${CRT}/.mise/tasks/spec.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: task in a default dir the includes list hides -> question-gate mis-wired" "$(capstatus "${out}" question-gate)" "mis-wired"
+printf '[task_config]\nincludes = ["/elsewhere/tasks"]\n' >"${CRT}/mise.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: includes with nothing readable still hides the default dirs" "$(capstatus "${out}" question-gate)" "mis-wired"
+printf '[task_config] # c\nincludes = [\n  # old: ".mise/tasks"\n  "tasks",\n]\n' >"${CRT}/mise.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: comments in [task_config] neither hide includes nor add one" "$(capstatus "${out}" question-gate)" "mis-wired"
+rm "${CRT}/.mise/tasks/spec.toml"
+mkdir -p "${CRT}/tasks/ci"
+printf "['ci:spec']\nrun = 'sh scripts/ci-spec.sh'\n" >"${CRT}/tasks/ci/spec.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: single-quoted task in a nested include -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+printf 'task_config.includes = ["{{config_root}}/tasks/ci/*.toml"]\n' >"${CRT}/mise.toml"
+capscan_nomise "${CRT}"
+assert_eq "cap: dotted-key glob include under config_root -> question-gate present-wired" "$(capstatus "${out}" question-gate)" "present-wired"
+printf '      - run: mise run ci:specs\n' >"${CRT}/.github/workflows/ci.yml"
+capscan_nomise "${CRT}"
+assert_eq "cap: CI runs ci:specs, not ci:spec -> question-gate mis-wired" "$(capstatus "${out}" question-gate)" "mis-wired"
+printf '      - run: mise run ci:spec\n' >"${CRT}/.github/workflows/ci.yml"
+rm -r "${CRT}/tasks"
+
+# The scanner never asks mise, even when the files show no task: in a trusted repo
+# mise evaluates the repo's config, and this helper never executes repo content.
+CAP_STUBS="${WORK}/cap-stubs"
+CAP_MISE_LOG="${WORK}/cap-mise.log"
+mkdir -p "${CAP_STUBS}"
+cat >"${CAP_STUBS}/mise" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$*" >>"${MISE_STUB_LOG}"
+printf 'Source: %s/mise.toml\n' "${PWD}"
+EOF
+chmod +x "${CAP_STUBS}/mise"
+: >"${CAP_MISE_LOG}"
+out="$(env PATH="${CAP_STUBS}:/usr/bin:/bin" MISE_STUB_LOG="${CAP_MISE_LOG}" sh "${CAPSCAN}" "${CRT}" "${PLUGIN}" 2>/dev/null)"
+assert_eq "cap: mise on PATH does not change a grep verdict" "$(capstatus "${out}" question-gate)" "mis-wired"
+assert_eq "cap: mise on PATH is never invoked" "$(cat "${CAP_MISE_LOG}")" ""
 
 # changelog-fragments is judged on the scanned repo, not the caller's cwd.
 CRC="${WORK}/cap-changie"
