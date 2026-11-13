@@ -1,0 +1,16 @@
+kind: Fixed
+time: 2026-11-13T12:00:00.000000000-05:00
+custom:
+  Slug: scan-capabilities-mise-includes
+body: |-
+  - **Fixed: `/steer:setup sync` no longer reports `drift-gate` and
+    `question-gate` as mis-wired when the mise tasks live outside `mise.toml`.**
+    The capability scanner now finds a task where mise does: `mise.toml`, a
+    TOML task include in mise's default task dirs (`.mise/tasks/*.toml` and the
+    rest) or in `[task_config] includes`, which replaces those dirs, or a file
+    task. It reads the files only and still never runs mise. CI may reach a
+    stage through a repo script `ci.yml` calls, one hop deep; a stage named
+    only in that script's comments does not count. `question-gate` now expects
+    `ws:ci:spec` in a workspace: a stock workspace reads wired, and a workspace
+    still on the core `ci.yml` reads mis-wired, as `drift-gate` already did.
+    `commit-gate` sees a `pre-commit` task defined in an include.
