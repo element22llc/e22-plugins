@@ -94,6 +94,68 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - re-run the lockfile migration a 7.23.0 sync skipped
+
+- **What & why:** the v7.23.0 `actions.lock` entry's precondition was
+  `ls .github/workflows/*.yml .github/workflows/*.yaml && ...`. `ls` fails when
+  either glob matches nothing, so it printed nothing in any repo without a
+  `*.yaml` workflow - nearly all of them - and a sync read that as already
+  migrated. That sync then stamped `spec/.version` at 7.23.0 or later, so no
+  later sync walks the v7.23.0 entry again. Without a lockfile, the next
+  workflow change fails CI's verify step once `ci.yml` sets
+  `STEER_CI_ACTIONS_LOCK: verify`. The v7.23.0 precondition is fixed;
+  this entry reaches the repos already stamped past it.
+- **Precondition:** the repo has workflows and no lockfile - the same check as
+  the v7.23.0 entry:
+
+  ```sh
+  find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
+    grep -q . && [ ! -f .github/workflows/actions.lock ] && echo stale
+  ```
+
+  No output => already migrated, or no workflows => no-op.
+- **Action:** if this sync already walked the v7.23.0 entry, whether the dev
+  applied or declined it, list this one as covered by it and skip. Otherwise
+  apply the action of the entry "v7.23.0 - shipped workflows use exact tags,
+  locked in `actions.lock`", steps 1-5, as written there; skip any piece
+  already present (additive reconciliation may have spliced
+  `steer_ci_actions_lock`, the hygiene group or the `env:` already).
+
+  **No history entry is earned.**
+
+### [Unreleased] - `ci-iac.sh` runs yamllint when any one config exists
+
+- **What & why:** the Ansible check ran yamllint only when
+  `ls .yamllint .yamllint.yml .yamllint.yaml` succeeded, which needs all three
+  files to exist, so a repo with one config never ran yamllint. The scaffold now
+  tests each file. `scripts/ci-iac.sh` is materialized per repo, and capability
+  repair only checks that it is present, so the fix needs this rewrite.
+- **Precondition:** the old check is still in the script -
+
+  ```sh
+  grep -nF 'ls .yamllint .yamllint.yml .yamllint.yaml' scripts/ci-iac.sh 2>/dev/null
+  ```
+
+  No output => already migrated, or no stage => no-op.
+- **Action - an in-file token rewrite** of `scripts/ci-iac.sh`; show the diff
+  and replace only this line, keeping its indentation:
+
+  ```sh
+  if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
+  ```
+
+  with:
+
+  ```sh
+  if [ -f .yamllint ] || [ -f .yamllint.yml ] || [ -f .yamllint.yaml ]; then
+  ```
+
+  yamllint then runs for the first time in a repo with a config. Run
+  `mise run ci:iac` and report what it finds in the PR: fixing a finding or
+  relaxing the config is the dev's call, never the sync's.
+
+  **No history entry is earned.**
+
 ### v7.23.0 - `ci:security` scans committed secrets with gitleaks
 
 - **What & why:** the stage gained a gitleaks pass over every commit, run before
@@ -137,8 +199,8 @@ Name the file and say what to carry forward.
 - **Precondition:** the repo has workflows and no lockfile -
 
   ```sh
-  ls .github/workflows/*.yml .github/workflows/*.yaml >/dev/null 2>&1 &&
-    [ ! -f .github/workflows/actions.lock ] && echo stale
+  find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
+    grep -q . && [ ! -f .github/workflows/actions.lock ] && echo stale
   ```
 
   No output => already migrated, or no workflows => no-op.

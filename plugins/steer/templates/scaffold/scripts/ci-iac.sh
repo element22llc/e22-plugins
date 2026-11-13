@@ -29,7 +29,7 @@ if steer_ci_has_ansible; then
 	ran=1
 	steer_ci_group 'ansible-lint'
 	# Pin uvx tools: unpinned takes today's PyPI latest, and Dependabot cannot see versions inside run: blocks.
-	if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
+	if [ -f .yamllint ] || [ -f .yamllint.yml ] || [ -f .yamllint.yaml ]; then
 		uvx yamllint@1.38.0 .
 	fi
 	uvx ansible-lint@26.6.0
