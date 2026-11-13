@@ -102,20 +102,22 @@ Name the file and say what to carry forward.
   `*.yaml` workflow - nearly all of them - and a sync read that as already
   migrated. That sync then stamped `spec/.version` at 7.23.0 or later, so no
   later sync walks the v7.23.0 entry again. Without a lockfile, the next
-  workflow change fails CI's verify step. The v7.23.0 precondition is fixed;
+  workflow change fails CI's verify step once `ci.yml` sets
+  `STEER_CI_ACTIONS_LOCK: verify`. The v7.23.0 precondition is fixed;
   this entry reaches the repos already stamped past it.
 - **Precondition:** the repo has workflows and no lockfile - the same check as
   the v7.23.0 entry:
 
   ```sh
-  find .github/workflows -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
+  find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
     grep -q . && [ ! -f .github/workflows/actions.lock ] && echo stale
   ```
 
   No output => already migrated, or no workflows => no-op.
 - **Action:** if this sync already walked the v7.23.0 entry, whether the dev
   applied or declined it, list this one as covered by it and skip. Otherwise
-  apply the v7.23.0 entry's action, steps 1-5, as written there; skip any piece
+  apply the action of the entry "v7.23.0 - shipped workflows use exact tags,
+  locked in `actions.lock`", steps 1-5, as written there; skip any piece
   already present (additive reconciliation may have spliced
   `steer_ci_actions_lock`, the hygiene group or the `env:` already).
 
@@ -197,7 +199,7 @@ Name the file and say what to carry forward.
 - **Precondition:** the repo has workflows and no lockfile -
 
   ```sh
-  find .github/workflows -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
+  find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
     grep -q . && [ ! -f .github/workflows/actions.lock ] && echo stale
   ```
 

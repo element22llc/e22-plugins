@@ -22,7 +22,7 @@ echo "tofu $*"
 out="$(cd "${CI}" && PATH="${CI}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
 case "${out}" in *"tofu fmt -check"*) ok ;; *) bad "ci-iac: resolvable tofu runs fmt (got '${out}')" ;; esac
 
-# ci-iac: one yamllint config is enough - `ls a b c` fails unless all three exist.
+# ci-iac: one yamllint config is enough to run yamllint.
 AN="${WORK}/ciiac-ansible"
 mkdir -p "${AN}/scripts" "${AN}/bin"
 cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/ci-iac.sh" "${AN}/scripts/"
