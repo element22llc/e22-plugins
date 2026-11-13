@@ -6,7 +6,7 @@ tools:
 ---
 <!-- Generated from the steer plugin's agents/steer-reviewer.md - do not edit by hand. Refresh with /steer:setup sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
-This is the GitHub Copilot (VS Code) port of steer's `steer-reviewer` subagent. Select it from the Chat agent picker, or a delegating prompt (`/steer-audit`, `/steer-work --reviewed`) will hand a slice to it. Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. In VS Code its tools are `read`, `search` (read-only) - the Claude tool names in the body below (`Read`/`Grep`/`Glob`) map to these.
+This is the GitHub Copilot (VS Code) port of steer's `steer-reviewer` subagent. Select it from the Chat agent picker, or a delegating `/steer-*` prompt will hand it work. Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. In VS Code its tools are `read`, `search` (read-only) - the Claude tool names in the body below (`Read`/`Grep`/`Glob`) map to these.
 
 # Steer read-only reviewer (one bounded slice)
 

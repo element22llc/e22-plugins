@@ -54,10 +54,12 @@ A **draft, red or conflicting PR is not reviewed** - it goes straight to the
 
 ## Step 3 - one reviewer per PR, in parallel
 
-For every remaining PR, spawn a **fresh read-only subagent** in the same message
-(waves of up to 10), each with one PR - not `steer-reviewer`, which audits
-on-disk code. Give it the PR number, `gh pr view <n>` and `gh pr diff <n>` to
-read, and the code-gate rubric in
+For every remaining PR, spawn a fresh **`steer-pr-reviewer`** in the same
+message (Claude Code: `subagent_type: "steer:steer-pr-reviewer"`; elsewhere a
+fresh read-only subagent on a mid-tier model), waves of up to 10, each with one
+PR - not `steer-reviewer`, which audits on-disk code. Give it the PR number,
+its head SHA, `gh pr view <n>` and `gh pr diff <n>` to read, and the code-gate
+rubric in
 [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the same one
 the author's `finish` ran: adversarial, with the specialist lenses the diff
 triggers applied inline. Tell it to spawn no subagents of its own, so a batch
@@ -74,8 +76,12 @@ diff. Ask it to return a compact **card**:
 - design questions the author should answer in the PR, or `none`;
 - a suggested verdict: `approve`, `changes` or `look`.
 
+**A re-review is a delta.** When this session already holds a card for the PR
+at an older head SHA, pass that card and SHA: the reviewer reads only the
+commits since, settles each previous finding, and reviews nothing unchanged.
+
 Then run the refute pass (`REVIEW-LOOP.md` section 4): every PR whose card
-carries a high finding gets one fresh verifier for all of them, the whole
+carries a high finding gets one fresh `steer-pr-reviewer` verifier for all of them, the whole
 batch in one message. A refuted finding leaves the card; an unsure one stays,
 marked unconfirmed.
 
