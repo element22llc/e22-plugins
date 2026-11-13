@@ -94,6 +94,40 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `ci:security` keeps Semgrep's matched source out of the CI log
+
+- **What & why:** the Semgrep group printed Semgrep's text output, which quotes
+  each matched line. A `generic.secrets` match put the secret in the job log,
+  and GitHub's masking misses a long value the output wraps. The stage now
+  writes Semgrep's JSON to a temp file outside the workspace, discards its
+  stdout and stderr, and prints only rule id, path and line per finding; the
+  exit code is unchanged. The script is not verbatim and the `security-gate`
+  capability checks wiring only, so a repo carrying the older group never
+  picks the fix up without this entry.
+- **Precondition:** the script still runs Semgrep without the JSON file -
+
+  ```sh
+  test -f scripts/ci-security.sh && grep -q 'semgrep scan' scripts/ci-security.sh &&
+    ! grep -q -- '--json --output' scripts/ci-security.sh && echo pending
+  ```
+
+  No output => already migrated, or no stage => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes. Section
+  re-take of `scripts/ci-security.sh`: replace the region from
+  `steer_ci_group 'semgrep` through its `steer_ci_endgroup` with the
+  scaffold's Semgrep block, from its comment through
+  `[ "${rc}" -eq 0 ] || exit "${rc}"`: the `findings` temp file, both traps
+  (`EXIT`, and `HUP INT TERM`), `rc=0`, the group with the extracted
+  `listed` lines, and the error branches. Carry
+  any flag the product added to its `semgrep scan` line (an extra `--config`,
+  an `--exclude`) onto the new line; carry every other line forward unchanged.
+  If a CI step writes a credential into a tracked file before `ci:security`,
+  propose moving it after. Say in the PR that earlier CI logs may hold a
+  secret Semgrep printed: deleting those runs' logs and rotating the
+  credential are the dev's call, never the sync's.
+
+  **No history entry is earned.**
+
 ### v7.23.0 - `ci:security` scans committed secrets with gitleaks
 
 - **What & why:** the stage gained a gitleaks pass over every commit, run before

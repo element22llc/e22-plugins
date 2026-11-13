@@ -494,7 +494,10 @@ and **Repair**.
   the PR what it finds: each finding is fixed, or waived in `.trivyignore.yaml`
   (with `statement` and `expired_at`), by a `# nosemgrep: <rule>` with its
   why-comment, or - for a secret - rotated and listed in `.gitleaksignore` - a
-  human's call at review, never a sync's.
+  human's call at review, never a sync's. A CI step that writes a credential
+  into a tracked file (a registry token appended to `.npmrc`) must run after
+  `ci:security`, never before: Semgrep scans the working tree, flags it and
+  fails the gate.
 - **Verbatim:** no - a product may adapt the stage.
 - **Why it matters:** Dependabot alerts report but block nothing, and GitHub
   secret scanning on a private repo needs a paid add-on. Without this stage a PR

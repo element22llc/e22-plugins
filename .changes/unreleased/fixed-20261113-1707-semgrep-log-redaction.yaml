@@ -1,0 +1,16 @@
+kind: Fixed
+time: 2026-11-13T17:07:00.000000000-05:00
+custom:
+  Slug: semgrep-log-redaction
+body: |-
+  - **Fixed: `ci:security` no longer prints Semgrep's matched source into the
+    CI log.** Semgrep's text output quotes each matched line, so a
+    `generic.secrets` match put the secret in the job log, where GitHub's
+    masking misses a long value the output wraps. The stage now writes
+    Semgrep's JSON to a temp file outside the workspace, discards its stdout
+    and stderr, and prints only each finding's rule id, path and line; it
+    still fails on the same findings. Run Semgrep locally to see a match. A
+    migration re-takes the Semgrep group in repos carrying the older script,
+    and the `security-gate` repair now warns that a CI step writing a
+    credential into a tracked file must run after `ci:security`. **If an
+    earlier run printed a secret, delete that run's logs and rotate it.**
