@@ -94,6 +94,33 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - re-run the lockfile migration a 7.23.0 sync skipped
+
+- **What & why:** the v7.23.0 `actions.lock` entry's precondition was
+  `ls .github/workflows/*.yml .github/workflows/*.yaml && ...`. `ls` fails when
+  either glob matches nothing, so it printed nothing in any repo without a
+  `*.yaml` workflow - nearly all of them - and a sync read that as already
+  migrated. That sync then stamped `spec/.version` at 7.23.0 or later, so no
+  later sync walks the v7.23.0 entry again. Without a lockfile, the next
+  workflow change fails CI's verify step. The v7.23.0 precondition is fixed;
+  this entry reaches the repos already stamped past it.
+- **Precondition:** the repo has workflows and no lockfile - the same check as
+  the v7.23.0 entry:
+
+  ```sh
+  find .github/workflows -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
+    grep -q . && [ ! -f .github/workflows/actions.lock ] && echo stale
+  ```
+
+  No output => already migrated, or no workflows => no-op.
+- **Action:** if this sync already walked the v7.23.0 entry, whether the dev
+  applied or declined it, list this one as covered by it and skip. Otherwise
+  apply the v7.23.0 entry's action, steps 1-5, as written there; skip any piece
+  already present (additive reconciliation may have spliced
+  `steer_ci_actions_lock`, the hygiene group or the `env:` already).
+
+  **No history entry is earned.**
+
 ### v7.23.0 - `ci:security` scans committed secrets with gitleaks
 
 - **What & why:** the stage gained a gitleaks pass over every commit, run before
@@ -137,8 +164,8 @@ Name the file and say what to carry forward.
 - **Precondition:** the repo has workflows and no lockfile -
 
   ```sh
-  ls .github/workflows/*.yml .github/workflows/*.yaml >/dev/null 2>&1 &&
-    [ ! -f .github/workflows/actions.lock ] && echo stale
+  find .github/workflows -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null |
+    grep -q . && [ ! -f .github/workflows/actions.lock ] && echo stale
   ```
 
   No output => already migrated, or no workflows => no-op.

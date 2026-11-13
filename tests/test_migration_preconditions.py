@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -98,3 +99,48 @@ def test_wide_remote_allow_precondition_is_silent_on_the_current_template(tmp_pa
     (tmp_path / ".claude").mkdir()
     (tmp_path / ".claude/settings.json").write_bytes(TEMPLATE_SETTINGS.read_bytes())
     assert not _fires(_precondition(WIDE_REMOTE_ALLOW), tmp_path)
+
+
+LOCKFILE = "shipped workflows use exact tags, locked in `actions.lock`"
+LOCKFILE_RERUN = "re-run the lockfile migration a 7.23.0 sync skipped"
+
+
+def _workflows(repo: Path, names: list[str]) -> None:
+    wf = repo / ".github/workflows"
+    wf.mkdir(parents=True)
+    for name in names:
+        (wf / name).write_text("on: push\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize("entry", [LOCKFILE, LOCKFILE_RERUN])
+@pytest.mark.parametrize(
+    ("files", "expected"),
+    [
+        (["ci.yml"], True),
+        (["ci.yaml"], True),
+        (["ci.yml", "release.yaml"], True),
+        (["ci.yml", "actions.lock"], False),
+        ([], False),
+    ],
+)
+def test_lockfile_precondition(tmp_path, entry, files, expected):
+    _workflows(tmp_path, files)
+    assert _fires(_precondition(entry), tmp_path) is expected
+
+
+@pytest.mark.parametrize("entry", [LOCKFILE, LOCKFILE_RERUN])
+def test_lockfile_precondition_without_github_dir(tmp_path, entry):
+    assert not _fires(_precondition(entry), tmp_path)
+
+
+# The agent runs a precondition in the user's shell, and zsh's default nomatch
+# aborts a command whose glob matches nothing. CI runners have no zsh, so this
+# pins the trap locally only.
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+@pytest.mark.parametrize("entry", [LOCKFILE, LOCKFILE_RERUN])
+def test_lockfile_precondition_fires_under_zsh(tmp_path, entry):
+    _workflows(tmp_path, ["ci.yml"])
+    out = subprocess.run(
+        ["zsh", "-f", "-c", _precondition(entry)], cwd=tmp_path, capture_output=True, text=True
+    )
+    assert out.stdout.strip() == "stale"
