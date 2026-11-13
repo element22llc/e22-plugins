@@ -74,23 +74,27 @@ LS_FAILED='steer-scan-ls-files-failed'
 
 # In a git work tree read git's file list (tracked + untracked-not-ignored), so a git-ignored
 # vendored dir drops out with no config. A broken git, or a root the enclosing repo ignores,
-# falls back to the walk rather than scanning nothing.
+# falls back to the walk rather than scanning nothing. The top level is never ignored, but
+# check-ignore matches it against an unanchored `*` (whitelist-style .gitignore), so skip it there.
 list_files() {
 	if command -v git >/dev/null 2>&1 &&
 		[ "$(git -C "${ROOT}" rev-parse --is-inside-work-tree 2>/dev/null)" = true ] &&
-		! git -C "${ROOT}" check-ignore -q . 2>/dev/null; then
+		{ [ -z "$(git -C "${ROOT}" rev-parse --show-prefix 2>/dev/null)" ] ||
+			! git -C "${ROOT}" check-ignore -q . 2>/dev/null; }; then
+		# core.fsmonitor=false: ls-files would otherwise run the command repo config names.
 		_list="$(
 			{
-				git -C "${ROOT}" ls-files -z --cached --others --exclude-standard 2>/dev/null ||
+				git -c core.fsmonitor=false -C "${ROOT}" ls-files -z --cached --others --exclude-standard 2>/dev/null ||
 					printf '\000%s\000' "${LS_FAILED}"
 			} | tr '\000' '\n' | LC_ALL=C sort -u
 		)"
 		if ! printf '%s\n' "${_list}" | grep -qxF "${LS_FAILED}"; then
+			_base="${ROOT%/}"
 			# -L: find -type f never matched a symlink, and grep would follow one out of the repo.
 			printf '%s\n' "${_list}" | while IFS= read -r _rel; do
 				[ -n "${_rel}" ] && want_path "${_rel}" &&
-					[ -f "${ROOT}/${_rel}" ] && [ ! -L "${ROOT}/${_rel}" ] &&
-					printf '%s/%s\n' "${ROOT}" "${_rel}"
+					[ -f "${_base}/${_rel}" ] && [ ! -L "${_base}/${_rel}" ] &&
+					printf '%s/%s\n' "${_base}" "${_rel}"
 			done
 			return 0
 		fi

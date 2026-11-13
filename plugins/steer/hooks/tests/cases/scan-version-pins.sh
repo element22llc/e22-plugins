@@ -113,6 +113,28 @@ printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/.helm-plugins/y/compose.yaml"
 scan "${SG}/.helm-plugins/y"
 assert_rc "scan: git-ignored root walked -> exit 1" "${rc}" 1
 
+# An ignore-everything-then-whitelist .gitignore must not read as an ignored root.
+SW="${WORK}/scan-whitelist"
+mkdir -p "${SW}/sub/.vend"
+git -C "${SW}" init -q >/dev/null 2>&1
+printf '*\n!*/\n!*.yml\nsub/.vend/\n' >"${SW}/.gitignore"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SW}/sub/.vend/v.yml"
+scan "${SW}"
+assert_rc "scan: whitelist-style .gitignore still honored at the top level" "${rc}" 0
+
+MARK="${WORK}/fsmonitor-ran"
+printf '#!/bin/sh\n: >"%s"\n' "${MARK}" >"${WORK}/fsmonitor.sh"
+chmod +x "${WORK}/fsmonitor.sh"
+git -C "${SW}" config core.fsmonitor "${WORK}/fsmonitor.sh"
+scan "${SW}"
+[ ! -e "${MARK}" ] && ok || bad "scan: repo-configured core.fsmonitor was executed"
+git -C "${SW}" config --unset core.fsmonitor
+
+printf 'image: %s\n' "$(pin postgres 11)" >"${SW}/top.yml"
+out="$(STEER_POLICY_FILE="${BUNDLED_POLICY}" sh "${SCAN}" "${SW}/" 2>&1)"
+assert_has "scan: trailing-slash root keeps one slash" "${out}" "${SW}/top.yml:1:"
+rm -f "${SW}/top.yml"
+
 # A failing `git ls-files` falls back to the walk rather than scanning nothing.
 SHIM="${WORK}/git-shim"
 mkdir -p "${SHIM}"
