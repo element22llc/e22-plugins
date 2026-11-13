@@ -57,7 +57,44 @@ scan_file() {
 	done
 }
 
-VIOLATIONS="$(
+want_path() {
+	case "/$1" in
+	*/.claude/worktrees/* | */.orca/worktrees/* | */node_modules/* | */.venv/* | */venv/* | \
+		*/vendor/* | */dist/* | */build/* | */target/* | */.terraform/* | */.next/* | */.work/*)
+		return 1
+		;;
+	esac
+	case "${1##*/}" in
+	Dockerfile | Dockerfile.* | mise.toml | .mise.toml | *.tf | *.sh | *.bash | *.yml | *.yaml) return 0 ;;
+	esac
+	return 1
+}
+
+LS_FAILED='steer-scan-ls-files-failed'
+
+# In a git work tree read git's file list (tracked + untracked-not-ignored), so a git-ignored
+# vendored dir drops out with no config. A broken git, or a root the enclosing repo ignores,
+# falls back to the walk rather than scanning nothing.
+list_files() {
+	if command -v git >/dev/null 2>&1 &&
+		[ "$(git -C "${ROOT}" rev-parse --is-inside-work-tree 2>/dev/null)" = true ] &&
+		! git -C "${ROOT}" check-ignore -q . 2>/dev/null; then
+		_list="$(
+			{
+				git -C "${ROOT}" ls-files -z --cached --others --exclude-standard 2>/dev/null ||
+					printf '\000%s\000' "${LS_FAILED}"
+			} | tr '\000' '\n' | LC_ALL=C sort -u
+		)"
+		if ! printf '%s\n' "${_list}" | grep -qxF "${LS_FAILED}"; then
+			# -L: find -type f never matched a symlink, and grep would follow one out of the repo.
+			printf '%s\n' "${_list}" | while IFS= read -r _rel; do
+				[ -n "${_rel}" ] && want_path "${_rel}" &&
+					[ -f "${ROOT}/${_rel}" ] && [ ! -L "${ROOT}/${_rel}" ] &&
+					printf '%s/%s\n' "${ROOT}" "${_rel}"
+			done
+			return 0
+		fi
+	fi
 	# Prune .claude/worktrees and .orca/worktrees by PATH (not -name): linked worktrees are full checkouts, so each file would be reported once per worktree.
 	find "${ROOT}" \
 		\( -path '*/.claude/worktrees' -o -path '*/.orca/worktrees' -o -name .git -o -name node_modules \
@@ -71,7 +108,11 @@ VIOLATIONS="$(
 		-o -name 'mise.toml' -o -name '.mise.toml' \
 		-o -name '*.tf' -o -name '*.sh' -o -name '*.bash' \
 		-o -name '*.yml' -o -name '*.yaml' \
-		\) -print 2>/dev/null | while IFS= read -r _file; do
+		\) -print 2>/dev/null
+}
+
+VIOLATIONS="$(
+	list_files | while IFS= read -r _file; do
 		scan_file "${_file}"
 	done
 )"

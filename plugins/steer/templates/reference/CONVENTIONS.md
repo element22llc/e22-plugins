@@ -85,7 +85,11 @@ floor's, so the file never carries a `recommended` value that could silently rot
 - The scanner (`scripts/scan-version-pins.sh`) is read-only: it never executes
   repo content, follows no symlinks, skips `.git`, dependency trees and build
   output, and its diagnostics print only the matched token and its location,
-  never surrounding file content.
+  never surrounding file content. Inside a git work tree it reads only tracked
+  and untracked-but-not-ignored files, so third-party files in a vendored dir
+  are excluded by git-ignoring the dir, not by editing the verbatim script;
+  submodule and nested-repo contents are not scanned. Outside git it walks the
+  tree.
 - **Tool versions inside CI `run:` blocks are pinned exactly** (`uvx <tool>@<ver>`,
   `npx <pkg>@<ver>`). An unpinned call runs whatever the registry holds at run
   time - unreviewed code, and a new lint rule reds an unrelated PR - and

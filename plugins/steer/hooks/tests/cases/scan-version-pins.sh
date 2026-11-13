@@ -2,6 +2,10 @@
 # shellcheck disable=SC2015,SC2034,SC2153,SC2154 # lib.sh idioms, and names it assigns
 . "$(dirname -- "$0")/../lib.sh"
 
+# The scanner reads git's file list inside a work tree, so a WORK under some
+# enclosing repo, or a developer's global excludes, would change what it sees.
+export GIT_CEILING_DIRECTORIES="${WORK}" GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
+
 # ---------------------------------------------------------------------------
 # scripts/scan-version-pins.sh - CI version-pin scanner (deterministic policy)
 # (pins assembled via pin() so this file's source carries no name:NN literal.)
@@ -53,5 +57,77 @@ mkdir -p "${SDNP}"
 printf 'image: %s\n' "$(pin postgres 11)" >"${SDNP}/compose.yaml"
 sh "${SCAN}" "${SDNP}" >/dev/null 2>&1
 assert_rc "scan: missing policy -> exit 2" "$?" 2
+
+# Inside a git work tree only tracked and untracked-not-ignored files are read.
+SG="${WORK}/scan-git"
+mkdir -p "${SG}/.helm-plugins/x" "${SG}/sub/.helm-plugins"
+git -C "${SG}" init -q >/dev/null 2>&1
+printf '.helm-plugins/\n' >"${SG}/.gitignore"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/.helm-plugins/x/compose.yaml"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/sub/.helm-plugins/compose.yaml"
+scan "${SG}"
+assert_rc "scan: git-ignored vendored dir skipped" "${rc}" 0
+scan "${SG}/sub"
+assert_rc "scan: git-ignored dir skipped from a subdirectory root" "${rc}" 0
+
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/compose.yaml"
+git -C "${SG}" add compose.yaml
+scan "${SG}"
+assert_rc "scan: tracked pin caught -> exit 1" "${rc}" 1
+git -C "${SG}" rm -q --cached compose.yaml
+rm -f "${SG}/compose.yaml"
+
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/new.yml"
+scan "${SG}"
+assert_rc "scan: untracked-not-ignored pin caught -> exit 1" "${rc}" 1
+rm -f "${SG}/new.yml"
+
+mkdir -p "${SG}/sub dir"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/sub dir/my compose.yml"
+scan "${SG}"
+assert_rc "scan: filename with spaces caught -> exit 1" "${rc}" 1
+rm -rf "${SG}/sub dir"
+
+mkdir -p "${SG}/node_modules/x"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/node_modules/x/compose.yaml"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/README.md"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/gone.yml"
+git -C "${SG}" add node_modules README.md gone.yml
+rm -f "${SG}/gone.yml"
+scan "${SG}"
+assert_rc "scan: tracked dependency tree, prose and deleted path skipped" "${rc}" 0
+git -C "${SG}" rm -rq --cached node_modules README.md gone.yml
+rm -rf "${SG}/node_modules" "${SG}/README.md"
+
+printf 'image: %s\n' "$(pin postgres 11)" >"${WORK}/outside.yml"
+ln -s "${WORK}/outside.yml" "${SG}/link.yml"
+git -C "${SG}" add link.yml
+scan "${SG}"
+assert_rc "scan: tracked symlink not followed" "${rc}" 0
+git -C "${SG}" rm -q --cached link.yml
+rm -f "${SG}/link.yml"
+
+# A root the enclosing repo ignores is walked, not read as an empty file list.
+mkdir -p "${SG}/.helm-plugins/y"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SG}/.helm-plugins/y/compose.yaml"
+scan "${SG}/.helm-plugins/y"
+assert_rc "scan: git-ignored root walked -> exit 1" "${rc}" 1
+
+# A failing `git ls-files` falls back to the walk rather than scanning nothing.
+SHIM="${WORK}/git-shim"
+mkdir -p "${SHIM}"
+REAL_GIT="$(command -v git)"
+printf '#!/bin/sh\nfor a in "$@"; do [ "$a" = ls-files ] && exit 1; done\nexec "%s" "$@"\n' "${REAL_GIT}" >"${SHIM}/git"
+chmod +x "${SHIM}/git"
+PATH="${SHIM}:${PATH}" STEER_POLICY_FILE="${BUNDLED_POLICY}" sh "${SCAN}" "${SG}" >/dev/null 2>&1
+assert_rc "scan: failing ls-files falls back to the walk -> exit 1" "$?" 1
+
+# Outside git a .gitignore means nothing: the walk still reads the vendored dir.
+SN="${WORK}/scan-nogit"
+mkdir -p "${SN}/.helm-plugins"
+printf '.helm-plugins/\n' >"${SN}/.gitignore"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SN}/.helm-plugins/compose.yaml"
+scan "${SN}"
+assert_rc "scan: non-git root walked -> exit 1" "${rc}" 1
 
 finish
