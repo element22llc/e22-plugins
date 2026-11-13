@@ -13,7 +13,7 @@
   "dependencies": {
     "@slidev/cli": "52.20.1",
     "@slidev/theme-seriph": "0.25.0",
-    "vue": "3.5.44"
+    "vue": "3.5.45"
   },
   "devDependencies": {
     "playwright-chromium": "1.64.1"
