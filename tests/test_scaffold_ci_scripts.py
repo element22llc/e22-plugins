@@ -304,7 +304,19 @@ def test_security_reports_code_findings_without_the_matched_source(repo: Repo) -
     assert _FAKE_TOKEN not in r.out
     assert "generic.secrets.security.detected-npm-token .npmrc:3" in r.out
     assert "javascript.lang.security.audit.eval src/a.js:12" in r.out
+    assert r.calls[-1].startswith(f"{_SEMGREP}{repo.tmp}{os.sep}")
     assert list(repo.tmp.iterdir()) == []
+
+
+def test_security_does_not_report_findings_when_semgrep_wrote_none(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    (repo.bin / "semgrep").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
+    missing = repo.root.parent / "absent.json"
+    r = repo.run("ci-security.sh", FAKE_TOKEN=_FAKE_TOKEN, FINDINGS_JSON=str(missing))
+    assert r.code == 1
+    assert _FAKE_TOKEN not in r.out
+    assert "Semgrep failed (exit 1)" in r.out
+    assert "code findings, listed above" not in r.out
 
 
 def test_hygiene_on_an_empty_repo_still_validates_tasks(repo: Repo) -> None:

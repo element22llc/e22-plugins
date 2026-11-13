@@ -115,8 +115,10 @@ Name the file and say what to carry forward.
 - **Action:** read-then-propose; show the diff and apply on a yes. Section
   re-take of `scripts/ci-security.sh`: replace the region from
   `steer_ci_group 'semgrep` through its `steer_ci_endgroup` with the
-  scaffold's Semgrep block (its comment, the `findings="$(mktemp)"` temp file
-  and `EXIT` trap, the group, the `case` on `rc`, and `exit "${rc}"`). Carry
+  scaffold's Semgrep block, from its comment through
+  `[ "${rc}" -eq 0 ] || exit "${rc}"`: the `findings` temp file, both traps
+  (`EXIT`, and `HUP INT TERM`), `rc=0`, the group with the extracted
+  `listed` lines, and the error branches. Carry
   any flag the product added to its `semgrep scan` line (an extra `--config`,
   an `--exclude`) onto the new line; carry every other line forward unchanged.
   If a CI step writes a credential into a tracked file before `ci:security`,
