@@ -124,8 +124,8 @@ the first finding, to try inputs and paths the tests skip, and, when it finds
 nothing, to name what it tried. "Looks good" with no list is not a review.
 
 **Specialist lenses - spawned from what the diff does.** Alongside the general
-reviewer, in the same message, spawn one fresh reviewer per lens the diff
-triggers, each given the same requirement, diff and repo access plus its lens
+reviewer, in the same message, spawn one fresh `steer-pr-reviewer` per lens
+the diff triggers, each given the same requirement, diff and repo access plus its lens
 below. Trigger on what the change does, not on a path list: the examples are
 the app profile's, and an infra or library repo maps them to its own layout.
 At most these three; a diff that triggers none gets the general reviewer alone.
@@ -156,7 +156,8 @@ thinks should have run; run that one before the round closes.
   least-privilege and actions pinned.
 
 **Refute pass - before a high finding reaches the author.** Adversarial
-reviewers over-report by design, so high findings go to fresh verifiers - one
+reviewers over-report by design, so high findings go to fresh verifiers
+(`steer-pr-reviewer`) - one
 per reviewer that raised any, all in one message. Give each its reviewer's
 high findings, the diff and the repo, and ask it to disprove each one: the
 guard that already handles the case, the test that already covers it, the
@@ -178,8 +179,8 @@ gate's report line names it `not run`, and a verifier's findings stay
 **unsure**. Never count it as zero findings - that is silent truncation
 (section 6).
 
-In `/steer:work review` the per-PR reviewer applies the triggered lenses
-itself and spawns nothing, keeping a batch to one reviewer per PR; a PR whose
+In `/steer:work review` the per-PR reviewer, a `steer-pr-reviewer`, applies
+the triggered lenses itself and spawns nothing, keeping a batch to one reviewer per PR; a PR whose
 card carries a high finding then gets one fresh verifier for all of them.
 
 Severity ranking is what makes the loop converge: **high** is what a reviewer
@@ -234,6 +235,10 @@ silently.
   code, so it is *not* used for the plan gate) - the same explicit-invocation
   pattern `/steer:audit` and `/steer:audit spec` use. The plan gate uses a fresh
   general reviewer subagent instead.
+- **`steer-pr-reviewer`** is the shipped diff reviewer: the per-PR reviewer in
+  `/steer:work review`, each specialist lens, and every refute-pass verifier.
+  It has git access, reads diff-first on a tool-call budget, and re-reviews
+  only the commits since its previous card.
 
 ## 6. Cost
 
@@ -243,6 +248,14 @@ the diff-triggered lenses (a change outside their domains pays for one reviewer)
 the refute pass (a false high finding costs one verifier, not a fix round) and the
 bounded exit (section 2). If a run stops with findings still open - stalled or at
 the 4-round cap - say which, and name what was left - silent truncation reads as "all clear" when it was not.
+
+**Model tier follows the judgment a role carries.** The plan-gate reviewer and
+the code gate's general reviewer run on the session's model: they weigh the
+whole change. Lenses, per-PR reviewers and verifiers are bounded checks and run
+as `steer-pr-reviewer`, pinned to a mid tier (Sonnet in Claude Code; on another
+client, a fresh read-only subagent on its mid-tier model). A reviewer's cost is
+turns times context, so its scope - the diff first, a delta on re-review -
+matters as much as its tier.
 
 ## 7. Related: the Advisor tool (per-developer, optional)
 
@@ -265,3 +278,8 @@ out of the scaffold's checked-in `settings.json`, which would silently override
 each teammate's choice. Enable it yourself with `/advisor <model>` (e.g.
 `/advisor opus`, saved to your user settings) or `claude --advisor opus` for one
 session.
+
+**Its cost grows with the session.** The advisor's read of the conversation is
+never cached: each call processes the full transcript at the advisor model's
+input rate. On a long-running session, prefer a cheaper advisor or start fresh
+sessions per task.

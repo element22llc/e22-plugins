@@ -1,0 +1,19 @@
+kind: Changed
+time: 2026-11-13T12:00:00.000000000-05:00
+custom:
+  Slug: tiered-diff-reviewers
+body: |-
+  - **Changed: `/steer:work` review subagents run on a mid tier, diff-first.**
+    A new `steer-pr-reviewer` agent, pinned to Sonnet in Claude Code, runs
+    the per-PR reviewer in `review`, every code-gate specialist lens and
+    every refute-pass verifier. The plan gate and the code gate's general
+    reviewer keep the session model. The reviewers used to be untyped
+    subagents that inherited the session model, Fable included. They
+    explored the repo with no budget and re-read the whole PR on every
+    re-review. The agent reads the diff first, leaves it only to answer a
+    question the diff raises, and works to a tool-call budget. A re-review
+    reads only the commits since its previous card. In `/usage` the reviewers
+    now show under steer, not under `general-purpose`. `REVIEW-LOOP.md` notes
+    that the advisor's read of the transcript is never cached, so each call
+    costs more as a session grows. `queue` names the worker's agent type, so
+    a worker is never a fork.

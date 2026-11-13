@@ -70,8 +70,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `steer-reviewer` (no git), read `git diff origin/<default>...HEAD` and score
   it against the code-gate rubric in
   [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4 - the
-  general reviewer plus one per specialist lens the diff triggers, in one
-  message, then the refute pass on their high findings; every reviewer and the
+  general reviewer (session model) plus one `steer-pr-reviewer` per specialist
+  lens the diff triggers, in one message, then the refute pass on their high
+  findings, its verifiers `steer-pr-reviewer` too; every reviewer and the
   refute pass report back before anything is pushed. A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
   Fix every confirmed high finding, re-run the local gates, and re-review; stop
