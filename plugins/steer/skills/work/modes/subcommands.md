@@ -24,7 +24,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   defines (section "Marker format"), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
-  prune the markers of closed issues (`WORK-MARKER.md` -> Removal); load
+  prune the markers of closed issues (`WORK-MARKER.md` -> Removal); under
+  Orca, link the issue to the workspace (Orca workspace links, below); load
   linked specs (`steer:spec-path`, acceptance criteria); **pick up the
   questions this slice settles** - each open `impact: non-blocking` question in
   the feature's `## Open questions` gated at `required_before: implementation`
@@ -102,8 +103,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Prune the markers of closed
   issues (`WORK-MARKER.md` -> Removal). Record the PR with `link-delivery` - in
-  solo-trunk the closing trunk commit is that ref - transition the issue to
-  `validate`, and **stop** - on a ready PR, once its CI is watched.
+  solo-trunk the closing trunk commit is that ref - and, under Orca, link the
+  issue and the PR to the workspace (Orca workspace links, below); transition
+  the issue to `validate`, and **stop** - on a ready PR, once its CI is watched.
   **Draft or ready.** Open the PR ready (`gh pr create` without `--draft`), or
   ready an existing draft (`gh pr ready`), only when it holds nothing its author
   must read first, across the whole PR and not only the commits a later gate
@@ -157,6 +159,24 @@ Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
 phase reconciles rather than duplicates. Naming two or more issues runs
 `queue` instead (`SKILL.md` -> Multiple issues).
+
+## Orca workspace links
+
+Only when the session runs under Orca (`ORCA_WORKTREE_ID` is set) and the
+`orca` CLI is on the PATH: attach the URLs to this checkout's Orca workspace,
+so Orca's sidebar shows them and `orca reference find <url>` locates the agent
+working on the issue.
+
+```sh
+orca reference add <issue-url> [<pr-url>] --worktree path:<git rev-parse --show-toplevel>
+```
+
+Write the top-level path out. Use `path:`, never `current`: from a worktree
+nested in the checkout (a `queue` worker's), `current` resolves to the parent's
+workspace and would link the issue there, while `path:` names the nested
+worktree's own entry. The issue URL is the tracker's, which may be another repo's;
+solo-trunk has no PR to add. A repeat add changes nothing. Best-effort: on any
+failure say so in one line and carry on - it never blocks `start` or `finish`.
 
 ## Spec delta - derived, never staged
 

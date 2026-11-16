@@ -1,0 +1,13 @@
+kind: Added
+time: 2026-11-16T16:00:00.000000000-05:00
+custom:
+  Slug: orca-work-references
+body: |-
+  - **Added: `/steer:work` links the issue and its PR to the Orca workspace.**
+    Under Orca, `start` attaches the issue URL and `finish` the issue and PR
+    URLs to the checkout's workspace with `orca reference add`, so Orca's
+    sidebar shows them and `orca reference find <url>` locates the agent on
+    an issue. The call targets the workspace by path, so a `queue` worker in
+    a nested worktree links its issue to its own entry, never the parent's.
+    It is best-effort and never blocks `start` or `finish`; outside Orca
+    nothing changes.

@@ -321,6 +321,16 @@ issues; `status` only reports them. The status band and its Work claims pane
 also leave out a marker whose branch exists neither locally nor on a remote, or
 whose pushed upstream is gone, so finished work is not offered as a `resume`.
 
+## Orca workspace links
+
+Under Orca, `start` attaches the issue URL to the checkout's Orca workspace and
+`finish` attaches the issue and its PR (`orca reference add`). Orca's sidebar
+then shows both, and `orca reference find <url>` locates the agent working on
+an issue. The call names the workspace by path, so a `queue` worker in a nested
+worktree links its issue to its own entry, never to the parent's workspace. It
+is best-effort: a failure is reported in one line and never blocks the work.
+Outside Orca nothing runs.
+
 ## Native Claude Code delivery features
 
 Claude Code's own delivery tools fit this flow without moving the merge gate.

@@ -38,6 +38,7 @@ allowed-tools:
   - Bash(gh pr checks *)
   - Bash(gh run view *)
   - Bash(gh run watch *)
+  - Bash(orca reference add *)
   - mcp__github__create_pull_request
   - mcp__github__update_pull_request
   - mcp__github__list_pull_requests
