@@ -25,11 +25,20 @@ or no UI in the diff, say there is nothing to drive and stop.
 
 1. **The app runs on a fresh stack**: `mise run dev:setup`, then the repo's dev
    task, both through `mise run` so the worktree's ports apply. Stop whatever
-   you started before you finish.
+   you started before you finish. Under Orca (`ORCA_WORKTREE_ID` set, `orca` on
+   the PATH), take the app's URL from `orca ports --json` - the dev server row's
+   `advertisedUrl`, else `http://<connectHost>:<port>` from that row - rather
+   than deriving it from the worktree's port offset.
 2. **A browser driver**, chosen by the tool table in
    `${CLAUDE_PLUGIN_ROOT}/templates/demo/README.md` -> Choosing the tool: the
    Playwright CLI where there is a shell, the Playwright MCP where there is none.
-   Neither available -> say so and stop; a guessed result is not QA.
+   **Under Orca, drive Orca's built-in browser instead**, so the dev can watch
+   the run in the IDE: read `orca skills get orca-cli --reference
+   references/browser.md` once, then `orca tab create --url <app-url> --json`,
+   and pass its `browserPageId` as `--page` to every later `snapshot`, `click`,
+   `fill`, `console`, `network` and `screenshot`. Close only that tab (`orca tab
+   close --page <id>`) when done.
+   No driver available -> say so and stop; a guessed result is not QA.
 3. **Local and seeded only.** Never a deployed environment, a real account or a
    real third-party call. Saved sign-in state holds tokens: keep it in the
    scratchpad or the anchored, ignored `demo/.auth/`, never a committed path.

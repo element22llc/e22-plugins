@@ -232,7 +232,8 @@ the unpushed trunk commits in solo-trunk - with the app on a fresh local stack:
 
 It is opt-in: `finish` suggests it when the diff touches UI paths and never
 runs it. The driver is the walkthrough's - the Playwright CLI with a shell, the
-Playwright MCP without - and no QA script is committed; a check worth keeping
+Playwright MCP without, and under Orca its built-in browser, so you can watch
+the run in the IDE - and no QA script is committed; a check worth keeping
 becomes a regression test. Local, seeded data only: never a deployed
 environment or a real account.
 
