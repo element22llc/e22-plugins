@@ -1,8 +1,8 @@
 # Subagents reference
 
-`steer` ships one subagent under `plugins/steer/agents/`. It is a **read-only
-worker**, not a new capability - it grants no authority the calling skill didn't
-already have, and its tool allowlist is strictly narrower.
+`steer` ships two subagents under `plugins/steer/agents/`. Each is a
+**read-only worker**, not a new capability - it grants no authority the calling
+skill didn't already have.
 
 !!! note "Why a shipped subagent at all"
     The read-heavy review skills (`/steer:audit`, `/steer:audit spec`) sweep a whole
@@ -28,7 +28,7 @@ vets, ranks, and routes what it returns.
 | **Model** | `inherit` (matches the lead's model for finding quality; can be switched to a cheaper tier as a cost lever) |
 | **Invocation** | Explicit, by the calling skill - never auto-delegated |
 
-### Design notes
+### `steer-reviewer` design notes
 
 - **Explicit invocation, not auto-delegation.** An earlier auto-delegating
   analyzer was trialed and removed because it never fired reliably in practice.
@@ -48,3 +48,30 @@ vets, ranks, and routes what it returns.
 - **Plugin-scoped limits.** Plugin subagents ignore the `hooks`, `mcpServers`,
   and `permissionMode` frontmatter fields by design; `steer-reviewer` uses none
   of them.
+
+## `steer-pr-reviewer`
+
+A diff reviewer invoked **explicitly** by `/steer:work`: the per-PR reviewer in
+`review`, each specialist lens (database, UI, security) in the code gate, and
+every refute-pass verifier. It scores one diff against the
+[`REVIEW-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/REVIEW-LOOP.md)
+section 4 rubric and returns the card the caller asked for.
+
+| Field | Value |
+| :---- | :---- |
+| **Tools** | `Read`, `Grep`, `Glob`, `Bash` - `Bash` for `git` and `gh` reads; read-only by its instructions, not by construction |
+| **Model** | `sonnet` - a bounded check on a mid tier; the plan gate and the code gate's general reviewer keep the session model |
+| **Turn cap** | `maxTurns: 60`, under a prose budget of about 40 tool calls |
+| **Invocation** | Explicit, by the calling skill - never auto-delegated |
+
+### Why it differs
+
+- **Diff-first.** It reads the diff and PR description, and leaves them only to
+  answer a question the diff raises. A reviewer's cost is turns times context,
+  so scope matters as much as tier.
+- **Delta re-review.** Given its previous card and head SHA, it reviews only
+  the commits since and settles each earlier finding.
+- **Attributable cost.** Named, the reviewers show under steer in `/usage`
+  instead of as `general-purpose` subagents inheriting the session model.
+- **Not `steer-reviewer`.** That agent has no shell and audits on-disk code
+  against the standards; this one needs git to read a diff.

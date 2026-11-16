@@ -15,7 +15,8 @@ while the subcommands below read an issue and deliver it.
     adversarial reviewer checks correctness, other instances of the fixed
     pattern, peer consistency, introduced risk and touched docs; a database,
     UI or security specialist joins when the diff enters that domain; a
-    verifier tries to refute each high finding before it reaches the author;
+    verifier tries to refute each high finding before it reaches the author
+    (specialists and verifiers run as `steer-pr-reviewer`, on a mid tier);
     and a bounded fix loop follows: it stops on a round with no confirmed
     high finding, re-reviews only while that count drops round over round,
     and never runs more than 4 rounds.
@@ -156,7 +157,8 @@ given) and does the reviewer's legwork in parallel:
    conflicting PRs go straight to *Blocked* without a review. A stacked PR
    adds one lookup for a GitHub native stack: merging it merges every PR
    below it, so its readiness is judged across the whole stack.
-2. **One read-only reviewer subagent per remaining PR**, all at once, each
+2. **One `steer-pr-reviewer` per remaining PR**, all at once, each reading
+   the diff first (a re-review reads only the commits since its last card) and
    returning a seven-line card: what it does, change class, tests and contract
    coverage, drift flags, findings with `path:line`, design questions for the
    author, a suggested verdict. A fresh verifier then tries to refute each

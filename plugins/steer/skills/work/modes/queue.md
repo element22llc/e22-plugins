@@ -43,8 +43,9 @@ describes, and nothing beyond it.
 Determine the delivery mode once (`SKILL.md` -> Delivery mode).
 
 **pr-flow.** Spawn one fresh subagent per issue, in its own worktree (Claude
-Code: the Agent tool with `isolation: "worktree"`; elsewhere `git worktree add`
-off the freshly fetched default branch). Never a fork: a fork carries every
+Code: the Agent tool with `subagent_type: "general-purpose"` and `isolation:
+"worktree"`; elsewhere `git worktree add` off the freshly fetched default
+branch). Never a fork: a fork carries every
 earlier issue's context into the next. Brief it to:
 
 - load the rules first with `/steer:standards` - a fresh subagent sees steer's
