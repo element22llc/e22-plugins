@@ -7,7 +7,7 @@ schema: 1
 
 products:
   postgres:
-    minimum_supported: "14"
+    minimum_supported: "15"
     denied: ["9", "10", "11", "12", "13"]
   mysql:
     minimum_supported: "8"
