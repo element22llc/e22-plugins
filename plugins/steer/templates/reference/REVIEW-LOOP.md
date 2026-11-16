@@ -236,8 +236,7 @@ silently.
   pattern `/steer:audit` and `/steer:audit spec` use. The plan gate uses a fresh
   general reviewer subagent instead.
 - **`steer-pr-reviewer`** is the shipped diff reviewer: the per-PR reviewer in
-  `/steer:work review`, the code gate's general reviewer, each specialist lens,
-  and every refute-pass verifier.
+  `/steer:work review`, each specialist lens, and every refute-pass verifier.
   It has git access, reads diff-first on a tool-call budget, and re-reviews
   only the commits since its previous card.
 
@@ -255,9 +254,10 @@ the code gate's general reviewer run on the session's model: they weigh the
 whole change. Lenses, per-PR reviewers and verifiers are bounded checks and run
 as `steer-pr-reviewer`, pinned to a mid tier (Sonnet in Claude Code; on another
 client, a fresh read-only subagent on its mid-tier model). The general reviewer
-is a `steer-pr-reviewer` too, spawned with the session's model as an override
-(Claude Code: the Agent tool's `model`), so it keeps its tier and gains the
-diff-first discipline, with a larger budget than a lens. A reviewer's cost is
+stays a fresh general-purpose subagent, with every tool and the standards
+digest, but takes the same diff-first discipline in its brief: read the diff
+and the requirement first, leave them only for a question the diff raises, and
+work to about **80 tool calls**, naming what it did not cover. A reviewer's cost is
 turns times context, so its scope - the diff first, a delta on re-review -
 matters as much as its tier.
 

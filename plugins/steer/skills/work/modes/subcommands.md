@@ -70,9 +70,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `steer-reviewer` (no git), read `git diff origin/<default>...HEAD` and score
   it against the code-gate rubric in
   [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the
-  general reviewer (a `steer-pr-reviewer` told it is the general reviewer and
-  kept on the session model: Claude Code passes the Agent tool's `model` as
-  your own model's alias) plus one `steer-pr-reviewer` per specialist
+  general reviewer (a fresh general-purpose subagent on the session model,
+  briefed diff-first to about 80 tool calls, `REVIEW-LOOP.md` section 6) plus
+  one `steer-pr-reviewer` per specialist
   lens the diff triggers, in one message, then the refute pass on their high
   findings, its verifiers `steer-pr-reviewer` too; every reviewer and the
   refute pass report back before anything is pushed. A later
