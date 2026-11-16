@@ -3,6 +3,122 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.24.0
+
+- **Changed: `/steer:work` review subagents run on a mid tier, diff-first.**
+  A new `steer-pr-reviewer` agent, pinned to Sonnet in Claude Code, runs
+  the per-PR reviewer in `review`, every code-gate specialist lens and
+  every refute-pass verifier. The plan gate and the code gate's general
+  reviewer keep the session model. The reviewers used to be untyped
+  subagents that inherited the session model, Fable included. They
+  explored the repo with no budget and re-read the whole PR on every
+  re-review. The agent reads the diff first, leaves it only to answer a
+  question the diff raises, and works to a tool-call budget. A re-review
+  reads only the commits since its previous card. In `/usage` the reviewers
+  now show under steer, not under `general-purpose`. `REVIEW-LOOP.md` notes
+  that the advisor's read of the transcript is never cached, so each call
+  costs more as a session grows. `queue` names the worker's agent type, so
+  a worker is never a fork.
+- **Fixed: `/steer:setup sync` no longer reports `drift-gate` and
+  `question-gate` as mis-wired when the mise tasks live outside `mise.toml`.**
+  The capability scanner now also reads TOML task includes: any `*.toml`
+  under mise's default task dirs (`.mise/tasks/` and the rest), or the files,
+  dirs and globs `[task_config] includes` names, which replaces those dirs.
+  It reads the files only and still never runs mise. CI may reach a
+  stage through a repo script `ci.yml` calls, one hop deep; a stage named
+  only in that script's comments does not count. `question-gate` now expects
+  `ws:ci:spec` in a workspace: a stock workspace reads wired, and a workspace
+  still on the core `ci.yml` reads mis-wired, as `drift-gate` already did.
+  `commit-gate` sees a `pre-commit` task defined in an include.
+- **Fixed: the version-pin scanner no longer reports pins in git-ignored
+  files.** Inside a git work tree `scripts/scan-version-pins.sh` now reads
+  only tracked and untracked-but-not-ignored files, so a vendored directory
+  such as `.helm-plugins/` drops out once it is in `.gitignore`. Outside git
+  it walks the tree as before. Submodule and nested-repo contents are no
+  longer scanned. The script is a verbatim copy, so a repo that kept a local
+  path skip reads `mis-wired`: move the skipped path into `.gitignore`, then
+  let `/steer:setup sync` re-copy the script.
+- **Fixed: `/steer:setup sync` skipped the 7.23.0 `actions.lock` migration in
+  nearly every repo.** Its precondition listed `*.yml` and `*.yaml` workflows
+  with one `ls`, which fails when either glob matches nothing, so a repo with
+  no `*.yaml` workflow read as already migrated. The check now uses `find`
+  with quoted patterns, which also holds under zsh, whose default `nomatch`
+  aborts on an unmatched glob. Repos a 7.23.0 sync already stamped get a
+  follow-up migration that applies the same steps when `actions.lock` is
+  still missing.
+- **Fixed: `ci:iac` never ran yamllint.** The Ansible check ran it only when
+  `.yamllint`, `.yamllint.yml` and `.yamllint.yaml` all existed; one config
+  now suffices. A migration rewrites the check in repos carrying the older
+  script. **Expect the first PR after the sync to fail** if the repo's YAML
+  does not pass its own yamllint config: fix the findings or relax the
+  config.
+- **Fixed: `ci:security` no longer prints Semgrep's matched source into the
+  CI log.** Semgrep's text output quotes each matched line, so a
+  `generic.secrets` match put the secret in the job log, where GitHub's
+  masking misses a long value the output wraps. The stage now writes
+  Semgrep's JSON to a temp file outside the workspace, discards its stdout
+  and stderr, and prints only each finding's rule id, path and line; it
+  still fails on the same findings. Run Semgrep locally to see a match. A
+  migration re-takes the Semgrep group in repos carrying the older script,
+  and the `security-gate` repair now warns that a CI step writing a
+  credential into a tracked file must run after `ci:security`. **If an
+  earlier run printed a secret, delete that run's logs and rotate it.**
+- **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): postgres 14->15. EOL floors only - what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
+
+- **Added: Orca workspaces created from an issue start in `/steer:work`.**
+  The `orca.yaml` that `/steer:setup worktrees` installs now carries an
+  `issueCommand`. Orca sends it as the agent's first prompt when a
+  workspace is created from a linked GitHub issue or PR with an empty
+  prompt, so the work is claimed, branched and delivered the steer way
+  instead of Orca's generic "Complete <url>". It is a prompt, not a shell
+  command, so it works with any agent Orca launches. The worktree scan
+  reports a new `issue-command` line (`ok`, `absent`, `custom`), only
+  where Orca manages worktrees, and keeps a repo's own prompt. Repos
+  without Orca see no change. Adding the key to an existing `orca.yaml`
+  makes Orca ask each dev to approve the file once more.
+- **Fixed: the status-band mod passes `claude plugin validate --strict` on
+  the latest Claude Code.** `register.tsx` no longer indexes the section
+  counts with the `language` tab, which has none, and its test supplies the
+  `isCollapsed` prop that `AbovePrompt` now requires. No change in behavior.
+- **Changed: the code gate's general reviewer and `queue` workers work to a
+  budget.** The general reviewer stays a general-purpose subagent on the
+  session model, keeping every tool and the standards digest. Its brief now
+  asks it to read the diff first, leave the diff only for a question the
+  diff raises, and stop at about 80 tool calls, naming what it did not cover.
+  The most any general reviewer used in the last 30 days was 78 calls. A
+  `queue` worker now stops at about 200 tool calls. It checkpoints its work
+  as a draft PR (in solo-trunk, it leaves the work in the checkout) and
+  returns a partial card. A fresh worker with the same brief then resumes
+  the issue, and a second partial records the issue as blocked, for
+  decomposing. Delivered workers used 88-135 calls, so the budget stops
+  only a runaway run, such as one rework that used 305 calls and 890k
+  tokens of context.
+- **Added: `/steer:work` links the issue and its PR to the Orca workspace.**
+  Under Orca, `start` attaches the issue URL and `finish` the issue and PR
+  URLs to the checkout's workspace with `orca reference add`, so Orca's
+  sidebar shows them and `orca reference find <url>` locates the agent on
+  an issue. The call targets the workspace by path, so a `queue` worker in
+  a nested worktree links its issue to its own entry, never the parent's.
+  It is best-effort and never blocks `start` or `finish`; outside Orca
+  nothing changes.
+- **Added: `/steer:work qa` drives Orca's built-in browser under Orca.**
+  The dev watches the QA run in an IDE tab instead of a headless
+  Playwright session: `qa` opens one Orca tab on the app, reads the page
+  through `orca snapshot`, checks `orca console` and `orca network` for
+  errors and failed requests, and closes only that tab. The app's URL
+  comes from `orca ports --json`, not from the worktree's port offset.
+  Outside Orca, `qa` still picks Playwright.
+- **Added: Orca opt-ins for `/steer:work queue` and the code gate.** Under
+  Orca, on the dev's request, `queue` gives each issue its own visible
+  Orca workspace (`orca worktree create --reference <issue-url> --agent
+  claude --prompt "/steer:work #N"`) instead of a subagent. The workspaces
+  run in parallel, the dev answers each one's gates in its own chat, and
+  the orchestrator verifies the branches and PRs from the tracker.
+  Separately, `finish` can add a Codex second opinion to the first round
+  of its code gate through Orca orchestration, when asked; it never
+  replaces a gate reviewer. Subagents stay the default, as Orca's own
+  guidance recommends, and nothing changes outside Orca.
+
 ## 7.23.0
 
 - **Changed: shipped workflows reference actions by exact tag, locked in
