@@ -76,16 +76,17 @@ each worker in the main checkout, one at a time, fast-forwarded to
 **Orca workspaces, only when the dev asks (pr-flow).** The default stays the
 subagent, which Orca's own guidance also prefers unless the dev wants to watch
 each issue or use another agent. On request, give each issue a visible Orca
-workspace with its setup run, instead of a subagent:
+workspace instead of a subagent:
 
 ```sh
 git fetch origin <default>
 orca worktree create --name issue-<n> --base-branch origin/<default> \
-  --branch issue/<n>-<slug> --reference <issue-url> --setup run \
-  --agent claude --prompt "/steer:work #<n>" --json
+  --branch issue/<n>-<slug> --reference <issue-url> --agent claude \
+  --prompt "/steer:work #<n> - reuse the checked-out issue/<n>-<slug>" --json
 ```
 
-Add `--reviewed` to the prompt when the queue has it. The default plan gate is
+Orca runs the repo's setup hooks as its own policy says. Add `--reviewed` to
+the prompt when the queue has it. The default plan gate is
 not added: it stands in for nobody watching each start, and here the dev does.
 Launch them all; they run in parallel. Each is a top-level session: it loads
 the rules itself, and its gates and questions are asked in its own workspace,

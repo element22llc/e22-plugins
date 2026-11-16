@@ -4,12 +4,12 @@ custom:
   Slug: orca-queue-workspaces
 body: |-
   - **Added: Orca opt-ins for `/steer:work queue` and the code gate.** Under
-    Orca, on the dev's request, `queue` gives each issue its own visible Orca
-    workspace (`orca worktree create --reference <issue-url> --agent claude
-    --prompt "/steer:work #N"`, setup run) instead of a subagent. The
-    workspaces run in parallel, the dev answers each one's gates in its own
-    chat, and the orchestrator verifies the branches and PRs from the
-    tracker. Separately, `finish` can add a Codex second opinion to its code
-    gate through Orca orchestration, when asked; it never replaces a gate
-    reviewer. Subagents stay the default, as Orca's own guidance recommends,
-    and nothing changes outside Orca.
+    Orca, on the dev's request, `queue` gives each issue its own visible
+    Orca workspace (`orca worktree create --reference <issue-url> --agent
+    claude --prompt "/steer:work #N"`) instead of a subagent. The workspaces
+    run in parallel, the dev answers each one's gates in its own chat, and
+    the orchestrator verifies the branches and PRs from the tracker.
+    Separately, `finish` can add a Codex second opinion to the first round
+    of its code gate through Orca orchestration, when asked; it never
+    replaces a gate reviewer. Subagents stay the default, as Orca's own
+    guidance recommends, and nothing changes outside Orca.
