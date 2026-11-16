@@ -1,0 +1,13 @@
+kind: Fixed
+time: 2026-11-13T15:10:00.000000000-05:00
+custom:
+  Slug: actions-lock-precondition
+body: |-
+  - **Fixed: `/steer:setup sync` skipped the 7.23.0 `actions.lock` migration in
+    nearly every repo.** Its precondition listed `*.yml` and `*.yaml` workflows
+    with one `ls`, which fails when either glob matches nothing, so a repo with
+    no `*.yaml` workflow read as already migrated. The check now uses `find`
+    with quoted patterns, which also holds under zsh, whose default `nomatch`
+    aborts on an unmatched glob. Repos a 7.23.0 sync already stamped get a
+    follow-up migration that applies the same steps when `actions.lock` is
+    still missing.
