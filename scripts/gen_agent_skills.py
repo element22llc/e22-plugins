@@ -147,8 +147,9 @@ HELPER_NOTE = (
     f'> `"{HELPER_VAR}/..."` (a helper, its template argument, a plugin directory) need\n'
     "> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin\n"
     "> (Codex, Copilot CLI), or `plugins/steer` in a checkout of\n"
-    "> `element22llc/e22-plugins`. With no local copy, skip the step and say what it\n"
-    "> would have reported. Never download a helper and run it from a URL."
+    "> `element22llc/e22-plugins`. With no local copy, treat the helper as failed:\n"
+    "> take the step's no-helper path, else its failure path, and say so. Never\n"
+    "> download a helper and run it from a URL."
 )
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
 # A relative link that climbs out of the skill directory into `templates/`

@@ -170,6 +170,14 @@ instructions file. Install it from **Customize > Plugins**: add the
 runs in its own git worktree, which carries the committed Copilot files like any
 checkout.
 
+On a **remote host** (for example WSL), the app has been seen to load steer's
+skills and agents as a separate bundle without the plugin's `scripts/`,
+`templates/` and `hooks/` (observed November 2026; GitHub's docs do not
+describe it). The hooks then do not run, so the standards come from
+`.github/copilot-instructions.md` alone, and the skills fall back as
+[Known limitations](../reference/known-limitations.md#skills-only-hosts)
+describes.
+
 ### OpenAI Codex (CLI and app)
 
 ```shell

@@ -87,7 +87,8 @@ The update is therefore a guarded read-modify-write, never a blind overwrite:
    the original, aborts the update and is reported. A failed transform must
    never reach the tracker as a body. On the `gh` arm,
    `scripts/issue-body.sh` runs steps 1-6 with these checks; use it rather than
-   a hand-written rewrite.
+   a hand-written rewrite, except on a host without it (`tracker-sync`
+   `OPERATIONS.md` -> No helper on disk).
 4. **Re-read** the issue immediately before writing.
 5. If the body **changed** since step 1, recompute the candidate from the new
    version.
