@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `ci:security` keeps Semgrep's matched source out of the CI log
+### v7.24.0 - `ci:security` keeps Semgrep's matched source out of the CI log
 
 - **What & why:** the Semgrep group printed Semgrep's text output, which quotes
   each matched line. A `generic.secrets` match put the secret in the job log,
@@ -128,7 +128,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
-### [Unreleased] - re-run the lockfile migration a 7.23.0 sync skipped
+### v7.24.0 - re-run the lockfile migration a 7.23.0 sync skipped
 
 - **What & why:** the v7.23.0 `actions.lock` entry's precondition was
   `ls .github/workflows/*.yml .github/workflows/*.yaml && ...`. `ls` fails when
@@ -157,7 +157,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
-### [Unreleased] - `ci-iac.sh` runs yamllint when any one config exists
+### v7.24.0 - `ci-iac.sh` runs yamllint when any one config exists
 
 - **What & why:** the Ansible check ran yamllint only when
   `ls .yamllint .yamllint.yml .yamllint.yaml` succeeded, which needs all three

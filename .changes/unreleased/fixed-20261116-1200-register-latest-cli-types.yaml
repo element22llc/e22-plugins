@@ -1,9 +1,0 @@
-kind: Fixed
-time: 2026-11-16T12:00:00.000000000-05:00
-custom:
-  Slug: register-latest-cli-types
-body: |-
-  - **Fixed: the status-band mod passes `claude plugin validate --strict` on
-    the latest Claude Code.** `register.tsx` no longer indexes the section
-    counts with the `language` tab, which has none, and its test supplies the
-    `isCollapsed` prop that `AbovePrompt` now requires. No change in behavior.
