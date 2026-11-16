@@ -253,7 +253,11 @@ the 4-round cap - say which, and name what was left - silent truncation reads as
 the code gate's general reviewer run on the session's model: they weigh the
 whole change. Lenses, per-PR reviewers and verifiers are bounded checks and run
 as `steer-pr-reviewer`, pinned to a mid tier (Sonnet in Claude Code; on another
-client, a fresh read-only subagent on its mid-tier model). A reviewer's cost is
+client, a fresh read-only subagent on its mid-tier model). The general reviewer
+stays a fresh general-purpose subagent, with every tool and the standards
+digest, but takes the same diff-first discipline in its brief: read the diff
+and the requirement first, leave them only for a question the diff raises, and
+work to about **80 tool calls**, naming what it did not cover. A reviewer's cost is
 turns times context, so its scope - the diff first, a delta on re-review -
 matters as much as its tier.
 

@@ -16,7 +16,9 @@ while the subcommands below read an issue and deliver it.
     pattern, peer consistency, introduced risk and touched docs; a database,
     UI or security specialist joins when the diff enters that domain; a
     verifier tries to refute each high finding before it reaches the author
-    (specialists and verifiers run as `steer-pr-reviewer`, on a mid tier);
+    (specialists and verifiers run as `steer-pr-reviewer`, on a mid tier; the
+    general reviewer stays on the session model, briefed diff-first to about
+    80 tool calls);
     and a bounded fix loop follows: it stops on a round with no confirmed
     high finding, re-reviews only while that count drops round over round,
     and never runs more than 4 rounds.
@@ -135,7 +137,9 @@ nothing itself:
    also gets the independent plan gate by default, without stopping for your
    sign-off; `--reviewed` adds the sign-off, and a plan whose high findings will
    not resolve comes back to you instead of being built. In solo-trunk the workers
-   run one at a time in the main checkout.
+   run one at a time in the main checkout. A worker that passes its budget of
+   about 200 tool calls checkpoints its work and returns a partial card; a
+   fresh worker resumes the issue, and a second partial records it as blocked.
 3. **Verify, don't trust** - the PR exists, targets the default branch (a ready
    one with a clean gate and green CI on its card), and the issue is in
    `validate`.

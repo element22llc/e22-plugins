@@ -1,0 +1,18 @@
+kind: Changed
+time: 2026-11-16T15:00:00.000000000-05:00
+custom:
+  Slug: budget-gate-reviewer-workers
+body: |-
+  - **Changed: the code gate's general reviewer and `queue` workers work to a
+    budget.** The general reviewer stays a general-purpose subagent on the
+    session model, keeping every tool and the standards digest. Its brief now
+    asks it to read the diff first, leave the diff only for a question the
+    diff raises, and stop at about 80 tool calls, naming what it did not cover.
+    The most any general reviewer used in the last 30 days was 78 calls. A
+    `queue` worker now stops at about 200 tool calls. It checkpoints its work
+    as a draft PR (in solo-trunk, it leaves the work in the checkout) and
+    returns a partial card. A fresh worker with the same brief then resumes
+    the issue, and a second partial records the issue as blocked, for
+    decomposing. Delivered workers used 88-135 calls, so the budget stops
+    only a runaway run, such as one rework that used 305 calls and 890k
+    tokens of context.
