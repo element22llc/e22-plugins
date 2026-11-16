@@ -91,9 +91,8 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 > **Pre-approved shell scope.** The `allowed-tools` frontmatter above
 > pre-approves read-only git and PR inspection, `git fetch`, branch
 > create/switch, the Rule-45-autonomous `git add` / `git commit`, the delivery
-> moves `git push` / `gh pr create` / `gh pr edit`, read-only CI status, so
-> the post-push CI watch runs without a prompt per poll, and the Orca workspace
-> link (`orca reference add`); with no authenticated
+> moves `git push` / `gh pr create` / `gh pr edit`, and read-only CI status, so
+> the post-push CI watch runs without a prompt per poll; with no authenticated
 > `gh`, the MCP `create_pull_request` / `update_pull_request` /
 > `list_pull_requests` tools stand in for the PR moves. It does **not**
 > pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
