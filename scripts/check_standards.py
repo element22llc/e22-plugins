@@ -88,6 +88,7 @@ import tomllib
 from pathlib import Path
 
 from check_plugin import PLUGIN_ROOT, parse_frontmatter
+from gen_agent_skills import RAW_BASE
 
 REGISTRY_PATH = PLUGIN_ROOT / "templates/reference/enums.registry"
 ENUMS_MD_PATH = PLUGIN_ROOT / "templates/reference/ENUMS.md"
@@ -1693,6 +1694,32 @@ def check_template_action_refs(errors: list[str]) -> None:
             )
 
 
+_ROUTER_RULE = RULES_DIR / "00-router.md"
+_NO_HELPER_ARM = "**No helper on disk**"
+# Helpers whose op is a guarded tracker write: a host that ships only the skills
+# (#944) has no copy, so the op must say how to do it without one or it has no
+# legal path at all.
+_GUARDED_HELPERS = ("issue-body.sh",)
+
+
+def check_skills_only_fallback(errors: list[str]) -> None:
+    """Assert skills-only hosts keep a legal path when the bundle is missing (#944)."""
+    if RAW_BASE not in _ROUTER_RULE.read_text(encoding="utf-8"):
+        errors.append(
+            f"rules/{_ROUTER_RULE.name}: the skills-only fallback must name {RAW_BASE}, "
+            f"the base gen_agent_skills.py rewrites shared files to"
+        )
+    for md in sorted(SKILLS_DIR.rglob("*.md")):
+        body = md.read_text(encoding="utf-8")
+        invoked = {m.group("script") for m in _SCRIPT_INVOCATION.finditer(body)}
+        for helper in sorted(invoked.intersection(_GUARDED_HELPERS)):
+            if _NO_HELPER_ARM not in body:
+                errors.append(
+                    f"{md.relative_to(PLUGIN_ROOT)}: runs {helper} with no "
+                    f"{_NO_HELPER_ARM} arm - a host without scripts/ has no path left"
+                )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -1721,6 +1748,7 @@ def run_checks(errors: list[str]) -> None:
     check_gh_pr_checks_scopes(errors)
     check_template_action_refs(errors)
     check_internal_skill_reachability(errors, skills)
+    check_skills_only_fallback(errors)
 
 
 def main() -> int:

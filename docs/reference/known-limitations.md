@@ -55,6 +55,22 @@ surfaces get the skills and the standards; no gate there is one you can count on
 The committed `.github/copilot-instructions.md` is the reliable standards path
 for Copilot. Detail: [GitHub Copilot support](../concepts/copilot-support.md#gate-hooks-on-copilot).
 
+## Skills-only hosts
+
+Some hosts load steer's skills without the rest of the plugin - the Copilot app
+on a remote host such as WSL has been seen to ship only `skills/` and `agents/`.
+The bundled helper scripts and the shared templates and reference docs the
+skills point to are then missing. The router rule tells the agent how to
+degrade: it reads a missing reference doc or template from the public repo's
+`main` branch (so it can be ahead of the installed release), takes a skill's
+no-helper path where one exists (the `tracker-sync` issue-body write does it by
+hand under the same fetch-compare-write guard), and otherwise follows the
+skill's failure path for that helper. It never runs a script fetched from a
+URL. That rule reaches such a host through `.github/copilot-instructions.md`,
+so refresh it with `/steer:setup sync` from a full install (Claude Code, or
+the Copilot CLI) after a steer update - sync needs the templates the
+skills-only host lacks.
+
 ## Knowledge-work mode (non-code folders, e.g. Claude Cowork)
 
 When a session opens a folder that is **confidently not a code project** - no git

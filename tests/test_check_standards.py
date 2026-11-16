@@ -576,3 +576,39 @@ def test_scaffold_settings_has_no_inner_wildcard_allow():
     perms = json.loads(settings.read_text(encoding="utf-8"))["permissions"]
     assert check_standards._inner_wildcard_allows(set(perms["allow"])) == []
     assert set(check_standards._RETIRED_WILDCARD_ALLOWS) <= set(perms["ask"])
+
+
+def _fallback_tree(monkeypatch, tmp_path: Path, *, rule: str, ops: str) -> list[str]:
+    rule_md = tmp_path / "00-router.md"
+    rule_md.write_text(rule, encoding="utf-8")
+    skill = tmp_path / "skills" / "tracker-sync"
+    skill.mkdir(parents=True)
+    (skill / "OPERATIONS.md").write_text(ops, encoding="utf-8")
+    monkeypatch.setattr(check_standards, "_ROUTER_RULE", rule_md)
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", tmp_path / "skills")
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_skills_only_fallback(errors)
+    return errors
+
+
+_RUNS_HELPER = 'run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/issue-body.sh" marker-set <n>`\n'
+
+
+def test_skills_only_fallback_clean(monkeypatch, tmp_path: Path):
+    errors = _fallback_tree(
+        monkeypatch,
+        tmp_path,
+        rule=f"read it from `{check_standards.RAW_BASE}/<path>`\n",
+        ops=_RUNS_HELPER + "**No helper on disk**: build it by hand.\n",
+    )
+    assert errors == []
+
+
+def test_skills_only_fallback_flags_missing_arm_and_url(monkeypatch, tmp_path: Path):
+    errors = _fallback_tree(
+        monkeypatch, tmp_path, rule="read it from somewhere\n", ops=_RUNS_HELPER
+    )
+    assert len(errors) == 2
+    assert "00-router.md" in errors[0]
+    assert "issue-body.sh" in errors[1]

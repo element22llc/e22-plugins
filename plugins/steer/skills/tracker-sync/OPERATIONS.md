@@ -126,6 +126,18 @@ is no less bounded by it.
   builds its candidate with `--in <body-file>`, which prints it and writes
   nothing.
 
+  **No helper on disk** (a host that ships only the skills): the one case that
+  builds the candidate by hand, under the protocol above. Fetch the body and
+  change only the block or the one marker line. Refuse an empty read, an empty
+  candidate, a body without exactly one well-formed block (on a block
+  replace), and a new block that carries managed markers itself; compare the
+  candidate with the fetched body outside the block and the markers, and
+  refuse on any difference. Re-fetch just before the write: if the
+  body changed, rebuild once, and stop as a conflict if it changes again.
+  Write it (`issue_write`, else `gh issue edit --body-file`), re-fetch, and
+  report a conflict if the result is not your candidate. Say in the result
+  that the helper was absent.
+
   A call that moves `steer:state` honors the **authority table** in
   `ISSUE-WORKFLOW.md` - perform only where permitted; a progress rewrite that
   leaves the state alone carries no such gate. `steer:state` is the **single
