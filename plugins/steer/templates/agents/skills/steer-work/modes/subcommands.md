@@ -173,8 +173,8 @@ orca reference add <issue-url> [<pr-url>] --worktree path:<git rev-parse --show-
 
 Write the top-level path out. Use `path:`, never `current`: from a worktree
 nested in the checkout (a `queue` worker's), `current` resolves to the parent's
-workspace and would link the issue there, while `path:` matches nothing and
-fails harmlessly. The issue URL is the tracker's, which may be another repo's;
+workspace and would link the issue there, while `path:` names the nested
+worktree's own entry. The issue URL is the tracker's, which may be another repo's;
 solo-trunk has no PR to add. A repeat add changes nothing. Best-effort: on any
 failure say so in one line and carry on - it never blocks `start` or `finish`.
 
