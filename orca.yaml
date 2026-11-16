@@ -1,0 +1,5 @@
+# Orca config for this repo's own workspaces; ships nothing (consumers get plugins/steer/templates/worktrees/orca.yaml).
+# No archive hook: this repo runs no Compose stack. issueCommand is an agent prompt, not a shell command;
+# it skips /steer:work, which needs a spec/tracker.md this repo does not have.
+issueCommand: |
+  Complete {{artifact_url}} following CONTRIBUTING.md -> "Working in this repo": a feat/* or fix/* branch off main, a changelog fragment when plugin behavior changes, `mise run ci` green after the first commit, then open the PR.
