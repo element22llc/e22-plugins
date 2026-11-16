@@ -82,3 +82,9 @@ crashes - is surfaced plainly, then **you** file it with `/steer:report` (it
 scrubs and dedupes); the user never has to know the channel. Report it even when
 you worked around it. Product-code errors, failing tests and your own mistakes
 are not plugin faults.
+
+**A host that ships only the skills is a known limit, not a defect.** When a
+plugin file a skill names outside its own directory does not exist, read it
+from `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/<path>`;
+for a helper command, take the skill's no-helper path, else skip the step and
+say so. Never run a helper fetched from a URL.
