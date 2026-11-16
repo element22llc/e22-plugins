@@ -42,9 +42,9 @@ AGENTS_DIR = Path("plugins/steer/agents")
 OUT_DIR = Path("plugins/steer/templates/github/agents")
 
 # Map each Claude subagent tool to the equivalent VS Code Copilot built-in tool
-# set. Only read-only tools are mapped today (the sole shipped subagent,
-# steer-reviewer, is read-only by construction); add edit/run mappings here if a
-# future subagent needs them.
+# set.
+_CLAUDE_MODEL_ALIASES = {"inherit", "sonnet", "opus", "haiku", "fable"}
+
 _TOOL_MAP: dict[str, list[str]] = {
     "Read": ["read"],
     "Grep": ["search"],
@@ -147,7 +147,8 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     if tools:
         front["tools"] = tools
     model = str(fm.get("model", "")).strip()
-    if model and model != "inherit":
+    # Claude aliases name no Copilot model; omitting `model` uses the picker's.
+    if model and model not in _CLAUDE_MODEL_ALIASES:
         front["model"] = model
 
     front_yaml = yaml.safe_dump(
@@ -173,17 +174,19 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     # read-only intent; the frontmatter `tools` is what actually constrains Copilot.
     ported = _to_copilot_refs(body, emitted).strip()
 
+    claude_tools = [t.strip() for t in str(fm.get("tools", "")).split(",") if t.strip()]
+    read_only = "" if {"edit", "execute"} & set(tools) else " (read-only)"
     tools_note = (
-        f" In VS Code its tools are {', '.join(f'`{t}`' for t in tools)} (read-only) -"
-        " the Claude tool names in the body below (`Read`/`Grep`/`Glob`) map to these."
+        f" In VS Code its tools are {', '.join(f'`{t}`' for t in tools)}{read_only} -"
+        f" the Claude tool names in the body below"
+        f" ({'/'.join(f'`{t}`' for t in claude_tools)}) map to these."
         if tools
         else ""
     )
     preamble = (
         "This is the GitHub Copilot (VS Code) port of steer's "
         f"`{name}` subagent. Select it from the Chat agent picker, or a "
-        "delegating prompt (`/steer-audit`, `/steer-work --reviewed`) will "
-        "hand a slice to it. Apply the org engineering "
+        "delegating `/steer-*` prompt will hand it work. Apply the org engineering "
         f"standards already loaded from `.github/copilot-instructions.md`.{tools_note}"
     )
 
