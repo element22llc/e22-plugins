@@ -8,8 +8,8 @@ body: |-
     skills and agents without `scripts/`, `templates/` or `hooks/`, leaving
     every bundled helper and reference doc a skill names missing. The router
     rule now says how to degrade: read a missing file from the public repo's
-    `main` branch, take a skill's no-helper path or skip the step and say so,
-    and never run a helper fetched from a URL. The `tracker-sync`
+    `main` branch, treat a missing helper as failed (the skill's no-helper
+    path, else its failure path), and never run a helper fetched from a URL. The `tracker-sync`
     `update-state` op gains a no-helper arm that writes the issue body by
-    hand under the same fetch-compare-write guard. A standards check keeps
-    both in place (#944).
+    hand under the same fetch-compare-write guard. A standards check pins the
+    fallback URL and the no-helper arm (#944).

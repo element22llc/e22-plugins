@@ -1662,7 +1662,7 @@ _NO_HELPER_ARM = "**No helper on disk**"
 # Helpers whose op is a guarded tracker write: a host that ships only the skills
 # (#944) has no copy, so the op must say how to do it without one or it has no
 # legal path at all.
-_GUARDED_HELPERS = ("scripts/issue-body.sh",)
+_GUARDED_HELPERS = ("issue-body.sh",)
 
 
 def check_skills_only_fallback(errors: list[str]) -> None:
@@ -1674,8 +1674,9 @@ def check_skills_only_fallback(errors: list[str]) -> None:
         )
     for md in sorted(SKILLS_DIR.rglob("*.md")):
         body = md.read_text(encoding="utf-8")
-        for helper in _GUARDED_HELPERS:
-            if f'{helper}" ' in body and _NO_HELPER_ARM not in body:
+        invoked = {m.group("script") for m in _SCRIPT_INVOCATION.finditer(body)}
+        for helper in sorted(invoked.intersection(_GUARDED_HELPERS)):
+            if _NO_HELPER_ARM not in body:
                 errors.append(
                     f"{md.relative_to(PLUGIN_ROOT)}: runs {helper} with no "
                     f"{_NO_HELPER_ARM} arm - a host without scripts/ has no path left"
