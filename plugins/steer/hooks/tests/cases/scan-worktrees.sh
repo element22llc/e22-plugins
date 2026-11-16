@@ -73,6 +73,7 @@ STUB
 		bad "scan-worktrees: .orca/worktrees unignored (got: ${out})"
 	sw_line teardown swept | grep -q 'claude-code' && ok || bad "scan-worktrees: claude-code swept, not hooked"
 	sw_line teardown absent | grep -q 'orca' && ok || bad "scan-worktrees: orca teardown absent"
+	sw_line issue-command absent | grep -q 'orca' && ok || bad "scan-worktrees: orca issueCommand absent"
 	sw_line orphan swprim-gone | grep -q "${WORK}/gone" && ok ||
 		bad "scan-worktrees: this repo's stack with its dir gone is an orphan (got: ${out})"
 	sw_line orphan swprim-live >/dev/null && bad "scan-worktrees: a live stack is never an orphan" || ok
@@ -114,6 +115,24 @@ STUB
 	cp "${ORCA_YAML}" "${SW_P}/orca.yaml"
 	sw_scan
 	sw_line teardown ok | grep -q 'orca' && ok || bad "scan-worktrees: installed orca.yaml is ok"
+	sw_line issue-command ok | grep -q 'orca' && ok || bad "scan-worktrees: installed issueCommand is ok"
+	printf 'scripts:\n  archive: |\n    mise run docker:clean || true\n' >"${SW_P}/orca.yaml"
+	sw_scan
+	sw_line teardown ok | grep -q 'orca' && ok || bad "scan-worktrees: archive-only orca.yaml stays ok"
+	sw_line issue-command absent | grep -q 'orca' && ok || bad "scan-worktrees: archive-only lacks issueCommand"
+	printf 'issueCommand: |\n  Fix {{artifact_url}}\n' >"${SW_P}/orca.yaml"
+	sw_scan
+	sw_line issue-command custom | grep -q 'orca' && ok || bad "scan-worktrees: a repo's own issueCommand is kept"
+
+	# no Orca worktree and no Orca session: nothing Orca-specific, even beside an orca.yaml.
+	SW_N="$(git_repo swNoOrca main)"
+	(cd "${SW_N}" && git commit -q --allow-empty -m init &&
+		git worktree add -q -b c1 .claude/worktrees/c1) >/dev/null 2>&1
+	cp "${ORCA_YAML}" "${SW_N}/orca.yaml"
+	out="$(env PATH="${SW_STUBS}:/usr/bin:/bin" MISE_STUB_LOG="${WT_LOG}" ORCA_WORKTREE_ID= TERM_PROGRAM= \
+		CONDUCTOR_WORKSPACE_PATH= CONDUCTOR_ROOT_PATH= sh "${SCANWT}" "${SW_N}")"
+	sw_line issue-command '' >/dev/null && bad "scan-worktrees: no issue-command line without Orca (got: ${out})" || ok
+	sw_line manager orca >/dev/null && bad "scan-worktrees: no Orca manager without Orca (got: ${out})" || ok
 	sw_line orphans n/a >/dev/null && ok || bad "scan-worktrees: docker failure is n/a, not an error"
 	printf 'scripts:\n  setup: pnpm install\n' >"${SW_P}/orca.yaml"
 	sw_scan
