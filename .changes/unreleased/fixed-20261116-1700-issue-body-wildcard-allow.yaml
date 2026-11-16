@@ -1,0 +1,15 @@
+kind: Fixed
+time: 2026-11-16T17:00:00.000000000-05:00
+custom:
+  Slug: issue-body-wildcard-allow
+body: |-
+  - **Fixed: the scaffold no longer allows `Bash(sh *scripts/issue-body.sh*)`.**
+    Its leading wildcard also matched `sh -c '<anything>' scripts/issue-body.sh`,
+    so any command could run unprompted. No anchored form exists (the plugin
+    path is machine-specific), so the entry moves to `permissions.ask`. On
+    `/steer:setup sync`, the existing permission-tier dedupe then removes the
+    exact copy releases 7.22 to 7.24 put in a repo's `allow`; a hand-edited
+    variant is left alone. When `/steer:work` reaches `update-state` through
+    `/steer:tracker-sync`, the `issue-body.sh` run now asks first. A new
+    `check_standards.py` guard rejects any scaffold `allow` entry that is bare,
+    all-wildcard, or has a wildcard before its fixed command tail.

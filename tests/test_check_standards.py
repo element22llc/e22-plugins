@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -545,6 +546,36 @@ def test_reachability_catches_an_exemption_on_a_public_skill(monkeypatch, tmp_pa
     )
     assert len(errors) == 1
     assert "'setup' is exempted" in errors[0]
+
+
+def test_inner_wildcard_allows_flags_only_a_wildcard_before_the_tail():
+    allow = {
+        "Bash(sh *scripts/issue-body.sh*)",
+        "Bash(git push*--force*)",
+        "Bash(git status:*)",
+        "Bash(git push)",
+        "Bash(gh pr create*)",
+        "mcp__github__issue_read",
+        "Bash",
+        "Bash(*)",
+        "Bash(*:*)",
+        "Bash(sh *:*)",
+    }
+    assert sorted(check_standards._inner_wildcard_allows(allow)) == [
+        "Bash",
+        "Bash(*)",
+        "Bash(*:*)",
+        "Bash(git push*--force*)",
+        "Bash(sh *:*)",
+        "Bash(sh *scripts/issue-body.sh*)",
+    ]
+
+
+def test_scaffold_settings_has_no_inner_wildcard_allow():
+    settings = check_standards.PLUGIN_ROOT / "templates/scaffold/claude/settings.json"
+    perms = json.loads(settings.read_text(encoding="utf-8"))["permissions"]
+    assert check_standards._inner_wildcard_allows(set(perms["allow"])) == []
+    assert set(check_standards._RETIRED_WILDCARD_ALLOWS) <= set(perms["ask"])
 
 
 def _fallback_tree(monkeypatch, tmp_path: Path, *, rule: str, ops: str) -> list[str]:
