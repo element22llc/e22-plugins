@@ -75,7 +75,13 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   one `steer-pr-reviewer` per specialist
   lens the diff triggers, in one message, then the refute pass on their high
   findings, its verifiers `steer-pr-reviewer` too; every reviewer and the
-  refute pass report back before anything is pushed. A later
+  refute pass report back before anything is pushed. Under Orca, and only when
+  the dev asks for a second opinion from another agent, add one Codex reviewer
+  through Orca orchestration: read `orca skills get orchestration`, start it
+  with `orca orchestration worker-start --worktree current --agent codex` and
+  the general reviewer's brief as its `--spec`, and end the turn until Orca
+  delivers its `worker_done`. It never replaces a gate reviewer, and its high
+  findings go through the same refute pass. A later
   `finish` on an open PR re-runs it on the commits since the last gate only.
   Fix every confirmed high finding, re-run the local gates, and re-review; stop
   on a round with no confirmed high finding, on one whose count did not drop

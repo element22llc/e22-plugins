@@ -21,7 +21,9 @@ while the subcommands below read an issue and deliver it.
     80 tool calls);
     and a bounded fix loop follows: it stops on a round with no confirmed
     high finding, re-reviews only while that count drops round over round,
-    and never runs more than 4 rounds.
+    and never runs more than 4 rounds. Under Orca you can ask for a Codex
+    second opinion on top, through Orca orchestration; it never replaces a
+    gate reviewer.
     Add `--reviewed` for an independent plan-gate review and plan sign-off
     before implementing: the reviewer checks what the plan misses, searches
     the repo for existing code the plan would duplicate, and flags every
@@ -147,6 +149,12 @@ nothing itself:
    starts. Human gates (`--reviewed` plan sign-off, an unresolved plan, a `Proposed`
    ADR, a product question) are asked in the session. The queue stops early only on a
    failure that would hit every issue.
+
+Under Orca, ask for it and each issue gets a visible Orca workspace instead of
+a subagent (`orca worktree create --reference <issue-url> --agent claude
+--prompt "/steer:work #N"`), with its setup run. The workspaces run in
+parallel, you answer each one's gates in its own chat, and the orchestrator
+verifies the branches when you come back. Subagents stay the default.
 
 It ends with one table of issue -> PR or blocker, and points at
 `/steer:work review --mine` to ready the drafts. **The orchestrator never merges
