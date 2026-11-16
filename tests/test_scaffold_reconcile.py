@@ -354,3 +354,20 @@ def test_missing_template_exits_3(tmp_path: Path):
     existing = tmp_path / "a.json"
     existing.write_text("{}", encoding="utf-8")
     assert sr.main(["json", str(existing), str(tmp_path / "nope.json")]) == 3
+
+
+def test_sync_evicts_the_retired_issue_body_wildcard_allow(tmp_path: Path):
+    # #924: releases 7.22-7.24 put a leading-wildcard allow in consumers; the
+    # template now carries it under ask so the tier dedupe removes the allow copy.
+    retired = "Bash(sh *scripts/issue-body.sh*)"
+    existing = tmp_path / "settings.json"
+    existing.write_text(
+        json.dumps({"permissions": {"allow": ["Bash(git status:*)", retired]}}),
+        encoding="utf-8",
+    )
+    template = REPO_ROOT / "plugins/steer/templates/scaffold/claude/settings.json"
+
+    assert sr.main(["json", str(existing), str(template), "--apply"]) == 0
+    perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
+    assert retired not in perms["allow"]
+    assert retired in perms["ask"]

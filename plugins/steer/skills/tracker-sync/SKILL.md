@@ -21,6 +21,11 @@ user-invocable: false
 # of the *delivery* surface (PR merge, branch protection, repo settings) is
 # deliberately NOT listed - it stays host-gated.
 #
+# `Bash(sh *scripts/issue-body.sh*)` is the exception to that backstop: the
+# scaffold keeps it under `ask` (#924), since its leading wildcard would also
+# match `sh -c '<anything>' ...`, so update-state's gh arm prompts when reached
+# transitively.
+#
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
 # reads/writes, native blocked-by edges and an issue's linked PRs have no `gh issue`
 # subcommand, so GraphQL is the transport to reach for on `field-get`, `field-set`,

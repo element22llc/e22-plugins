@@ -19,7 +19,6 @@
       "Bash(git commit:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue edit:*)",
-      "Bash(sh *scripts/issue-body.sh*)",
       "Bash(gh issue comment:*)",
       "Bash(gh issue list:*)",
       "Bash(gh issue view:*)",
@@ -59,6 +58,7 @@
     "ask": [
       "Bash(git rm:*)",
       "Bash(gh pr merge:*)",
+      "Bash(sh *scripts/issue-body.sh*)",
       "mcp__github__issue_write",
       "mcp__github__sub_issue_write",
       "mcp__plugin_steer_github__issue_write",

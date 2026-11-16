@@ -767,6 +767,24 @@ _NO_COMMIT_RE = re.compile(
 )
 
 
+# Allow entries shipped by an earlier scaffold with a wildcard before the fixed
+# command tail. They stay in `ask` so a consumer sync evicts the old allow copy.
+_RETIRED_WILDCARD_ALLOWS = ("Bash(sh *scripts/issue-body.sh*)",)
+
+
+def _inner_wildcard_allows(allow: set[str]) -> list[str]:
+    """Bash allow entries with a ``*`` anywhere but a trailing ``:*`` / ``*``."""
+    hits = []
+    for entry in allow:
+        m = re.fullmatch(r"Bash\((.*)\)", entry.strip())
+        if not m:
+            continue
+        inner = m.group(1).removesuffix(":*").removesuffix("*")
+        if "*" in inner:
+            hits.append(entry)
+    return hits
+
+
 def check_authorization(errors: list[str]) -> None:
     import json
 
@@ -1015,6 +1033,19 @@ def check_authorization(errors: list[str]) -> None:
                     f"{settings}: '{required_deny}' should stay under permissions.deny "
                     f"(#294 - blocks origin-repoint exfil even if a stale `git remote:*` "
                     f"allow survives a consumer reconcile)"
+                )
+        for entry in sorted(_inner_wildcard_allows(allow)):
+            errors.append(
+                f"{settings}: '{entry}' must not be under permissions.allow - a "
+                f"wildcard before the command's fixed tail also matches "
+                f"`sh -c '<anything>' ...` (#924); allow only a fixed prefix + `:*`"
+            )
+        for retired in _RETIRED_WILDCARD_ALLOWS:
+            if retired not in ask:
+                errors.append(
+                    f"{settings}: '{retired}' must stay under permissions.ask - the "
+                    f"tier dedupe in scaffold_reconcile.py evicts the copy earlier "
+                    f"releases put in a consumer's allow only while it is there (#924)"
                 )
 
     # 4. build documents both modes and delegates governed implementation to
