@@ -60,9 +60,12 @@ earlier issue's context into the next. Brief it to:
 - keep rule 45's worktree discipline - `mise trust` only as it allows, services
   only through `mise run ...`, `mise run docker:clean` before returning;
 - never ask the human: on a gate, stop and return it;
+- work to a budget of about **150 tool calls**: past it, commit what is green,
+  push the branch without opening a PR, and return a **partial** card instead
+  of pressing on in a long context;
 - return a card - issue, branch, PR URL or `none`, draft or ready, local gate
   result, high code-gate findings left open, the gate question or blocker, or
-  `none`.
+  `none`; a partial card says what is done and what is left.
 
 **solo-trunk.** No worktree: `main` can be checked out in only one place. Run
 each worker in the main checkout, one at a time, fast-forwarded to
@@ -79,6 +82,7 @@ exists to avoid.
   false) also has its checks green and none skipped (`gh pr checks <n>`). Through the
   gateway, the issue is in `validate` with its PR linked.
 - **solo-trunk** - the closing commit is on `origin/<default>`.
+- **A partial card** has no PR yet: verify only that its branch is pushed.
 - A mismatch records the issue as blocked, with the fact that failed.
 - Remove the worktree once its branch is pushed and the tree is clean: `git
   worktree remove <path>` refuses a dirty tree, so never add `--force`. A dirty
@@ -92,6 +96,10 @@ The issues are independent branches, so one failure does not stop the next.
   findings would not resolve, a blocking `Proposed` ADR, a product question): ask the human now, per rule `61-gates`. Their answer
   goes back to that worker (Claude Code: `SendMessage`), else to a fresh worker
   running `resume #N` with it. `Decide later` records the issue and moves on.
+- **A partial card** (the worker reached its budget): hand what is left to a
+  fresh worker running `resume #N`. A second partial on the same issue is
+  recorded as blocked: the issue is bigger than one worker, and wants
+  `/steer-work issues decompose`.
 - **Red gates or a blocker** after `finish`'s own bounded rounds: record it and
   move on.
 - **Stop the whole queue** only on a failure that would hit every issue: tracker

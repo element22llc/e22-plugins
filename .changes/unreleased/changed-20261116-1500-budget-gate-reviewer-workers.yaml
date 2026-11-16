@@ -1,0 +1,17 @@
+kind: Changed
+time: 2026-11-16T15:00:00.000000000-05:00
+custom:
+  Slug: budget-gate-reviewer-workers
+body: |-
+  - **Changed: the code gate's general reviewer and `queue` workers are
+    budgeted.** The general reviewer now runs as `steer-pr-reviewer` with the
+    session's model passed as an override. It keeps the tier #927 left it on and
+    gains diff-first reading, read-only tools and a turn cap. Its budget is about
+    60 tool calls, against 40 for a lens, because it weighs the whole change, and
+    the agent's `maxTurns` rises to 80 to leave that budget room. Untyped
+    reviewers that inherited Fable cost about nine times as much as Opus ones,
+    mostly in turns and context. A `queue` worker now works to a budget of about
+    150 tool calls. Past it, the worker pushes what is green and returns a partial
+    card, a fresh worker running `resume #N` continues, and a second partial
+    records the issue as blocked for decomposition. Delivered workers ran 72-105
+    turns, so the budget only stops runaway runs.
