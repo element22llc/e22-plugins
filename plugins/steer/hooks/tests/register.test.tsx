@@ -10,7 +10,7 @@ const ran = (stdout: string) => ({
 const ABOVE_PROMPT = {
   plugin: 'steer',
   component: 'AbovePrompt',
-  props: { hasSurvey: false, isWorking: false, maxRows: 4, bodyColumns: 120, scroll: { offset: 0, bodyRows: 4 }, view: {} },
+  props: { hasSurvey: false, isCollapsed: false, isWorking: false, maxRows: 4, bodyColumns: 120, scroll: { offset: 0, bodyRows: 4 }, view: {} },
 } as const
 
 const PANE = { plugin: 'steer', component: 'Pane', requestId: 'steer' } as const
