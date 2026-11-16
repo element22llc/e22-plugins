@@ -207,9 +207,10 @@ above). These names are the post-rename verbs (`create_issue`/`update_issue` ->
 the pre-rename names no longer resolve.
 `Bash(sh *scripts/issue-body.sh*)` also sits under `ask`: its leading wildcard
 would match `sh -c '<anything>' ...`, and the plugin's install path is
-machine-specific, so no anchored allow exists. A sync evicts the `allow` copy
-earlier releases installed, and the gh arm of `update-state` asks before it
-runs when `/steer:work` reaches it. `check_standards.py` rejects any scaffold
+machine-specific, so no anchored allow exists. A sync's tier dedupe removes
+the exact `allow` copy earlier releases installed, and the gh arm of
+`update-state` asks before it runs when `/steer:work` reaches it through
+`/steer:tracker-sync`. `check_standards.py` rejects any scaffold
 `allow` entry with a wildcard before its fixed command tail.
 
 The boundary is deliberate: `mise run` is allowlisted **only** for named tasks -

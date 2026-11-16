@@ -773,14 +773,19 @@ _RETIRED_WILDCARD_ALLOWS = ("Bash(sh *scripts/issue-body.sh*)",)
 
 
 def _inner_wildcard_allows(allow: set[str]) -> list[str]:
-    """Bash allow entries with a ``*`` anywhere but a trailing ``:*`` / ``*``."""
+    """Bash allow entries that are bare, all-wildcard, or carry a ``*`` anywhere
+    but a trailing ``:*`` / ``*``."""
     hits = []
     for entry in allow:
+        if entry.strip() == "Bash":
+            hits.append(entry)
+            continue
         m = re.fullmatch(r"Bash\((.*)\)", entry.strip())
         if not m:
             continue
-        inner = m.group(1).removesuffix(":*").removesuffix("*")
-        if "*" in inner:
+        inner = m.group(1)
+        inner = (inner[:-2] if inner.endswith(":*") else inner.removesuffix("*")).strip()
+        if not inner or "*" in inner:
             hits.append(entry)
     return hits
 
@@ -1038,7 +1043,8 @@ def check_authorization(errors: list[str]) -> None:
             errors.append(
                 f"{settings}: '{entry}' must not be under permissions.allow - a "
                 f"wildcard before the command's fixed tail also matches "
-                f"`sh -c '<anything>' ...` (#924); allow only a fixed prefix + `:*`"
+                f"`sh -c '<anything>' ...`, and a bare `Bash` or `Bash(*)` "
+                f"allows every command (#924); allow only a fixed prefix + `:*`"
             )
         for retired in _RETIRED_WILDCARD_ALLOWS:
             if retired not in ask:

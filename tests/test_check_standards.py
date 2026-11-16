@@ -556,9 +556,17 @@ def test_inner_wildcard_allows_flags_only_a_wildcard_before_the_tail():
         "Bash(git push)",
         "Bash(gh pr create*)",
         "mcp__github__issue_read",
+        "Bash",
+        "Bash(*)",
+        "Bash(*:*)",
+        "Bash(sh *:*)",
     }
     assert sorted(check_standards._inner_wildcard_allows(allow)) == [
+        "Bash",
+        "Bash(*)",
+        "Bash(*:*)",
         "Bash(git push*--force*)",
+        "Bash(sh *:*)",
         "Bash(sh *scripts/issue-body.sh*)",
     ]
 
