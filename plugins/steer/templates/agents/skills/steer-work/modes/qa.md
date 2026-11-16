@@ -37,7 +37,8 @@ or no UI in the diff, say there is nothing to drive and stop.
    references/browser.md` once, then `orca tab create --url <app-url> --json`,
    and pass its `browserPageId` as `--page` to every later `snapshot`, `click`,
    `fill`, `console`, `network` and `screenshot`. Close only that tab (`orca tab
-   close --page <id>`) when done.
+   close --page <id>`) when done. If the tab cannot open, fall back to the
+   table's driver.
    No driver available -> say so and stop; a guessed result is not QA.
 3. **Local and seeded only.** Never a deployed environment, a real account or a
    real third-party call. Saved sign-in state holds tokens: keep it in the
