@@ -52,16 +52,16 @@ vets, ranks, and routes what it returns.
 ## `steer-pr-reviewer`
 
 A diff reviewer invoked **explicitly** by `/steer:work`: the per-PR reviewer in
-`review`, each specialist lens (database, UI, security) in the code gate, and
-every refute-pass verifier. It scores one diff against the
+`review`, the code gate's general reviewer, each specialist lens (database,
+UI, security), and every refute-pass verifier. It scores one diff against the
 [`REVIEW-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/REVIEW-LOOP.md)
 section 4 rubric and returns the card the caller asked for.
 
 | Field | Value |
 | :---- | :---- |
 | **Tools** | `Read`, `Grep`, `Glob`, `Bash` - `Bash` for `git` and `gh` reads; read-only by its instructions, not by construction |
-| **Model** | `sonnet` - a bounded check on a mid tier; the plan gate and the code gate's general reviewer keep the session model |
-| **Turn cap** | `maxTurns: 60`, under a prose budget of about 40 tool calls |
+| **Model** | `sonnet` - a bounded check on a mid tier; the code gate's general reviewer is spawned with the session model as an override, so it keeps its tier |
+| **Turn cap** | `maxTurns: 80`, under a prose budget of about 40 tool calls (about 60 for the general reviewer) |
 | **Invocation** | Explicit, by the calling skill - never auto-delegated |
 
 ### Why it differs
