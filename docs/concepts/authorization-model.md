@@ -205,6 +205,12 @@ the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools
 above). These names are the post-rename verbs (`create_issue`/`update_issue` ->
 `issue_write`, `get_issue` -> `issue_read`, `add_sub_issue` -> `sub_issue_write`);
 the pre-rename names no longer resolve.
+`Bash(sh *scripts/issue-body.sh*)` also sits under `ask`: its leading wildcard
+would match `sh -c '<anything>' ...`, and the plugin's install path is
+machine-specific, so no anchored allow exists. A sync evicts the `allow` copy
+earlier releases installed, and the gh arm of `update-state` asks before it
+runs when `/steer:work` reaches it. `check_standards.py` rejects any scaffold
+`allow` entry with a wildcard before its fixed command tail.
 
 The boundary is deliberate: `mise run` is allowlisted **only** for named tasks -
 the verify pair (`check`/`ci`) plus `dev` for running the app locally - never the
