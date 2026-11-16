@@ -18,7 +18,7 @@ export type Items = {
 
 const QUIET_SPINES = new Set(['unmanaged', 'foreign'])
 const PANE = 'steer'
-const SECTIONS: { section: Section; label: string }[] = [
+const SECTIONS: { section: Exclude<Section, 'language'>; label: string }[] = [
   { section: 'features', label: 'Features' },
   { section: 'questions', label: 'Open questions' },
   { section: 'adrs', label: 'ADRs to ratify' },
