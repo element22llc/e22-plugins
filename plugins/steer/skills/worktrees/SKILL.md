@@ -49,6 +49,8 @@ destroys data (orphans).
 | `teardown swept` | Nothing to install: Claude Code deletes its worktrees without a hook steer can use, so the primary checkout's session check reports their stacks and the `orphan` row below removes them. |
 | `teardown absent orca` | Install `${CLAUDE_PLUGIN_ROOT}/templates/worktrees/orca.yaml` at the repo root. |
 | `teardown merge orca` | Keep the repo's `orca.yaml`; add the template's archive line to its `scripts.archive`. |
+| `issue-command absent orca` | Add the template's top-level `issueCommand` to `orca.yaml` (install the template when there is none), so a workspace created from a linked issue or PR starts in `/steer:work`. |
+| `issue-command custom orca` | Keep the repo's own prompt; nothing to do. |
 | `teardown manual conductor` | No bundled hook: add `mise run docker:clean \|\| true` to the archive script in Conductor's repository settings. |
 | `teardown manual git` | Nothing to install: say `mise run docker:clean` runs **before** `git worktree remove`; the orphan sweep is the backstop. |
 | `orphan <project> <dir>` | List them (`-` for the dir: only volumes remain, matched by name). On an explicit yes: `docker compose -p <project> down --remove-orphans`, then `docker volume rm` each `docker volume ls -q --filter label=com.docker.compose.project=<project>`. |
@@ -81,3 +83,7 @@ Re-run the scan and report what is still open. Close with
 - **The Orca archive hook must stay fail-soft and exit-free.** A failing archive
   hook blocks Orca's removal, and Orca may append the user's local script after
   it. Merge a line into an existing `archive`, never an `exit`.
+- **`issueCommand` is an agent prompt, not a shell command.** Orca sends it, with
+  `{{artifact_url}}` expanded, only when a workspace is created from a linked
+  issue or PR with an empty prompt; a dev's `.orca/issue-command` overrides it.
+  Any `orca.yaml` edit makes Orca ask each dev to approve the file again - say so.

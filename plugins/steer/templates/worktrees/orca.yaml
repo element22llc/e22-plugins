@@ -1,5 +1,8 @@
 # Orca worktree hooks, installed by /steer:setup worktrees: Orca deletes worktrees itself, so no steer hook sees the removal - this archive hook runs the teardown instead.
 # Rationale: steer rule "Parallel worktrees". Fail-soft and exit-free: a failing archive hook blocks the removal, and Orca may append a local script.
+# issueCommand is the agent prompt (not a shell command) for a workspace created from a linked GitHub issue or PR.
 scripts:
   archive: |
     [ -n "${STEER_NO_WORKTREE_TEARDOWN:-}" ] || mise run docker:clean || mise run ws:docker:clean || true
+issueCommand: |
+  Complete {{artifact_url}} with /steer:work.

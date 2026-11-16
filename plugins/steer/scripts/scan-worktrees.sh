@@ -26,6 +26,7 @@
 #   env-copy         missing                           <worktree>: <files>
 #   worktree-dir     ignored | unignored               <in-repo worktree dir>
 #   teardown         swept | ok | absent | merge | manual | n/a   <manager>
+#   issue-command    ok | absent | custom              orca (Orca only: orca.yaml issueCommand)
 #   orphan           <compose project>                 <config dir that no longer exists, or - (volumes only)>
 #   orphans          <count> | n/a                     <why n/a>
 #   A gap is reported on STDOUT, never via a nonzero exit.
@@ -191,6 +192,19 @@ for _m in ${MANAGERS}; do
 	*) emit teardown manual "${_m}" ;;
 	esac
 done
+
+# Independent of Compose: the prompt routes issue-linked workspaces to /steer:work.
+case "${MANAGERS}" in
+*" orca "*)
+	if ! grep -q '^issueCommand:' "${ROOT}/orca.yaml" 2>/dev/null; then
+		emit issue-command absent orca
+	elif grep -q 'steer:work' "${ROOT}/orca.yaml"; then
+		emit issue-command ok orca
+	else
+		emit issue-command custom orca
+	fi
+	;;
+esac
 
 # Orphans: this repo's worktree stacks whose checkout is gone (lib/worktree-orphans.sh).
 if ! command -v docker >/dev/null 2>&1; then
