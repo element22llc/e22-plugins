@@ -340,6 +340,9 @@ out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18d 'gh pr \
 assert_deny "merge-gate: backslash-continued gh pr merge denied" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg19 'bash -c "gh pr view 5" # then gh pr merge')")"
 assert_empty "merge-gate: merge only in a trailing comment silent" "${out}"
+# The raw-input prefilter must not drop a gh spelled with a JSON \u escape.
+out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg20","cwd":"%s","tool_name":"Bash","tool_input":{"command":"\\u0067h pr merge 5"}}' "${SP}")")"
+assert_deny "merge-gate: a \\u-escaped gh pr merge denied" "${out}"
 
 # Trunk-push: matched on the quote-stripped text, past git global options.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp20 'git commit -am "docs: explain when to git push in README"')")"
