@@ -1,13 +1,14 @@
-"""Tests for the shipped-template action-tag refresher.
+"""Tests for the pin refresher: action tags, gh-actions-lock, re-listed plugins.
 
 Every lookup is injected, so the suite never touches the network: what is under
 test is the tag rewrite (including a trailing zizmor-suppression comment), the
-gh-actions-lock extension pin, the bump-up-only rule, and that a failed lookup is
-loud rather than a silent no-op.
+gh-actions-lock extension pin, the marketplace SHA pins, the bump-up-only rule,
+and that a failed lookup is loud rather than a silent no-op.
 """
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import refresh_template_pins as rtp
@@ -113,3 +114,160 @@ def test_real_extension_pins_agree():
         assert m, f"{rel}: no STEER_ACTIONS_LOCK_VERSION line"
         versions.add(m["ver"])
     assert len(versions) == 1, versions
+
+
+OLD, NEW = "a" * 40, "b" * 40
+SLUG = "acme/plugins"
+
+
+def _manifest(tmp_path: Path, *sources: dict[str, str]) -> Path:
+    plugins = [{"name": f"p{i}", "source": src} for i, src in enumerate(sources)]
+    path = tmp_path / "marketplace.json"
+    path.write_text(json.dumps({"plugins": plugins}, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def _subdir(sha: str = OLD, path: str = "plugins/ui", url: str = f"https://github.com/{SLUG}.git"):
+    return {"source": "git-subdir", "url": url, "path": path, "sha": sha}
+
+
+def _upstream(newest: dict[str, str], status: str = "ahead", gone: frozenset[str] = frozenset()):
+    """Fake the three lookups; ``newest`` maps a path to its newest commit."""
+
+    def fetch(api: str):
+        assert api.startswith(f"repos/{SLUG}/"), api
+        rest = api.removeprefix(f"repos/{SLUG}/")
+        if rest.startswith("contents/"):
+            if rest.removeprefix("contents/") in gone:
+                raise LookupError("gh: Not Found (HTTP 404)")
+            return []
+        if rest.startswith("commits?path="):
+            return [{"sha": newest[rest.removeprefix("commits?path=").removesuffix("&per_page=1")]}]
+        assert rest.startswith("compare/"), api
+        return {"status": status}
+
+    return fetch
+
+
+def test_bumps_a_stale_marketplace_sha_in_place(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir())
+    before = manifest.read_text()
+    bumps, failures = rtp.refresh_marketplace(
+        manifest, write=True, fetch=_upstream({"plugins/ui": NEW})
+    )
+    assert failures == []
+    assert bumps == [
+        f"- marketplace.json: {SLUG}/plugins/ui aaaaaaa -> bbbbbbb",
+        f"  review: https://github.com/{SLUG}/commits/{NEW}/plugins/ui",
+    ]
+    assert manifest.read_text() == before.replace(OLD, NEW)
+
+
+def test_a_current_marketplace_sha_is_left_alone(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir())
+    before = manifest.read_text()
+    fetch = _upstream({"plugins/ui": OLD})
+    assert rtp.refresh_marketplace(manifest, write=True, fetch=fetch) == ([], [])
+    assert manifest.read_text() == before
+
+
+def test_a_path_deleted_upstream_fails_instead_of_pinning_the_deletion(tmp_path: Path):
+    # The newest commit touching a deleted path is the commit that deleted it.
+    manifest = _manifest(tmp_path, _subdir())
+    before = manifest.read_text()
+    bumps, failures = rtp.refresh_marketplace(
+        manifest,
+        write=True,
+        fetch=_upstream({"plugins/ui": NEW}, gone=frozenset({"plugins/ui"})),
+    )
+    assert bumps == []
+    assert failures and f"{SLUG}/plugins/ui" in failures[0]
+    assert manifest.read_text() == before
+
+
+def test_a_pin_ahead_of_the_path_history_is_a_deliberate_pick(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir())
+    fetch = _upstream({"plugins/ui": NEW}, status="behind")
+    assert rtp.refresh_marketplace(manifest, write=True, fetch=fetch) == ([], [])
+
+
+def test_a_diverged_pin_is_a_failure(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir())
+    fetch = _upstream({"plugins/ui": NEW}, status="diverged")
+    bumps, failures = rtp.refresh_marketplace(manifest, write=True, fetch=fetch)
+    assert bumps == []
+    assert failures and "diverged" in failures[0]
+
+
+def test_a_non_github_source_is_a_failure_not_a_skip(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir(url="https://gitlab.com/acme/plugins.git"))
+    bumps, failures = rtp.refresh_marketplace(manifest, write=True, fetch=_upstream({}))
+    assert bumps == []
+    assert failures and "gitlab.com" in failures[0]
+
+
+def test_a_malformed_or_short_pin_is_a_failure(tmp_path: Path):
+    # An exception here would exit 1, which the workflow reads as "bumps applied".
+    no_path = {"source": "git-subdir", "url": f"https://github.com/{SLUG}.git", "sha": OLD}
+    manifest = _manifest(tmp_path, no_path, _subdir(sha="abc1234"))
+    bumps, failures = rtp.refresh_marketplace(manifest, write=True, fetch=_upstream({}))
+    assert bumps == []
+    assert len(failures) == 2
+
+
+def test_entries_sharing_a_sha_are_rewritten_independently(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir(path="plugins/ui"), _subdir(path="plugins/db"))
+    fetch = _upstream({"plugins/ui": NEW, "plugins/db": OLD})
+    bumps, _ = rtp.refresh_marketplace(manifest, write=True, fetch=fetch)
+    assert len(bumps) == 2
+    sources = [p["source"] for p in json.loads(manifest.read_text())["plugins"]]
+    assert [s["sha"] for s in sources] == [NEW, OLD]
+
+
+def test_an_unpinned_or_local_source_is_skipped(tmp_path: Path):
+    unpinned = {"source": "git-subdir", "url": f"https://github.com/{SLUG}.git", "path": "x"}
+    manifest = _manifest(tmp_path, unpinned)
+    manifest.write_text(
+        manifest.read_text().replace('"plugins": [', '"plugins": [{"source": "./local"},'),
+        encoding="utf-8",
+    )
+    assert rtp.refresh_marketplace(manifest, write=True, fetch=_upstream({})) == ([], [])
+
+
+def test_main_reports_a_marketplace_bump_and_its_review_link(tmp_path: Path, capsys):
+    manifest = _manifest(tmp_path, _subdir())
+    upstream = _upstream({"plugins/ui": NEW})
+
+    def fetch(api: str):
+        # main() also walks the real gh-actions-lock pins; an old release moves none.
+        return [{"tag_name": "v0.0.1"}] if "/releases?" in api else upstream(api)
+
+    before = manifest.read_text()
+    args = ["--workflows", str(_wf(tmp_path, "")), "--marketplace", str(manifest)]
+    assert rtp.main(args, fetch=fetch) == 1
+    assert manifest.read_text() == before
+    out = capsys.readouterr().out.splitlines()
+    assert out[1].startswith("- marketplace.json: ")
+    # Not a bullet: the workflow's changelog step collects every `- ...:` line.
+    assert out[2].startswith("  review: https://github.com/")
+
+
+def test_main_fails_on_a_missing_manifest(tmp_path: Path):
+    args = ["--workflows", str(_wf(tmp_path, "")), "--marketplace", str(tmp_path / "nope.json")]
+    assert rtp.main(args) == 2
+
+
+def test_real_marketplace_pins_are_watched():
+    # A source object the regex cannot match is a pin this job would never refresh.
+    from conftest import REPO_ROOT
+
+    text = (REPO_ROOT / rtp.MARKETPLACE).read_text(encoding="utf-8")
+    pinned = [
+        p["source"]
+        for p in json.loads(text)["plugins"]
+        if isinstance(p["source"], dict) and p["source"].get("sha")
+    ]
+    matched = [json.loads(m[0]) for m in rtp.SUBDIR_SOURCE.finditer(text)]
+    assert pinned and matched == pinned
+    for src in matched:
+        assert rtp.GITHUB_URL.match(src["url"]), src["url"]

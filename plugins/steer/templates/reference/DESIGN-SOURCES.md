@@ -133,8 +133,8 @@ buttons. Choose against those unless the PO or `DESIGN.md` asks for one:
   intentional typography, a committed color system, motion, considered layout,
   and its own list of the looks AI-generated design clusters around.
 - **Scope it deliberately.** `frontend-design` pushes for a distinctive point of
-  view and "one real aesthetic risk you can justify", spent on a single
-  signature element. For a financial-services context, keep the *discipline*
+  view and a justified aesthetic risk, with the boldness spent on one memorable
+  element. For a financial-services context, keep the *discipline*
   (intentional, cohesive, non-generic, accessible) but default to a
   professional/enterprise register unless the PO asks otherwise - the skill
   itself defers to the brief where it pins a direction. It names no stack:

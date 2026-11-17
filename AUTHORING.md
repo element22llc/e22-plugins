@@ -534,6 +534,16 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   `scripts/lock-workflows.sh`, kept equal by a test). A stale tag is a PR waiting
   to be opened, not a red build. Run the script yourself (no `--write`) to see
   what is behind.
+- **The re-listed plugin's SHA rides the same refresh.** The script also moves
+  each `git-subdir` pin in `.claude-plugin/marketplace.json` to the newest commit
+  touching its path. A path deleted upstream, or a pin upstream history no
+  longer contains, fails the scheduled run instead of opening a PR - GitHub
+  mails a failed scheduled run to whoever last edited the workflow's cron, and
+  that mail is the only alert. A bump changes the skill text product repos
+  install: read the commits behind the PR's `review:` link, and land any
+  `DESIGN-SOURCES.md` fix they call for as its own PR first, since the bot
+  branch is reset every run. A
+  marketplace-only bump writes no changelog fragment (the gate asks for none).
 - Version-governance files exist in two byte-identical copies (e.g.
   `scaffold/scripts/scan-version-pins.sh` <-> `scripts/scan-version-pins.sh`;
   `scaffold/scripts/version-policy.sh` <-> `hooks/lib/version-policy.sh`;
