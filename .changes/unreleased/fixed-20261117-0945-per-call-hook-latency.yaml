@@ -1,0 +1,16 @@
+kind: Fixed
+time: 2026-11-17T09:45:00.000000000-05:00
+custom:
+  Slug: per-call-hook-latency
+body: |-
+  - **Fixed: the per-call hooks no longer re-probe jq on every field read.**
+    The jq probe's cache was set inside each `$(steer_field ...)` subshell and
+    died with it, so the Bash and write hooks spawned `jq --version` two or
+    three times per call - about 40 ms each where jq is a mise shim. The five
+    PreToolUse/PostToolUse hooks now probe once per run, and
+    `check-bash-actions.sh` exits before any jq spawn on a command that names
+    no `gh`, no `git` + `push` and no MCP tool, taking a plain Bash call from
+    about 170 ms to about 10 ms on macOS. The hook suite counts the probes,
+    and the latency test now budgets each per-call hook's fast path (1 s by
+    default, `STEER_HOOK_CALL_BUDGET_MS`) next to the SessionStart chain
+    (#966).

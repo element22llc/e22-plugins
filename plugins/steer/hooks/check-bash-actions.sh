@@ -103,7 +103,19 @@
 
 STEER_INPUT="$(cat)"
 [ -z "${STEER_INPUT}" ] && exit 0
+# Every check below needs `gh`, `git` + `push`, or an MCP tool, so raw input with
+# none of them exits before any jq spawn. Matched on the undecoded JSON, so this
+# must stay a superset of every trigger: a `\u` escape could spell a letter.
+case "${STEER_INPUT}" in
+*gh* | *mcp__* | *'\u'*) ;;
+*push*)
+	# Nested, not `*git*push*`: two stars backtrack quadratically in bash 3.2.
+	case "${STEER_INPUT}" in *git*) ;; *) exit 0 ;; esac
+	;;
+*) exit 0 ;;
+esac
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
+steer_have_jq || : # cache the probe in this shell, not per $(...) read
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/graduation.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
@@ -113,6 +125,7 @@ STEER_INPUT="$(cat)"
 # (e.g. writing a hook-test fixture) would be misread as an MCP create.
 TOOL="$(steer_tool)"
 CMD="$(steer_field command)"
+unset _STEER_BARE_SET STEER_BARE
 
 # A branch name or subcommand holds no whitespace, so a quoted string that does
 # (--title, --body, -m) is blanked: prose that mentions `-B x` or `gh pr merge`
@@ -122,67 +135,163 @@ CMD="$(steer_field command)"
 # will execute (`sh -c`, `eval`, a `$(...)` or backtick inside double quotes)
 # is kept, unquoted.
 steer_strip_quoted() {
-	printf '%s' "$1" | awk 'BEGIN { RS = "\001" } {
-	n = length($0)
+	# Linear on purpose: macOS awk copies the whole string on every substr($0),
+	# concatenation and length, so the scan reads a split() char array and keeps
+	# only bounded tails of the output (tl: the last 41 chars, lt: the current
+	# line's tail, ls: a shell word already seen on that line).
+	printf '%s' "$1" | LC_ALL=C awk 'BEGIN { RS = "\001" }
+	function cat(lo, hi, s, k, m) {
+		if (lo > hi) return ""
+		if (hi - lo < 64) { s = ""; for (k = lo; k <= hi; k++) s = s ch[k]; return s }
+		m = int((lo + hi) / 2)
+		return cat(lo, m) cat(m + 1, hi)
+	}
+	function emit(s, x, m) {
+		out[++no] = s
+		lc = substr(s, length(s), 1)
+		tl = tl s
+		if (length(tl) > 41) tl = substr(tl, length(tl) - 40)
+		if (index(s, "\n")) {
+			match(s, /\n[^\n]*$/)
+			x = substr(s, RSTART + 1)
+			ls = 0
+			lttr = 0
+		} else x = lt s
+		if (((lttr ? "a" : "") x) ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh|ssh|eval)[[:space:]]/) ls = 1
+		if (length(x) > 64) { lt = substr(x, length(x) - 63); lttr = 1 } else lt = x
+	}
+	function flush() {
+		if (rs) { emit(cat(rs, re)); rs = 0 }
+	}
+	function run(lo, hi) {
+		if (rs && re != lo - 1) flush()
+		if (!rs) rs = lo
+		re = hi
+		lc = ch[hi]
+	}
+	function bc(x) {
+		if (x == "") return
+		if (x ~ /[[:space:]]/) hw = 1
+		if (x == "`" || (x == "(" && bp == "$")) hx = 1
+		bp = x
+	}
+	function words(i, e, t, s, w, L, k, lnend) {
+		nx = n + 1
+		for (i = n; i >= 1; i--) { if (ch[i] == "\n") nx = i; nl[i] = nx }
+		split("", mx)
+		for (e = 1; e <= n + 1; e++) {
+			if (e <= n && ch[e] !~ /[[:space:]]/) continue
+			if (ch[e - 1] != "h" && ch[e - 1] != "l") continue
+			lnend = e <= n ? nl[e] : n + 1
+			for (k = 1; k <= 7; k++) {
+				w = WD[k]
+				L = length(w)
+				s = e - L
+				if (s - 1 < 1 || ch[s - 1] == "\n" || ch[s - 1] ~ /[[:alnum:]_]/) continue
+				t = ""
+				for (i = s; i < e; i++) t = t ch[i]
+				if (t == w && s - 1 > mx[lnend] + 0) mx[lnend] = s - 1
+			}
+		}
+		pre = 1
+	}
+	{
+	if (!WD[1]) split("sh bash dash ksh zsh ssh eval", WD, " ")
+	n = split($0, ch, "")
+	if (n != length($0)) {
+		split("", ch)
+		n = length($0)
+		for (i = 1; i <= n; i++) ch[i] = substr($0, i, 1)
+	}
+	pre = 0
+	rs = 0
+	bs = 1
 	for (i = 1; i <= n; i++) {
-		c = substr($0, i, 1)
+		c = ch[i]
 		if (q != "") {
-			if (q == "\"" && c == "\\") { b = b c substr($0, ++i, 1); continue }
-			if (c != q) { b = b c; continue }
-			if (b !~ /[[:space:]]/) o = o q b q
-			else if ((q == "\"" && b ~ /\$\(|`/) || substr(o, length(o) > 40 ? length(o) - 40 : 1) ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh[[:space:]]+-[[:alpha:]]*c|eval)[[:space:]]+$/) o = o " " b " "
-			else o = o q q
+			if (q == "\"" && c == "\\") { bc(c); bc(ch[++i]); continue }
+			if (c != q) { bc(c); continue }
+			flush()
+			if (!hw) emit(q bpre cat(bs, i - 1) q)
+			else if ((q == "\"" && hx) || tl ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh[[:space:]]+-[[:alpha:]]*c|eval)[[:space:]]+$/) emit(" " bpre cat(bs, i - 1) " ")
+			else emit(q q)
 			q = ""
 			continue
 		}
-		if (c == "\\" && substr($0, i + 1, 1) == "\n") { o = o " "; i++; continue }
-		if (c == "\\") { o = o c substr($0, ++i, 1); continue }
-		if (c == "\"" || c == "\047") { q = c; b = ""; continue }
-		p = substr(o, length(o), 1)
-		if (c == "#" && (o == "" || p ~ /[[:space:];&|(]/)) {
-			while (i < n && substr($0, i + 1, 1) != "\n") i++
+		if (c == "\\" && ch[i + 1] == "\n") { flush(); emit(" "); i++; continue }
+		if (c == "\\") { run(i, i + 1 <= n ? i + 1 : i); i++; continue }
+		if (c == "\"" || c == "\047") { flush(); q = c; bpre = ""; bs = i + 1; hw = 0; hx = 0; bp = ""; continue }
+		if (c == "#" && (lc == "" || lc ~ /[[:space:];&|(]/)) {
+			while (i < n && ch[i + 1] != "\n") i++
 			continue
 		}
-		if (c == "<" && substr($0, i + 1, 2) ~ /^<[^<]/ && p != "<") {
+		if (c == "<" && ch[i + 1] == "<" && i + 2 <= n && ch[i + 2] != "<" && lc != "<") {
 			j = i + 2
 			strip = 0
-			if (substr($0, j, 1) == "-") { strip = 1; j++ }
-			while (substr($0, j, 1) ~ /[ \t]/) j++
-			d = ""
-			while (j <= n && substr($0, j, 1) !~ /[[:space:];&|<>()]/) { d = d substr($0, j, 1); j++ }
+			if (ch[j] == "-") { strip = 1; j++ }
+			while (ch[j] ~ /[ \t]/) j++
+			ds = j
+			while (j <= n && ch[j] !~ /[[:space:];&|<>()]/) j++
+			d = cat(ds, j - 1)
 			gsub(/["\047\\]/, "", d)
-			cur = o
-			sub(/.*\n/, "", cur)
-			r = substr($0, j)
-			e = index(r, "\n")
-			if (e) r = substr(r, 1, e - 1)
-			# A body fed to an interpreter (sh <<EOF, cat <<EOF | sh) is commands, not data.
-			if (d ~ /^[A-Za-z_]/ && (cur r) !~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh|ssh|eval)([[:space:]]|$)/) {
-				hd[++nh] = d; hs[nh] = strip; o = o "<<" d " "; i = j - 1; continue
+			if (d ~ /^[A-Za-z_]/) {
+				flush()
+				if (!pre) words()
+				r1 = (j <= n && ch[j] != "\n") ? ch[j] : ""
+				hit = ls || ((lttr ? "a" : "") lt r1) ~ /(^|[^[:alnum:]_])((ba|da|k|z)?sh|ssh|eval)([[:space:]]|$)/ || (j <= n && mx[nl[j]] + 0 >= j)
+				if (!hit) {
+					hd[++nh] = d; hs[nh] = strip; emit("<<" d " "); i = j - 1; continue
+				}
 			}
 		}
 		if (c == "\n" && nh > 0) {
-			o = o c
+			flush()
+			emit(c)
+			if (!pre) words()
 			pos = i + 1
 			for (k = 1; k <= nh; k++) {
 				while (pos <= n) {
-					rest = substr($0, pos)
-					e = index(rest, "\n")
-					line = e ? substr(rest, 1, e - 1) : rest
-					pos = e ? pos + e : n + 1
-					if (hs[k]) sub(/^\t+/, "", line)
-					if (line == hd[k]) break
+					e = nl[pos]
+					a = pos
+					if (hs[k]) while (a < e && ch[a] == "\t") a++
+					pos = e + 1
+					if (e - a == length(hd[k]) && cat(a, e - 1) == hd[k]) break
 				}
 			}
 			nh = 0
 			i = pos - 1
 			continue
 		}
-		o = o c
+		run(i, i)
 	}
-	if (q != "") o = o q b
-	printf "%s", o
+	flush()
+	if (q != "") {
+		bpre = bpre cat(bs, n)
+		bs = 1
+		emit(q bpre)
+	}
+	for (k = 1; k <= no; k++) printf "%s", out[k]
 }'
+}
+
+# The stripped command, computed at most once per run (checks 0, 1 and 3 share it).
+steer_bare() {
+	[ -n "${_STEER_BARE_SET:-}" ] && return 0
+	_STEER_BARE_SET=1
+	# A hook that outlasts its timeout lets the command run. The parse takes
+	# seconds per MB on macOS awk and goes quadratic on \001 (its record
+	# separator), so past 512 KiB, on a \001, or when the parse fails, match the
+	# raw text with quotes, backslashes, newlines and = opened to spaces: that
+	# adds matches and never removes one.
+	_soh="$(printf '\001')"
+	case "${CMD}" in *"${_soh}"*) ;; *)
+		if [ $(($(printf '%s' "${CMD}" | wc -c))) -le 524288 ] &&
+			STEER_BARE="$(steer_strip_quoted "${CMD}")"; then
+			return 0
+		fi
+		;;
+	esac
+	STEER_BARE="$(printf '%s' "${CMD}" | tr "\"'\\\\\n=" '     ')"
 }
 
 # A command word may be spelled by path (/opt/homebrew/bin/gh) or alias-escaped (\gh).
@@ -198,15 +307,15 @@ esac
 if [ -z "${MERGE}" ] && [ "${TOOL}" = "Bash" ] &&
 	printf '%s' "${CMD}" | grep -q 'gh[[:space:]]' &&
 	printf '%s' "${CMD}" | grep -q '[Mm]erge'; then
-	_bare="$(steer_strip_quoted "${CMD}")"
+	steer_bare
 	# gh accepts `-R/--repo <repo>` between `pr` and its subcommand.
-	if printf '%s' "${_bare}" |
+	if printf '%s' "${STEER_BARE}" |
 		grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+pr([[:space:]]+(-R|--repo)([[:space:]]+|=)[^[:space:]]+)?[[:space:]]+merge([[:space:];&|)]|$)'; then
 		MERGE="gh pr merge"
-	elif printf '%s' "${_bare}" |
+	elif printf '%s' "${STEER_BARE}" |
 		grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+(ext(ension)?[[:space:]]+exec[[:space:]]+)?stack[[:space:]]+merge([[:space:];&|)]|$)'; then
 		MERGE="gh stack merge"
-	elif printf '%s' "${_bare}" | grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+api([[:space:]]|$)' &&
+	elif printf '%s' "${STEER_BARE}" | grep -Eq "${STEER_CMD_START}"'gh[[:space:]]+api([[:space:]]|$)' &&
 		printf '%s' "${CMD}" | grep -Eq 'mergePullRequest|enablePullRequestAutoMerge|/pulls/[0-9]+/merge' &&
 		printf '%s' "${CMD}" | grep -Eq 'graphql|(-X|--method)[[:space:]=]*PUT'; then
 		MERGE="a gh api merge"
@@ -228,7 +337,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 	# the quote-stripped text, so a commit message that mentions "git push"
 	# neither asks nor spends the once-per-session ask.
 	printf '%s' "${CMD}" | grep -q 'git' && printf '%s' "${CMD}" | grep -q 'push' &&
-	steer_strip_quoted "${CMD}" |
+	steer_bare && printf '%s' "${STEER_BARE}" |
 	grep -Eq "${STEER_CMD_START}"'git([[:space:]]+(-[Cc][[:space:]]+[^[:space:]]+|--[a-z-]+(=[^[:space:]]+)?))*[[:space:]]+push([[:space:];&|)]|$)'; then
 
 	CWD="$(steer_field cwd)"
@@ -289,8 +398,8 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 		# Last occurrence wins, matching how gh resolves a repeated flag. Flags are
 		# read only from the `gh pr create|edit` segment, so `git checkout -B x &&
 		# gh pr create` does not take `-B x` as the PR base.
-		_CMD_BARE="$(steer_strip_quoted "${CMD}")"
-		_PR_ARGS="$(printf '%s' "${_CMD_BARE}" |
+		steer_bare
+		_PR_ARGS="$(printf '%s' "${STEER_BARE}" |
 			sed -nE 's/.*gh[[:space:]]+pr[[:space:]]+(create|edit)([[:space:]].*)?$/\2/p' | head -n 1)"
 		_PR_ARGS="${_PR_ARGS%%[;&|]*}"
 		_flag() {
@@ -298,7 +407,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 				sed -nE "s/.*[[:space:]]($1)[=[:space:]]+[\"']?([^\"'[:space:];&|]+).*/\\2/p" | head -n 1
 		}
 		WHAT=""
-		case "$(printf '%s' "${_CMD_BARE}" | sed -nE 's/.*[[:space:]]stack[[:space:]]+(submit|link)([[:space:];&|].*)?$/\1/p' | head -n 1)" in
+		case "$(printf '%s' "${STEER_BARE}" | sed -nE 's/.*[[:space:]]stack[[:space:]]+(submit|link)([[:space:];&|].*)?$/\1/p' | head -n 1)" in
 		submit) WHAT="gh stack submit opens PRs that each target the branch below them" ;;
 		link) WHAT="gh stack link chains these PRs into a native stack, each targeting the branch below it" ;;
 		*)
