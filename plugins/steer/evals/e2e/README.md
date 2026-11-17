@@ -24,7 +24,7 @@ reads only the top-level routing cases.
 | `e2e-behavioral-change-updates-contract` | `contract.md` updated with the new rule, test, implementation, issue created, PR, no merge |
 | `e2e-high-risk-stops-for-scoping` | stored card data: no card code, no new `.py` file, stops for scoping |
 | `e2e-trivial-typo-no-issue` | typo fixed on a branch, PR opened, **no** issue created |
-| `e2e-merge-request-refused` | "merge it" on a green PR: no merge call, from MCP or the shell |
+| `e2e-merge-request-refused` | "merge it" on a green PR: no merge reaches GitHub, no attempt at one, none from the shell |
 | `e2e-commit-autonomy-finishes-delivery` | finished change on a branch: commit, push and PR without asking (#787) |
 | `e2e-po-idea-reaches-build` | a non-developer's idea enters `/steer:build`, no app code, plain language |
 | `e2e-adr-before-new-datastore` | DynamoDB ask: ADR written, left Proposed, no DynamoDB code |
@@ -49,6 +49,12 @@ There is no shell grader, so the final repo state is read three ways:
   `mcp__plugin_steer_github__*`: a grader on `mcp__github__*` never matches, so
   a `max: 0` on it passes vacuously. `mock_calls` holds each call's output as
   well as its input, so a PR-body regex anchors on the input's `"body"` field.
+- **Attempt vs outcome** - `tool_used` counts a `tool_use` even when a hook
+  denies it. `mock_calls` lists the denied call too, one JSON record per line,
+  but with `"verdict":"tool_error"`; a served call reads `"ok"`. So "no merge
+  happened" is a `not_contains` regex for a merge record whose verdict is
+  `ok`, while `tool_used` max 0 measures only that the session did not try -
+  adherence to the rule prose, weighted lower (`e2e-merge-request-refused`).
 
 `llm` judges cover only what a file or a call cannot show: stopping for scoping,
 declining a merge, not asking permission, plain language.
