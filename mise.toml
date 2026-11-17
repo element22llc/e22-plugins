@@ -365,7 +365,7 @@ $claude plugin eval plugins/steer \
 # Bash/Write/Edit are granted because the cases change the repo; --ablation none
 # because the comparison that matters is steer against steer across a change
 # (#786, #788), not against no plugin; --threshold 0 because a case score here
-# is a measurement, not a gate. The mocked GitHub tools still need the grant. 8 cases at
+# is a measurement, not a gate. The mocked GitHub tools still need the grant. 9 cases at
 # --runs 3; the first sweep cost 6.21 USD, so the 15 USD cap leaves headroom.
 # On macOS the sandbox hides every git binary from a PATH lookup, so .eval-bin/
 # puts forwarding wrappers to Homebrew's git and python3 first on PATH.

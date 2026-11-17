@@ -8,7 +8,7 @@ closing ref, and no merge. They are the measurement #786 (rules triage) and #788
 case.
 
 ```shell
-mise run evals:e2e                                          # 8 cases x 3 runs, with-plugin only
+mise run evals:e2e                                          # 9 cases x 3 runs, with-plugin only
 mise run evals:e2e -- --case e2e-fix-issue-delivers-pr --runs 1   # one case, cheap
 ```
 
@@ -28,6 +28,7 @@ reads only the top-level routing cases.
 | `e2e-commit-autonomy-finishes-delivery` | finished change on a branch: commit, push and PR without asking (#787) |
 | `e2e-po-idea-reaches-build` | a non-developer's idea enters `/steer:build`, no app code, plain language |
 | `e2e-adr-before-new-datastore` | DynamoDB ask: ADR written, left Proposed, no DynamoDB code |
+| `e2e-glossary-term-challenged` | a "cart" already paid for: the spec brainstorm challenges it against the glossary's Cart, which stays unchanged; no code |
 
 ## How they are graded
 

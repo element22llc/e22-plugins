@@ -1,10 +1,12 @@
 # Question rounds - how steer interviews a human
 
 Read this before the first question of any interview a skill runs: the
-`/steer:spec` brainstorm, the `/steer:questions` walk, the `/steer:build` and
-`/steer:setup` interviews, and `/steer:setup adopt`'s confirmation pass. The
-skill decides *what* to ask and where answers land; this file decides *how* to
-ask. Adapted from the interview mechanics of Matt Pocock's `grilling` skill.
+`/steer:spec` brainstorm and its ADR stress test, the `/steer:questions` walk,
+the `/steer:build` and `/steer:setup` interviews, `/steer:setup adopt`'s
+confirmation pass, and `/steer:work issues brainstorm`. The skill decides *what*
+to ask and where answers land; this file decides *how* to ask, and where a
+resolved term lands. Adapted from the interview mechanics of Matt Pocock's
+`grilling` and `domain-modeling` skills.
 
 ## Rounds
 
@@ -45,6 +47,29 @@ or three steps?", "how should this feel?"). Record it as a `Q-NNN` whose title
 says it settles with a prototype, naming the option to build first, with
 `impact: non-blocking` and `required_before: implementation` - the build settles
 it (`/steer:work` `start`) - and move on.
+
+## Language and code
+
+Read `spec/glossary.md` before the first round (the workspace's, in a polyrepo
+member). Ask each of these inside the normal rounds, with a recommended answer:
+
+- **A term that conflicts with the glossary** - challenge it at once: "the
+  glossary defines a cart as items before payment; you seem to mean a paid
+  order - which is it?"
+- **A fuzzy or overloaded word** - propose one canonical term: "account - the
+  customer or the user?"
+- **A boundary between two concepts** - invent the edge case that forces it:
+  "a shopper pays, then adds an item - same order or a new one?"
+- **A claim about how the product works** - check it against the code and
+  surface a contradiction; a PO hears it as product behavior ("today the app
+  cancels the whole order"), per Audience.
+
+**Write a resolved term to the glossary in the same turn**, not in a batch: in
+the main product language, naming its English code identifier (rule
+`85-practices`), with no implementation detail. With no glossary to write - an
+unmanaged repo, a caller that writes no spine - it lands with the other answers.
+Renaming code to match is a Behavioral change for `/steer:work`, never part of
+the interview.
 
 ## Audience
 
