@@ -353,6 +353,20 @@ EOF")")"
 assert_deny "merge-gate: interpreter 100 chars before a heredoc denied" "${out}"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg22 "gh pr merge 5 --body \"$(printf '%02000d' 0)")")"
 assert_deny "merge-gate: merge before a long unterminated quote denied" "${out}"
+# Non-ASCII text must not crash the parser: macOS awk in a UTF-8 locale aborts
+# on a lone multibyte lead byte, which left nothing to match. The parser runs in
+# the C locale, and a failed parse falls back to the raw text.
+_e="$(printf '\303\251')"
+out="$(ENV="LANG=en_US.UTF-8" run_hook check-bash-actions.sh "$(bash_json "${SP}" mg23 "git commit -m \"fix: r${_e}sum${_e}\" && gh pr merge 5")")"
+assert_deny "merge-gate: accented quoted text before a merge denied" "${out}"
+out="$(ENV="LANG=en_US.UTF-8" run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg24 "cat <<EOF
+caf${_e}
+EOF
+gh pr merge 5")")"
+assert_deny "merge-gate: accented heredoc body before a merge denied" "${out}"
+# \001 is the parser's record separator; a command holding one is matched raw.
+out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg25","cwd":"%s","tool_name":"Bash","tool_input":{"command":"x\\u0001y; gh pr merge 5"}}' "${SP}")")"
+assert_deny "merge-gate: a merge after a \\001 denied" "${out}"
 
 # Trunk-push: matched on the quote-stripped text, past git global options.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp20 'git commit -am "docs: explain when to git push in README"')")"

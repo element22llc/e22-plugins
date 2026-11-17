@@ -125,6 +125,7 @@ steer_have_jq || : # cache the probe in this shell, not per $(...) read
 # (e.g. writing a hook-test fixture) would be misread as an MCP create.
 TOOL="$(steer_tool)"
 CMD="$(steer_field command)"
+unset _STEER_BARE_SET STEER_BARE
 
 # A branch name or subcommand holds no whitespace, so a quoted string that does
 # (--title, --body, -m) is blanked: prose that mentions `-B x` or `gh pr merge`
@@ -138,7 +139,7 @@ steer_strip_quoted() {
 	# concatenation and length, so the scan reads a split() char array and keeps
 	# only bounded tails of the output (tl: the last 41 chars, lt: the current
 	# line's tail, ls: a shell word already seen on that line).
-	printf '%s' "$1" | awk 'BEGIN { RS = "\001" }
+	printf '%s' "$1" | LC_ALL=C awk 'BEGIN { RS = "\001" }
 	function cat(lo, hi, s, k, m) {
 		if (lo > hi) return ""
 		if (hi - lo < 64) { s = ""; for (k = lo; k <= hi; k++) s = s ch[k]; return s }
@@ -277,14 +278,20 @@ steer_strip_quoted() {
 steer_bare() {
 	[ -n "${_STEER_BARE_SET:-}" ] && return 0
 	_STEER_BARE_SET=1
-	# A hook that outlasts its timeout lets the command run, and the parse takes
-	# seconds per MB on macOS awk: past 512 KiB, match the raw text with every
-	# quote opened instead - quoted prose then counts, which fails closed.
-	if [ "${#CMD}" -gt 524288 ]; then
-		STEER_BARE="$(printf '%s' "${CMD}" | tr "\"'" '  ')"
-	else
-		STEER_BARE="$(steer_strip_quoted "${CMD}")"
-	fi
+	# A hook that outlasts its timeout lets the command run. The parse takes
+	# seconds per MB on macOS awk and goes quadratic on \001 (its record
+	# separator), so past 512 KiB, on a \001, or when the parse fails, match the
+	# raw text with quotes, backslashes, newlines and = opened to spaces: that
+	# adds matches and never removes one.
+	_soh="$(printf '\001')"
+	case "${CMD}" in *"${_soh}"*) ;; *)
+		if [ $(($(printf '%s' "${CMD}" | wc -c))) -le 524288 ] &&
+			STEER_BARE="$(steer_strip_quoted "${CMD}")"; then
+			return 0
+		fi
+		;;
+	esac
+	STEER_BARE="$(printf '%s' "${CMD}" | tr "\"'\\\\\n=" '     ')"
 }
 
 # A command word may be spelled by path (/opt/homebrew/bin/gh) or alias-escaped (\gh).

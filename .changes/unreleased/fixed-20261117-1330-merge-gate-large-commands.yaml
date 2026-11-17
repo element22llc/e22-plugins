@@ -8,8 +8,9 @@ body: |-
     macOS awk copies the whole string on each step, so a 400 KB command took
     10 to 30 s against the hook's 10 s timeout - and a timed-out PreToolUse
     hook lets the command run, `gh pr merge` included. The parser is now
-    linear (about 1 s for 400 KB) and runs once per call instead of once per
-    check. Past 512 KiB the gates match the raw command with its quotes opened
-    instead of parsing it, so quoted prose counts there too - failing closed.
-    A latency test denies five large command shapes inside half the timeout
-    (#966).
+    linear (about 1 s for 400 KB), runs once per call instead of once per
+    check, and runs in the C locale, so accented text no longer aborts it.
+    Past 512 KiB, on a U+0001 byte, or when the parse fails, the gates match
+    the raw command with quotes, backslashes, newlines and `=` opened to
+    spaces, so quoted prose counts there too - failing closed. A latency
+    test denies eight large command shapes inside half the timeout (#966).

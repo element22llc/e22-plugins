@@ -223,6 +223,9 @@ LARGE_MERGES = {
     "long-quote": 'echo "' + "word " * 80000 + '"; gh pr merge 5',
     "many-heredocs": "cat <<EOF\nx\nEOF\n" * 25000 + "gh pr merge 5",
     "over-the-cap": "echo " + "word " * 120000 + '; sh -c "gh pr merge 5"',
+    "over-the-cap-continued": "echo " + "word " * 120000 + "; gh pr \\\n merge 5",
+    "over-the-cap-repo-eq": "echo " + "word " * 120000 + '; gh pr --repo="o/r" merge 5',
+    "record-separators": "\x01a" * 7500 + ";gh pr merge 5",
 }
 
 
