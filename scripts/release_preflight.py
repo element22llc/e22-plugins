@@ -47,8 +47,9 @@ COPILOT_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.github/plugin/plugin.json"
 COPILOT_MARKETPLACE = REPO_ROOT / ".github/plugin/marketplace.json"
 LEDGER = REPO_ROOT / ".claude/audit/findings.jsonl"
 EVAL_LEDGER = REPO_ROOT / "plugins/steer/evals/ledger.jsonl"
-# Above 0.8 on purpose: that is what one missed `routed` grader in three runs scores.
-EVAL_FLOOR = 0.9
+# Between the two scores one bad run in three produces: 0.87 lost the `answer`
+# grader and still routed, 0.8 lost `routed`.
+EVAL_FLOOR = 0.85
 EVAL_RECHECK = "mise run evals -- --case <name> --runs 6"
 
 SEVERITY_ORDER = ("blocker", "high", "warn", "info", "ok")
@@ -176,7 +177,7 @@ def eval_sweep(
     elif started < anchor_time:
         notes.append(
             f"it predates {anchor}, so no sweep covers this candidate -- a minor or major cut "
-            "runs `mise run evals` first, a patch skips it"
+            "runs `mise run evals`, records it and re-runs this check; a patch skips it"
         )
     if low:
         notes.append(
@@ -184,7 +185,10 @@ def eval_sweep(
             + ", ".join(f"{name} {score}" for score, name in low)
             + f" -- recheck each: {EVAL_RECHECK}"
         )
-    head = f"sweep {started:%Y-%m-%d} scored {row['score']}"
+    head = (
+        f"sweep {started:%Y-%m-%d} ({row['cases']} cases x {row['runs']} runs) "
+        f"scored {row['score']}"
+    )
     if notes:
         return Check("evals", "warn", f"{head}; " + "; ".join(notes))
     return Check("evals", "ok", f"{head} after {anchor}, no case under {floor}")
@@ -355,7 +359,7 @@ def check_evals(anchor: str | None) -> Check:
         stamp = _git("log", "-1", "--format=%ct", anchor).stdout.strip() if anchor else ""
         anchor_time = datetime.fromtimestamp(int(stamp), UTC) if stamp else None
         return eval_sweep(rows, anchor, anchor_time)
-    except (OSError, ValueError, KeyError, TypeError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         return Check("evals", "warn", f"routing-eval ledger unreadable: {exc!r}")
 
 

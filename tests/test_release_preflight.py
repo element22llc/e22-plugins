@@ -11,6 +11,7 @@ The ``gh``/``git`` plumbing is exercised once end-to-end against this repo in
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 
 import release_preflight as rp
@@ -71,7 +72,7 @@ def test_validator_compat_is_high_not_blocker_on_failure_and_warn_when_unverifie
 
 
 def _sweep(started="2026-11-16T16:59:30.816Z", **below):
-    return {"started": started, "score": 0.974, "below": below}
+    return {"started": started, "cases": 31, "runs": 3, "score": 0.974, "below": below}
 
 
 def _at(iso):
@@ -89,18 +90,19 @@ def test_eval_sweep_is_stale_when_it_started_before_the_last_release():
 
 
 def test_eval_sweep_names_the_cases_under_the_floor_worst_first():
-    row = _sweep(**{"routes-a": 0.87, "routes-b": 0.67, "routes-c": 0.9})
+    # At three runs 0.8 is one missed `routed` grader; 0.87 lost `answer` and still routed.
+    row = _sweep(**{"routes-a": 0.8, "routes-b": 0.67, "routes-c": 0.87})
     check = rp.eval_sweep([row], "v7.23.0", _at("2026-11-12T17:53:18Z"))
     assert check.status == "warn"
-    assert "routes-b 0.67, routes-a 0.87" in check.detail
+    assert "routes-b 0.67, routes-a 0.8" in check.detail
     assert "routes-c" not in check.detail
     assert rp.EVAL_RECHECK in check.detail
     assert "predates" not in check.detail
-
-
-def test_eval_floor_catches_one_routed_miss_in_three_runs():
-    check = rp.eval_sweep([_sweep(**{"routes-a": 0.8})], "v7.23.0", _at("2026-11-12T17:53:18Z"))
-    assert check.status == "warn"
+    assert "31 cases x 3 runs" in check.detail
+    only_docked = rp.eval_sweep(
+        [_sweep(**{"routes-c": 0.87})], "v7.23.0", _at("2026-11-12T17:53:18Z")
+    )
+    assert only_docked.status == "ok"
 
 
 def test_eval_sweep_reads_the_newest_row_whatever_the_file_order():
@@ -119,11 +121,19 @@ def test_eval_sweep_warns_when_it_cannot_judge():
 def test_check_evals_degrades_to_warn_on_a_missing_or_malformed_ledger(tmp_path, monkeypatch):
     monkeypatch.setattr(rp, "EVAL_LEDGER", tmp_path / "ledger.jsonl")
     assert rp.check_evals(None).status == "warn"
-    for body in ("not json\n", '{"started": "2026-11-16T16:59:30.816Z"}\n'):
+    started = '"started": "2026-11-16T16:59:30.816Z"'
+    for body in ("not json\n", f"{{{started}}}\n", f'{{{started}, "below": null}}\n'):
         (tmp_path / "ledger.jsonl").write_text(body, encoding="utf-8")
         check = rp.check_evals(None)
         assert check.status == "warn"
         assert "unreadable" in check.detail
+
+
+def test_check_evals_dates_the_anchor_from_git(tmp_path, monkeypatch):
+    monkeypatch.setattr(rp, "EVAL_LEDGER", tmp_path / "ledger.jsonl")
+    for started, stale in (("2000-01-01T00:00:00Z", True), ("2999-01-01T00:00:00Z", False)):
+        (tmp_path / "ledger.jsonl").write_text(json.dumps(_sweep(started)), encoding="utf-8")
+        assert ("predates HEAD" in rp.check_evals("HEAD").detail) is stale
 
 
 def test_worst_and_render_roll_up_severity():
