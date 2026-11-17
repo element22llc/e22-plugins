@@ -1,0 +1,16 @@
+kind: Changed
+time: 2026-11-17T12:00:00.000000000-05:00
+custom:
+  Slug: dependabot-security-groups
+body: |-
+  - **Changed: Dependabot now groups security updates too.** A `groups` entry
+    without `applies-to` covers version updates only, so each security alert
+    opened its own PR and waited for its own review. Every ecosystem block in
+    the shipped `dependabot.yml` gains a `security` group
+    (`applies-to: security-updates`, minor + patch); a security major still
+    arrives alone, so it never holds a grouped bump back from auto-merge. The
+    `docker` and `terraform` blocks gain the `minor-and-patch` group they
+    lacked, and `docker` scans `/` and `/apps/*`, where the scaffold puts each
+    app's `Dockerfile`. `/steer:setup sync` proposes the same edits to an
+    existing `dependabot.yml` (MIGRATIONS). The review gate is unchanged: a
+    repo whose protection requires a review still approves each grouped PR.

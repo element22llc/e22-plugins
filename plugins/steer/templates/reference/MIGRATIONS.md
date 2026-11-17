@@ -94,6 +94,55 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - Dependabot groups security updates, and docker covers `apps/*`
+
+- **What & why:** a `groups` entry without `applies-to` covers version updates
+  only, so every Dependabot security update opened its own PR, each waiting for
+  a review. The `docker` and `terraform` blocks had no groups at all, and
+  `docker` at `directory: /` never saw the `Dockerfile` the scaffold puts in
+  each `apps/<app>`. The template now gives every live block a `security`
+  group (`applies-to: security-updates`, minor + patch), gives `docker` and
+  `terraform` the `minor-and-patch` group, and points `docker` at
+  `directories: [/, /apps/*]`. Additive reconciliation never edits inside an
+  existing block, so a materialized `dependabot.yml` needs this entry.
+- **Precondition:** checked per uncommented block - one lacks a security group,
+  a `docker` or `terraform` block has no `groups:`, or `docker` sits at
+  `directory: /` while an `apps/*/Dockerfile` exists -
+
+  ```sh
+  set -- apps/*/Dockerfile
+  test -f .github/dependabot.yml && awk -v apps="$([ -f "$1" ] && echo 1)" '
+    function close_block() {
+      if (eco != "" && !sec) stale = 1
+      if ((eco == "docker" || eco == "terraform") && !grp) stale = 1
+    }
+    /^[[:space:]]*- package-ecosystem:/ { close_block(); eco = $NF; sec = 0; grp = 0; next }
+    /^[[:space:]]*applies-to:[[:space:]]*security-updates/ { sec = 1 }
+    /^[[:space:]]*groups:/ { grp = 1 }
+    eco == "docker" && apps && /^[[:space:]]*directory:[[:space:]]*\/[[:space:]]*$/ { stale = 1 }
+    END { close_block(); if (stale) print "pending" }
+  ' .github/dependabot.yml
+  ```
+
+  No output => already migrated, or no config => no-op (the
+  `dependency-automation` capability creates a missing one from the template).
+- **Action:** read-then-propose; show the diff and apply on a yes. For each
+  uncommented `package-ecosystem` block:
+  1. Under its `groups:` (add the key if absent), append the template's
+     `security` group: `applies-to: security-updates`, `update-types: [minor,
+     patch]`. If a group already sets `applies-to: security-updates`, leave
+     that block alone.
+  2. A `docker` or `terraform` block with no version-update group gets the
+     template's `minor-and-patch` group.
+  3. A `docker` block at `directory: /` becomes `directories: [/, /apps/*]`
+     when the repo has an `apps/*/Dockerfile`; without one there is nothing
+     under `apps/` to scan, so it stays. Any other `directory` value is the
+     product's own choice: leave it.
+
+  Carry every other key forward unchanged: schedules, limits, `ignore`
+  entries, registries, the product's own groups and blocks. **No history entry
+  is earned.**
+
 ### v7.24.0 - `ci:security` keeps Semgrep's matched source out of the CI log
 
 - **What & why:** the Semgrep group printed Semgrep's text output, which quotes

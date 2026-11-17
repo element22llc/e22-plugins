@@ -3,6 +3,8 @@
 # profile), where they wait for a human approval; majors stay with a human and are ignored for
 # policy-governed ecosystems. `cooldown` holds a version update until the release is 7 days old, so a
 # compromised publish is usually caught before auto-merge can land it; security updates are not delayed.
+# Each ecosystem opens at most one grouped version PR and one grouped security PR per run: a group
+# without `applies-to` covers version updates only. A security major stays its own PR.
 # A github-actions bump also regenerates its entry in .github/workflows/actions.lock, in the same PR.
 # Rationale: README.md#branch-protection.
 version: 2
@@ -16,10 +18,14 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      # One grouped PR per week instead of one per action.
       github-actions:
         patterns:
           - "*"
+      security:
+        applies-to: security-updates
+        update-types:
+          - minor
+          - patch
     ignore:
       - dependency-name: "*"
         update-types:
@@ -37,6 +43,11 @@ updates:
   #     default-days: 7
   #   groups:
   #     minor-and-patch:
+  #       update-types:
+  #         - minor
+  #         - patch
+  #     security:
+  #       applies-to: security-updates
   #       update-types:
   #         - minor
   #         - patch
@@ -58,19 +69,37 @@ updates:
   #       update-types:
   #         - minor
   #         - patch
+  #     security:
+  #       applies-to: security-updates
+  #       update-types:
+  #         - minor
+  #         - patch
   #   ignore:
   #     - dependency-name: "*"
   #       update-types:
   #         - version-update:semver-major
 
-  # Docker - base images. Majors are governed by policy/versions.yml (an ADR decision), not Dependabot.
+  # Docker - base images, one Dockerfile per deployable apps/<app>. Majors are governed by
+  # policy/versions.yml (an ADR decision), not Dependabot.
   # - package-ecosystem: docker
-  #   directory: /
+  #   directories:
+  #     - /
+  #     - /apps/*
   #   schedule:
   #     interval: weekly
   #   open-pull-requests-limit: 5
   #   cooldown:
   #     default-days: 7
+  #   groups:
+  #     minor-and-patch:
+  #       update-types:
+  #         - minor
+  #         - patch
+  #     security:
+  #       applies-to: security-updates
+  #       update-types:
+  #         - minor
+  #         - patch
   #   ignore:
   #     - dependency-name: "*"
   #       update-types:
@@ -84,6 +113,16 @@ updates:
   #   open-pull-requests-limit: 5
   #   cooldown:
   #     default-days: 7
+  #   groups:
+  #     minor-and-patch:
+  #       update-types:
+  #         - minor
+  #         - patch
+  #     security:
+  #       applies-to: security-updates
+  #       update-types:
+  #         - minor
+  #         - patch
   #   ignore:
   #     - dependency-name: "*"
   #       update-types:
