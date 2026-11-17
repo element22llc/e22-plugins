@@ -105,13 +105,23 @@ Name the file and say what to carry forward.
   `terraform` the `minor-and-patch` group, and points `docker` at
   `directories: [/, /apps/*]`. Additive reconciliation never edits inside an
   existing block, so a materialized `dependabot.yml` needs this entry.
-- **Precondition:** an uncommented block still lacks a security group -
+- **Precondition:** checked per uncommented block - one lacks a security group,
+  a `docker` or `terraform` block has no `groups:`, or `docker` sits at
+  `directory: /` while an `apps/*/Dockerfile` exists -
 
   ```sh
-  test -f .github/dependabot.yml &&
-    grep -q '^[[:space:]]*- package-ecosystem:' .github/dependabot.yml &&
-    ! grep -q '^[[:space:]]*applies-to: security-updates' .github/dependabot.yml &&
-    echo pending
+  set -- apps/*/Dockerfile
+  test -f .github/dependabot.yml && awk -v apps="$([ -f "$1" ] && echo 1)" '
+    function close_block() {
+      if (eco != "" && !sec) stale = 1
+      if ((eco == "docker" || eco == "terraform") && !grp) stale = 1
+    }
+    /^[[:space:]]*- package-ecosystem:/ { close_block(); eco = $NF; sec = 0; grp = 0; next }
+    /^[[:space:]]*applies-to:[[:space:]]*security-updates/ { sec = 1 }
+    /^[[:space:]]*groups:/ { grp = 1 }
+    eco == "docker" && apps && /^[[:space:]]*directory:[[:space:]]*\/[[:space:]]*$/ { stale = 1 }
+    END { close_block(); if (stale) print "pending" }
+  ' .github/dependabot.yml
   ```
 
   No output => already migrated, or no config => no-op (the
@@ -125,8 +135,9 @@ Name the file and say what to carry forward.
   2. A `docker` or `terraform` block with no version-update group gets the
      template's `minor-and-patch` group.
   3. A `docker` block at `directory: /` becomes `directories: [/, /apps/*]`
-     when the repo has an `apps/*/Dockerfile`. Any other `directory` value is
-     the product's own choice: leave it.
+     when the repo has an `apps/*/Dockerfile`; without one there is nothing
+     under `apps/` to scan, so it stays. Any other `directory` value is the
+     product's own choice: leave it.
 
   Carry every other key forward unchanged: schedules, limits, `ignore`
   entries, registries, the product's own groups and blocks. **No history entry
