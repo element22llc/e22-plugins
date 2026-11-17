@@ -47,8 +47,10 @@ steer_json_unescape() {
 # caller would read an EMPTY payload and the hook would fall through to its
 # fail-open exit - silently disabling the gate rather than degrading to the
 # grep fallback written for exactly this case. Probing execution keeps that
-# fallback reachable. The probe runs at most once per process (the result is
-# cached), so the write path pays one extra exec, not one per field read.
+# fallback reachable. The result is cached, but a cache set inside `$(...)` dies
+# with that subshell: a hook reading fields as `X="$(steer_field ...)"` re-probes
+# on every read unless it calls `steer_have_jq` once in its own shell first -
+# the per-call hooks do, since a mise jq shim costs ~40 ms per spawn.
 steer_have_jq() {
 	if [ -z "${_STEER_JQ_OK:-}" ]; then
 		if command -v jq >/dev/null 2>&1 && jq --version >/dev/null 2>&1; then

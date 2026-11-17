@@ -60,4 +60,27 @@ assert_eq "extract: no-jq Write content \\n decodes to real newline (2 lines)" "
 assert_eq "json_safe: control bytes dropped, quotes and newlines flattened" \
 	"$(steer_json_safe "$(printf 'a\033b\001c"d\\e\nf')")" "abcde f"
 
+# A per-call hook probes jq once per run, not once per `$(steer_field ...)` read.
+FAKE="${WORK}/fakejq"
+mkdir -p "${FAKE}"
+# Logs and fails: a failing probe still counts, and the grep fallback reads the fields.
+printf '#!/bin/sh\nprintf "%%s\\n" "$*" >>"%s/calls"\nexit 1\n' "${FAKE}" >"${FAKE}/jq"
+chmod +x "${FAKE}/jq"
+JR="$(new_repo jqProbe)"
+printf 'x\n' >"${JR}/notes.txt"
+probes() { # <hook> <stdin> -> number of `jq --version` probes one run made
+	: >"${FAKE}/calls"
+	ENV="PATH=${FAKE}:/usr/bin:/bin" run_hook "$1" "$2" >/dev/null
+	grep -c '^--version$' "${FAKE}/calls"
+}
+for h in check-version-pins.sh check-write-nudges.sh format-on-write.sh check-comment-density.sh; do
+	assert_eq "jq probe: ${h} probes once" "$(probes "${h}" "$(json_write "${JR}" jq1 "${JR}/notes.txt" x)")" 1
+done
+assert_eq "jq probe: check-bash-actions.sh probes once" \
+	"$(probes check-bash-actions.sh "$(bash_json "${JR}" jq2 'gh pr view 5')")" 1
+: >"${FAKE}/calls"
+ENV="PATH=${FAKE}:/usr/bin:/bin" run_hook check-bash-actions.sh "$(bash_json "${JR}" jq3 'ls -la')" >/dev/null
+assert_rc "jq probe: the no-jq fast path exits cleanly" "$(last_rc)" 0
+assert_eq "jq probe: a command with no gh or git push spawns no jq" "$(wc -l <"${FAKE}/calls" | tr -d ' ')" 0
+
 finish

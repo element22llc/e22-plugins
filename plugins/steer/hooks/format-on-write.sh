@@ -30,6 +30,7 @@
 STEER_INPUT="$(cat)"
 [ -z "${STEER_INPUT}" ] && exit 0
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
+steer_have_jq || : # cache the probe in this shell, not per $(...) read
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 
 FILE="$(steer_field file_path)"

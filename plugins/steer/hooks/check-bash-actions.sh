@@ -103,7 +103,16 @@
 
 STEER_INPUT="$(cat)"
 [ -z "${STEER_INPUT}" ] && exit 0
+# Every check below needs `gh`, `git` + `push`, or an MCP tool, so raw input with
+# none of them exits before any jq spawn. Matched on the undecoded JSON, so this
+# must stay a superset of every trigger: a `\u` escape could spell a letter.
+case "${STEER_INPUT}" in
+*gh* | *mcp__* | *'\u'*) ;;
+*git*push* | *push*git*) ;;
+*) exit 0 ;;
+esac
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
+steer_have_jq || : # cache the probe in this shell, not per $(...) read
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/graduation.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
