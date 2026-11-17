@@ -79,8 +79,8 @@ The block below is produced by `scripts/release_preflight.py` **when you invoke
 this skill**, not recalled from prose. It is procedure Step 1, the CI-status half
 of Step 2, and Step 4b, computed: tree cleanliness, base currency, pending
 fragment count, manifest agreement, the `$LAST_RELEASE` anchor, the delta's worst
-severity ceiling, the ledger gate, deployed-docs freshness, and the upstream
-`validator-compat` job. Read the markers, not the prose around them.
+severity ceiling, the ledger gate, the newest routing-eval sweep, deployed-docs
+freshness, and the upstream `validator-compat` job. Read the markers, not the prose around them.
 
 ```!
 uv run python scripts/release_preflight.py --report --caller release

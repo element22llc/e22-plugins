@@ -62,7 +62,7 @@ safety net this skill removes.
 
 | Pre-release check | `/release` | `/quick-release` |
 | --- | --- | --- |
-| Computed preconditions (`release_preflight.py`: tree, base, bullets, manifests, anchor, ledger, docs freshness, validator-compat) | yes | yes |
+| Computed preconditions (`release_preflight.py`: tree, base, bullets, manifests, anchor, ledger, routing-eval sweep, docs freshness, validator-compat) | yes | yes |
 | `mise run ci` (full deterministic gate) | yes | yes |
 | `mise run docs:build` (strict Zensical build) | yes | yes |
 | `pre-release-audit` workflow (CHANGELOG<->diff, cross-ref, brand, payload, behavioral, docs accuracy) | yes | no, skipped |

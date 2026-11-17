@@ -2,12 +2,16 @@
 
 The pure interpreters are pinned here: bullet counting, the docs-deploy
 freshness rule (latest run must have succeeded *and* cover the newest docs
-commit), the validator-compat rule, and the report's worst-severity roll-up.
+commit), the validator-compat rule, the routing-eval sweep rule (it must
+postdate the last release and hold the floor), and the report's worst-severity
+roll-up.
 The ``gh``/``git`` plumbing is exercised once end-to-end against this repo in
 ``--offline --no-fetch`` mode so the wiring cannot silently break.
 """
 
 from __future__ import annotations
+
+from datetime import datetime
 
 import release_preflight as rp
 
@@ -66,6 +70,62 @@ def test_validator_compat_is_high_not_blocker_on_failure_and_warn_when_unverifie
     assert rp.validator_compat([{"name": "plugin-quality"}]).status == "warn"
 
 
+def _sweep(started="2026-11-16T16:59:30.816Z", **below):
+    return {"started": started, "score": 0.974, "below": below}
+
+
+def _at(iso):
+    return datetime.fromisoformat(iso)
+
+
+def test_eval_sweep_is_stale_when_it_started_before_the_last_release():
+    # The v7.24.0 pair: 16:59Z is before 13:21-05:00, which a string compare gets backwards.
+    check = rp.eval_sweep([_sweep()], "v7.24.0", _at("2026-11-16T13:21:23-05:00"))
+    assert check.status == "warn"
+    assert "predates v7.24.0" in check.detail
+    fresh = rp.eval_sweep([_sweep()], "v7.23.0", _at("2026-11-12T12:53:18-05:00"))
+    assert fresh.status == "ok"
+    assert "v7.23.0" in fresh.detail
+
+
+def test_eval_sweep_names_the_cases_under_the_floor_worst_first():
+    row = _sweep(**{"routes-a": 0.87, "routes-b": 0.67, "routes-c": 0.9})
+    check = rp.eval_sweep([row], "v7.23.0", _at("2026-11-12T17:53:18Z"))
+    assert check.status == "warn"
+    assert "routes-b 0.67, routes-a 0.87" in check.detail
+    assert "routes-c" not in check.detail
+    assert rp.EVAL_RECHECK in check.detail
+    assert "predates" not in check.detail
+
+
+def test_eval_floor_catches_one_routed_miss_in_three_runs():
+    check = rp.eval_sweep([_sweep(**{"routes-a": 0.8})], "v7.23.0", _at("2026-11-12T17:53:18Z"))
+    assert check.status == "warn"
+
+
+def test_eval_sweep_reads_the_newest_row_whatever_the_file_order():
+    rows = [_sweep(**{"routes-a": 0.67}), _sweep(started="2026-11-12T16:33:44.029Z")]
+    check = rp.eval_sweep(rows, "v7.23.0", _at("2026-11-12T17:53:18Z"))
+    assert "routes-a 0.67" in check.detail
+
+
+def test_eval_sweep_warns_when_it_cannot_judge():
+    assert rp.eval_sweep([], "v7.24.0", _at("2026-11-16T18:21:23Z")).status == "warn"
+    undated = rp.eval_sweep([_sweep()], None, None)
+    assert undated.status == "warn"
+    assert "not verified" in undated.detail
+
+
+def test_check_evals_degrades_to_warn_on_a_missing_or_malformed_ledger(tmp_path, monkeypatch):
+    monkeypatch.setattr(rp, "EVAL_LEDGER", tmp_path / "ledger.jsonl")
+    assert rp.check_evals(None).status == "warn"
+    for body in ("not json\n", '{"started": "2026-11-16T16:59:30.816Z"}\n'):
+        (tmp_path / "ledger.jsonl").write_text(body, encoding="utf-8")
+        check = rp.check_evals(None)
+        assert check.status == "warn"
+        assert "unreadable" in check.detail
+
+
 def test_worst_and_render_roll_up_severity():
     checks = [
         rp.Check("a", "ok", "fine"),
@@ -91,6 +151,7 @@ def test_end_to_end_offline_run_against_this_repo_produces_every_check():
         "last-release",
         "delta",
         "ledger",
+        "evals",
         "docs-deploy",
         "validator-compat",
     ]
