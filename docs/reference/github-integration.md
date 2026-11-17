@@ -71,8 +71,13 @@ product-repo-facing version of this.
   (every scaffolded repo ships workflows); the `npm` / `pip` / `docker` /
   `terraform` blocks are commented out for init/adopt to **uncomment per detected
   stack** (`terraform` is the one an `infra` repo needs) (mirroring how
-  `ci.yml` gates stack steps). Updates are grouped, and **major** bumps are
-  `ignore`d - they're deferred to a deliberate `policy/versions.yml` decision.
+  `ci.yml` gates stack steps). Each ecosystem opens one grouped PR for version
+  updates and one for security updates (`applies-to: security-updates`;
+  without it a group covers version updates only, so every security alert
+  would open its own PR). `docker` scans `/` and `/apps/*`, where the scaffold
+  puts each app's `Dockerfile`. **Major** version bumps are `ignore`d -
+  they're deferred to a deliberate `policy/versions.yml` decision - and a
+  security major arrives as its own PR.
 - **The `dependabot-auto-merge` job in `.github/workflows/ci.yml`** - runs after
   `ci` (`needs: ci`) in the same run and merges a Dependabot **patch/minor** PR
   directly, pinned to the head `ci` just tested (`--match-head-commit`). It never

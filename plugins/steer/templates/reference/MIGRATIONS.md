@@ -94,6 +94,44 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - Dependabot groups security updates, and docker covers `apps/*`
+
+- **What & why:** a `groups` entry without `applies-to` covers version updates
+  only, so every Dependabot security update opened its own PR, each waiting for
+  a review. The `docker` and `terraform` blocks had no groups at all, and
+  `docker` at `directory: /` never saw the `Dockerfile` the scaffold puts in
+  each `apps/<app>`. The template now gives every live block a `security`
+  group (`applies-to: security-updates`, minor + patch), gives `docker` and
+  `terraform` the `minor-and-patch` group, and points `docker` at
+  `directories: [/, /apps/*]`. Additive reconciliation never edits inside an
+  existing block, so a materialized `dependabot.yml` needs this entry.
+- **Precondition:** an uncommented block still lacks a security group -
+
+  ```sh
+  test -f .github/dependabot.yml &&
+    grep -q '^[[:space:]]*- package-ecosystem:' .github/dependabot.yml &&
+    ! grep -q '^[[:space:]]*applies-to: security-updates' .github/dependabot.yml &&
+    echo pending
+  ```
+
+  No output => already migrated, or no config => no-op (the
+  `dependency-automation` capability creates a missing one from the template).
+- **Action:** read-then-propose; show the diff and apply on a yes. For each
+  uncommented `package-ecosystem` block:
+  1. Under its `groups:` (add the key if absent), append the template's
+     `security` group: `applies-to: security-updates`, `update-types: [minor,
+     patch]`. If a group already sets `applies-to: security-updates`, leave
+     that block alone.
+  2. A `docker` or `terraform` block with no version-update group gets the
+     template's `minor-and-patch` group.
+  3. A `docker` block at `directory: /` becomes `directories: [/, /apps/*]`
+     when the repo has an `apps/*/Dockerfile`. Any other `directory` value is
+     the product's own choice: leave it.
+
+  Carry every other key forward unchanged: schedules, limits, `ignore`
+  entries, registries, the product's own groups and blocks. **No history entry
+  is earned.**
+
 ### v7.24.0 - `ci:security` keeps Semgrep's matched source out of the CI log
 
 - **What & why:** the Semgrep group printed Semgrep's text output, which quotes
