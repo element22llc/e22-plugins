@@ -206,6 +206,30 @@ prompted to install when they trust the folder:
 
 > First install prompts you to trust the `e22-plugins` marketplace.
 
+### Pin to a release
+
+Unpinned, the marketplace tracks `main`: every `/plugin update` - and the
+background auto-update the bootstrapped `.claude/settings.json` turns on - takes
+the newest steer release, and a release may carry `/steer:sync` migrations. To
+hold a repo on one release, add `ref` with its `vX.Y.Z` tag to the marketplace
+source. steer's entry is a relative path, so pinning the marketplace pins steer:
+
+```json
+"e22-plugins": {
+  "source": { "source": "github", "repo": "element22llc/e22-plugins", "ref": "vX.Y.Z" },
+  "autoUpdate": true
+}
+```
+
+- Every release has a `vX.Y.Z` tag, and release tags are never re-pointed.
+  Refreshes and auto-update follow the ref, so a tag holds steer on that
+  release. For a pin nothing can move, set `ref` to the tag's full lowercase
+  commit SHA (Claude Code v2.1.324 or later).
+- To move the pin, change `ref` in a reviewed PR. Claude Code re-fetches a
+  marketplace whose source changed in settings after the next session starts;
+  then run `/plugin update steer@e22-plugins`, `/reload-plugins`, and
+  `/steer:setup sync`, which applies every migration between the two releases.
+
 ## Upgrading from `e22-standards`
 
 <!-- steer-legacy-ok -->
@@ -245,9 +269,8 @@ plugin - so updating org standards needs no change in any product repo:
 3. The next session injects the updated ruleset. The version banner at the top of
    the injected context shows which version is live.
 
-For products that need reproducibility, pin a `ref` (tag or SHA) in the
-marketplace `source` in `.claude/settings.json`; updating then becomes a reviewed
-PR that bumps the pin.
+For products that need reproducibility, [pin to a release](#pin-to-a-release);
+updating then becomes a reviewed PR that bumps the pin.
 
 ## Documentation
 
