@@ -1,4 +1,4 @@
-"""plugins/steer/hooks/tests/run.sh must not pass a case whose shell reported an error."""
+"""tests/hooks/run.sh must not pass a case whose shell reported an error."""
 
 from __future__ import annotations
 
@@ -8,15 +8,17 @@ from pathlib import Path
 
 import pytest
 
-TESTS = Path(__file__).resolve().parents[1] / "plugins" / "steer" / "hooks" / "tests"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+TESTS = REPO_ROOT / "tests" / "hooks"
+HOOK_LIB = REPO_ROOT / "plugins" / "steer" / "hooks" / "lib"
 
 
 def _run(tmp_path: Path, body: str) -> subprocess.CompletedProcess[str]:
-    tests = tmp_path / "plugins" / "steer" / "hooks" / "tests"
+    tests = tmp_path / "tests" / "hooks"
     (tests / "cases").mkdir(parents=True)
     shutil.copy(TESTS / "run.sh", tests)
     shutil.copy(TESTS / "lib.sh", tests)
-    shutil.copytree(TESTS.parent / "lib", tests.parent / "lib")
+    shutil.copytree(HOOK_LIB, tmp_path / "plugins" / "steer" / "hooks" / "lib")
     (tests / "cases" / "probe.sh").write_text(f'. "$(dirname -- "$0")/../lib.sh"\n{body}\nfinish\n')
     return subprocess.run(
         ["sh", str(tests / "run.sh"), "probe"], capture_output=True, text=True, check=False

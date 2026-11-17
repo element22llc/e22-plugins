@@ -58,7 +58,7 @@ The repo has fixtures + hooktests but no token or latency budget. Landed:
   SessionStart startup chain (pinned to hooks.json so new hooks can't dodge
   it) against a 2 s tripwire budget (baseline ~200 ms), overridable via
   `STEER_HOOK_LATENCY_BUDGET_MS`. Lives in the pytest tier, not
-  `hooks/tests/run.sh` as originally sketched - POSIX sh has no portable
+  `tests/hooks/run.sh` as originally sketched - POSIX sh has no portable
   sub-second clock.
 
 Why first: Phases 1-2 aggressively cut always-on prose; without these gates we

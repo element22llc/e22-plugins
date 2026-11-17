@@ -8,7 +8,7 @@ allowed-tools:
   - Bash(mise run *)
   - Bash(mise tasks*)
   - Bash(uv run python scripts/*)
-  - Bash(sh plugins/steer/hooks/tests/run.sh)
+  - Bash(sh tests/hooks/run.sh)
 ---
 
 # /preflight - verify before commit / push

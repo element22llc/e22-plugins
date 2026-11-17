@@ -1,0 +1,11 @@
+kind: Changed
+time: 2026-11-17T10:00:00.000000000-05:00
+custom:
+  Slug: hook-tests-out-of-plugin
+body: |-
+  - **Changed: the plugin download no longer carries the hook fixture suite.**
+    An install copies the whole plugin directory, and the POSIX-sh hook tests
+    (about 328 KB, 9% of the plugin) were in it though no session reads them.
+    They now live at the repo root under `tests/hooks/`. The eval suite and
+    the mod test stay: `claude plugin eval` and `claude plugin test` refuse
+    files outside the plugin directory (#964).

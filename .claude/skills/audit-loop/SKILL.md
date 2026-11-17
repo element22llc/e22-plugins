@@ -40,7 +40,7 @@ allowed-tools:
   - Bash(mise trust*)
   - Bash(uv run python scripts/*)
   - Bash(sh plugins/steer/scripts/*)
-  - Bash(sh plugins/steer/hooks/tests/run.sh)
+  - Bash(sh tests/hooks/run.sh)
   - Bash(mise run ci)
   - Bash(mise run check)
   - Bash(mise run shell)
