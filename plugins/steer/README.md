@@ -16,6 +16,11 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 - **`displayName`** ("Steer - Engineering Standards") is the human label in the `/plugin`
   picker; the kebab `name: steer` stays the invocation prefix (`/steer:*`). Requires
   Claude Code >= 2.1.143 (satisfied by the current pin).
+- **No icon and no install line, on purpose.** `claude plugin validate` reports
+  `ICON_MISSING` and advises a `/plugin install` line in this README. Both serve a
+  plugin-directory submission; steer ships only through the private org marketplace
+  and is not submitted, so both stay unaddressed. Revisit if that changes - the
+  directory takes a listing icon only on first submission.
 
 ## Skill tool restrictions
 
