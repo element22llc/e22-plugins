@@ -7,12 +7,12 @@
 #   subagent does not inherit it: the Agent tool starts a fresh conversation with
 #   its own context. So a general-purpose subagent that edits code during
 #   /steer:work ran with none of the testing, secrets, scope or gate rules, and
-#   steer-reviewer audited a slice against standards nobody handed it. Rule
-#   the context-hygiene standard actively steers heavy work TO subagents, so that is not a
-#   marginal share of steer-governed work (#515).
+#   steer-reviewer audited a slice against standards nobody handed it. The
+#   context-hygiene standard actively steers heavy work TO subagents, so that
+#   is not a marginal share of steer-governed work (#515).
 #
-#   A DIGEST, not the ruleset. The full payload is ~60k characters and would be
-#   paid per spawn - defeating the point of delegating for a fresh window, and
+#   A DIGEST, not the ruleset. The full payload runs to tens of thousands of
+#   characters (`check_context_budget.py --report`) and would be paid per spawn - defeating the point of delegating for a fresh window, and
 #   requiring the parted delivery inject-standards.sh needs for the 10k
 #   per-command cap. The digest is one part, well under the cap, and carries only
 #   what governs an agent doing a bounded piece of work: stay in scope, report what
