@@ -175,6 +175,9 @@ replacements:
   - path: plugins/steer/evals/e2e/e2e-fix-issue-delivers-pr/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
+  - path: plugins/steer/evals/e2e/e2e-glossary-term-challenged/scaffold.sh
+    find: '^\d+\.\d+\.\d+$'
+    replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/e2e/e2e-high-risk-stops-for-scoping/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
