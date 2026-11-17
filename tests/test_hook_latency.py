@@ -10,7 +10,7 @@ The budget is deliberately generous (baseline ~200 ms on a dev container vs a
 grows a network call, a repo-wide scan, or an interpreter spawn. Override via
 STEER_HOOK_LATENCY_BUDGET_MS for unusually slow or fast environments.
 
-Kept in the pytest tier (not hooks/tests/run.sh) because POSIX sh has no
+Kept in the pytest tier (not tests/hooks/run.sh) because POSIX sh has no
 portable sub-second clock - `date +%s%N` is GNU-only. The sh suite remains the
 behavioral gate; this file only budgets wall time.
 """

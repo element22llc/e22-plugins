@@ -26,7 +26,7 @@ regardless - this matrix is for tight iteration on a single failure.
 | `plugins/steer/skills/**` | `plugin-check` (incl. `check_agent_skills.py`) | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
 | `plugins/steer/rules/**` | `plugin-check` (incl. `check_copilot_instructions.py`) | `uv run python scripts/check_plugin.py` |
 | `rules/**`, `skills/**`, `agents/**`, or `.claude-plugin/mcp.json` -> stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_*`, all in `mise run check`) | `mise run gen:copilot` - regenerates the whole non-Claude agent surface (instructions, the `.agents/skills/` tree, agents, `vscode/mcp.json` and the Copilot CLI's `.github/mcp.json`, manifest versions); commit the regenerated files with the source change |
-| `plugins/steer/hooks/**` | `hooktests` + `shell` (+ `modtests` for `register.tsx`) | `sh plugins/steer/hooks/tests/run.sh <name>` runs one `cases/<name>.sh` file; no argument runs them all (`mise run modtests` for the mod). There is one hook manifest: `hooks.json`. Hook enforcement is guaranteed on Claude Code only - the Copilot CLI and Copilot Chat in VS Code run `hooks.json` directly and get it incidentally, with no parity promise, so a hook needs no Copilot counterpart |
+| `plugins/steer/hooks/**`, `tests/hooks/**` | `hooktests` + `shell` (+ `modtests` for `register.tsx`) | `sh tests/hooks/run.sh <name>` runs one `cases/<name>.sh` file; no argument runs them all (`mise run modtests` for the mod). There is one hook manifest: `hooks.json`. Hook enforcement is guaranteed on Claude Code only - the Copilot CLI and Copilot Chat in VS Code run `hooks.json` directly and get it incidentally, with no parity promise, so a hook needs no Copilot counterpart |
 | `plugins/steer/.claude-plugin/mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` - regenerates `templates/scaffold/vscode/mcp.json` and `plugins/steer/.github/mcp.json` from it (headers the Copilot hosts' own sign-in replaces are listed in `gen_copilot_mcp.py`'s `SIGN_IN`); commit both. **Never hand-edit the copies, and never add a plugin-root `.mcp.json`** - the Copilot CLI loads that ahead of its own copy, and the gate fails on it. |
 | `lspServers` in `plugins/steer/.claude-plugin/plugin.json` | `plugin-check` (`check_plugin.py`) | Mirror the change by hand into `plugins/steer/.github/plugin/plugin.json`, whose block uses Copilot's `fileExtensions` for Claude's `extensionToLanguage`. |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
@@ -406,10 +406,12 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   executable bit does not matter (marketplace install does not `chmod`). Keep the
   `sh` prefix when adding a hook.
 - Add a fixture case for any new behaviour to the file in
-  `plugins/steer/hooks/tests/cases/` named for the hook or script it exercises
+  `tests/hooks/cases/` named for the hook or script it exercises
   (a new hook gets its own file, which sources `../lib.sh` and ends with
-  `finish`). Iterate with `sh plugins/steer/hooks/tests/run.sh <name>`, then run
+  `finish`). Iterate with `sh tests/hooks/run.sh <name>`, then run
   `mise run hooktests` (every file, in parallel; deterministic, no network).
+  The suite sits outside `plugins/steer/` because an install copies the whole
+  plugin directory, so nothing a session never reads belongs in it.
   `mise run shell` (shellcheck and shfmt, both hard gates) must also pass.
 - **The one non-`sh` exception is the mod, `hooks/register.tsx`** (named under
   `modules` in `hooks.json`). It only draws and answers commands: it never
@@ -418,10 +420,11 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   still run. Data it shows comes from an `sh` script, never from logic in the
   module. Keep it to read-only `$` calls, run `claude plugin validate
   plugins/steer` (it lists what the module hooks and calls), and cover changes in
-  `hooks/tests/register.test.tsx` (`mise run modtests`). For editor types and
-  `tsc -p plugins/steer`, load the plugin once with `claude --plugin-dir
-  plugins/steer`: Claude Code writes the declarations `tsconfig.json` extends
-  into `.claude-plugin/types/` (git-ignored).
+  `hooks/tests/register.test.tsx` (`mise run modtests`; it stays in the plugin
+  because `claude plugin test` loads tests only from the mod's folder). For
+  editor types and `tsc -p plugins/steer`, load the plugin once with `claude
+  --plugin-dir plugins/steer`: Claude Code writes the declarations
+  `tsconfig.json` extends into `.claude-plugin/types/` (git-ignored).
 
 ## CHANGELOG & versioning
 

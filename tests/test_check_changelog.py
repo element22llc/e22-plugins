@@ -229,7 +229,7 @@ def test_is_behaviour_classification():
     assert f("plugins/steer/.github/plugin/plugin.json")
     assert f(".github/plugin/marketplace.json")
     # tests are exempt wherever they live under the plugin
-    assert not f("plugins/steer/hooks/tests/run.sh")
+    assert not f("plugins/steer/hooks/tests/register.test.tsx")
     # repo-level infrastructure is not plugin behaviour
     assert not f("scripts/check_changelog.py")
     # ...including the rest of the root .github/, which ships nothing
@@ -385,9 +385,9 @@ def test_behaviour_gate_rejects_editing_someone_elses_pending_fragment(git_repo:
 
 def test_behaviour_gate_tests_exempt(git_repo: Path):
     _git(git_repo, "checkout", "-q", "-b", "feat/x")
-    hook_test = git_repo / "plugins/steer/hooks/tests/run.sh"
+    hook_test = git_repo / "plugins/steer/hooks/tests/register.test.tsx"
     hook_test.parent.mkdir(parents=True)
-    hook_test.write_text("echo test\n", encoding="utf-8")
+    hook_test.write_text("// test\n", encoding="utf-8")
     _git(git_repo, "add", "-A")
     _git(git_repo, "commit", "-qm", "test-only change")
     errors: list[str] = []

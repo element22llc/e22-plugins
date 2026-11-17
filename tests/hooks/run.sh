@@ -3,8 +3,8 @@
 # Runs every cases/*.sh file in parallel, or only the named ones, and totals
 # their pass/fail counts. Run from anywhere:
 #
-#     sh plugins/steer/hooks/tests/run.sh                      # every case file
-#     sh plugins/steer/hooks/tests/run.sh check-bash-actions   # cases/<name>.sh only
+#     sh tests/hooks/run.sh                      # every case file
+#     sh tests/hooks/run.sh check-bash-actions   # cases/<name>.sh only
 #
 # Exit 0 when all cases pass, 1 otherwise. A case file sources lib.sh, owns its
 # WORK dir, and ends with `finish`; one that dies before it, or writes stderr

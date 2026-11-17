@@ -52,7 +52,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
         ("CROSS-SURFACE.md", "non-shipping", "low"),
         (".claude/audit/PRE-RELEASE-AUDIT.md", "non-shipping", "low"),
         ("plugins/steer/README.md", "non-shipping", "low"),
-        ("plugins/steer/hooks/tests/run.sh", "non-shipping", "low"),
+        ("plugins/steer/hooks/tests/register.test.tsx", "non-shipping", "low"),
+        ("tests/hooks/run.sh", "non-shipping", "low"),
         ("plugins/steer/evals/routes-lost-user-to-next/case.yaml", "non-shipping", "low"),
     ],
 )
