@@ -18,7 +18,7 @@ set -u
 
 # $0 is the sourcing case file, cases/<name>.sh.
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
-PLUGIN="$(CDPATH='' cd -- "${HERE}/../.." && pwd)"
+PLUGIN="$(CDPATH='' cd -- "${HERE}/../../plugins/steer" && pwd)"
 HOOKS="${PLUGIN}/hooks"
 export CLAUDE_PLUGIN_ROOT="${PLUGIN}"
 

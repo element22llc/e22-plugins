@@ -3,9 +3,11 @@
 `steer`'s hooks are POSIX-`sh` scripts under `plugins/steer/hooks/`, wired in
 `hooks.json`. They inject the always-on rules and gate risky actions. All hook
 commands are invoked with an explicit `sh` prefix, so the executable bit is
-irrelevant (marketplace install does not `chmod`). No `jq` dependency. Every hook
-declares an explicit `timeout` in `hooks.json`, so a slow hook cannot stall a
-session - with one carve-out that is not steer's to set:
+irrelevant (marketplace install does not `chmod`). No `jq` dependency. Their
+fixture suite lives under `tests/hooks/` in the plugin repo (`mise run
+hooktests`), outside the directory an install copies. Every hook declares an
+explicit `timeout` in `hooks.json`, so a slow hook cannot stall a session - with
+one carve-out that is not steer's to set:
 
 !!! warning "A plugin cannot raise the `SessionEnd` budget"
     `SessionEnd` hooks share a **1.5-second** budget, and *"Timeouts set on

@@ -45,14 +45,8 @@ change anything about the local session and cannot prevent a local commit or pus
 **This is the graduation gate for solo trunk mode.** A repo whose `CLAUDE.md`
 carries `<!-- steer:delivery-mode=solo-trunk -->` runs with `main` intentionally
 unprotected (Commit autonomy). Running `apply` here **is** the graduation: it
-raises the PR wall and ends trunk mode. After applying in that case, also update
-the product `CLAUDE.md` `## Delivery mode` section to `PR flow` - both the prose
-**and** the machine-readable marker on its first line, flipped to
-`<!-- steer:delivery-mode=pr-flow -->` so the steer hooks resume the per-feature
-branch/PR flow (the mode is over - the server wall now enforces it) - and write
-a graduation entry under `/spec/history/`. **In a member** the `CLAUDE.md`
-marker is this repo's own and is flipped here; the graduation entry goes to the
-workspace's ledger per `/steer-reference polyrepo`.
+raises the PR wall and ends trunk mode, and records it locally - the
+`CLAUDE.md` marker flip and a `/spec/history/` entry (`APPLY.md` step 5).
 
 **A one-person repo graduates with the `solo` profile.** GitHub will not let a
 PR's author approve it, so the policy's default 1-approval rule would leave a
@@ -61,19 +55,17 @@ sole dev unable to merge at all. When the collaborator count is 1, offer
 CI still required on every protected branch, approvals 0 - see the policy's
 `profiles` block) and graduates with that. Name the trade plainly: the dev's own
 read of the PR is the review. `apply --team` (or plain `apply` on a `team` policy)
-is the default; a `solo` policy on a repo that has grown a second collaborator is
-**drift to tighten** - verify says so and recommends `apply --team`.
+is the default; a `solo` policy past one collaborator is **drift to tighten**
+(Verify).
 
 **Graduation is not the only answer to the signals.** A repo that will keep a
-*single* contributor on trunk - with the `infra/` tree or deploy target the local
-signals flag - can instead record a **graduation waiver**: `/steer-setup protect waive`
-writes `<!-- steer:graduation=waived -->` under the delivery-mode marker plus a
-`/spec/history/` entry, and the SessionStart nudge and the trunk-push ask fall
-silent together (the hooks' shared detector honours the marker). It is a
-recorded decision, not a third mode - the repo stays solo-trunk, and a second
-collaborator still voids it (verify / `/steer-audit` say so). Procedure:
+*single* contributor on trunk can record a **graduation waiver** instead
+(`waive`: `<!-- steer:graduation=waived -->` plus a `/spec/history/` entry),
+which silences the graduation nudge and the trunk-push ask together. It is a
+recorded decision, not a third mode; a second collaborator voids it, and `apply`
+removes it at a real graduation. Procedure:
 [`WAIVE.md`](WAIVE.md), read only when the
-dev asks for it. `apply` removes the marker at a real graduation.
+dev asks for it.
 
 ## Authorization (what invoking this grants)
 
@@ -144,24 +136,11 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   branch deliberately. What `production_gate` changes is what steer *proposes* and
   what it reports as missing - never the gate itself, which stays human in every
   model.
-- **Ruleset fields (schema 7).** `required_reviewers` and `allowed_merge_methods`
-  on a `protected_branches` entry, and the `release_branches` pattern, exist only
-  in GitHub **repository rulesets** - classic protection has no such rule and
-  takes no patterns. They resolve to two rulesets protect owns by name:
-  `steer: prod approvals` (target `refs/heads/prod`: the review count,
-  `dismiss_stale_reviews_on_push`, `require_last_push_approval`, one
-  `required_reviewers` entry per team with `minimum_approvals: 1` and
-  `file_patterns: ["**"]`, the merge methods, `ci`, no bypass actors) and
-  `steer: release branches` (target `refs/heads/<release_branches.pattern>`: a
-  PR with its approval count and `ci`, no bypass). A `team` slug left `""` is
-  **not resolved yet**: ask the dev for the PO and the dev team slugs, write them
-  into the repo's policy copy (as `APPLY.md` step 0 writes `profile:`), then
-  resolve each to its numeric id (`gh api orgs/<org>/teams/<slug> --jq .id`).
-  Both teams need **Write** on the repo, or their approvals do not count. Warn
-  when the dev team has fewer than two members: the Release PR's author and the
-  last pusher cannot approve, so one dev and one PO can never merge.
-  A **user-owned** repo has no teams: say required reviewers are unavailable
-  there and keep the classic review count.
+- **Ruleset fields (schema 7).** A policy carrying `required_reviewers`,
+  `allowed_merge_methods` or `release_branches` resolves them to two
+  repository rulesets protect owns by name - read
+  [`RULESETS.md`](RULESETS.md) for how to
+  resolve, verify and report them.
 - **Profile.** Read `profile:` (schema 3 - `team` when absent, as in older
   policies). For any profile other than `team`, overlay that profile's map from
   `profiles:` onto **every** branch in scope - `release_branches` included -
@@ -204,11 +183,6 @@ Dependabot **alerts** have no field on the repo object - read their state from
 `gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
-For the **schema 7 rulesets**, read `gh api repos/${OWNER}/${REPO}/rulesets`, find
-each one by its `steer:` name, then `gh api repos/${OWNER}/${REPO}/rulesets/<id>`
-for its rules, and diff them field by field like the classic protection. A
-missing ruleset is `absent`; an edited one is `drifted`.
-
 Read `can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
 `true` is the grant steer's retired approve-based auto-merge asked for: it lets
 **any** workflow approve **any** PR, and nothing steer ships needs it now. Report
@@ -243,28 +217,15 @@ the fix; the marker flip itself is `apply`'s job:
   gap visible instead of it looking like an oversight; the local flow is
   unchanged either way (branch + PR, never merge - rule 45).
 
+Under `profile: solo`, read the collaborator count (`gh api
+repos/{owner}/{repo}/collaborators --jq 'length'`): above 1 is drift to tighten -
+recommend `apply --team`.
+
 When the repo's `CLAUDE.md` declares **solo trunk mode**, an absent protection is
 **intentional (pre-MVP)**, not drift - report it that way and frame `apply` as
-*graduation* (offer it once the MVP works / a deploy or second contributor is near),
-not as a compliance gap to fix immediately. In that case also report the
-**graduation signals** alongside the protection diff: a second collaborator
-(`gh api repos/{owner}/{repo}/collaborators --jq 'length'` > 1), a `prod`/`production`
-branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, say
-so plainly and recommend graduating now - and note that while the local signals
-stand, the trunk-push hook surfaces the session's **first** `git push` for a human
-yes (rule 45; repeats carry a non-blocking reminder), so graduating also restores silent delivery - **or**,
-when only local signals hold and the dev intends to stay single-dev on trunk,
-name `waive` as the other way to restore it; when none holds, note
-that staying on solo-trunk is fine for now. (The SessionStart
-`check-graduation.sh` hook surfaces
-the local signals each session; this is the networked, on-demand check.) If a
-**waiver is recorded** (`<!-- steer:graduation=waived -->`), report it as the
-standing decision: the local signals are expected and the hooks are silent by
-design. The one thing that voids it is a **second collaborator** - when the
-collaborator count is > 1, say the waiver no longer holds and recommend `apply`.
-The same count decides the **profile** finding: `profile: solo` with > 1
-collaborator is drift to tighten (recommend `apply --team`); a graduating
-solo-trunk repo with exactly 1 is where to offer `apply --solo`.
+*graduation*, not as a compliance gap. Report the graduation signals, a recorded
+waiver and the profile finding alongside the diff, as
+[`SOLO-TRUNK.md`](SOLO-TRUNK.md) sets out.
 
 ## Apply (only on confirmation)
 
@@ -278,11 +239,8 @@ confirmation.
 
 ## Notes
 
-- **Classic branch protection** carries every field it can express, because those
-  map 1:1 to the policy; the schema 7 ruleset fields go to the two `steer:`
-  rulesets, and GitHub applies the most restrictive of both layers. If the repo
-  already governs a branch through a ruleset of its own that meets the policy,
-  report it as compliant rather than forcing a second one.
+- If the repo already governs a branch through a ruleset of its own that meets
+  the policy, report it as compliant rather than forcing a second one.
 - This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
   changes repo **settings** via `gh api`; `apply --solo` / `--team` sets
   `profile:` in the repo's own `policy/branch-protection.yml` (`APPLY.md` step

@@ -1,6 +1,6 @@
 ---
 name: steer-status
-description: Client-facing progress reporting - the default modes cover the whole /spec spine over a time window (what shipped, what is in progress, what needs the client's input, what is next); `feature <id>` renders one feature in depth instead. A shareable Artifact; read-only, never fabricates.
+description: Client-facing progress report over the whole /spec spine for a time window - what shipped, what is in progress, what needs the client's input, what is next; `feature` renders one feature in depth. A shareable Artifact; read-only, never fabricates.
 argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
 ---
 
@@ -10,7 +10,7 @@ argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use for a progress update to hand a client or Product Owner - "give me a status report", "what did we ship this week", "weekly status for the client", "where are we on <milestone>". Use `feature <id>` for a plain-language page of one feature - "show me feature X", "a shareable summary for the PO".
+**When to use.** Use for a progress update to hand a client or Product Owner - "give me a status report", "what did we ship this week", "weekly status for the client", "where are we on this milestone". Use `feature` for a plain-language page of one feature - "show me feature X", "a shareable summary for the PO".
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

@@ -294,7 +294,7 @@ number the harness does not use. Claude Code budgets the listing at 1% of the
 context window, at 4 characters per token - 8,000 characters on a 200K window,
 40,000 on 1M - shared by every installed skill, and counts each entry as it
 formats it (`- steer:<name>: <description> - <when_to_use>`). On a 200K window
-steer alone overflows that budget whatever the ratchet said, and the harness
+steer alone overflowed that budget whatever the ratchet said, and the harness
 drops whole descriptions, least-used skill first; on 1M it sits far inside it.
 The ratchet protected neither, and at zero headroom it made the next skill pay
 in other skills' guardrail phrases. The listing is now reported against both
@@ -353,6 +353,22 @@ literals the doors already list or the bodies carry - among them `vibe-coded`,
 `Keep/Refactor/Rewrite/Reject`, `waive`, `apply --solo`, `needs`, `bundle`,
 `clarify`, `Projects v2`, `Orca`, `Conductor`.
 
+Three weeks later the listing was back at 8,220 chars, 103% of the 200K budget
+(#961). Of the 322 chars of growth, 314 were in `work`, whose `queue`, `debug`
+and `qa` modes each added a sentence, and nothing gates the total, so it went
+unnoticed. A third trim took it to 7,787 (97%): `work`, `next`, `status`,
+`audit`, `standards` and `setup` lost restatement between their two fields and
+enumerations the skill body carries, and `<placeholder>` and `->` left every
+entry - Claude Code shows them to the model as `&lt;` and `&gt;`, and the skill
+body and `argument-hint` carry the placeholders. `description` keeps each
+skill's purpose and modes, because the generated `.agents/skills` tree routes on
+`description` alone. Quoted user phrasings, guardrails and every
+routing-fixture signal survived. Dropped, among them: `queue #A #B`, `a fresh
+worker each`, `lifecycle transition`, `before review`, `Non-mutating`, `code
+health`, `when work spans workflows`, `One front door`, and `next`'s state
+inventory (`branch/PR, features, questions, ADRs, issues, claims, version
+drift`).
+
 The rendered-skill ceiling is per-skill and **not** a ratchet: it is the
 harness's **compaction re-attach cap**. After auto-compaction Claude Code
 re-attaches an invoked skill but keeps it whole only up to 5,000 "tokens",
@@ -366,7 +382,8 @@ frontmatter included, at 3.5 bytes per token - 17,500 B - which reported
 skills at 100% of a cap they were ~10-15% under.) steer's skills keep guardrails,
 coupling rules, and output contracts near the **top** of `SKILL.md` and factor
 per-mode or per-phase procedure into sibling files (`modes/<mode>.md`,
-`OPERATIONS.md`, `PROCEDURE.md`, ...) that the skill reads **just-in-time** for
+`OPERATIONS.md`, `PROCEDURE.md`, a topic file such as `APPLY.md` or
+`FOLD.md`, ...) that the skill reads **just-in-time** for
 the one path it is executing - a file read that way is a tool result, not skill
 content, so it never competes for the re-attach budget. Because this ceiling is
 derived from harness behaviour rather than a budget target, it does not move

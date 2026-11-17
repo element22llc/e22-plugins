@@ -1,6 +1,6 @@
 ---
 name: steer-audit
-description: 'Repeatable, read-only audits of a managed repo - code mode sweeps repo health against the standards and ranks findings; spec mode surfaces as-built vs intended drift; all runs both. Non-mutating: proposes only, never edits an existing file. Optionally renders an Artifact dashboard.'
+description: 'Repeatable audits of a managed repo - `code` sweeps repo health against the standards and ranks findings; `spec` surfaces as-built vs intended drift; `all` runs both. Read-only: proposes only, never edits an existing file. Optionally renders an Artifact dashboard.'
 argument-hint: '[code | spec | all] [--since <ref>]'
 ---
 
@@ -10,7 +10,7 @@ argument-hint: '[code | spec | all] [--since <ref>]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use for a periodic standards-conformance pass - code health and the highest-leverage improvements (code), whether the build matches what the tracker asked for (spec), or both.
+**When to use.** Use for a periodic standards-conformance pass - the highest-leverage improvements, or whether the build matches what the tracker asked for.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

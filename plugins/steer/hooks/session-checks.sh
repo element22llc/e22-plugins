@@ -22,7 +22,7 @@
 #   together. Always exits 0: a broken check must not break session start.
 #
 #   The individual check scripts stay authoritative and individually testable
-#   (hooks/tests/run.sh drives them directly); this file must contain NO check
+#   (the repo's tests/hooks/run.sh drives them directly); this file must contain NO check
 #   logic of its own - only sequencing. Add a new session check by appending
 #   it to the list below AND to the roster in CROSS-SURFACE.md; check_standards.py
 #   parses the `for _check in` list below and fails the build if the roster omits

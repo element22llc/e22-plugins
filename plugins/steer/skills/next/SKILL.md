@@ -1,11 +1,10 @@
 ---
 name: next
-description: "Read-only workspace navigator and capability index - the default mode reconstructs workspace state cold (branch/PR, features, questions, ADRs, issues, claims, version drift) and arbitrates the single best next action; `capabilities` renders the plain-language capability menu."
+description: "Read-only workspace navigator and capability index - reconstructs workspace state cold and arbitrates the single best next action; `capabilities` renders the plain-language capability menu."
 when_to_use: >-
   Use when picking a repo up cold or mid-stream and asking "what should I do
-  next?", "where do I start?", or "I'm lost" - when work spans workflows and you
-  need the one action that matters most. Use `capabilities` to browse what steer
-  can do at all: "what can steer do?", "show me the commands".
+  next?", "where do I start?", or "I'm lost". Use `capabilities` to browse what
+  steer can do: "what can steer do?", "show me the commands".
 argument-hint: "[capabilities] [optional constraints, e.g. 'only feature-x', 'no tracker writes']"
 allowed-tools:
   - Bash(sh *scripts/workspace-snapshot.sh*)

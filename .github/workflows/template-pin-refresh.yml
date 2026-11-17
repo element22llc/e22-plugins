@@ -7,6 +7,9 @@ name: template-pin-refresh
 # once bootstrapped - its own shipped dependabot.yml takes over - so what rots is
 # the INITIAL pin a freshly bootstrapped repo receives.
 #
+# Also watches the git-subdir SHA pins in .claude-plugin/marketplace.json, which
+# nothing else does: a pinned path deleted upstream fails this run.
+#
 # Same shape as version-policy-refresh.yml, deliberately: weekly cron, consult
 # upstream, bump a static file, open a human-reviewed PR, never auto-merge. Pins
 # are BUMP-UP-ONLY; a pin ahead of the newest release is a deliberate pick.
@@ -38,7 +41,7 @@ jobs:
 
       - uses: jdx/mise-action@v4.3.0
 
-      - name: Bump template action pins to current
+      - name: Bump pins to current
         id: refresh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -59,14 +62,17 @@ jobs:
       - name: Detect changes
         id: changed
         run: |
-          if git diff --quiet -- plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh; then
-            echo "changed=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=1" >> "$GITHUB_OUTPUT"
-          fi
+          # `shipped` is the subset check_changelog.py gates; a marketplace-only
+          # bump needs no fragment.
+          shipped=1
+          git diff --quiet -- plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh && shipped=0
+          changed="${shipped}"
+          git diff --quiet -- .claude-plugin/marketplace.json || changed=1
+          echo "shipped=${shipped}" >> "$GITHUB_OUTPUT"
+          echo "changed=${changed}" >> "$GITHUB_OUTPUT"
 
       - name: Record the change in the changelog
-        if: steps.changed.outputs.changed == '1'
+        if: steps.changed.outputs.shipped == '1'
         env:
           REPORT: ${{ steps.refresh.outputs.report }}
         run: |
@@ -79,6 +85,8 @@ jobs:
           for raw in os.environ.get("REPORT", "").splitlines():
               line = raw.strip()
               if not line.startswith("- ") or ":" not in line:
+                  continue
+              if line.startswith("- marketplace.json:"):
                   continue
               bump = line[2:].split(":", 1)[1].strip()
               if bump not in seen:
@@ -118,25 +126,26 @@ jobs:
           REPORT: ${{ steps.refresh.outputs.report }}
         run: |
           branch="chore/template-pin-refresh"
+          title="chore(steer): refresh upstream pins"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Bot-owned branch, reset from the current default-branch HEAD each run so
           # the diff is always "main + this bump" - a force push is intentional.
           git checkout -B "${branch}"
-          git add plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh .changes/unreleased
-          git commit -m "chore(scaffold): refresh the shipped templates' action pins"
+          git add plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh .claude-plugin/marketplace.json .changes/unreleased
+          git commit -m "chore(steer): refresh upstream pins"
           git push --force origin "${branch}"
           body="$(printf '%s\n\n%s\n' \
-            "Automated by \`template-pin-refresh.yml\`. The action tags and gh-actions-lock pin below are behind their current upstream release. Dependabot cannot maintain them - it scans only \`/.github/workflows\` - so this keeps what a freshly bootstrapped repo receives current; each consumer locks the commits in its own actions.lock. Bump-up only. Review before merge; CI does not auto-run on token-opened PRs (close+reopen or push to trigger it)." \
+            "Automated by \`template-pin-refresh.yml\`. The pins below are behind upstream. Action tags and the gh-actions-lock pin: Dependabot cannot maintain them - it scans only \`/.github/workflows\` - so this keeps what a freshly bootstrapped repo receives current; each consumer locks the commits in its own actions.lock. A \`marketplace.json\` line moves a re-listed plugin's SHA, which changes the skill text product repos install: read the commits behind its \`review:\` link, and if they make \`DESIGN-SOURCES.md\` wrong, land that fix in its own PR first - this branch is reset every run. Bump-up only. Review before merge; CI does not auto-run on token-opened PRs (close+reopen or push to trigger it)." \
             "${REPORT}")"
           existing="$(gh pr list --head "${branch}" --state open --json number --jq '.[0].number' 2>/dev/null)"
           if [ -n "${existing}" ]; then
-            gh pr edit "${existing}" --body "${body}"
+            gh pr edit "${existing}" --title "${title}" --body "${body}"
           else
             gh pr create --base main --head "${branch}" \
-              --title "chore(scaffold): refresh the shipped templates' action pins" \
+              --title "${title}" \
               --body "${body}" --label "maintenance" 2>/dev/null \
               || gh pr create --base main --head "${branch}" \
-                --title "chore(scaffold): refresh the shipped templates' action pins" \
+                --title "${title}" \
                 --body "${body}"
           fi

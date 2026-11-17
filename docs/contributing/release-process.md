@@ -61,7 +61,8 @@ misremembered:
 
 - `scripts/release_preflight.py` computes the preconditions - clean tree, base
   current with `origin/main`, pending fragments present, manifests in
-  agreement, the `vX.Y.Z` anchor tag for the last release, deployed-docs
+  agreement, the `vX.Y.Z` anchor tag for the last release, the newest
+  routing-eval sweep (stale, or a case under the floor), deployed-docs
   freshness, and the upstream `validator-compat` job - and prints
   `[ok]/[blocker]/[high]/[warn]` markers. The skills inject its output at
   invocation via dynamic context, so the facts arrive with the skill body.

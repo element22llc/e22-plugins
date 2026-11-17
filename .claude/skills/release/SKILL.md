@@ -79,8 +79,9 @@ The block below is produced by `scripts/release_preflight.py` **when you invoke
 this skill**, not recalled from prose. It is procedure Step 1, the CI-status half
 of Step 2, and Step 4b, computed: tree cleanliness, base currency, pending
 fragment count, manifest agreement, the `$LAST_RELEASE` anchor, the delta's worst
-severity ceiling, the ledger gate, deployed-docs freshness, and the upstream
-`validator-compat` job. Read the markers, not the prose around them.
+severity ceiling, the ledger gate, the newest routing-eval sweep, deployed-docs
+freshness, and the upstream `validator-compat` job. Read the markers, not the
+prose around them.
 
 ```!
 uv run python scripts/release_preflight.py --report --caller release
@@ -122,7 +123,13 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   Phase A, before cutting, report `aggregates.meanDelta` against its ceiling in
   the release PR (B6), record the sweep with `ledger.py add --latest` in the
   release commit, and treat a case scoring
-  below `--threshold` as a Phase-A finding rather than a footnote. A **patch**
+  below `--threshold` as a Phase-A finding rather than a footnote. Once the
+  sweep is recorded, re-run the preflight command above and read its `evals`
+  line, which at invocation described the previous cut's sweep and now
+  describes this one: each case it names gets the 6-run recheck it prints, with
+  the result in the release PR. (While the recorded row is uncommitted,
+  `tree-clean` reads `[blocker]` on that re-run; only the `evals` line is being
+  read.) A **patch**
   release skips it - say so rather than leaving the reader guessing. The suite
   needs `plugin eval` early access; where the machine does not have it, say the
   cadence could not be honoured instead of recording a pass.

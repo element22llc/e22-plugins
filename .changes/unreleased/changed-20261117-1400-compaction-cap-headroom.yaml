@@ -1,0 +1,16 @@
+kind: Changed
+time: 2026-11-17T14:00:00.000000000-05:00
+custom:
+  Slug: compaction-cap-headroom
+body: |-
+  - **Changed: `work`, `protect` and `questions` regain headroom under the
+    compaction re-attach cap.** All three rendered at 97-100% of the 20,000 ch
+    cap, so the next fix to any of them would have failed `mise run check`.
+    Procedure now lives in sibling files read just-in-time, and every
+    guardrail stays in `SKILL.md`: `protect` gains `RULESETS.md` (schema 7
+    rulesets) and `SOLO-TRUNK.md` (the graduation-signals report), and its
+    graduation write steps join `APPLY.md`; `questions` gains `FOLD.md` (step
+    6's per-answer mechanics, with the tier gate kept in place); `work`'s
+    subcommand table becomes a mode map, and its marker and queue mechanics
+    move into `WORK-MARKER.md` and `modes/queue.md`. They now render at
+    82-84% of the cap (#967).

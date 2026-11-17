@@ -54,7 +54,7 @@ def test_is_doc_bearing_surfaces():
     # issue #330: the docs site documents shipped subagents too
     assert f("plugins/steer/agents/steer-reviewer.md")
     # exemptions: tests and internal hook libraries have no documented surface
-    assert not f("plugins/steer/hooks/tests/run.sh")
+    assert not f("plugins/steer/hooks/tests/register.test.tsx")
     assert not f("plugins/steer/hooks/lib/json.sh")
     # not part of the documented surface at all
     assert not f("plugins/steer/templates/spec/feature-intent.md")

@@ -1,6 +1,6 @@
 ---
 name: adr
-description: "Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed -> Accepted."
+description: "Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed to Accepted."
 when_to_use: "Reached via /steer:spec adr."
 argument-hint: "[<slug> | accept <n>]"
 # Internal decision-capture path behind `/steer:spec adr`. Model-callable,
