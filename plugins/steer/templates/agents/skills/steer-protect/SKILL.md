@@ -55,8 +55,8 @@ sole dev unable to merge at all. When the collaborator count is 1, offer
 CI still required on every protected branch, approvals 0 - see the policy's
 `profiles` block) and graduates with that. Name the trade plainly: the dev's own
 read of the PR is the review. `apply --team` (or plain `apply` on a `team` policy)
-is the default; a `solo` policy on a repo that has grown a second collaborator is
-**drift to tighten** - verify says so and recommends `apply --team`.
+is the default; a `solo` policy past one collaborator is **drift to tighten**
+(Verify).
 
 **Graduation is not the only answer to the signals.** A repo that will keep a
 *single* contributor on trunk can record a **graduation waiver** instead
@@ -217,6 +217,10 @@ the fix; the marker flip itself is `apply`'s job:
   gap visible instead of it looking like an oversight; the local flow is
   unchanged either way (branch + PR, never merge - rule 45).
 
+Under `profile: solo`, read the collaborator count (`gh api
+repos/{owner}/{repo}/collaborators --jq 'length'`): above 1 is drift to tighten -
+recommend `apply --team`.
+
 When the repo's `CLAUDE.md` declares **solo trunk mode**, an absent protection is
 **intentional (pre-MVP)**, not drift - report it that way and frame `apply` as
 *graduation*, not as a compliance gap. Report the graduation signals, a recorded
@@ -235,6 +239,8 @@ confirmation.
 
 ## Notes
 
+- If the repo already governs a branch through a ruleset of its own that meets
+  the policy, report it as compliant rather than forcing a second one.
 - This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
   changes repo **settings** via `gh api`; `apply --solo` / `--team` sets
   `profile:` in the repo's own `policy/branch-protection.yml` (`APPLY.md` step

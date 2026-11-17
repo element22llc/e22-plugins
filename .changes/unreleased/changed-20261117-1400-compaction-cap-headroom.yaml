@@ -13,4 +13,4 @@ body: |-
     6's per-answer mechanics, with the tier gate kept in place); `work`'s
     subcommand table becomes a mode map, and its marker and queue mechanics
     move into `WORK-MARKER.md` and `modes/queue.md`. They now render at
-    82-83% of the cap (#967).
+    82-84% of the cap (#967).

@@ -84,9 +84,8 @@ one after 60 (14 once its feature is `live`), aged from its `created:` date or
 the heading's `git blame` date when absent - the cue to promote it (step 6) or
 defer it (step 7).
 
-That hook is guaranteed only on Claude Code, so elsewhere nothing may announce
-either the backlog or the staleness escalation. Where no such notice reached
-you, apply both yourself: read each feature's `## Open
+That hook is guaranteed only on Claude Code. Where no such notice reached you,
+apply both yourself: read each feature's `## Open
 questions` list, and age every open entry from its `created:` date (or the
 heading's `git blame` date) against those thresholds. Wherever a step below says
 "hook-escalated", read it as "stale by that same test".
@@ -98,10 +97,8 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    `scan-spine-state.sh`. Without this the sweep is worse than useless: step 2's
    grep matches no files on an unmanaged repo, so "no open questions" reads as
    good news when the truth is that nothing was searched. Test the **stamp**, not
-   `spec/` - a bare directory can be an empty folder or a foreign OpenAPI
-   `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`. Unlike
-   `adr` there is no bootstrap exception: no bootstrap invokes this skill
-   mid-install, so a spine-less call is always a direct one.
+   `spec/`, which may be empty or a foreign OpenAPI tree. There is no
+   bootstrap exception.
 
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first - before you answer
    anything.** If that file exists (a fork from a pre-1.25.0 template revision),
@@ -130,7 +127,7 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    **before** gathering, with the ledger's converter - a `- [ ]` line
    **outside** that section is a **PO gate** that converting or resolving would
    destroy, and the converter is what knows the difference. The moment you see
-   any, read `LEGACY.md` section 2.
+   any, read [`LEGACY.md`](LEGACY.md) section 2.
 
    **In a member** all three of those paths are absent by design, so the grep
    returns nothing - that is **not** a clean sweep. Resolve the workspace by the
@@ -202,10 +199,10 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
 
    For each answered question, record the decision in the owning
    `intent.md` / `contract.md` (or `vision.md`), then close its `Q-NNN` block -
-   `status: resolved` with the decision in its `_Resolution:_` line - or route it
-   to an ADR or promote it to an issue. **Read
+   `status: resolved` with the decision in its `_Resolution:_` line - routing it
+   to an ADR or promoting it to an issue where that applies. **Read
    [`FOLD.md`](FOLD.md) before the first
-   fold** and follow it for each answer.
+   fold or promotion** and follow it for each.
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, set its `status: deferred` and annotate **why** (and a revisit

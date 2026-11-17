@@ -87,7 +87,7 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
 > **Pre-approved shell scope.** `allowed-tools` covers read-only git/PR/CI
-> inspection, branch create/switch, `git add` / `git commit` / `git push`, and
+> inspection, `git fetch`, branch create/switch, `git add` / `git commit` / `git push`, and
 > `gh pr create` / `edit` / `ready` (the MCP PR tools when `gh` is not
 > authenticated), so the CI watch runs without a prompt per poll. It does **not**
 > pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
@@ -233,9 +233,9 @@ commit**, closing its own `#N`). `status #A #B` stays read-only.
 ## Discovered work - bounded scope
 
 An unrelated bug, tech debt, missing test, security concern or feature request
-found while implementing gets **a separate linked issue** (`/steer-tracker-sync
+found while implementing gets **a separate linked issue** (related/blocking, `/steer-tracker-sync
 find-or-create`) when it has its own acceptance criteria, needs a new product
-decision, changes risk, or is separately deliverable. Necessary **localized
+decision, materially changes risk, or is separately deliverable. Necessary **localized
 supporting changes** stay in this issue, noted in its managed block. Do the
 separate work only when this issue requires it.
 
