@@ -1,6 +1,6 @@
 ---
 name: build
-description: Guided flow for a non-technical product owner - idea -> interview -> approved spec -> working local app -> handoff for dev review.
+description: Guided flow for a non-technical product owner - idea, interview, approved spec, working local app, handoff for dev review.
 when_to_use: Use when a non-developer wants to build or prototype an app idea, or to resume a PO build whose repo already has /spec/BUILD-STATUS.md.
 argument-hint: "[idea or product description]"
 allowed-tools:

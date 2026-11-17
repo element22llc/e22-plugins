@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "One front door for getting a repo onto the standards - reads the /spec spine state and routes to `init`, `adopt` or `sync`."
+description: "Get a repo onto the standards - reads the /spec spine state and routes to `init`, `adopt` or `sync`."
 when_to_use: >-
   Use to set up, onboard or bootstrap a repo (`init`, also for leftover
   template placeholders), to adopt an existing repo, vibe-coded or not, by

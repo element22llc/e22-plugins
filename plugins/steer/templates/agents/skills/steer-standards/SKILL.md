@@ -9,7 +9,7 @@ description: Load the always-on operating manual on demand where the SessionStar
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules - notably the Claude desktop/web Chat tab and chat-only surfaces, where plugin hooks do not run.
+**When to use.** Use at the start of a session where nothing auto-injects the rules - notably the Claude desktop/web Chat tab and other chat-only surfaces, where plugin hooks do not run.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but

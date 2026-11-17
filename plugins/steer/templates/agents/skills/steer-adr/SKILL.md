@@ -1,6 +1,6 @@
 ---
 name: steer-adr
-description: Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed -> Accepted.
+description: Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed to Accepted.
 argument-hint: '[<slug> | accept <n>]'
 user-invocable: false
 ---

@@ -1,0 +1,16 @@
+kind: Changed
+time: 2026-11-17T09:34:00.000000000-05:00
+custom:
+  Slug: skill-listing-budget
+body: |-
+  - **Changed: the skill listing fits a 200K-window session again.** The 29
+    `description` + `when_to_use` entries had regrown to 8,220 characters,
+    103% of the 8,000 a 200K-context model gets, so Claude Code could drop
+    whole descriptions, least-invoked skill first, before any other plugin's
+    skills were counted. The listing is back to 7,787 (97%). `work`, `next`,
+    `status`, `audit`, `standards` and `setup` lost restatement between the
+    two fields and enumerations the skill body carries; every quoted user
+    phrasing, guardrail phrase and routing-fixture keyword is kept. No
+    description holds a `<placeholder>` or `->` any more: Claude Code shows
+    them to the model as `&lt;`, `&gt;`, and the skill body and
+    `argument-hint` carry the placeholders (#961).

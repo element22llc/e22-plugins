@@ -1,18 +1,18 @@
 ---
 name: work
-description: "Implement a GitHub issue end-to-end - claim, branch, PR (or solo-trunk commit), CI, lifecycle transition - finding or creating the issue when a change needs one."
+description: "Implement a GitHub issue end-to-end, from claim to PR (or solo-trunk commit) and CI, finding or creating the issue when a change needs one."
 when_to_use: >-
   Use to work, fix, resume or finish an issue ("fix #123") or to implement a
-  change now. Several issues at once ("fix #12 and #15", `queue #A #B`) run
-  as a queue automatically: one after another, a fresh worker each. `--reviewed` adds a plan review gate for costly changes;
-  `--hotfix` only for a real production incident ("prod is down"), never
-  ordinary urgent work. `debug` finds a bug's root cause before any fix
+  change now. Several issues ("fix #12 and #15") run as a queue
+  automatically, one after another. `--reviewed` adds a plan review gate for
+  costly changes; `--hotfix` only for a real production incident ("prod is
+  down"), never ordinary urgent work. `debug` finds a bug's root cause before any fix
   ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks
-  through the flows a UI change touches in a real browser before review. Modes that
-  take no issue: `promote` (ship main to production), `review` (clear the PR review queue, "review my PRs"), `tidy`
-  (clean up the repo root, organize stray documents and diagrams),
-  `walkthrough` (record a demo video). `issues`: backlog work with no code
-  this turn - capture, triage, decompose, a ranked board.
+  through a UI change's flows in a real browser. Modes that take no issue:
+  `promote` (ship main to production), `review` (clear the PR review queue,
+  "review my PRs"), `tidy` (clean up the repo root, organize stray documents
+  and diagrams), `walkthrough` (record a demo video). `issues`: backlog work
+  with no code this turn - capture, triage, decompose, a ranked board.
 argument-hint: "[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)

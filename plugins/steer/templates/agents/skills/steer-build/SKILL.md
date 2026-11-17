@@ -1,6 +1,6 @@
 ---
 name: steer-build
-description: Guided flow for a non-technical product owner - idea -> interview -> approved spec -> working local app -> handoff for dev review.
+description: Guided flow for a non-technical product owner - idea, interview, approved spec, working local app, handoff for dev review.
 argument-hint: '[idea or product description]'
 ---
 

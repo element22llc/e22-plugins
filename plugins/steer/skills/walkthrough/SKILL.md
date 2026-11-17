@@ -1,7 +1,7 @@
 ---
 name: walkthrough
 description: "Record a captioned walkthrough video proving an approved feature intent."
-when_to_use: "Reached via /steer:work walkthrough <feature>."
+when_to_use: "Reached via /steer:work walkthrough."
 # Internal recorder behind `/steer:work walkthrough`. It commits a script, a task
 # and an ignore rule, so it lives under the door that changes the repo, not under
 # the read-only `/steer:status` fork.
