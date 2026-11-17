@@ -1,7 +1,7 @@
 ---
 name: explain
 description: "Render one feature spec as a shareable stakeholder page. Read-only."
-when_to_use: "Reached via /steer:status feature <id>."
+when_to_use: "Reached via /steer:status feature."
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 # Internal single-feature renderer behind `/steer:status feature <id>`.

@@ -84,7 +84,7 @@ be unique. The full field set actually used in this repo:
 > **Never `disable-model-invocation: true` on a steer skill.** The name reads
 > like "keep it out of auto-routing", and the byte math is tempting - it drops a
 > skill's description from the listing entirely, and on a 200K-context session
-> steer alone already overflows Claude Code's listing budget. But the flag does more than that: it makes the
+> steer alone takes nearly all of Claude Code's listing budget. But the flag does more than that: it makes the
 > skill **user-only**, so Claude cannot invoke it through the Skill tool *at
 > all*. steer's entire premise is that the model is the router and the user never
 > has to know a skill name (rule `00-router`, "map their plain-language goal to

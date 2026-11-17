@@ -1,6 +1,6 @@
 ---
 name: steer-setup
-description: One front door for getting a repo onto the standards - reads the /spec spine state and routes to `init`, `adopt` or `sync`.
+description: Get a repo onto the standards - reads the /spec spine state and routes to `init`, `adopt` or `sync`.
 argument-hint: '[init | adopt | sync | doctor | protect | worktrees | advisory] [--check]'
 ---
 

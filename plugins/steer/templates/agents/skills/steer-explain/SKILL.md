@@ -11,7 +11,7 @@ user-invocable: false
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Reached via /steer-status feature <id>.
+**When to use.** Reached via /steer-status feature.
 
 > **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Bash`, `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
