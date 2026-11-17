@@ -7,7 +7,9 @@ guardrails stay in `SKILL.md`.
 
 ## Marker format
 
-The marker is a small Markdown file. The `issue:` / `branch:` lines are written
+The marker is what the Stop-hook reconciliation checks to confirm a branch is
+issue-governed, ahead of any branch-name guess, so an unconventional but claimed
+branch is still recognized. It is a small Markdown file. The `issue:` / `branch:` lines are written
 once and never rewritten; the session list under the heading is the single source
 of truth for "which Claude Code session(s) worked this branch" - the head is the
 most recent. The Stop hook keeps that head current each turn, and `resume` reads

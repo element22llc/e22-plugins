@@ -34,6 +34,13 @@ any issue that is:
 - dependent on another queued issue. Dependent work is a stack or a `batch/*`
   branch (rule 45), never a queue.
 
+Combine issues into one branch instead only when separating them would produce
+an invalid intermediate state or the user explicitly asks for combined
+delivery - otherwise issue-first traceability degrades into
+many-issues-to-one-PR. Native `/batch`, `/autofix-pr`, plan mode and `claude
+--worktree` fit this flow as `/steer-reference conventions` -> Native Claude
+Code delivery features lays out - read it before driving one.
+
 Print the run order and the set-asides, then start. The list is the implement
 request: it authorizes each issue's delivery as `SKILL.md` -> Authorization
 describes, and nothing beyond it.

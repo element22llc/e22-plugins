@@ -69,8 +69,8 @@ When rules are drifted or absent:
      branches`, created with `gh api -X POST "repos/${OWNER}/${REPO}/rulesets"
      --input -` or updated with `gh api -X PUT
      "repos/${OWNER}/${REPO}/rulesets/<id>" --input -` (write flags first, as
-     above). The body is built from the policy as `SKILL.md` -> Resolve desired
-     state lists it: `"target":"branch"`, `"enforcement":"active"`,
+     above). The body is built from the policy as `RULESETS.md` -> Resolve
+     lists it: `"target":"branch"`, `"enforcement":"active"`,
      `"bypass_actors":[]`, `conditions.ref_name.include` the branch or pattern,
      and `rules` of type `pull_request` (with `required_reviewers` carrying each
      team's numeric `reviewer.id`, `"type":"Team"`, plus the parameters the API
@@ -89,8 +89,15 @@ When rules are drifted or absent:
    required-reviewers rule is new on GitHub (GA 2026-02): after the first apply
    on a repo, say so and ask the dev to confirm on one Release PR that a PO
    **and** a dev approval are both required before it can merge.
-5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
-   `SKILL.md` describes): if the `## Delivery mode` section also carries a
+5. **Graduating a solo-trunk repo.** Update the product `CLAUDE.md`
+   `## Delivery mode` section to `PR flow` - both the prose **and** the
+   machine-readable marker on its first line, flipped to
+   `<!-- steer:delivery-mode=pr-flow -->` so the steer hooks resume the
+   per-feature branch/PR flow (the mode is over - the server wall now enforces
+   it) - and write a graduation entry under `/spec/history/`. **In a member** the
+   `CLAUDE.md` marker is this repo's own and is flipped here; the graduation
+   entry goes to the workspace's ledger per `/steer:reference polyrepo`. If the
+   `## Delivery mode` section also carries a
    graduation waiver - `<!-- steer:graduation=waived -->` - **delete that line**
    and its waiver prose in the same edit, and let the graduation entry say the
    waiver ended here. A waiver left behind is inert in pr-flow but reads as a

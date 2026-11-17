@@ -84,9 +84,8 @@ one after 60 (14 once its feature is `live`), aged from its `created:` date or
 the heading's `git blame` date when absent - the cue to promote it (step 6) or
 defer it (step 7).
 
-That hook is guaranteed only on Claude Code, so elsewhere nothing may announce
-either the backlog or the staleness escalation. Where no such notice reached
-you, apply both yourself: read each feature's `## Open
+That hook is guaranteed only on Claude Code. Where no such notice reached you,
+apply both yourself: read each feature's `## Open
 questions` list, and age every open entry from its `created:` date (or the
 heading's `git blame` date) against those thresholds. Wherever a step below says
 "hook-escalated", read it as "stale by that same test".
@@ -98,10 +97,8 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    `scan-spine-state.sh`. Without this the sweep is worse than useless: step 2's
    grep matches no files on an unmanaged repo, so "no open questions" reads as
    good news when the truth is that nothing was searched. Test the **stamp**, not
-   `spec/` - a bare directory can be an empty folder or a foreign OpenAPI
-   `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`. Unlike
-   `adr` there is no bootstrap exception: no bootstrap invokes this skill
-   mid-install, so a spine-less call is always a direct one.
+   `spec/`, which may be empty or a foreign OpenAPI tree. There is no
+   bootstrap exception.
 
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first - before you answer
    anything.** If that file exists (a fork from a pre-1.25.0 template revision),
@@ -200,49 +197,12 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
      arriving as a document. Intake records the annotation; only this skill
      writes the resolution.
 
-   For each answered question:
-   - Update the owning `intent.md` / `contract.md` (or `vision.md`) so the
-     decision lives in the durable spec, not just the chat.
-   - **Close the question in its `## Open questions` block** - set
-     `status: resolved` and record the decision in its `_Resolution:_` line
-     (the block stays, so its `Q-NNN` id keeps resolving from anything that
-     cites it - a promoted issue, an ADR, a `pending fold` annotation). A
-     legacy checkbox item is converted to a resolved `Q-NNN` block (step 2)
-     rather than merely ticked.
-   - **An accepted recommendation says so** - its `_Resolution:_` reads
-     `recommended, accepted by <who>`, not `decided by`, so the reviewer can
-     see which answers nobody actively chose.
-   - **Code-fact answers** carry the grounding (`file:line`), marked
-     **dev-sign-off** - confirmed at PR review, not decided now. User-facing
-     answers reflect **PO** decisions, other technical answers **dev**
-     decisions (spec-framework Rule 5); that sign-off is the PR.
-   - **Doc-sourced answers** (from `/steer-intake clarify`) are folded with
-     their **source-ref** and **exact quoted span** - as code-fact answers
-     carry `file:line` - so a mis-mapped clarification is auditable and
-     reversible at PR review, and closed like any other answered question.
-   - A hard-to-reverse or cross-cutting answer -> **`/steer-spec adr`**; propagating
-     a decision *already made* into a superseding ADR is itself auto-apply.
-   - A question that needs a **named owner, blocks multiple features, needs
-     stakeholder/research input, or could outlive the session** -> promote it to
-     a tracker item (keep-vs-promote test: `ISSUE-WORKFLOW.md`). **A blocking
-     question the hook flagged as stale (past its threshold) has, by that fact,
-     outlived the session - promote it now.** Keep the structured `Q-NNN` in
-     the spec and set its `tracker:` field to the ref - don't delete it; the
-     issue carries the same id via `<!-- steer:question-id=Q-NNN -->`. On a
-     GitHub tracker, **`/steer-issues`** (via `/steer-tracker-sync`) opens the
-     `spec-question` issue; on other trackers, file per `/spec/tracker.md` and
-     write the ref back. **Assign the owner** via the `owners:` map in
-     `/spec/tracker.md` - the role->login rules (`shared` -> both, blank ->
-     unassigned + `needs:triage`, never fabricate a login) are in
-     `ISSUE-WORKFLOW.md`. **Reconciliation floor:** the promoted question
-     carries its ref, and once its issue is answered/closed the decision is
-     folded into the spec's normative prose - a closed issue with a
-     still-`open` question is a validation failure (`/steer-spec validate`).
-     The inverse holds too: **resolving a promoted question closes its issue**
-     `completed` with the change that folds the answer - its closing ref in the
-     PR (or the solo-trunk commit), per `/steer-work` -> Closing ref. An answer
-     routed to an ADR puts that issue in the ADR's `> Tracker:` instead, and
-     `adr accept` closes it.
+   For each answered question, record the decision in the owning
+   `intent.md` / `contract.md` (or `vision.md`), then close its `Q-NNN` block -
+   `status: resolved` with the decision in its `_Resolution:_` line - routing it
+   to an ADR or promoting it to an issue where that applies. **Read
+   [`FOLD.md`](FOLD.md) before the first
+   fold or promotion** and follow it for each.
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, set its `status: deferred` and annotate **why** (and a revisit
