@@ -108,7 +108,10 @@ STEER_INPUT="$(cat)"
 # must stay a superset of every trigger: a `\u` escape could spell a letter.
 case "${STEER_INPUT}" in
 *gh* | *mcp__* | *'\u'*) ;;
-*git*push* | *push*git*) ;;
+*push*)
+	# Nested, not `*git*push*`: two stars backtrack quadratically in bash 3.2.
+	case "${STEER_INPUT}" in *git*) ;; *) exit 0 ;; esac
+	;;
 *) exit 0 ;;
 esac
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"

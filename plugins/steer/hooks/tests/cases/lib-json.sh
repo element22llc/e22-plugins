@@ -79,7 +79,7 @@ done
 assert_eq "jq probe: check-bash-actions.sh probes once" \
 	"$(probes check-bash-actions.sh "$(bash_json "${JR}" jq2 'gh pr view 5')")" 1
 : >"${FAKE}/calls"
-ENV="PATH=${FAKE}:/usr/bin:/bin" run_hook check-bash-actions.sh "$(bash_json "${JR}" jq3 'ls -la')" >/dev/null
+ENV="PATH=${FAKE}:/usr/bin:/bin" run_hook check-bash-actions.sh "$(bash_json / jq3 'ls -la')" >/dev/null
 assert_rc "jq probe: the no-jq fast path exits cleanly" "$(last_rc)" 0
 assert_eq "jq probe: a command with no gh or git push spawns no jq" "$(wc -l <"${FAKE}/calls" | tr -d ' ')" 0
 
