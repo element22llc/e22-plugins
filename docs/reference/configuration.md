@@ -353,6 +353,19 @@ literals the doors already list or the bodies carry - among them `vibe-coded`,
 `Keep/Refactor/Rewrite/Reject`, `waive`, `apply --solo`, `needs`, `bundle`,
 `clarify`, `Projects v2`, `Orca`, `Conductor`.
 
+Three weeks later the listing was back at 8,220 chars, 103% of the 200K budget
+(#961). All of the growth was in `work`, whose `queue`, `debug` and `qa` modes
+each added a sentence, and nothing gates the total, so it went unnoticed. A
+third trim took it to 7,679 (96%): `work`, `next`, `status`, `audit`,
+`standards` and `setup` stopped restating in `when_to_use` what `description`
+already says, and `<placeholder>` and `->` left every entry - Claude Code shows
+them to the model as `&lt;` and `&gt;`, and `argument-hint` carries the
+placeholders. Quoted user phrasings, guardrails and every routing-fixture
+signal survived. Dropped: `queue #A #B`, `a fresh worker each`, `diagnosis only
+when no fix is asked`, `lifecycle transition`, `Non-mutating`, `code health`,
+`when work spans workflows`, and `next`'s state inventory (`branch/PR, features,
+questions, ADRs, issues, claims, version drift`).
+
 The rendered-skill ceiling is per-skill and **not** a ratchet: it is the
 harness's **compaction re-attach cap**. After auto-compaction Claude Code
 re-attaches an invoked skill but keeps it whole only up to 5,000 "tokens",
