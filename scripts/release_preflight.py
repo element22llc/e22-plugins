@@ -4,7 +4,8 @@
 ``PRE-RELEASE-AUDIT.md`` Steps 1, 2 (the CI-status half) and 4b are mechanical:
 is the tree clean, is the base current, is there anything to release, where is
 the last release, does the live docs site match ``main``, did the upstream
-validator-compat job pass, is anything untriaged sitting in the ledger. Until
+validator-compat job pass, is anything untriaged sitting in the ledger, does
+the newest routing-eval sweep cover this candidate and did it hold. Until
 now the release skills *recalled* those checks from prose and read ``gh run
 list`` tables by eye -- which is how a piped exit status, a stale anchor, and a
 cancelled docs deploy each slipped through once.
@@ -33,6 +34,7 @@ import json
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -44,6 +46,11 @@ PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 COPILOT_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.github/plugin/plugin.json"
 COPILOT_MARKETPLACE = REPO_ROOT / ".github/plugin/marketplace.json"
 LEDGER = REPO_ROOT / ".claude/audit/findings.jsonl"
+EVAL_LEDGER = REPO_ROOT / "plugins/steer/evals/ledger.jsonl"
+# Between the two scores one bad run in three produces: 0.87 lost the `answer`
+# grader and still routed, 0.8 lost `routed`.
+EVAL_FLOOR = 0.85
+EVAL_RECHECK = "mise run evals -- --case <name> --runs 6"
 
 SEVERITY_ORDER = ("blocker", "high", "warn", "info", "ok")
 CALLERS = ("release", "quick-release", "audit-loop")
@@ -148,6 +155,43 @@ def validator_compat(jobs: list[dict] | None) -> Check:
         f"validator-compat is {job.get('conclusion')} on main -- the plugin may not validate "
         "against latest Claude Code; ship only deliberately",
     )
+
+
+def eval_sweep(
+    rows: list[dict], anchor: str | None, anchor_time: datetime | None, floor: float = EVAL_FLOOR
+) -> Check:
+    """Interpret the routing-eval ledger: does the newest sweep cover this candidate, did it hold.
+
+    ``anchor_time`` is the instant of the last release, ``None`` when it could
+    not be dated. Never above ``warn``: three runs per case are noisy, so a low
+    case is a prompt to recheck, not a verdict.
+    """
+    if not rows:
+        return Check("evals", "warn", "no routing sweep recorded -- run: mise run evals")
+    row = max(rows, key=lambda r: datetime.fromisoformat(r["started"]))
+    started = datetime.fromisoformat(row["started"])
+    low = sorted((score, name) for name, score in row["below"].items() if score < floor)
+    notes = []
+    if anchor_time is None:
+        notes.append("its age against the last release is not verified")
+    elif started < anchor_time:
+        notes.append(
+            f"it predates {anchor}, so no sweep covers this candidate -- a minor or major cut "
+            "runs `mise run evals`, records it and re-runs this check; a patch skips it"
+        )
+    if low:
+        notes.append(
+            f"under {floor}: "
+            + ", ".join(f"{name} {score}" for score, name in low)
+            + f" -- recheck each: {EVAL_RECHECK}"
+        )
+    head = (
+        f"sweep {started:%Y-%m-%d} ({row['cases']} cases x {row['runs']} runs) "
+        f"scored {row['score']}"
+    )
+    if notes:
+        return Check("evals", "warn", f"{head}; " + "; ".join(notes))
+    return Check("evals", "ok", f"{head} after {anchor}, no case under {floor}")
 
 
 def worst(checks: list[Check]) -> str:
@@ -305,6 +349,20 @@ def check_ledger() -> Check:
     return Check("ledger", "ok", f"no untriaged blockers ({len(open_rows)} open below the gate)")
 
 
+def check_evals(anchor: str | None) -> Check:
+    try:
+        rows = [
+            json.loads(line)
+            for line in EVAL_LEDGER.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        stamp = _git("log", "-1", "--format=%ct", anchor).stdout.strip() if anchor else ""
+        anchor_time = datetime.fromtimestamp(int(stamp), UTC) if stamp else None
+        return eval_sweep(rows, anchor, anchor_time)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        return Check("evals", "warn", f"routing-eval ledger unreadable: {exc!r}")
+
+
 def check_docs_deploy() -> Check:
     runs = _gh_json(
         [
@@ -360,7 +418,7 @@ def check_validator_compat() -> Check:
 def run_all(caller: str, fetch: bool, offline: bool) -> tuple[list[Check], str | None]:
     checks = [check_tree(), check_base(fetch, caller), check_unreleased(caller), check_manifests()]
     anchor, anchor_check = resolve_anchor()
-    checks += [anchor_check, check_delta(anchor), check_ledger()]
+    checks += [anchor_check, check_delta(anchor), check_ledger(), check_evals(anchor)]
     if offline:
         checks += [
             Check("docs-deploy", "warn", "skipped (--offline)"),

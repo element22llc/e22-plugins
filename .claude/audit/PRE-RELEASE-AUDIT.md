@@ -63,6 +63,14 @@ them by hand.
   cut, and every delta-scoped check below would be anchored one release too far
   back. Re-run it (`gh workflow run release-publish.yml -f version=X.Y.Z`) before
   trusting the delta.
+- The **newest routing-eval sweep** (`plugins/steer/evals/ledger.jsonl`) is
+  reported as **`[warn] evals`** when it started before `$LAST_RELEASE` - no
+  sweep covers this candidate, the normal state at invocation - when a case
+  scored under the script's floor (one missed `routed` grader in three runs),
+  each named with the command for a 6-run recheck, or when the ledger cannot be
+  read. Never a blocker: three runs per case are noisy. The caller says whether
+  the cut owes a sweep (minor or major) or skips it (patch), and re-runs the
+  preflight once the sweep is recorded.
 
 ## Step 2 - deterministic gate, up front
 
