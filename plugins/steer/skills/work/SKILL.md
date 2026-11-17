@@ -82,12 +82,9 @@ These hold for the whole run, in every mode.
    yet, never that the feature is unspecified - **never** author product-level
    spec files here to fill the gap.
 0b. **`promote`, `tidy`, `review`, `walkthrough` and a symptom-only `debug`
-   skip steps 1 and 3** - none is issue-scoped (`promote` ships what is merged,
-   `tidy` moves files, `review` works the PR queue, `walkthrough` records a demo
-   of an approved intent, a symptom-only `debug` diagnoses and changes nothing),
-   so none reads the tracker or finds-or-creates an issue. Read
-   `modes/promote.md` / `modes/review.md` / `modes/debug.md` from Step 1;
-   `tidy` and `walkthrough` -> their rows.
+   skip steps 1 and 3** - none is issue-scoped, so none reads the tracker or
+   finds-or-creates an issue. Read `modes/promote.md` / `modes/review.md` /
+   `modes/debug.md` from Step 1; `tidy` and `walkthrough` -> their rows.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
@@ -115,13 +112,10 @@ one, claim it, update its managed state, create/switch the local branch, modify 
 commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
-> **Pre-approved shell scope.** The `allowed-tools` frontmatter above
-> pre-approves read-only git and PR inspection, `git fetch`, branch
-> create/switch, the Rule-45-autonomous `git add` / `git commit`, the delivery
-> moves `git push` / `gh pr create` / `gh pr edit`, and read-only CI status, so
-> the post-push CI watch runs without a prompt per poll; with no authenticated
-> `gh`, the MCP `create_pull_request` / `update_pull_request` /
-> `list_pull_requests` tools stand in for the PR moves. It does **not**
+> **Pre-approved shell scope.** `allowed-tools` covers read-only git/PR/CI
+> inspection, branch create/switch, `git add` / `git commit` / `git push`, and
+> `gh pr create` / `edit` / `ready` (the MCP PR tools when `gh` is not
+> authenticated), so the CI watch runs without a prompt per poll. It does **not**
 > pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
 > run`, or destructive git (`push --force` flag-first, `reset --hard`, `clean -fdx`,
 > `branch -D`) - merge and approval stay human; tracker I/O routes through
@@ -154,27 +148,23 @@ modes**; they differ only in the branch/PR ceremony.
 
 | Subcommand | What it does |
 |---|---|
-| **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
-| **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
-| **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
-| **`finish #N`** | Validate, run the independent code gate (non-Trivial changes), update progress, commit, push, open-or-update the PR (**ready** on a clean code gate, CI watched; else a **draft**), transition to `validate`, and **stop**. Never `done` merely because a PR was opened - and never on a *skipped* check. |
-| **`queue #A #B ...`** | Deliver several independent issues one after another: triage the list, then one fresh worker per issue runs `start` -> `finish` in its own worktree, plan gate on by default, each card verified, blockers recorded and the queue continued. Ends at PRs. Automatic for two or more issues. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
-| **`debug [#N \| <symptom>]`** | Cause before fix, for every defect; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
-| **`qa [#N]`** | Opt-in: drive the flows the branch diff touches in a real browser, fix small breakage via `debug`, file the rest. Read `modes/qa.md` first. |
-| **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the changelog, and opens the `release/*` -> `prod` Release PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
-| **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue in parallel and approves only the PRs the human names; `--mine` readies your own. Never merges. -> [`modes/review.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/review.md) |
-| **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
-| **`walkthrough <feature>`** | **Not issue-scoped** - record a captioned walkthrough video of the running app that proves an approved intent: plan scenes from it, commit a re-recordable script and a `mise run demo:record` task, verify the frames, hand over the MP4. |
-| **`issues <mode>`** | **Not issue-scoped** - the backlog layer, which never edits code: `capture`, `triage`, `brainstorm`, `materialize`, `decompose`, `epic`, `status`, `board`, `reconcile`, the `publish-*` family, `bootstrap-labels`. Its mode map names the one procedure file each mode needs. |
+| **`start #N`** | Validate and **claim** the issue, branch + work marker (pr-flow), load linked specs, implement. |
+| **`resume #N`** | Rebuild context from the issue, recorded branch/PR and tree; continue from the real lifecycle state. |
+| **`status #N`** | **Read-only** execution state - claimant, branch, PR, blockers, validation. Mutates nothing. |
+| **`finish #N`** | Validate, code gate (non-Trivial), commit, push, PR (**ready** only on a clean gate, CI watched; else a **draft**), -> `validate`, **stop**. Never `done` because a PR opened, never on a *skipped* check. |
+| **`queue #A #B ...`** | Several independent issues, one fresh worker each running `start` -> `finish`; ends at PRs. Automatic for two or more. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
+| **`debug [#N \| <symptom>]`** | Cause before fix; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
+| **`qa [#N]`** | Opt-in: click through the flows the diff touches in a real browser. Read `modes/qa.md` first. |
+| **`promote`** | **Not issue-scoped** - opens the `release/*` -> `prod` Release PR from what is merged; **merging it deploys production and is the human's gate.** -> `modes/promote.md` |
+| **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue, approves only the PRs the human names; `--mine` readies your own. Never merges. -> `modes/review.md` |
+| **`tidy`** | **Not issue-scoped** - file loose root documents into `/spec/reference`, `/spec/design`; renames and deletes wait for a yes. Never changes behavior. |
+| **`walkthrough <feature>`** | **Not issue-scoped** - record a captioned video of the running app proving an approved intent. |
+| **`issues <mode>`** | **Not issue-scoped** backlog layer, never edits code: `capture`, `triage`, `brainstorm`, `materialize`, `decompose`, `epic`, `status`, `board`, `reconcile`, `publish-*`, `bootstrap-labels`. |
 
-**`tidy`, `walkthrough` and `issues` delegate, they do not restate.** All three
-are internal skills (`user-invocable: false`) that own their procedure -
-`/steer:tidy` loads `HOUSEKEEPING.md`, `/steer:walkthrough` the demo templates,
-`/steer:issues` the one mode file its mode map names. Invoke the skill and follow
-it; re-derive none of it here. They are modes of this door because each changes
-the repo or its **work state**, which is what it owns - the issue captured today
-is the one `start` claims tomorrow. A recommendation you hand
-back to a user names `/steer:work <mode>`, never the owning skill.
+**`tidy`, `walkthrough` and `issues` delegate, they do not restate:** invoke
+`/steer:tidy`, `/steer:walkthrough` or `/steer:issues` and follow it - each owns
+its procedure. A recommendation you hand back names `/steer:work <mode>`, never
+the owning skill.
 
 **`status #N` is not `issues status`.** `status #N` is one claimed issue's
 execution (claimant, branch, PR, CI, validation); `issues status [#N |
@@ -189,10 +179,10 @@ Two or more issues -> `queue` (Multiple issues).
 
 ## Optional flags - read the procedure only when the flag is passed
 
-- **`--reviewed`** - add an independent plan gate and a human plan sign-off
-  before implementing, on top of the code gate `finish` always runs on
-  non-Trivial work. Triage trivial work out of the gates. On automatically
-  for High-risk work, where the sign-off is the rule `60-high-risk` scoping.
+- **`--reviewed`** - an independent plan gate and a human plan sign-off before
+  implementing, on top of `finish`'s code gate. Trivial work skips the gates;
+  High-risk work gets them automatically (the sign-off is the rule
+  `60-high-risk` scoping).
   -> procedure: [`modes/reviewed.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/reviewed.md)
 - **`--hotfix`** - the production-incident fast path (rule `61-gates` -> Hotfix): a
   `hotfix/<n>-slug` branch, issue after-the-fact, an expedited review, and a
@@ -243,18 +233,10 @@ whose issue never reached a terminal state is reported, never rewritten.
 Use the repository's configured branch convention if one exists. Otherwise fall
 back to `issue/<number>-<slug>` - **not** `fix/...`, which would mislabel feature,
 docs, or infra work. Record the branch in `steer:branch` (tracker metadata) **and**
-in the local marker `spec/.work/<branch>.md` (slashes -> underscores; local-only -
-`spec/.work/` is git-ignored). The marker is what the Stop-hook reconciliation
-checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
-unconventional but claimed branch is still recognized. A closed issue's marker
-is removed, never left to read as a live claim (`WORK-MARKER.md` -> Removal).
-
-In **`--hotfix` mode**, use `hotfix/<n>-slug` instead (see `modes/hotfix.md`).
-
-Its exact format - the write-once `issue:`/`branch:` lines, the newest-first
-session list the Stop hook keeps current, seeding from `$CLAUDE_CODE_SESSION_ID`,
-and the legacy extensionless-marker upgrade - is in
-[`WORK-MARKER.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/WORK-MARKER.md).
+in the local marker `spec/.work/<branch>.md` (slashes -> underscores;
+git-ignored). A closed issue's marker is removed, never left to read as a live
+claim. In **`--hotfix` mode**, use `hotfix/<n>-slug` instead. Marker format and
+removal: [`WORK-MARKER.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/WORK-MARKER.md).
 
 ## Concurrency & claims
 
@@ -270,28 +252,18 @@ context.
 
 An implement ask naming two or more issues - `Implement #123 and #124`, `start
 #A #B`, a bare `#A #B` - **runs as `queue`** without being asked: say so in one
-line and follow [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md),
-carrying `--reviewed` over (`--hotfix` stays refused). Each issue gets **one
-branch + PR** (in solo-trunk, **one trunk commit**, closing its own `#N`), and
-the queue's triage sets aside dependent ones. Combine into one branch instead
-only when separating them would produce an invalid intermediate state or the
-user explicitly asks for combined delivery - otherwise issue-first traceability
-degrades into many-issues-to-one-PR. `status #A #B` stays read-only.
-
-Native `/batch`, `/autofix-pr`, plan mode and `claude --worktree` fit this flow
-as `/steer:reference conventions` -> Native Claude Code delivery features lays
-out - read it before driving one.
+line and follow `modes/queue.md`, carrying `--reviewed` over (`--hotfix` stays
+refused). Each issue gets **one branch + PR** (in solo-trunk, **one trunk
+commit**, closing its own `#N`). `status #A #B` stays read-only.
 
 ## Discovered work - bounded scope
 
-While implementing, if you find an unrelated bug, tech debt, a missing test, a
-security concern, or a new feature request: keep the current issue's scope
-bounded and **file a separate linked issue** (related/blocking) via
-`/steer:tracker-sync find-or-create`. Create the separate issue when the work has
-independent acceptance criteria, needs a new product decision, materially changes
-risk, or is separately deliverable; necessary **localized supporting changes**
-stay in the current issue and are documented in its managed block. Continue with
-the separate work only when the current issue requires it.
+An unrelated bug, tech debt, missing test, security concern or feature request
+found while implementing gets **a separate linked issue** (`/steer:tracker-sync
+find-or-create`) when it has its own acceptance criteria, needs a new product
+decision, changes risk, or is separately deliverable. Necessary **localized
+supporting changes** stay in this issue, noted in its managed block. Do the
+separate work only when this issue requires it.
 
 ## Recommend the next action
 
