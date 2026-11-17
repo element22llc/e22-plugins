@@ -1,6 +1,6 @@
 ---
 name: steer-status
-description: Client-facing progress report over the whole /spec spine for a time window - what shipped, what is in progress, what needs the client's input, what is next. A shareable Artifact; read-only, never fabricates.
+description: Client-facing progress report over the whole /spec spine for a time window - what shipped, what is in progress, what needs the client's input, what is next; `feature` renders one feature in depth. A shareable Artifact; read-only, never fabricates.
 argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
 ---
 

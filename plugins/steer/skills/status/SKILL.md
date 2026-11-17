@@ -1,6 +1,6 @@
 ---
 name: status
-description: "Client-facing progress report over the whole /spec spine for a time window - what shipped, what is in progress, what needs the client's input, what is next. A shareable Artifact; read-only, never fabricates."
+description: "Client-facing progress report over the whole /spec spine for a time window - what shipped, what is in progress, what needs the client's input, what is next; `feature` renders one feature in depth. A shareable Artifact; read-only, never fabricates."
 when_to_use: >-
   Use for a progress update to hand a client or Product Owner - "give me a
   status report", "what did we ship this week", "weekly status for the client",

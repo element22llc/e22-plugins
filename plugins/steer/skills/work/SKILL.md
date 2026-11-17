@@ -7,12 +7,12 @@ when_to_use: >-
   automatically, one after another. `--reviewed` adds a plan review gate for
   costly changes; `--hotfix` only for a real production incident ("prod is
   down"), never ordinary urgent work. `debug` finds a bug's root cause before any fix
-  ("why is this failing?"). `qa` clicks through a UI change's flows in a real
-  browser. Modes that take no issue: `promote` (ship main to production),
-  `review` (clear the PR review queue, "review my PRs"), `tidy` (clean up the
-  repo root, organize stray documents and diagrams), `walkthrough` (record a
-  demo video). `issues`: backlog work with no code this turn - capture, triage,
-  decompose, a ranked board.
+  ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks
+  through a UI change's flows in a real browser. Modes that take no issue:
+  `promote` (ship main to production), `review` (clear the PR review queue,
+  "review my PRs"), `tidy` (clean up the repo root, organize stray documents
+  and diagrams), `walkthrough` (record a demo video). `issues`: backlog work
+  with no code this turn - capture, triage, decompose, a ranked board.
 argument-hint: "[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
