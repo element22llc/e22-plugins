@@ -343,6 +343,16 @@ assert_empty "merge-gate: merge only in a trailing comment silent" "${out}"
 # The raw-input prefilter must not drop a gh spelled with a JSON \u escape.
 out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg20","cwd":"%s","tool_name":"Bash","tool_input":{"command":"\\u0067h pr merge 5"}}' "${SP}")")"
 assert_deny "merge-gate: a \\u-escaped gh pr merge denied" "${out}"
+# The parser keeps only short tails of its output: an interpreter far left on a
+# long line still makes the heredoc body commands, and a long unterminated quote
+# still fails closed.
+_pad="$(printf '%0100d' 0)"
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg21 "bash -s ${_pad} <<EOF
+gh pr merge 5
+EOF")")"
+assert_deny "merge-gate: interpreter 100 chars before a heredoc denied" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg22 "gh pr merge 5 --body \"$(printf '%02000d' 0)")")"
+assert_deny "merge-gate: merge before a long unterminated quote denied" "${out}"
 
 # Trunk-push: matched on the quote-stripped text, past git global options.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp20 'git commit -am "docs: explain when to git push in README"')")"

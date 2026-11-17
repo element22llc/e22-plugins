@@ -213,3 +213,57 @@ def test_per_call_fast_path_within_budget(tmp_path: Path, event: str, name: str,
         f"the {budget} ms per-call budget - every matching tool call pays this. "
         f"Runs: {', '.join(f'{ms:.0f}' for ms in timings)} ms"
     )
+
+
+# Large Bash commands the merge gate must still deny. A PreToolUse hook that
+# outlasts its timeout lets the command run, so each must finish well inside it.
+LARGE_MERGES = {
+    "long-line": "echo " + "word " * 80000 + "; gh pr merge 5",
+    "many-lines": "".join(f"echo hi {i}\n" for i in range(30000)) + "gh pr merge 5",
+    "long-quote": 'echo "' + "word " * 80000 + '"; gh pr merge 5',
+    "many-heredocs": "cat <<EOF\nx\nEOF\n" * 25000 + "gh pr merge 5",
+    "over-the-cap": "echo " + "word " * 120000 + '; sh -c "gh pr merge 5"',
+}
+
+
+def _hook_timeout_s(script: str) -> int:
+    manifest = json.loads((HOOKS / "hooks.json").read_text(encoding="utf-8"))
+    for blocks in manifest["hooks"].values():
+        for block in blocks:
+            for hook in block["hooks"]:
+                if f"/{script}" in hook["command"]:
+                    return hook["timeout"]
+    raise AssertionError(f"{script} is not registered in hooks.json")
+
+
+@pytest.mark.skipif(shutil.which("sh") is None, reason="POSIX sh unavailable")
+@pytest.mark.parametrize("shape", list(LARGE_MERGES))
+def test_merge_gate_denies_large_command_inside_timeout(tmp_path: Path, shape: str):
+    stdin = json.dumps(
+        {
+            "session_id": "latency-test",
+            "cwd": str(tmp_path),
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {"command": LARGE_MERGES[shape]},
+        }
+    )
+    limit_s = _hook_timeout_s("check-bash-actions.sh") / 2
+    t0 = time.monotonic()
+    proc = subprocess.run(
+        ["sh", str(HOOKS / "check-bash-actions.sh")],
+        input=stdin,
+        capture_output=True,
+        text=True,
+        env=_env(),
+        cwd=str(tmp_path),
+        timeout=60,
+    )
+    elapsed_s = time.monotonic() - t0
+    assert '"permissionDecision":"deny"' in proc.stdout, (
+        f"{shape} ({len(LARGE_MERGES[shape])} chars): merge not denied: {proc.stdout[:200]}"
+    )
+    assert elapsed_s <= limit_s, (
+        f"{shape} ({len(LARGE_MERGES[shape])} chars) took {elapsed_s:.1f} s, over half the "
+        f"hook's {limit_s * 2:.0f} s timeout - past the timeout the command runs ungated."
+    )
