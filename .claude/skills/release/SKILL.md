@@ -123,12 +123,13 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   Phase A, before cutting, report `aggregates.meanDelta` against its ceiling in
   the release PR (B6), record the sweep with `ledger.py add --latest` in the
   release commit, and treat a case scoring
-  below `--threshold` as a Phase-A finding rather than a footnote. Then re-run
-  the preflight command above and read its `evals` line, which at invocation
-  described the previous cut's sweep and now describes this one: each case it
-  names gets the 6-run recheck it prints, with the result in the release PR.
-  (The recorded row is still uncommitted, so `tree-clean` reads `[blocker]` on
-  that re-run; only the `evals` line is being read.) A **patch**
+  below `--threshold` as a Phase-A finding rather than a footnote. Once the
+  sweep is recorded, re-run the preflight command above and read its `evals`
+  line, which at invocation described the previous cut's sweep and now
+  describes this one: each case it names gets the 6-run recheck it prints, with
+  the result in the release PR. (While the recorded row is uncommitted,
+  `tree-clean` reads `[blocker]` on that re-run; only the `evals` line is being
+  read.) A **patch**
   release skips it - say so rather than leaving the reader guessing. The suite
   needs `plugin eval` early access; where the machine does not have it, say the
   cadence could not be honoured instead of recording a pass.
