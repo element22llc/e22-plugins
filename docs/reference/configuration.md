@@ -366,7 +366,8 @@ frontmatter included, at 3.5 bytes per token - 17,500 B - which reported
 skills at 100% of a cap they were ~10-15% under.) steer's skills keep guardrails,
 coupling rules, and output contracts near the **top** of `SKILL.md` and factor
 per-mode or per-phase procedure into sibling files (`modes/<mode>.md`,
-`OPERATIONS.md`, `PROCEDURE.md`, ...) that the skill reads **just-in-time** for
+`OPERATIONS.md`, `PROCEDURE.md`, a topic file such as `APPLY.md` or
+`FOLD.md`, ...) that the skill reads **just-in-time** for
 the one path it is executing - a file read that way is a tool result, not skill
 content, so it never competes for the re-attach budget. Because this ceiling is
 derived from harness behaviour rather than a budget target, it does not move
