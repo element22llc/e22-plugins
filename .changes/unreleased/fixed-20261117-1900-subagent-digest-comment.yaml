@@ -1,9 +1,0 @@
-kind: Fixed
-time: 2026-11-17T19:00:00.000000000-05:00
-custom:
-  Slug: subagent-digest-comment
-body: |-
-  - **Fixed: the subagent-digest hook's header comment.** It carried a broken
-    sentence and claimed a ~60k-character payload; it now reads cleanly and
-    points to `check_context_budget.py --report` for the current size. No
-    behavior change.

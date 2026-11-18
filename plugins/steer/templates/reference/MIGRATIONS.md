@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - Dependabot groups security updates, and docker covers `apps/*`
+### v7.25.0 - Dependabot groups security updates, and docker covers `apps/*`
 
 - **What & why:** a `groups` entry without `applies-to` covers version updates
   only, so every Dependabot security update opened its own PR, each waiting for
