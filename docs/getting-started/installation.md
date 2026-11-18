@@ -110,6 +110,33 @@ After a new plugin release, update the plugin first -
 templates from the installed plugin. Then run
 **[`/steer:setup`](../workflows/index.md)** in a managed repo - it detects the drift and applies pending migrations, reconciling
 the scaffold and spec spine against the current templates (via `/steer:setup sync`).
+Sync walks every migration between the repo's stamped version and the installed
+one, so a repo that skipped several releases still gets each one's migrations.
+
+### Pin a repo to a release
+
+Unpinned, the marketplace tracks `main`, so `/plugin update` - and the background
+auto-update that the bootstrapped `.claude/settings.json` turns on - takes the
+newest release, which may carry `/steer:sync` migrations. To hold a repo on one
+release, add `ref` with its `vX.Y.Z` tag to the marketplace source in the repo's
+`.claude/settings.json`. steer's marketplace entry is a relative path, so pinning
+the marketplace pins steer:
+
+```json
+"e22-plugins": {
+  "source": { "source": "github", "repo": "element22llc/e22-plugins", "ref": "vX.Y.Z" },
+  "autoUpdate": true
+}
+```
+
+- Every release has a `vX.Y.Z` tag, and release tags are never re-pointed.
+  Refreshes and auto-update follow the ref, so a tag holds steer on that release.
+  For a pin nothing can move, set `ref` to the tag's full lowercase commit SHA
+  (Claude Code v2.1.324 or later).
+- To move the pin, change `ref` in a reviewed PR. Claude Code re-fetches a
+  marketplace whose source changed in settings after the next session starts;
+  then run `/plugin update steer@e22-plugins`, `/reload-plugins`, and
+  `/steer:setup sync`.
 
 ## Next step
 
