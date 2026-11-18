@@ -1,0 +1,15 @@
+kind: Changed
+time: 2026-11-17T16:00:00.000000000-05:00
+custom:
+  Slug: merge-gate-scope
+body: |-
+  - **Changed: the merge gate hard-denies only where steer's standards
+    apply.** `check-bash-actions.sh` still denies every PR merge path
+    (`gh pr merge`, `gh stack merge`, a `gh api` merge, any MCP
+    `*merge_pull_request` tool) in a repo with a steer spine (`spec/.version`,
+    complete or not, or an OpenSpec repo with `openspec/steer/`) and in a
+    declared advisory guest. Everywhere else - an unmanaged git repo, or a
+    session outside any repo - it now raises a permission ask on every merge,
+    so a user-scope install no longer blocks merges in repos no steer rule
+    governs while a human still approves each one. Scope is read from the
+    session's working directory, not from the PR being merged (#963).

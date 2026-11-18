@@ -291,7 +291,8 @@ the fix never varies: wrap the reads in a bundled script and grant that.
   is never pre-approved: rule `45-delivery` forbids it outright, and the merge
   gate in `check-bash-actions.sh` hard-denies it - along with a `gh api` merge
   and the GitHub MCP `merge_pull_request` tool - even when the user asks
-  directly. The scaffold's `ask` entry stays as the backstop where hooks do not
+  directly. (Outside a steer-managed or advisory repo the same gate asks
+  instead of denying.) The scaffold's `ask` entry stays as the backstop where hooks do not
   run. In a protected repo the server wall enforces the review regardless.
 - **Deploying**, in every mode - including the hotfix lane, where a deploy is
   policy-permitted but never auto-executed.

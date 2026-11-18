@@ -242,10 +242,12 @@ def _hook_timeout_s(script: str) -> int:
 @pytest.mark.skipif(shutil.which("sh") is None, reason="POSIX sh unavailable")
 @pytest.mark.parametrize("shape", list(LARGE_MERGES))
 def test_merge_gate_denies_large_command_inside_timeout(tmp_path: Path, shape: str):
+    # The gate denies only in a managed repo; elsewhere it asks (#963).
+    repo = _managed_repo(tmp_path)
     stdin = json.dumps(
         {
             "session_id": "latency-test",
-            "cwd": str(tmp_path),
+            "cwd": str(repo),
             "hook_event_name": "PreToolUse",
             "tool_name": "Bash",
             "tool_input": {"command": LARGE_MERGES[shape]},
@@ -259,7 +261,7 @@ def test_merge_gate_denies_large_command_inside_timeout(tmp_path: Path, shape: s
         capture_output=True,
         text=True,
         env=_env(),
-        cwd=str(tmp_path),
+        cwd=str(repo),
         timeout=60,
     )
     elapsed_s = time.monotonic() - t0

@@ -251,55 +251,105 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" sp14 'gh pr cr
 assert_empty "stacked-pr: no repo silent" "${out}"
 
 # --- merge gate of check-bash-actions.sh (PreToolUse, Bash + MCP) ---
-# Hard deny on every PR merge path, in every repo; local git merge and prose
-# that mentions a merge stay silent.
+# Hard deny on every PR merge path where steer applies (a steer spine, or a
+# declared advisory guest); an ask everywhere else (#963). Local git merge and
+# prose that mentions a merge stay silent.
+MG="$(new_repo mg_managed)"
+managed_spine "${MG}"
 for mt in mcp__plugin_steer_github__merge_pull_request mcp__github__merge_pull_request; do
-	out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg1 "${mt}" '')")"
+	out="$(run_hook check-bash-actions.sh "$(mcp_json "${MG}" mg1 "${mt}" '')")"
 	assert_deny "merge-gate: ${mt} denied" "${out}"
 done
-out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg1 mcp__github__merge_pull_request '')")"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${MG}" mg1 mcp__github__merge_pull_request '')")"
 assert_deny "merge-gate: denies again in the same session" "${out}"
 assert_has "merge-gate: reason leaves the merge to the human" "${out}" "leave the merge to the reviewer"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg2 'gh pr merge 45 --squash')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg2 'gh pr merge 45 --squash')")"
 assert_deny "merge-gate: gh pr merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg3 'gh pr checks 45 && gh pr merge 45 --auto')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg3 'gh pr checks 45 && gh pr merge 45 --auto')")"
 assert_deny "merge-gate: compound gh pr merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" mg4 'git push && gh pr merge')")"
+MG_HOT="$(new_repo mg_hot)"
+managed_spine "${MG_HOT}"
+mkdir -p "${MG_HOT}/infra"
+claude_md_mode "${MG_HOT}" solo-trunk
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_HOT}" mg4 'git push && gh pr merge')")"
 assert_deny "merge-gate: deny outranks the trunk-push ask" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg5 'gh api -X PUT repos/o/r/pulls/45/merge')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg5 'gh api -X PUT repos/o/r/pulls/45/merge')")"
 assert_deny "merge-gate: REST merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6 'gh api graphql -f query="mutation { mergePullRequest(input: {pullRequestId: \"x\"}) { clientMutationId } }"')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6 'gh api graphql -f query="mutation { mergePullRequest(input: {pullRequestId: \"x\"}) { clientMutationId } }"')")"
 assert_deny "merge-gate: GraphQL merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6b 'gh api -X PUT repos/o/r/pulls/45/merge-async')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6b 'gh api -X PUT repos/o/r/pulls/45/merge-async')")"
 assert_deny "merge-gate: async REST merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6c 'gh stack merge')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6c 'gh stack merge')")"
 assert_deny "merge-gate: gh stack merge denied" "${out}"
 assert_has "merge-gate: names gh stack merge" "${out}" "gh stack merge merges"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6d 'gh stack sync && gh stack merge 7 --yes --squash')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6d 'gh stack sync && gh stack merge 7 --yes --squash')")"
 assert_deny "merge-gate: compound gh stack merge by number denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6e 'gh pr create --title t --body "the human runs gh stack merge"')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6e 'gh pr create --title t --body "the human runs gh stack merge"')")"
 assert_empty "merge-gate: body mentioning gh stack merge silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6f 'gh extension exec stack merge 7')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6f 'gh extension exec stack merge 7')")"
 assert_deny "merge-gate: gh extension exec stack merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg6g 'gh stack merge;echo done')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg6g 'gh stack merge;echo done')")"
 assert_deny "merge-gate: gh stack merge before an unspaced separator denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" mg7 'gh pr merge 45')")"
-assert_deny "merge-gate: denied outside a repo" "${out}"
+
+# Scope (#963): an unmanaged git repo and a cwd outside any repo ask, on every
+# merge; a declared advisory guest and every spine state carrying steer's
+# ownership marker deny.
+for mt in mcp__plugin_steer_github__merge_pull_request mcp__github__merge_pull_request; do
+	out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg7a "${mt}" '')")"
+	assert_ask "merge-gate: ${mt} asks in an unmanaged repo" "${out}"
+	out="$(run_hook check-bash-actions.sh "$(mcp_json "${TP_NOREPO}" mg7b "${mt}" '')")"
+	assert_ask "merge-gate: ${mt} asks outside a repo" "${out}"
+done
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg7c 'gh pr merge 45 --squash')")"
+assert_ask "merge-gate: gh pr merge asks in an unmanaged repo" "${out}"
+assert_has "merge-gate: ask names the human's call" "${out}" "the human's call"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg7c 'gh api -X PUT repos/o/r/pulls/45/merge')")"
+assert_ask "merge-gate: asks again in the same session" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" mg7d 'gh pr merge 45')")"
+assert_ask "merge-gate: gh pr merge asks outside a repo" "${out}"
+mkdir -p "${SP}/sub"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}/sub" mg7e 'gh stack merge')")"
+assert_ask "merge-gate: asks from a subdirectory of an unmanaged repo" "${out}"
+MG_SUB="${MG}/apps/web"
+mkdir -p "${MG_SUB}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_SUB}" mg7f 'gh pr merge 45')")"
+assert_deny "merge-gate: denied from a subdirectory of a managed repo" "${out}"
+MG_ADV="$(new_repo mg_advisory)"
+mkdir -p "${MG_ADV}/.claude"
+printf '{ "env": { "STEER_MODE": "advisory" } }\n' >"${MG_ADV}/.claude/settings.local.json"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_ADV}" mg7g 'gh pr merge 45')")"
+assert_deny "merge-gate: gh pr merge denied in an advisory repo" "${out}"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${MG_ADV}" mg7g mcp__github__merge_pull_request '')")"
+assert_deny "merge-gate: MCP merge denied in an advisory repo" "${out}"
+MG_DMG="$(new_repo mg_damaged)"
+managed_spine "${MG_DMG}"
+rm "${MG_DMG}/spec/glossary.md"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_DMG}" mg7h 'gh pr merge 45')")"
+assert_deny "merge-gate: a damaged spine still denies" "${out}"
+MG_OS="$(new_repo mg_openspec)"
+mkdir -p "${MG_OS}/openspec/specs" "${MG_OS}/openspec/steer"
+printf 'system: github\n' >"${MG_OS}/openspec/steer/tracker.md"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_OS}" mg7i 'gh pr merge 45')")"
+assert_deny "merge-gate: an openspec repo with steer's side denies" "${out}"
+MG_FOREIGN="$(new_repo mg_foreign)"
+mkdir -p "${MG_FOREIGN}/spec"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_FOREIGN}" mg7j 'gh pr merge 45')")"
+assert_ask "merge-gate: a foreign spec/ asks" "${out}"
 MG_PLUGIN="$(new_repo mg_plugin)"
 mkdir -p "${MG_PLUGIN}/.claude-plugin"
 out="$(run_hook check-bash-actions.sh "$(bash_json "${MG_PLUGIN}" mg8 'gh pr merge 45')")"
-assert_deny "merge-gate: denied in the plugin source repo" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg9 'git merge origin/main')")"
+assert_ask "merge-gate: the plugin source repo has no spine, so it asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg9 'git merge origin/main')")"
 assert_empty "merge-gate: local git merge silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg10 'gh api repos/o/r/pulls/45/merge')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg10 'gh api repos/o/r/pulls/45/merge')")"
 assert_empty "merge-gate: REST merged-check (GET) silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg11 'git commit -m "deny gh pr merge in the hook"')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg11 'git commit -m "deny gh pr merge in the hook"')")"
 assert_empty "merge-gate: commit message mentioning gh pr merge silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg12 'gh pr create --title t --body "merge waits for review: gh pr merge is human"')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg12 'gh pr create --title t --body "merge waits for review: gh pr merge is human"')")"
 assert_empty "merge-gate: PR body mentioning gh pr merge silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg13 'gh pr view 45 --json mergeable')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg13 'gh pr view 45 --json mergeable')")"
 assert_empty "merge-gate: read-only pr command silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(mcp_json "${SP}" mg14 mcp__github__pull_request_read '')")"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${MG}" mg14 mcp__github__pull_request_read '')")"
 assert_empty "merge-gate: other MCP PR tools silent" "${out}"
 
 # Spellings that slipped past the merge gate. A command with real newlines needs
@@ -312,60 +362,60 @@ for mc in 'gh pr -R o/r merge 5' 'gh pr --repo=o/r merge 5' 'gh pr --repo o/r me
 	'/opt/homebrew/bin/gh pr merge 5' '\gh pr merge 5' "echo can\\'t; gh pr merge 5" \
 	"bash -c 'gh pr merge 5 --squash'" 'sh -c "gh pr merge 5"' "eval 'gh pr merge 5'" \
 	'echo "$(gh pr merge 5 --squash)"' 'echo "`gh pr merge 5`"'; do
-	out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg15 "${mc}")")"
+	out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg15 "${mc}")")"
 	assert_deny "merge-gate: ${mc} denied" "${out}"
 done
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg16 "# it's done
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg16 "# it's done
 gh pr merge 5")")"
 assert_deny "merge-gate: apostrophe in a comment does not hide the merge" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg17 "gh pr comment 5 --body-file - <<'EOF'
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg17 "gh pr comment 5 --body-file - <<'EOF'
 it's ready
 EOF
 gh pr merge 5 --squash")")"
 assert_deny "merge-gate: apostrophe in a heredoc body does not hide the merge" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18 "gh pr comment 5 --body-file - <<EOF
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg18 "gh pr comment 5 --body-file - <<EOF
 the human runs gh pr merge 5
 EOF")")"
 assert_empty "merge-gate: heredoc body mentioning gh pr merge silent" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18b "sh <<'EOF'
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg18b "sh <<'EOF'
 gh pr merge 5
 EOF")")"
 assert_deny "merge-gate: heredoc fed to sh is commands" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18c "cat <<EOF | bash
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg18c "cat <<EOF | bash
 gh pr merge 5
 EOF")")"
 assert_deny "merge-gate: heredoc piped to bash is commands" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg18d 'gh pr \
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg18d 'gh pr \
   merge 5')")"
 assert_deny "merge-gate: backslash-continued gh pr merge denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg19 'bash -c "gh pr view 5" # then gh pr merge')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg19 'bash -c "gh pr view 5" # then gh pr merge')")"
 assert_empty "merge-gate: merge only in a trailing comment silent" "${out}"
 # The raw-input prefilter must not drop a gh spelled with a JSON \u escape.
-out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg20","cwd":"%s","tool_name":"Bash","tool_input":{"command":"\\u0067h pr merge 5"}}' "${SP}")")"
+out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg20","cwd":"%s","tool_name":"Bash","tool_input":{"command":"\\u0067h pr merge 5"}}' "${MG}")")"
 assert_deny "merge-gate: a \\u-escaped gh pr merge denied" "${out}"
 # The parser keeps only short tails of its output: an interpreter far left on a
 # long line still makes the heredoc body commands, and a long unterminated quote
 # still fails closed.
 _pad="$(printf '%0100d' 0)"
-out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg21 "bash -s ${_pad} <<EOF
+out="$(run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg21 "bash -s ${_pad} <<EOF
 gh pr merge 5
 EOF")")"
 assert_deny "merge-gate: interpreter 100 chars before a heredoc denied" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${SP}" mg22 "gh pr merge 5 --body \"$(printf '%02000d' 0)")")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${MG}" mg22 "gh pr merge 5 --body \"$(printf '%02000d' 0)")")"
 assert_deny "merge-gate: merge before a long unterminated quote denied" "${out}"
 # Non-ASCII text must not crash the parser: macOS awk in a UTF-8 locale aborts
 # on a lone multibyte lead byte, which left nothing to match. The parser runs in
 # the C locale, and a failed parse falls back to the raw text.
 _e="$(printf '\303\251')"
-out="$(ENV="LANG=en_US.UTF-8" run_hook check-bash-actions.sh "$(bash_json "${SP}" mg23 "git commit -m \"fix: r${_e}sum${_e}\" && gh pr merge 5")")"
+out="$(ENV="LANG=en_US.UTF-8" run_hook check-bash-actions.sh "$(bash_json "${MG}" mg23 "git commit -m \"fix: r${_e}sum${_e}\" && gh pr merge 5")")"
 assert_deny "merge-gate: accented quoted text before a merge denied" "${out}"
-out="$(ENV="LANG=en_US.UTF-8" run_hook check-bash-actions.sh "$(bash_json_nl "${SP}" mg24 "cat <<EOF
+out="$(ENV="LANG=en_US.UTF-8" run_hook check-bash-actions.sh "$(bash_json_nl "${MG}" mg24 "cat <<EOF
 caf${_e}
 EOF
 gh pr merge 5")")"
 assert_deny "merge-gate: accented heredoc body before a merge denied" "${out}"
 # \001 is the parser's record separator; a command holding one is matched raw.
-out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg25","cwd":"%s","tool_name":"Bash","tool_input":{"command":"x\\u0001y; gh pr merge 5"}}' "${SP}")")"
+out="$(run_hook check-bash-actions.sh "$(printf '{"session_id":"mg25","cwd":"%s","tool_name":"Bash","tool_input":{"command":"x\\u0001y; gh pr merge 5"}}' "${MG}")")"
 assert_deny "merge-gate: a merge after a \\001 denied" "${out}"
 
 # Trunk-push: matched on the quote-stripped text, past git global options.

@@ -133,7 +133,8 @@ system, and **asking is not authorization**:
   reads the diff on the PR; an in-session "yes" is not that review, because the
   diff is not what was shown. On Claude Code, `check-bash-actions.sh` denies
   every merge path (`gh pr merge`, `gh stack merge`, a `gh api` merge, the
-  MCP `merge_pull_request` tool).
+  MCP `merge_pull_request` tool) in a steer-managed or advisory repo, and asks
+  in any other repo.
 - **Deploy** - including a hotfix whose deploy is policy-permitted (rule
   `61-gates` -> Hotfix). Permitted != auto-executed.
 - **Real secrets and credentials**, and **`/infra`** - never relaxed, not even

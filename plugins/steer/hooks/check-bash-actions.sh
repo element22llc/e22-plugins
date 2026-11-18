@@ -8,18 +8,26 @@
 #   stdin, re-sourcing the libs, and re-extracting the same JSON fields on
 #   every call; one process halves that per-call overhead. Each check keeps
 #   its own doc block below and bails cheaply when its command shape doesn't
-#   match. Precedence: the merge gate's deny comes first, then the trunk-push
+#   match. Precedence: the merge gate comes first, then the trunk-push
 #   gate - a permission ask outranks a nudge, so a compound command that both
 #   pushes and creates an issue surfaces the push ask (the contract guard's
 #   marker stays unset, so the next raw create still nudges).
 #
 # CHECK 0 - MERGE GATE (Bash + MCP merge_pull_request)
 #   Merging a PR is the human's step and is never promptable (rules 45, 61):
-#   a direct "merge it" does not authorize it. Hard deny, every time, in
-#   every repo: `gh pr merge`, `gh stack merge` (merges every stacked PR up to
-#   the one named; also as `gh extension exec stack`), a `gh api` merge (REST PUT, incl. `merge-async`, or the
-#   GraphQL mutations), and any MCP `*merge_pull_request` tool. Local `git merge` is
-#   untouched. Quoted prose (--body, -m) is blanked before matching.
+#   a direct "merge it" does not authorize it. Covers `gh pr merge`, `gh stack
+#   merge` (merges every stacked PR up to the one named; also as `gh extension
+#   exec stack`), a `gh api` merge (REST PUT, incl. `merge-async`, or the
+#   GraphQL mutations), and any MCP `*merge_pull_request` tool. Local `git
+#   merge` is untouched. Quoted prose (--body, -m) is blanked before matching.
+#   Hard deny, every time, where steer's standards apply: a repo with a steer
+#   spine (lib/spine.sh state managed, damaged or openspec - keyed on steer's
+#   ownership marker, so deleting one spine file cannot downgrade the gate) or
+#   a declared advisory guest (STEER_MODE=advisory). Everywhere else - an
+#   unmanaged git repo, or a cwd outside any repo - it asks on every merge
+#   instead (#963): a user-scope install must not block merges in repos no
+#   steer rule governs, yet a human still approves each one. Scope is the
+#   session cwd's repo, not the merge target.
 #
 # CHECK 1 - TRUNK-PUSH GRADUATION GATE (Bash only)
 #   Under the two-state delivery model, delivery autonomy is keyed to the repo's
@@ -298,7 +306,8 @@ steer_bare() {
 STEER_CMD_START='(^|[;&|(`[:space:]])(\\|[^[:space:];&|(`]*/)?'
 
 # ---------------------------------------------------------------------------
-# Check 0 - merge gate. Hard deny; needs no repo, so it runs before any git work.
+# Check 0 - merge gate. Deny where steer applies, ask elsewhere. The command
+# shape is matched first; the repo lookup runs only once a merge is found.
 # ---------------------------------------------------------------------------
 MERGE=""
 case "$(printf '%s' "${TOOL}" | tr '[:upper:]' '[:lower:]')" in
@@ -322,8 +331,23 @@ if [ -z "${MERGE}" ] && [ "${TOOL}" = "Bash" ] &&
 	fi
 fi
 if [ -n "${MERGE}" ]; then
-	REASON="$(steer_json_safe "Merge gate (rules 45, 61): ${MERGE} merges a pull request, and the merge is the human's step - never promptable, so a direct ask to merge does not authorize it. Do not retry by another route. Report the PR's state (checks, reviews, what is left) and leave the merge to the reviewer in GitHub. Local git merge is unaffected; if this command only mentions a merge in text (a heredoc or an unquoted message), pass that text from a file instead.")"
-	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${REASON}"
+	. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+	CWD="$(steer_field cwd)"
+	[ -n "${CWD}" ] || CWD="."
+	DECISION="ask"
+	if [ "$(steer_declared_mode "${CWD}")" = "advisory" ]; then
+		DECISION="deny"
+	elif ROOT="$(steer_repo_root "${CWD}")"; then
+		case "$(steer_spine_state "${ROOT}")" in
+		managed | damaged | openspec) DECISION="deny" ;;
+		esac
+	fi
+	if [ "${DECISION}" = "deny" ]; then
+		REASON="$(steer_json_safe "Merge gate (rules 45, 61): ${MERGE} merges a pull request, and the merge is the human's step - never promptable, so a direct ask to merge does not authorize it. Do not retry by another route. Report the PR's state (checks, reviews, what is left) and leave the merge to the reviewer in GitHub. Local git merge is unaffected; if this command only mentions a merge in text (a heredoc or an unquoted message), pass that text from a file instead.")"
+	else
+		REASON="$(steer_json_safe "Merge gate: ${MERGE} merges a pull request. This repo is not managed by steer, so the gate asks instead of blocking: the merge is the human's call, made here, on a PR they have reviewed. If the human declines, do not retry by another route - report the PR's state and leave the merge to them. Approving this prompt merges the PR.")"
+	fi
+	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"%s","permissionDecisionReason":"%s"}}\n' "${DECISION}" "${REASON}"
 	exit 0
 fi
 

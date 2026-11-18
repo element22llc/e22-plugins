@@ -313,8 +313,9 @@ budget entirely - a fresh session is the fix there.
 ## What the hooks do (and don't) enforce
 
 Even when hooks fire, only two of them **hard-block** an action - the version-pin
-gate and the merge gate - and two more raise a prompt (the trunk-push and
-stacked-PR gates). Be honest about the tiers:
+gate and the merge gate (in a steer-managed or advisory repo; elsewhere the merge
+gate asks) - and two more raise a prompt (the trunk-push and stacked-PR gates).
+Be honest about the tiers:
 
 - **`SessionStart` -> `inject-standards.sh`** injects the rules. Real and load-bearing.
 - **`SessionStart` -> `session-checks.sh`** is otherwise read-only, with **one**
@@ -367,8 +368,9 @@ stacked-PR gates). Be honest about the tiers:
   blocks image/runtime pins below the supported floor.
 - **`PreToolUse` -> `check-bash-actions.sh`** hard-**`deny`**s a PR merge
   (`gh pr merge`, `gh stack merge`, a `gh api` merge, the MCP
-  `merge_pull_request` tool) - the
-  merge is never promptable, so a deny stalls nothing an agent may do. Its other
+  `merge_pull_request` tool) in a steer-managed or advisory repo - the
+  merge is never promptable, so a deny stalls nothing an agent may do; in any
+  other repo, or outside one, it asks instead. Its other
   gates are an **`ask`**: in a
   `solo-trunk` repo that has outgrown pre-MVP, the first `git push` to trunk of a
   session raises a permission prompt (approving it pushes anyway; the gate clears
@@ -386,7 +388,8 @@ stacked-PR gates). Be honest about the tiers:
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that
   never got an issue. A report, not a gate - it cannot undo anything.
 - The **merge gate** is a hook only where hooks fire: `check-bash-actions.sh`
-  denies the merge paths above on Claude Code. On a hookless surface it is a
+  denies the merge paths above on Claude Code in a steer-managed or advisory
+  repo, and asks in any other repo or outside one. On a hookless surface it is a
   rule Claude follows (`45-delivery`, `61-gates`), and GitHub branch protection
   plus the human reviewer are the real backstop. Where it does fire it reads the command
   text, so a merge run from a script file or a shell alias is not seen.

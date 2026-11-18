@@ -59,7 +59,8 @@ Pull requests go through the `gh` CLI first; the three PR tools are
 deliberately not exposed: the merge stays the human's step. The CI watch,
 repositories and workflow runs stay on `gh`. To get more GitHub tools for ad-hoc
 use, add your own GitHub server in a project or user `.mcp.json` (a merge tool
-there is still denied by the `check-bash-actions.sh` merge gate).
+there is still denied by the `check-bash-actions.sh` merge gate in a steer-managed
+or advisory repo, and asks elsewhere).
 
 !!! warning "Tool names must exist"
     The hosted server rejects `initialize` with HTTP 400 when `X-MCP-Tools`
