@@ -21,9 +21,10 @@
 #   GraphQL mutations), and any MCP `*merge_pull_request` tool. Local `git
 #   merge` is untouched. Quoted prose (--body, -m) is blanked before matching.
 #   Hard deny, every time, where steer's standards apply: a repo with a steer
-#   spine (lib/spine.sh state managed, damaged or openspec - keyed on steer's
-#   ownership marker, so deleting one spine file cannot downgrade the gate) or
-#   a declared advisory guest (STEER_MODE=advisory). Everywhere else - an
+#   spine (lib/spine.sh state managed, damaged or openspec, or an OpenSpec repo
+#   still carrying pre-fold steer artifacts - keyed on steer's ownership
+#   markers, so deleting one spine file cannot downgrade the gate) or a
+#   declared advisory guest (STEER_MODE=advisory). Everywhere else - an
 #   unmanaged git repo, or a cwd outside any repo - it asks on every merge
 #   instead (#963): a user-scope install must not block merges in repos no
 #   steer rule governs, yet a human still approves each one. Scope is the
@@ -340,6 +341,7 @@ if [ -n "${MERGE}" ]; then
 	elif ROOT="$(steer_repo_root "${CWD}")"; then
 		case "$(steer_spine_state "${ROOT}")" in
 		managed | damaged | openspec) DECISION="deny" ;;
+		openspec-setup) steer_openspec_migration_pending "${ROOT}" && DECISION="deny" ;;
 		esac
 	fi
 	if [ "${DECISION}" = "deny" ]; then
