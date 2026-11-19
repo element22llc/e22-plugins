@@ -3,6 +3,106 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.26.0
+
+- **Fixed: issue-marker writes no longer prompt in auto mode.** 7.25.0 moved
+  `Bash(sh *scripts/issue-body.sh*)` to `permissions.ask`, and an `ask` rule
+  overrides the auto-mode classifier, so every `issue-body.sh marker-set` run
+  from `/steer:work` asked for approval. The scaffold now lists the pattern in
+  no tier, and `/steer:setup sync` removes the copy earlier releases put in a
+  repo's `allow` or `ask`. In default permission mode the script still
+  prompts; in auto mode the classifier decides.
+- **Fixed: auto-mode sessions send far fewer Bash calls to the classifier.**
+  In auto mode a Bash call no allow rule covers costs a classifier review,
+  including `cat`, `grep` and `head`, and a compound command is covered only
+  when every part is; a 30-day sample of consumer sessions classified 94% of
+  Bash calls. The scaffold `.claude/settings.json` now allowlists the plain
+  text readers, the read-only git plumbing and the named local check verbs
+  (`uv run pytest`, `pnpm test`, `mise run test`, `gh pr ready`, ...), which
+  `/steer:setup sync` adds to existing repos. Reads and writes outside the
+  repo still go to the classifier. Rule `03-output` adds that files are read
+  and edited with Read/Grep/Edit rather than inline scripts, and that
+  commands carry no `cd` or `VAR=...;` preamble.
+- **Changed: `/steer:setup doctor` checks `gh`, `python3` and the language
+  servers, and stops skipping the baseline runtimes.** The scan now reports
+  `pyright-langserver` and `typescript-language-server`, the binaries behind
+  steer's `lspServers` (a missing one is what makes Claude Code warn
+  `couldn't start`), with the tested global install: `mise use -g
+  npm:pyright`, and `mise use -g npm:typescript-language-server` driving the
+  repo's own `typescript`, which must be below 7 because TypeScript 7 ships no
+  `tsserver`. It also reports whether `gh` is installed and holds a token
+  (`gh auth token`, no network; new `unauthenticated` status) and whether
+  `python3` is present for `scaffold_reconcile.py`. All three are advisory and
+  never block. `node` and `uv` are no longer `n/a` in a single-language repo:
+  the scaffold pins them in every repo as the agent-runtime baseline. The
+  daemon probe uses `docker version` instead of the slower `docker info`, and
+  the skill drops seven `allowed-tools` grants it never used.
+- **Added: `/steer:work drive`, one autonomous cycle over PRs, reviews and
+  issues.** The session orchestrates and implements nothing itself: it hands
+  each of your open PRs with change requests on its current head, red CI or a
+  conflict to a fresh worker that addresses the feedback and re-requests
+  review; cards the PRs waiting on your review without posting anything; then
+  starts up to `--max` (default 3) ready, unclaimed issues as `queue` does.
+  A PR already tried at its current head is not retried, and an unattended
+  cycle lists the review queue instead of paying for reviewers again. Each
+  cycle ends on `Drive: idle` or `Drive: work remains`, so Claude Code's
+  `/goal` drains the backlog and a self-paced `/loop` keeps watching.
+  Under Orca, on request, workers run as visible Orca orchestration workers
+  that report back, and an Orca automation can schedule the cycle with your
+  local plugins loaded. It never
+  merges, approves, creates an issue or runs in solo-trunk, and a run nobody
+  watches needs the `policy/automation.yml` opt-in, which `drive` now asks for
+  and writes. `/steer:work` pre-approves `gh pr view`, `diff` and `comment`
+  for it.
+
+- **Changed: `/steer:loop` and its `steer-loop.yml` template are retired;
+  `/steer:work drive` replaces them.** The skill scaffolded a cron GitHub
+  Actions workflow that went unused, and it could not orchestrate an
+  interactive session. Rule 53 now names `drive` as the way to loop, and the
+  scheduled path is a cloud scheduled task running `drive` where the org
+  delivers steer through server-managed settings. An installed
+  `steer-loop.yml` keeps running; `/steer:setup sync` asks whether to keep or
+  remove it.
+
+- **Fixed: helper-based skills on Copilot CLI no longer skip their scripts.**
+  The cross-tool `.agents/skills/` tree told the agent the installed plugin
+  sets `STEER_PLUGIN_ROOT`, but no host exports it to tool shells, so
+  `/steer-setup worktrees`, `/steer-sync`, `/steer-next` and the rest reported
+  "no local copy" with steer installed. Each such skill now carries a one-line
+  probe that resolves the plugin directory - the variable, then the
+  `e22-plugins` install under `${COPILOT_HOME:-~/.copilot}/installed-plugins/`,
+  then any other install there, then `plugins/steer` in a checkout - and shows
+  how to pass the printed path to each helper command. On other hosts, Codex
+  included, export the variable as the installed steer directory.
+
+- **Fixed: instruction files that had drifted from each other or from the
+  plugin since the last prompt audit.** Rule 53 points ADR ratification at
+  the gates rule, not High-risk. The context-hygiene reference now matches
+  the review loop's mid-tier reviewers. In an OpenSpec repo, the session
+  notice and `/steer:setup` agree with rule 33 on steer's four artifacts, and
+  the notice names `spec/app/` too. Recommendations from `/steer:spec` and
+  issue reconcile name `/steer:work issues ...`, not an internal skill. Sync
+  takes each capability's verbatim files from `CAPABILITIES.md`, so it also
+  re-copies `ci-lib.sh` and `spec-questions.sh`. The live-version check uses
+  `uvx pip index versions`, which works where `uv pip index` does not. The
+  tracker-sync caller lists name the modes that use companion ops. Smaller
+  stale facts and dated phrasing are cleared in promote, debug, protect,
+  status, STACKS, INVOCATION, COVERAGE and the product `CLAUDE.md` template.
+
+- **Changed: output discipline asks for a one-line update when a long turn
+  finishes a phase or changes plan.** "Don't narrate tool calls" kept
+  current models silent through long turns; the rule now bans narrating
+  each call and pasting its output, and says when an update is wanted. The
+  knowledge-work greeting tells the user they can just describe what they
+  want, instead of reassuring them about command names, which rule 03 rules
+  out.
+
+- **Fixed: `/steer:setup doctor` provisions infra runtimes with
+  `mise -C infra install`.** It told the agent to run `cd infra && mise
+  install`, the `cd`-prefixed command rule 03 rules out, which costs a
+  classifier review in auto mode.
+
+
 ## 7.25.0
 
 - **Fixed: the scaffold no longer allows `Bash(sh *scripts/issue-body.sh*)`.**

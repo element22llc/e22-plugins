@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - the `loop` skill retired; its Actions workflow is the repo's own
+### v7.26.0 - the `loop` skill retired; its Actions workflow is the repo's own
 
 - **What & why:** the `loop` skill and its `steer-loop.yml` template are retired;
   `/steer:work drive` is the autonomous entry point, repeated by `/goal`,
