@@ -5,10 +5,11 @@ custom:
 body: |
   - **Fixed: helper-based skills on Copilot CLI no longer skip their scripts.**
     The cross-tool `.agents/skills/` tree told the agent the installed plugin
-    sets `STEER_PLUGIN_ROOT`, but Copilot CLI exports nothing to tool shells, so
+    sets `STEER_PLUGIN_ROOT`, but no host exports it to tool shells, so
     `/steer-setup worktrees`, `/steer-sync`, `/steer-next` and the rest reported
     "no local copy" with steer installed. Each such skill now carries a one-line
-    probe that resolves the plugin directory - the variable, then
-    `${COPILOT_HOME:-~/.copilot}/installed-plugins/*/steer`, then
-    `plugins/steer` in a checkout - and says to pass the printed path on each
-    helper command. Other hosts, Codex included, still set the variable by hand.
+    probe that resolves the plugin directory - the variable, then the
+    `e22-plugins` install under `${COPILOT_HOME:-~/.copilot}/installed-plugins/`,
+    then any other install there, then `plugins/steer` in a checkout - and shows
+    how to pass the printed path to each helper command. On other hosts, Codex
+    included, export the variable as the installed steer directory.

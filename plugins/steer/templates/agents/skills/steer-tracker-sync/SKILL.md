@@ -19,16 +19,18 @@ user-invocable: false
 > once, before the first such command:
 >
 > ```sh
-> sh -c 'for d in "$STEER_PLUGIN_ROOT" "${COPILOT_HOME:-$HOME/.copilot}"/installed-plugins/*/steer plugins/steer; do [ -n "$d" ] && [ -f "$d/hooks/lib/repo-root.sh" ] && { cd "$d" && pwd; exit; }; done'
+> sh -c 'c="${COPILOT_HOME:-$HOME/.copilot}/installed-plugins"; for d in "$STEER_PLUGIN_ROOT" "$c/e22-plugins/steer" "$c"/*/steer ./plugins/steer; do [ -n "$d" ] && [ -f "$d/hooks/lib/repo-root.sh" ] && CDPATH= cd -- "$d" && pwd && exit; done; exit 1'
 > ```
 >
 > It tries the variable, then the Copilot CLI install, then `plugins/steer` in
-> a checkout of `element22llc/e22-plugins`; on another host, set the variable
-> to its installed steer directory first. Shell state may not survive between
-> commands, so prefix each one with the printed path
-> (`STEER_PLUGIN_ROOT=<path> sh ...`). Nothing printed means no local copy:
-> treat the helper as failed, take the step's no-helper path, else its failure
-> path, and say so. Never download a helper and run it from a URL.
+> a checkout of `element22llc/e22-plugins`; on another host, export the
+> variable as its installed steer directory first. Shell state may not survive
+> between commands, so start each one with the printed path and a semicolon -
+> `STEER_PLUGIN_ROOT='<path>'; sh "${STEER_PLUGIN_ROOT}/scripts/..."`; a `VAR=value cmd` prefix
+> would not work, since the shell expands the arguments first. Nothing printed
+> means no local copy: treat the helper as failed, take the step's no-helper
+> path, else its failure path, and say so. Never download a helper and run it
+> from a URL.
 
 <!-- steer:modes pull,push -->
 
