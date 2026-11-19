@@ -5,13 +5,18 @@
 #   $1  repo-root  - a managed (or about-to-be-managed) repo to inspect
 #                    (default: "."). Read only to resolve conditionality:
 #                    compose.yaml -> is Docker required vs advisory;
-#                    package.json / pyproject.toml -> which of pnpm/uv applies.
+#                    package.json / pyproject.toml -> whether pnpm and each
+#                    language server applies.
 #
 # WHAT IT CHECKS
 #   The host toolchain a repo needs before /steer:init, /steer:build, or
 #   `mise run dev:setup` will work: git, mise (the gateway), Docker (+ daemon),
-#   and the mise-managed runtimes node / pnpm / uv. Detection is `command -v`
-#   plus `docker info` for the daemon - nothing is installed or modified here.
+#   the mise-managed runtimes node / pnpm / uv, python3 (steer's own
+#   scaffold_reconcile.py helper), gh (+ whether it holds a token), and the two
+#   language servers plugin.json declares (pyright-langserver,
+#   typescript-language-server). Detection is `command -v`, `docker version`
+#   for the daemon and `gh auth token` (local, no network) - nothing is
+#   installed or modified here.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   No. It only reads the host PATH + a few repo marker files and writes status
@@ -20,7 +25,8 @@
 # OUTPUT (stdout)
 #   One leading fingerprint line:  os\t<darwin|linux|wsl2|windows|other>\t-
 #   Then one TAB-separated line per tool:  <tool>\t<status>\t<detail>
-#   status in ok | missing | down | via-mise | unmanaged | shadowed | n/a
+#   status in ok | missing | down | via-mise | unmanaged | shadowed |
+#             unauthenticated | n/a
 #     ok          installed (detail = version line where cheap to read)
 #     missing     not installed (a blocker for required tools)
 #     down        docker installed but the daemon is not running
@@ -30,10 +36,12 @@
 #                 present -> a global version manager (nvm/asdf/volta/fnm) or a
 #                 system/Homebrew copy is masking mise's pinned runtime. Advisory,
 #                 not a blocker: the tool runs, but it's the wrong (un-pinned) one.
-#     n/a         not applicable in this repo (e.g. docker with no compose.yaml,
-#                 or pnpm in a Python-only repo)
-#   `detail` also carries requiredness for docker (required vs advisory) so the
-#   caller can tell a blocker from a nice-to-have. A gap is reported on STDOUT,
+#     unauthenticated  gh installed but holds no token. Advisory.
+#     n/a         not applicable in this repo (pnpm or the TypeScript language
+#                 server in a Python-only repo, the Python one in a Node-only repo)
+#   `detail` carries requiredness for docker (required vs advisory) and marks
+#   gh and the language servers advisory, so the caller can tell a blocker from
+#   a nice-to-have. A gap is reported on STDOUT,
 #   NEVER via a nonzero exit, so a skill running this through a Bash wrapper does
 #   not see a normal "gaps found" run reported as a failure.
 #
@@ -137,6 +145,7 @@ else
 fi
 
 # --- docker (required only when a compose file declares backing services) ---
+# `docker version` answers the daemon question several times faster than `docker info`.
 compose=false
 for f in compose.yaml compose.yml docker-compose.yaml docker-compose.yml; do
 	[ -f "$ROOT/$f" ] && compose=true && break
@@ -147,8 +156,8 @@ else
 	dreq="advisory (no compose.yaml)"
 fi
 if have docker; then
-	if docker info >/dev/null 2>&1; then
-		emit "docker" "ok" "running; $dreq"
+	if dsrv="$(docker version --format '{{.Server.Version}}' 2>/dev/null)" && [ -n "$dsrv" ]; then
+		emit "docker" "ok" "running ($dsrv); $dreq"
 	else
 		emit "docker" "down" "daemon not running; $dreq"
 	fi
@@ -156,21 +165,27 @@ else
 	emit "docker" "missing" "$dreq"
 fi
 
-# --- mise-managed runtimes: node / pnpm / uv ---
+# True when the repo is only the OTHER language, so a $1-specific tool is n/a.
+other_stack_only() {
+	{ [ "$1" = "node" ] && $_py && ! $_node; } ||
+		{ [ "$1" = "python" ] && $_node && ! $_py; }
+}
+
+# --- mise-managed runtimes ---
 # Present -> ok. Absent but mise present -> via-mise (mise install provides it).
-# Absent and mise absent -> unmanaged. n/a when the stack is the other language.
+# Absent and mise absent -> unmanaged. node, python and uv are the scaffold's
+# agent-runtime baseline, pinned even in a single-language repo, so only pnpm
+# goes n/a by stack.
 runtime() {
-	# $1 tool, $2 n/a-when ("python"|"node"|"")
+	# $1 tool, $2 stack it belongs to ("node"|""), $3 "noshadow" to skip the shadow check
 	tool="$1"
-	skip="$2"
-	if { [ "$skip" = "python" ] && $_py && ! $_node; } ||
-		{ [ "$skip" = "node" ] && $_node && ! $_py; }; then
+	if other_stack_only "$2"; then
 		emit "$tool" "n/a" "not used by this repo's stack"
 		return
 	fi
 	if have "$tool"; then
 		resolved="$(command -v "$tool" 2>/dev/null)"
-		if $mise_present && [ -n "$resolved" ] && ! is_mise_path "$resolved"; then
+		if [ "${3:-}" != "noshadow" ] && $mise_present && [ -n "$resolved" ] && ! is_mise_path "$resolved"; then
 			emit "$tool" "shadowed" "$resolved ($(shadow_src "$resolved")) is masking mise's pinned $tool - run via 'mise exec -- $tool', and source 'mise activate' AFTER your version manager in the rc file"
 		else
 			emit "$tool" "ok" "$(ver "$tool")"
@@ -181,8 +196,38 @@ runtime() {
 		emit "$tool" "unmanaged" "install mise first"
 	fi
 }
-runtime node python
-runtime pnpm python
-runtime uv node
+runtime node ""
+runtime pnpm node
+runtime uv ""
+# Any python3 >= 3.7 runs scaffold_reconcile.py, so a system copy is not a shadow.
+runtime python3 "" noshadow
+
+# --- gh: the primary PR path; skills fall back to the GitHub MCP server, so advisory ---
+if have gh; then
+	if gh auth token >/dev/null 2>&1; then
+		emit "gh" "ok" "$(ver gh); authenticated"
+	else
+		emit "gh" "unauthenticated" "advisory - no token; run 'gh auth login'"
+	fi
+elif $mise_present; then
+	emit "gh" "via-mise" "advisory; provided by 'mise install' (github-cli)"
+else
+	emit "gh" "unmanaged" "advisory; install mise first"
+fi
+
+# --- language servers plugin.json declares; Claude Code warns when one is absent ---
+# Never run them: pyright-langserver has no --version and waits on stdin.
+lsp() {
+	# $1 binary, $2 stack it serves
+	if other_stack_only "$2"; then
+		emit "$1" "n/a" "not used by this repo's stack"
+	elif have "$1"; then
+		emit "$1" "ok" "$(command -v "$1")"
+	else
+		emit "$1" "missing" "advisory (steer's $2 language server)"
+	fi
+}
+lsp pyright-langserver python
+lsp typescript-language-server node
 
 exit 0

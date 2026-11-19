@@ -62,13 +62,18 @@ PQ_PY="${WORK}/pq-py"
 mkdir -p "${PQ_PY}"
 printf '[project]\n' >"${PQ_PY}/pyproject.toml"
 pqscan "${PQ_CORE}" "${PQ_PY}"
-assert_eq "prereqs: python-only repo -> node n/a" "$(pqstatus "${out}" node)" "n/a"
 assert_eq "prereqs: python-only repo -> pnpm n/a" "$(pqstatus "${out}" pnpm)" "n/a"
+assert_eq "prereqs: python-only repo -> ts language server n/a" "$(pqstatus "${out}" typescript-language-server)" "n/a"
+# node/python/uv are the scaffold's agent-runtime baseline: never n/a by stack.
+assert_eq "prereqs: python-only repo -> node still checked" "$(pqstatus "${out}" node)" "unmanaged"
+assert_eq "prereqs: python-only repo -> pyright checked" "$(pqstatus "${out}" pyright-langserver)" "missing"
 PQ_NODE="${WORK}/pq-node"
 mkdir -p "${PQ_NODE}"
 printf '{}\n' >"${PQ_NODE}/package.json"
 pqscan "${PQ_CORE}" "${PQ_NODE}"
-assert_eq "prereqs: node-only repo -> uv n/a" "$(pqstatus "${out}" uv)" "n/a"
+assert_eq "prereqs: node-only repo -> uv still checked" "$(pqstatus "${out}" uv)" "unmanaged"
+assert_eq "prereqs: node-only repo -> pyright n/a" "$(pqstatus "${out}" pyright-langserver)" "n/a"
+assert_eq "prereqs: node-only repo -> ts language server checked" "$(pqstatus "${out}" typescript-language-server)" "missing"
 
 # --- required tools + runtime classification against a controlled PATH ---
 # Nothing planted: git/mise missing; runtimes unmanaged (no mise to provide them).
@@ -106,6 +111,35 @@ fake_tool "${PQ_MISED}" node "v0.0-fake"
 pqscan "${PQ_MISED}:${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
 assert_eq "prereqs: mise-managed node -> ok" "$(pqstatus "${out}" node)" "ok"
 
+# python3 is never shadowed: any system copy runs steer's helper.
+fake_tool "${PQ_SHADOW}" python3 "Python 0.0-fake"
+pqscan "${PQ_SHADOW}:${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: non-mise python3 while mise present -> ok" "$(pqstatus "${out}" python3)" "ok"
+pqscan "${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: mise present, python3 absent -> via-mise" "$(pqstatus "${out}" python3)" "via-mise"
+
+# --- gh: advisory, token presence decides ok vs unauthenticated ---
+assert_eq "prereqs: mise present, gh absent -> via-mise" "$(pqstatus "${out}" gh)" "via-mise"
+assert_has "prereqs: gh is advisory" "$(pqdetail "${out}" gh)" "advisory"
+PQ_GH="${WORK}/pq-ghbin"
+mkdir -p "${PQ_GH}"
+fake_tool "${PQ_GH}" gh "gh version 0.0-fake"
+pqscan "${PQ_GH}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: gh with a token -> ok" "$(pqstatus "${out}" gh)" "ok"
+printf '#!/bin/sh\n[ "$1 $2" = "auth token" ] && exit 1\necho "gh version 0.0-fake"\n' >"${PQ_GH}/gh"
+pqscan "${PQ_GH}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: gh without a token -> unauthenticated" "$(pqstatus "${out}" gh)" "unauthenticated"
+assert_has "prereqs: unauthenticated detail names the fix" "$(pqdetail "${out}" gh)" "gh auth login"
+
+# --- language servers: advisory presence only, never executed ---
+PQ_LSP="${WORK}/pq-lspbin"
+mkdir -p "${PQ_LSP}"
+fake_tool "${PQ_LSP}" pyright-langserver "unused"
+pqscan "${PQ_LSP}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: pyright-langserver on PATH -> ok" "$(pqstatus "${out}" pyright-langserver)" "ok"
+assert_eq "prereqs: ts language server absent -> missing" "$(pqstatus "${out}" typescript-language-server)" "missing"
+assert_has "prereqs: missing language server is advisory" "$(pqdetail "${out}" typescript-language-server)" "advisory"
+
 # --- docker requiredness rides on compose presence ---
 pqscan "${PQ_CORE}" "${PQR}"
 assert_has "prereqs: no compose -> docker advisory" "$(pqdetail "${out}" docker)" "advisory"
@@ -114,6 +148,14 @@ pqscan "${PQ_CORE}" "${PQR}"
 assert_eq "prereqs: compose + no docker -> missing" "$(pqstatus "${out}" docker)" "missing"
 assert_has "prereqs: compose -> docker required" "$(pqdetail "${out}" docker)" "required"
 rm -f "${PQR}/compose.yaml"
+PQ_DOCKER="${WORK}/pq-dockerbin"
+mkdir -p "${PQ_DOCKER}"
+fake_tool "${PQ_DOCKER}" docker "0.0-fake"
+pqscan "${PQ_DOCKER}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: daemon answers -> docker ok" "$(pqstatus "${out}" docker)" "ok"
+printf '#!/bin/sh\nexit 1\n' >"${PQ_DOCKER}/docker"
+pqscan "${PQ_DOCKER}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: daemon silent -> docker down" "$(pqstatus "${out}" docker)" "down"
 
 # --- exit-code contract ---
 sh "${PREREQS}" a b >/dev/null 2>&1

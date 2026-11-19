@@ -126,10 +126,13 @@ the org stack defaults in rule `10-stack`:
     `restartOnCrash: false` covers a different case - a server that *crashes* is
     left stopped instead of restarted. That key needs **Claude Code v2.1.205+**;
     an older CLI drops a server that declares it silently, with the reason only
-    in `claude --debug` output. Install them
-    per-machine (`pnpm add -g typescript-language-server typescript`,
-    `pnpm add -g pyright`) or per-repo as devDependencies; steer does not install
-    them for you, and deliberately does not gate on them.
+    in `claude --debug` output. Install them globally - `mise use -g
+    npm:pyright` and `mise use -g npm:typescript-language-server` - then restart
+    the session. The TypeScript server drives the repo's own `typescript`
+    dependency, which must be below 7: TypeScript 7 ships no `tsserver`, and a
+    global `typescript` in a separate mise prefix is never found.
+    `/steer:setup doctor` reports either binary missing and offers the install;
+    steer never installs them unasked and deliberately does not gate on them.
 
     This is also the supported successor to a code-intelligence **MCP** server:
     it is declared in the manifest, it is not a process the plugin has to pin,
