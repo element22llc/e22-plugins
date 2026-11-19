@@ -1,19 +1,12 @@
 ---
 name: doctor
-description: "Detect and install missing local prerequisites (git, mise, runtimes, Docker), flagging a shadowed runtime."
+description: "Detect and install missing local prerequisites (git, mise, runtimes, Docker, gh, language servers), flagging a shadowed runtime."
 when_to_use: "Reached via /steer:setup doctor."
 # Internal prerequisite path behind `/steer:setup doctor`. Model-callable,
 # hidden from the slash menu - see the note on `init`.
 user-invocable: false
 allowed-tools:
   - Bash(grep -rl *)
-  - Bash(git rev-parse *)
-  - Bash(git --version)
-  - Bash(mise --version)
-  - Bash(mise doctor *)
-  - Bash(mise ls *)
-  - Bash(docker --version)
-  - Bash(docker info *)
   - Bash(sh *scripts/scan-prereqs.sh*)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
@@ -89,16 +82,17 @@ It prints an `os` fingerprint line, then one TAB line per tool -
 | status | meaning | what to do |
 |---|---|---|
 | `ok` | installed (detail = version) | nothing |
-| `missing` | not installed | resolve (section 3) - a blocker for required tools |
+| `missing` | not installed | resolve (section 3) - a blocker unless `detail` says `advisory` |
 | `down` | docker present, daemon not running | start the daemon (section 3) |
 | `via-mise` | runtime absent but mise present | one `mise install` provides it (section 3) |
 | `unmanaged` | runtime absent and mise absent | install mise first, then `mise install` |
 | `shadowed` | runtime present but a non-mise copy (nvm/asdf/volta/fnm/system) is masking mise's pinned one | advisory - surface it and fix activation (section 3) |
+| `unauthenticated` | `gh` present but holds no token | advisory - `gh auth login` (section 3) |
 | `n/a` | not used by this repo's stack | nothing |
 
-The `detail` column carries requiredness for `docker` (`required (compose.yaml)`
-vs `advisory`), so a `missing`/`down` docker is only a blocker when this repo
-declares backing services.
+The `detail` column carries requiredness: `docker` is `required (compose.yaml)`
+or `advisory`, and `gh` and the two language servers are always `advisory` -
+they degrade a session, they never block setup.
 
 ## 2. Report
 
@@ -123,7 +117,7 @@ source of the same commands).
     `~/.zshrc` / `~/.bashrc` so new shells have it. **Print this for the dev to
     run - never edit their shell rc yourself:** this skill disallows `Edit`/`Write`
     precisely because a dotfile outside the repo is the dev's to change.
-- **`node` / `pnpm` / `uv` (`via-mise` or `unmanaged`)** - do **not** install
+- **`node` / `pnpm` / `uv` / `python3` / `gh` (`via-mise` or `unmanaged`)** - do **not** install
   these separately. Once mise is present, run `mise install` from the repo
   (and `cd infra && mise install` if they'll touch infra); it provisions every
   pinned runtime. Then verify each `mise.lock` gained real `[[tools.*]]` entries
@@ -138,6 +132,18 @@ source of the same commands).
   is sourced **after** the other manager in the rc file (mise must load last to
   win `PATH`), open a fresh shell, and confirm `which <tool>` now resolves under
   `.../mise/...`. Until then, run package-manager commands via `mise exec -- <tool>`.
+- **`gh` unauthenticated** - `gh auth login` is interactive: hand it over as
+  `! gh auth login` so it runs in the session. Until then, PR steps fall back
+  to the GitHub MCP server (the plugin's `github_pat`), then to manual steps.
+- **`pyright-langserver` / `typescript-language-server` missing** - Claude Code
+  warns `couldn't start` whenever it opens a matching file. Offer a **global**
+  install (a repo-local mise pin is not on Claude Code's `PATH` in other repos),
+  then say to **restart the session** - Claude Code reads `PATH` at startup:
+  - `mise use -g npm:pyright` - self-contained, works in any repo.
+  - `mise use -g npm:typescript-language-server` - it drives the **repo's own**
+    `typescript` dependency, which must be **below 7**: TypeScript 7 ships no
+    `tsserver`, and a global `typescript` in a separate mise prefix is never
+    found. A repo with no `typescript` dependency, or on 7, gets no server.
 - **`git` missing** - macOS: `xcode-select --install`; Debian/Ubuntu:
   `sudo apt-get install git` (a sudo command: present it, let the user run it).
 - **`docker` missing** - **manual** (GUI app, can't be scripted): point them to
@@ -183,7 +189,8 @@ final scan.
 | `os` = `windows` (Git Bash live) | Complete | Supported - hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan - or WSL2 for CLI/IDE dev |
 | A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (section 3) - not a hard blocker, but the wrong, un-pinned version is in use |
-| All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up - `/steer:setup` (dev) or `/steer:build` (PO) |
+| No blocker, repo not yet set up (no `/spec`) | Recommended | Stand the repo up - `/steer:setup` (dev) or `/steer:build` (PO); advisory gaps can wait |
+| Repo set up, only advisory gaps remain (`gh` unauthenticated, a language server missing) | Recommended | Resolve them (section 3), or proceed - nothing is blocked |
 | All green, repo already set up, and this run installed or repaired a tool | Recommended | Install the project's deps against the toolchain just fixed - `mise run dev:setup`, then start work |
 | All green, repo already set up, and this run installed or repaired nothing | Complete | `No action is currently required.` - optionally `mise run dev:setup` if the project's deps aren't installed yet |
 

@@ -1,0 +1,19 @@
+kind: Changed
+time: 2026-11-19T14:30:00.000000000-05:00
+custom:
+  Slug: doctor-gh-lsp-checks
+body: |-
+  - **Changed: `/steer:setup doctor` checks `gh`, `python3` and the language
+    servers, and stops skipping the baseline runtimes.** The scan now reports
+    `pyright-langserver` and `typescript-language-server`, the binaries behind
+    steer's `lspServers` (a missing one is what makes Claude Code warn
+    `couldn't start`), with the tested global install: `mise use -g
+    npm:pyright`, and `mise use -g npm:typescript-language-server` driving the
+    repo's own `typescript`, which must be below 7 because TypeScript 7 ships no
+    `tsserver`. It also reports whether `gh` is installed and holds a token
+    (`gh auth token`, no network; new `unauthenticated` status) and whether
+    `python3` is present for `scaffold_reconcile.py`. All three are advisory and
+    never block. `node` and `uv` are no longer `n/a` in a single-language repo:
+    the scaffold pins them in every repo as the agent-runtime baseline. The
+    daemon probe uses `docker version` instead of the slower `docker info`, and
+    the skill drops seven `allowed-tools` grants it never used.
