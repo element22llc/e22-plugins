@@ -51,7 +51,7 @@ moves a repo between the two and reconciles the marker.
   announced, never asked (rule 00's heads-up pattern). Behind branch protection
   an open PR is inert until a human merges it, so gating its creation protected
   nothing; the delivery skills (`work`, `init`, `adopt`, `intake`, `sync`,
-  `build`, `loop`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
+  `build`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
   (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
   the same grants - `gh pr edit` included. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
@@ -215,8 +215,8 @@ the copy earlier releases installed from any tier (`RETIRED_PERMISSIONS` in
 entry with a wildcard before its fixed command tail.
 
 The boundary is deliberate: `mise run` is allowlisted **only** for named tasks -
-the verify pair (`check`/`ci`) plus `dev` for running the app locally - never the
-wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission **from the scaffold allowlist** (the
+the verify tasks (`check`, `ci`, `test`, `lint`), `dev` for running the app
+locally and `changelog:new` - never the wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission **from the scaffold allowlist** (the
 mutation vector for repo delete, PR merge, and branch protection). **Two skills re-grant a
 narrow slice**, each for a different transport:
 

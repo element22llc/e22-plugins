@@ -119,7 +119,7 @@ source of the same commands).
     precisely because a dotfile outside the repo is the dev's to change.
 - **`node` / `pnpm` / `uv` / `python3` / `gh` (`via-mise` or `unmanaged`)** - do **not** install
   these separately. Once mise is present, run `mise install` from the repo
-  (and `cd infra && mise install` if they'll touch infra); it provisions every
+  (and `mise -C infra install` if they'll touch infra); it provisions every
   pinned runtime. Then verify each `mise.lock` gained real `[[tools.*]]` entries
   (the canonical pin procedure: `/steer:reference conventions` -> "Toolchain:
   `latest` in config, pinned in the lockfile"). Report the lockfile as needing

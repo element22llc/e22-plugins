@@ -237,14 +237,17 @@ MCP servers) are **merged by hand**, not by that script: all three templates car
 them. They are yours once installed - merge additively, drop what you don't use.
 VS Code is the default editor; see the Stack rule / `/steer:reference conventions`.
 
-The one exception is the `.claude/settings.json` `permissions` block, which
+The exception is the `.claude/settings.json` `permissions` block, which
 Claude Code evaluates by precedence **deny > ask > allow**. There, the same
 pattern in two tiers is a contradiction rather than a choice (the
 lower-precedence copy never governs), so after merging, the reconcile keeps each
 permission pattern only in its most-restrictive tier and drops the others -
 preventing a sync from leaving, say, `Bash(git push)` in both `allow` and `ask`,
 and healing a repo already in that state. Because the surviving tier is the one
-that already governed, effective behavior is unchanged.
+that already governed, effective behavior is unchanged. It also drops, from
+every tier, the exact patterns an earlier scaffold shipped and the template has
+since withdrawn (`RETIRED_PERMISSIONS`); those do change behavior, which is why
+each is listed in the script and named in its release's changelog entry.
 
 ## Versioning the contract
 

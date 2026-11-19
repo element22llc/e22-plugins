@@ -220,8 +220,10 @@ mcp_json() { # <cwd> <session> <tool_name> <body>
 	printf '{"session_id":"%s","cwd":"%s","tool_name":"%s","tool_input":{"title":"x","body":"%s"}}' \
 		"$2" "$1" "$3" "$4"
 }
-oq_grep() { printf '%s' "$3" | grep -q "$2" && ok || bad "$1 (got: $3)"; }
-oq_ngrep() { printf '%s' "$3" | grep -q "$2" && bad "$1 (unexpected: $3)" || ok; }
+# Not grep -q: it exits on the first match and printf of a long payload then
+# hits EPIPE, writing to stderr and failing the case under load.
+oq_grep() { printf '%s' "$3" | grep "$2" >/dev/null && ok || bad "$1 (got: $3)"; }
+oq_ngrep() { printf '%s' "$3" | grep "$2" >/dev/null && bad "$1 (unexpected: $3)" || ok; }
 
 finish() { # last line of every case file: tally (parsed by run.sh) + exit code
 	printf '%d passed, %d failed\n' "${PASS}" "${FAIL}"

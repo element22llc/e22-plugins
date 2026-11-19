@@ -81,9 +81,9 @@ fi
 if [ "${STATE}" = "openspec-setup" ]; then
 	# DO NOT route this to /steer:setup. Its init/adopt paths write
 	# spec/vision.md + spec/tracker.md from templates/spec/ and stamp
-	# spec/.version - precisely the competing spine rule 33 forbids here, and
-	# its routing table has no row for this state. The honest instruction is the
-	# direct one: instantiate the single template that is missing.
+	# spec/.version - precisely the competing spine rule 33 forbids here. The
+	# honest instruction is the direct one: instantiate the single template that
+	# is missing.
 	printf '<!-- steer: openspec spine without steer artifacts -->\n'
 	printf '**This repo uses OpenSpec for its spec spine** (`openspec/`). '
 	printf 'Spec work goes through the `/opsx:*` commands.\n\n'
