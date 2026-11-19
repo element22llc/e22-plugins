@@ -12,7 +12,10 @@ body: |
     A PR already tried at its current head is not retried, and an unattended
     cycle lists the review queue instead of paying for reviewers again. Each
     cycle ends on `Drive: idle` or `Drive: work remains`, so Claude Code's
-    `/goal` drains the backlog and a self-paced `/loop` keeps watching. It never
+    `/goal` drains the backlog and a self-paced `/loop` keeps watching.
+    Under Orca, on request, workers run as visible Orca orchestration workers
+    that report back, and an Orca automation can schedule the cycle with your
+    local plugins loaded. It never
     merges, approves, creates an issue or runs in solo-trunk, and a run nobody
     watches needs the `policy/automation.yml` opt-in, which `drive` now asks for
     and writes. `/steer:work` pre-approves `gh pr view`, `diff` and `comment`

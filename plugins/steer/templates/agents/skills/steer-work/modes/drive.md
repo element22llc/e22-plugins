@@ -133,7 +133,9 @@ stop check reads:
 - **Keep watching while the session stays open** - `/loop /steer-work drive`
   (self-paced) picks up new reviews and CI results between cycles. It stops when
   the session exits, and it is an unattended run (the opt-in above).
-- **On a schedule** - a cloud scheduled task (`/schedule`) with the prompt
+- **On a schedule, under Orca** - an Orca automation (Under Orca, below). It
+  runs your local Claude with your plugins, so steer loads.
+- **On a schedule, in the cloud** - a cloud scheduled task (`/schedule`) with the prompt
   `/steer-work drive`, created by the dev, never on their behalf. A cloud
   session loads steer only where the org delivers it through server-managed
   settings; without that the run has no steer skills, so do not offer it.
@@ -141,5 +143,47 @@ stop check reads:
   admins enforced first.
 
 Elsewhere (Copilot, Codex), run `drive` again by hand; the cycle is the same.
+
+## Under Orca
+
+Only when the session runs under Orca (`ORCA_WORKTREE_ID` set, `orca` on the
+PATH), and only for what the dev asks for. Subagents stay the default: Orca's
+own guidance prefers them unless a worker needs its own visible workspace.
+
+**Visible workers.** On request, each Step 1 and Step 3 worker becomes an Orca
+worker the dev can watch and talk to. Read `orca skills get orchestration` once,
+then per item:
+
+```sh
+orca orchestration worker-start --agent claude --task-title "#<n> <title>" \
+  --worktree new-top-level --repo path:<repo-root> --name issue-<n> \
+  --base-branch origin/<default> --spec-file <brief>
+```
+
+A Step 1 PR whose branch already has an Orca workspace (`orca worktree list
+--json`) takes `--worktree branch:<branch>` instead, unless an agent is working
+there - then skip it as before. The brief is the subagent's, with three changes:
+the worker is a top-level session, so its rules arrive on their own; it asks a
+gate question with `orca orchestration ask` instead of returning it; and it
+reports its card with `worker_done`. Start every worker, then **end the turn**:
+Orca wakes this session per question and per `worker_done`. Answer a question
+only when the answer follows from the issue, else ask the dev (rule `61-gates`).
+Verify the cards (Step 4) once all have settled. The workspaces are the dev's to
+remove in Orca. **Not under `/goal`:** the goal would resume the session before
+Orca wakes it - repeat the cycle with an automation or by hand.
+
+**An automation as the schedule.** Once the opt-in PR has merged, and on the
+dev's explicit yes to the exact command shown first - creating it arms the loop:
+
+```sh
+orca automations create --name "steer drive" --provider claude \
+  --trigger weekdays --time 09:00 --prompt "/steer-work drive" \
+  --workspace <a workspace kept on the default branch> --fresh-session
+```
+
+Confirm the cadence with the dev; keep it modest. Runs fire only while Orca is
+running, and every run is unattended: drafts only, no reviewers. Record the
+automation in the opt-in's `/spec/history/` entry; `orca automations remove`
+disarms it.
 
 Then the next-actions block (`NEXT-ACTION.md`).

@@ -43,6 +43,9 @@ allowed-tools:
   - Bash(gh run view *)
   - Bash(gh run watch *)
   - Bash(orca reference add *)
+  - Bash(orca skills get *)
+  - Bash(orca worktree list *)
+  - Bash(orca orchestration worker-start *)
   - mcp__github__create_pull_request
   - mcp__github__update_pull_request
   - mcp__github__list_pull_requests
