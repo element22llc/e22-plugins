@@ -33,7 +33,8 @@ on demand.
 
 A path a command touches is the exception - a helper, its template argument, a
 plugin directory handed to ``grep``/``find``: a URL is not a local path, so it
-becomes ``${STEER_PLUGIN_ROOT}/...`` and the skill gains ``HELPER_NOTE`` (#721).
+becomes ``${STEER_PLUGIN_ROOT}/...`` and the skill gains ``HELPER_NOTE`` (#721),
+whose ``HELPER_RESOLVE`` probe finds that copy (#993).
 Consumers: ``docs/reference/known-limitations.md``.
 
 *Why ``main`` and not the released tag:* pinning would rewrite all 26 skills on
@@ -142,14 +143,38 @@ _PLUGIN_ROOT = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}(/[A-Za-z0-9._/-]*)?")
 # every shell argument and never a prose path, so a quote marks a command.
 _HELPER_CMD = re.compile(r"(\"|\b(?:sh|python3) )\$\{CLAUDE_PLUGIN_ROOT\}(?=[/\"])")
 HELPER_VAR = "${STEER_PLUGIN_ROOT}"
+# No host exports STEER_PLUGIN_ROOT to tool shells (#993), so the note ships a
+# probe. `sh -c` because an unmatched glob aborts zsh; it prints one absolute
+# path and leaves the caller's cwd alone. The official marketplace goes before
+# the glob so a second, staler install never wins on sort order. Codex is left
+# out: its cache keeps a directory per version, and a stale helper is worse
+# than none.
+HELPER_RESOLVE = (
+    'sh -c \'c="${COPILOT_HOME:-$HOME/.copilot}/installed-plugins"; '
+    'for d in "$STEER_PLUGIN_ROOT" "$c/e22-plugins/steer" "$c"/*/steer ./plugins/steer; '
+    'do [ -n "$d" ] && [ -f "$d/hooks/lib/repo-root.sh" ] '
+    '&& CDPATH= cd -- "$d" && pwd && exit; done; exit 1\''
+)
+HELPER_ASSIGN = "STEER_PLUGIN_ROOT='<path>'; "
 HELPER_NOTE = (
     "> **Helper scripts run from a local steer copy.** Commands below that use\n"
     f'> `"{HELPER_VAR}/..."` (a helper, its template argument, a plugin directory) need\n'
-    "> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin\n"
-    "> (Codex, Copilot CLI), or `plugins/steer` in a checkout of\n"
-    "> `element22llc/e22-plugins`. With no local copy, treat the helper as failed:\n"
-    "> take the step's no-helper path, else its failure path, and say so. Never\n"
-    "> download a helper and run it from a URL."
+    "> it to name the steer plugin directory. No host sets it for you; resolve it\n"
+    "> once, before the first such command:\n"
+    ">\n"
+    "> ```sh\n"
+    f"> {HELPER_RESOLVE}\n"
+    "> ```\n"
+    ">\n"
+    "> It tries the variable, then the Copilot CLI install, then `plugins/steer` in\n"
+    "> a checkout of `element22llc/e22-plugins`; on another host, export the\n"
+    "> variable as its installed steer directory first. Shell state may not survive\n"
+    "> between commands, so start each one with the printed path and a semicolon -\n"
+    f'> `{HELPER_ASSIGN}sh "{HELPER_VAR}/scripts/..."`; a `VAR=value cmd` prefix\n'
+    "> would not work, since the shell expands the arguments first. Nothing printed\n"
+    "> means no local copy: treat the helper as failed, take the step's no-helper\n"
+    "> path, else its failure path, and say so. Never download a helper and run it\n"
+    "> from a URL."
 )
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
 # A relative link that climbs out of the skill directory into `templates/`

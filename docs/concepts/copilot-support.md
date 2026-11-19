@@ -480,9 +480,10 @@ the standards in `.github/copilot-instructions.md`.
 ## Known limitations
 
 - **Helper scripts need a local steer copy.** A skill step that runs a helper
-  (`sh "${STEER_PLUGIN_ROOT}/scripts/..."`) works only where `STEER_PLUGIN_ROOT`
-  points at an installed plugin or a checkout; elsewhere the agent skips it and
-  says so. Directory links go to a GitHub `tree/` page, which an agent cannot read
+  (`sh "${STEER_PLUGIN_ROOT}/scripts/..."`) needs a local steer copy. The skill
+  probes for one - the variable, the Copilot CLI install, a checkout - since no
+  host exports the variable; with none found the agent skips the step and says
+  so. Directory links go to a GitHub `tree/` page, which an agent cannot read
   in one fetch. Detail in
   [Known limitations](../reference/known-limitations.md#the-cross-tool-agentsskills-tree-helper-scripts-need-a-local-steer-copy).
 - **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot) -
