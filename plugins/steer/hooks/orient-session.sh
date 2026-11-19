@@ -56,11 +56,10 @@ if [ "${_steer_greet}" = "1" ] && [ "$(steer_work_mode "${CWD}")" = "knowledge" 
 	printf 'This is a non-code knowledge-work folder and the org engineering '
 	printf 'standards (steer) are active here in their lean, knowledge-work form. '
 	printf 'On your first reply, briefly confirm to the user - in plain language, no '
-	printf 'jargon - that the standards are loaded, and that they do **not** need to '
-	printf 'know any `/steer:*` command names: they can just describe what they want '
-	printf '(draft or refine a spec, capture a decision, ask what to do next) and you '
-	printf 'will route it to the right workflow yourself. Keep it to one or two '
-	printf 'sentences (output-discipline still applies).\n'
+	printf 'jargon - that the standards are loaded and that they can just describe '
+	printf 'what they want (draft or refine a spec, capture a decision, ask what to do '
+	printf 'next); you will route it to the right workflow yourself. Keep it to one or '
+	printf 'two sentences (output-discipline still applies).\n'
 	exit 0
 fi
 
