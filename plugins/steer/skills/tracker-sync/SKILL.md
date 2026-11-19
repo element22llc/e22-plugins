@@ -22,9 +22,9 @@ user-invocable: false
 # deliberately NOT listed - it stays host-gated.
 #
 # `Bash(sh *scripts/issue-body.sh*)` is the exception to that backstop: the
-# scaffold keeps it under `ask` (#924), since its leading wildcard would also
-# match `sh -c '<anything>' ...`, so update-state's gh arm prompts when reached
-# transitively.
+# scaffold lists it in no tier (#924), since its leading wildcard would also
+# match `sh -c '<anything>' ...`, so update-state's gh arm falls to the
+# session's permission mode when reached transitively.
 #
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
 # reads/writes, native blocked-by edges and an issue's linked PRs have no `gh issue`

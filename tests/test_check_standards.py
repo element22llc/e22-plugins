@@ -575,7 +575,6 @@ def test_scaffold_settings_has_no_inner_wildcard_allow():
     settings = check_standards.PLUGIN_ROOT / "templates/scaffold/claude/settings.json"
     perms = json.loads(settings.read_text(encoding="utf-8"))["permissions"]
     assert check_standards._inner_wildcard_allows(set(perms["allow"])) == []
-    assert set(check_standards._RETIRED_WILDCARD_ALLOWS) <= set(perms["ask"])
 
 
 def _fallback_tree(monkeypatch, tmp_path: Path, *, rule: str, ops: str) -> list[str]:
