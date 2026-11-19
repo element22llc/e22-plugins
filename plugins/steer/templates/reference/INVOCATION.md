@@ -28,7 +28,7 @@ explicit yes.
 | `/steer:audit spec` | Read-only spec-vs-tracker comparison - reports, never edits. |
 | `/steer:status` | Read-only delivery snapshot - reports, never edits. |
 | `/steer:status feature <id>` | Renders **one feature's spec** as a stakeholder-readable Artifact - presentation only, never authoring. |
-| `/steer:setup doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs **mise and the runtimes it manages**; git and Docker Desktop are handed over as commands to run yourself. |
+| `/steer:setup doctor` | Diagnoses the local toolchain (git/mise/Docker/gh/language servers) and, with a yes, installs **mise, the runtimes it manages, and global language servers**; git, Docker Desktop and `gh auth login` are handed over as commands to run yourself. |
 
 ## Tier 2 - requires explicit user intent (side-effecting)
 
@@ -131,8 +131,8 @@ and that is a rule rather than a not-yet.
 
 The flag makes a skill **user-only** - "Only you can invoke the skill" - so Claude
 cannot reach it through the Skill tool at all. Natural-language routing is core to
-this plugin: every user-invocable skill is a model-invocation target (rule
-`00-router` routes from the skill listing), including the ones that look manual (`setup`, `protect`, `doctor`).
+this plugin: every skill in the listing is a model-invocation target (rule
+`00-router` routes from the skill listing), including the ones that look manual (`/steer:setup` and its `protect` / `doctor` modes).
 
 The **Tier-3 internal helpers are the worst candidates, not the safest ones.**
 The Tier-3 helpers are already `user-invocable: false`, so they are

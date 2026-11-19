@@ -23,10 +23,11 @@ and degrades to a marker or a warning where the capability is absent. A few core
 ops carry one **GitHub arm** paragraph, flagged as such: the operation is core,
 the paragraph is how this arm performs it.
 
-`/steer:work` and the `/steer:issues` capture, status and materialize modes use
-**core ops only** - between them that is the whole delivery path, from an ask to
-a closed issue. Every other caller reads the companion for the one op it is
-about to perform: `triage`'s Priority floor and `board`'s ranking read
+`/steer:work` and the `/steer:issues` status and materialize modes use **core
+ops only** - between them that is the whole delivery path, from an ask to a
+closed issue. Every other caller reads the companion for the one op it is
+about to perform: `capture` and `brainstorm` (`link-related`), `triage`'s
+Priority floor, the `publish-*` Priority floor and `board`'s ranking read
 (`field-set` / `field-get`), `decompose`/`epic` (types, parent links),
 `reconcile` (the labels and types it normalizes, `delivery-evidence`), `/steer:spec roadmap`
 (milestones, dates), `/steer:next` and `/steer:status` (Priority and milestone

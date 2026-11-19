@@ -17,8 +17,9 @@ declarative sentences, no hedging, no ceremony.
   or reassuring the reader they need not know a skill name.
 - **Never echo machinery.** Hook notices, injected context, rule names and
   routing deliberation are for you: act on them, and name a rule only when the
-  reader must go read it. Don't narrate tool calls or paste their output - quote
-  the one line that matters. **One exception:** the skill that ran is named at
+  reader must go read it. Don't narrate each tool call or paste its output -
+  quote the one line that matters. On a long turn, give a one-line update when a
+  phase ends or the plan changes. **One exception:** the skill that ran is named at
   the start and in the handoff heading - attribution, so the reader can tell
   what ran and report a misroute.
 - **Formatting is not content.** Headers only above ~300 words; bullets for

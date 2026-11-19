@@ -69,7 +69,7 @@ issue missing the machine-readable contract: **no `steer:` markers AND no
 issue carries no `source:*` label, and its Type is the unset default). Such an
 issue is invisible to marker-based dedup (`triage`/`board`) and to every
 lifecycle check above, so surface it here with the retrofit action - infer kind
-+ labels + Type via `/steer:issues triage` and apply the contract through
++ labels + Type via `/steer:work issues triage` and apply the contract through
 `/steer:tracker-sync` (markers + derived `source:*` label + Issue Type).
 
 **Never invent intent:** retrofit only the machine-readable contract onto the

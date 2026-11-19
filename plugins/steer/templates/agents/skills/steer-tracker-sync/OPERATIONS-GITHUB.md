@@ -19,10 +19,12 @@ detects support first and reports a gap rather than fabricating config - and the
 
 Who reads this file: `/steer-spec roadmap` (milestones, dates), `/steer-issues
 decompose`/`epic` (types, parent and related links), `reconcile` (the labels and
-types it normalizes, and the delivery evidence it weighs), `triage` and `board` (the Priority floor and the ranking
-read), `/steer-next` and `/steer-status` (Priority and milestone reads), and
-`/steer-setup init`/`adopt` (`bootstrap-fields`). `/steer-work` and the capture,
-status and materialize modes do not - the delivery path is core-only.
+types it normalizes, and the delivery evidence it weighs), `capture` and
+`brainstorm` (related links), `triage`, `publish-*` and `board` (the Priority
+floor and the ranking read), `/steer-next` and `/steer-status` (Priority and
+milestone reads), and `/steer-setup init`/`adopt` (`bootstrap-fields`).
+`/steer-work` and the status and materialize modes do not - the delivery path is
+core-only.
 
 ## Labels and types
 

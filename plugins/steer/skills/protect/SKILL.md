@@ -184,8 +184,8 @@ Dependabot **alerts** have no field on the repo object - read their state from
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
 Read `can_approve_pull_request_reviews` from `.../actions/permissions/workflow`.
-`true` is the grant steer's retired approve-based auto-merge asked for: it lets
-**any** workflow approve **any** PR, and nothing steer ships needs it now. Report
+`true` lets **any** workflow approve **any** PR, and nothing steer ships needs
+it. Report
 it as drift (`true -> false`) unless the dev names a workflow of their own that
 approves PRs. Ignore `actions_can_approve_pull_requests` and `allow_auto_merge`
 in a v4/v5 policy - `/steer:setup sync` removes them.
@@ -241,7 +241,7 @@ confirmation.
 
 - If the repo already governs a branch through a ruleset of its own that meets
   the policy, report it as compliant rather than forcing a second one.
-- This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
+- This skill never opens PRs, never pushes, never runs `gh auth login`. On a yes it
   changes repo **settings** via `gh api`; `apply --solo` / `--team` sets
   `profile:` in the repo's own `policy/branch-protection.yml` (`APPLY.md` step
   0); and - when the apply ends solo-trunk mode - it writes the two local files

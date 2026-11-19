@@ -246,7 +246,7 @@ A vibe-coded app pins to whatever versions the generating model knew at *its*
 training cutoff - typically a major or two behind, sometimes on a library that's
 since been superseded. **Do not trust your own memory of "latest"** - it has the
 same cutoff problem. Query the registry **live** (`npm view <pkg> version`,
-`uv pip index versions <pkg>`, the current Node LTS) and diff against what the
+`uvx pip index versions <pkg>`, the current Node LTS) and diff against what the
 manifests pin. Record every dependency that is a major behind or superseded, plus
 any as-built anti-patterns, in the **Outdated dependencies & bad practices**
 section of `PRODUCTIONIZATION.md`. Anti-patterns to flag (vs the `practices`

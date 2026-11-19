@@ -115,8 +115,9 @@ declarative sentences, no hedging, no ceremony.
   or reassuring the reader they need not know a skill name.
 - **Never echo machinery.** Hook notices, injected context, rule names and
   routing deliberation are for you: act on them, and name a rule only when the
-  reader must go read it. Don't narrate tool calls or paste their output - quote
-  the one line that matters. **One exception:** the skill that ran is named at
+  reader must go read it. Don't narrate each tool call or paste its output -
+  quote the one line that matters. On a long turn, give a one-line update when a
+  phase ends or the plan changes. **One exception:** the skill that ran is named at
   the start and in the handoff heading - attribution, so the reader can tell
   what ran and report a misroute.
 - **Formatting is not content.** Headers only above ~300 words; bullets for
@@ -584,8 +585,9 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   discover, triage, draft in an isolated worktree, verify, push its **own work
   branch**, and open a PR - the merge review is the human gate (Commit
   autonomy). It **stops** at every authority gate: issue creation beyond an
-  explicit ask (Issue-first), ADR ratification (High-risk), and merge / deploy
-  / push to `main` or any protected branch / real secrets. Loop-opened PRs are
+  explicit ask (Issue-first), ADR ratification (Answering a human gate), and
+  merge / deploy / push to `main` or any protected branch / real secrets.
+  Loop-opened PRs are
   **drafts by convention** - the deliberate signal that nobody attended the
   run; a reviewer flips one to ready. A loop **never stacks** a draft on
   another work branch.

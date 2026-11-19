@@ -137,7 +137,7 @@
 > A vibe-coded app pins to whatever versions the generating model knew at **its**
 > training cutoff - usually a major or two behind, sometimes a library since
 > superseded. Versions below are checked **live against the registry**
-> (`npm view <pkg> version`, `uv pip index versions <pkg>`, current Node LTS) -
+> (`npm view <pkg> version`, `uvx pip index versions <pkg>`, current Node LTS) -
 > not from memory, which has the same cutoff problem. Flag every major behind and
 > any superseded library; the dev owns the upgrade, on a clean branch with tests
 > green. Leave the relevant rows empty if nothing is behind.

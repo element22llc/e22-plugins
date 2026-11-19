@@ -93,7 +93,8 @@ the moment the spine or tracker changes; regenerate to refresh.
   an invented number, date, or status.
 - **Read-only over canonical sources - never writes back.** `Edit`,
   `NotebookEdit`, and `EnterWorktree` are **disallowed in frontmatter**, so this
-  skill does not edit a repo file, create a branch, or open a worktree. Treat that
+  skill has no in-place edit tool and cannot open a worktree; branching and
+  committing are Bash, and this skill never runs them. Treat that
   as a boundary this skill keeps rather than one the runtime guarantees - upstream
   is silent on whether `disallowed-tools` reaches a forked subagent, and
   `background: false` is what keeps the fork off the wider background tool set.
