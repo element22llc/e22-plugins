@@ -14,11 +14,20 @@ user-invocable: false
 
 > **Helper scripts run from a local steer copy.** Commands below that use
 > `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
-> `STEER_PLUGIN_ROOT` set to the steer plugin directory - the installed plugin
-> (Codex, Copilot CLI), or `plugins/steer` in a checkout of
-> `element22llc/e22-plugins`. With no local copy, treat the helper as failed:
-> take the step's no-helper path, else its failure path, and say so. Never
-> download a helper and run it from a URL.
+> it to name the steer plugin directory. No host sets it for you; resolve it
+> once, before the first such command:
+>
+> ```sh
+> sh -c 'for d in "$STEER_PLUGIN_ROOT" "${COPILOT_HOME:-$HOME/.copilot}"/installed-plugins/*/steer plugins/steer; do [ -n "$d" ] && [ -f "$d/hooks/lib/repo-root.sh" ] && { cd "$d" && pwd; exit; }; done'
+> ```
+>
+> It tries the variable, then the Copilot CLI install, then `plugins/steer` in
+> a checkout of `element22llc/e22-plugins`; on another host, set the variable
+> to its installed steer directory first. Shell state may not survive between
+> commands, so prefix each one with the printed path
+> (`STEER_PLUGIN_ROOT=<path> sh ...`). Nothing printed means no local copy:
+> treat the helper as failed, take the step's no-helper path, else its failure
+> path, and say so. Never download a helper and run it from a URL.
 
 # Worktree handling (`/steer-setup worktrees`)
 

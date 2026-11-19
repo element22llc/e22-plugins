@@ -9,7 +9,9 @@ paths (-> URLs into the public plugin repo), and ``/steer:`` invocations
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
 import textwrap
 from pathlib import Path
 
@@ -255,3 +257,44 @@ def test_quoted_plugin_paths_in_commands_stay_local(tmp_path: Path):
     # Unquoted prose still links to the public repo.
     assert f"`{gen_agent_skills.RAW_BASE}/templates/spec/build-status.md`" in build
     assert not re.search(r"\"https?://", build)
+
+
+def _resolve(cwd: Path, **env: str) -> str:
+    base = {"PATH": os.environ["PATH"], "HOME": str(cwd / "home"), **env}
+    result = subprocess.run(
+        ["sh", "-c", gen_agent_skills.HELPER_RESOLVE],
+        cwd=cwd,
+        env=base,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == (0 if result.stdout else 1), result.stderr
+    return result.stdout.strip()
+
+
+def _steer_copy(root: Path) -> Path:
+    (root / "hooks/lib").mkdir(parents=True)
+    (root / "hooks/lib/repo-root.sh").write_text("", encoding="utf-8")
+    return root.resolve()
+
+
+def test_helper_probe_finds_the_copilot_install_with_the_variable_unset(tmp_path: Path):
+    """#993: Copilot CLI exports no plugin root, so the note must find the install."""
+    home = tmp_path / "copilot"
+    plugin = _steer_copy(home / "installed-plugins/e22-plugins/steer")
+    assert gen_agent_skills.HELPER_RESOLVE in gen_agent_skills.HELPER_NOTE
+    assert _resolve(tmp_path, COPILOT_HOME=str(home)) == str(plugin)
+    default = _steer_copy(tmp_path / "home/.copilot/installed-plugins/e22-plugins/steer")
+    assert _resolve(tmp_path) == str(default)
+
+
+def test_helper_probe_prefers_the_variable_and_prints_nothing_without_a_copy(tmp_path: Path):
+    assert _resolve(tmp_path) == ""
+    (tmp_path / "decoy/scripts").mkdir(parents=True)
+    assert _resolve(tmp_path, STEER_PLUGIN_ROOT=str(tmp_path / "decoy")) == ""
+    explicit = _steer_copy(tmp_path / "mine")
+    _steer_copy(tmp_path / "home/.copilot/installed-plugins/e22-plugins/steer")
+    assert _resolve(tmp_path, STEER_PLUGIN_ROOT=str(explicit)) == str(explicit)
+    checkout = _steer_copy(tmp_path / "repo/plugins/steer")
+    assert _resolve(tmp_path / "repo", HOME=str(tmp_path / "nohome")) == str(checkout)
