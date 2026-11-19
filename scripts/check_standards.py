@@ -786,6 +786,68 @@ def _inner_wildcard_allows(allow: set[str]) -> list[str]:
     return hits
 
 
+# Commands that run arbitrary input. An allow rule on one of these skips the
+# auto-mode classifier for anything it is handed, so the scaffold leaves them
+# with the classifier however hot the verb is. A rule matches a prefix and never
+# sees later flags, so an interpreter, or a reader whose own flags write or
+# execute (`sed -n 'w f'`, `rg --pre`, `git grep -O`, `sort --compress-program`),
+# is banned with any arguments; a wrapper is banned only bare, since a named verb
+# after it (`uv run pytest`) is the safe form.
+_EXEC_ANY_ARGS = frozenset(
+    {
+        "awk",
+        "bash",
+        "env",
+        "eval",
+        "exec",
+        "find",
+        "git grep",
+        "node",
+        "perl",
+        "python",
+        "python3",
+        "rg",
+        "ruby",
+        "sed",
+        "sh",
+        "sort",
+        "timeout",
+        "xargs",
+        "zsh",
+    }
+)
+_EXEC_WRAPPERS = frozenset(
+    {
+        "git -C",
+        "mise exec",
+        "npm exec",
+        "npm run",
+        "npx",
+        "pnpm",
+        "pnpm dlx",
+        "pnpm exec",
+        "pnpm run",
+        "uv run",
+        "uvx",
+    }
+)
+
+
+def _arbitrary_exec_allows(allow: set[str]) -> list[str]:
+    """Bash allow entries that hand an interpreter or wrapper arbitrary input."""
+    hits = []
+    for entry in allow:
+        m = re.fullmatch(r"Bash\((.*)\)", entry.strip())
+        if not m:
+            continue
+        inner = m.group(1)
+        inner = (inner[:-2] if inner.endswith(":*") else inner.removesuffix("*")).strip()
+        head = next((h for h in _EXEC_ANY_ARGS if inner == h or inner.startswith(h + " ")), None)
+        if head or inner in _EXEC_WRAPPERS:
+            hits.append(entry)
+    return hits
+
+
 def check_authorization(errors: list[str]) -> None:
     import json
 
@@ -1035,6 +1097,12 @@ def check_authorization(errors: list[str]) -> None:
                     f"(#294 - blocks origin-repoint exfil even if a stale `git remote:*` "
                     f"allow survives a consumer reconcile)"
                 )
+        for entry in sorted(_arbitrary_exec_allows(allow)):
+            errors.append(
+                f"{settings}: '{entry}' must not be under permissions.allow - it runs "
+                f"arbitrary input, so in auto mode it would skip the classifier for "
+                f"anything; allow a named verb instead (`uv run pytest:*`)"
+            )
         for entry in sorted(_inner_wildcard_allows(allow)):
             errors.append(
                 f"{settings}: '{entry}' must not be under permissions.allow - a "
