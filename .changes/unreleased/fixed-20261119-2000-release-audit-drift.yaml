@@ -1,9 +1,0 @@
-kind: Fixed
-time: 2026-11-19T20:00:00.000000-05:00
-custom:
-  Slug: release-audit-drift
-body: |
-  - **Fixed: `/steer:setup doctor` provisions infra runtimes with
-    `mise -C infra install`.** It told the agent to run `cd infra && mise
-    install`, the `cd`-prefixed command rule 03 rules out, which costs a
-    classifier review in auto mode.
