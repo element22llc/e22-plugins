@@ -786,6 +786,56 @@ def _inner_wildcard_allows(allow: set[str]) -> list[str]:
     return hits
 
 
+# Commands that run arbitrary input. An allow rule on one of these skips the
+# auto-mode classifier for anything it is handed, so the scaffold leaves them
+# with the classifier however hot the verb is.
+_ARBITRARY_EXEC = frozenset(
+    {
+        "awk",
+        "bash",
+        "env",
+        "eval",
+        "exec",
+        "find",
+        "git -C",
+        "mise exec",
+        "node",
+        "npm exec",
+        "npm run",
+        "npx",
+        "perl",
+        "pnpm",
+        "pnpm dlx",
+        "pnpm exec",
+        "pnpm run",
+        "python",
+        "python3",
+        "ruby",
+        "sed",
+        "sh",
+        "timeout",
+        "uv run",
+        "uvx",
+        "xargs",
+        "zsh",
+    }
+)
+
+
+def _arbitrary_exec_allows(allow: set[str]) -> list[str]:
+    """Bash allow entries whose whole fixed prefix is an interpreter or wrapper."""
+    hits = []
+    for entry in allow:
+        m = re.fullmatch(r"Bash\((.*)\)", entry.strip())
+        if not m:
+            continue
+        inner = m.group(1)
+        inner = (inner[:-2] if inner.endswith(":*") else inner.removesuffix("*")).strip()
+        if inner in _ARBITRARY_EXEC:
+            hits.append(entry)
+    return hits
+
+
 def check_authorization(errors: list[str]) -> None:
     import json
 
@@ -1035,6 +1085,12 @@ def check_authorization(errors: list[str]) -> None:
                     f"(#294 - blocks origin-repoint exfil even if a stale `git remote:*` "
                     f"allow survives a consumer reconcile)"
                 )
+        for entry in sorted(_arbitrary_exec_allows(allow)):
+            errors.append(
+                f"{settings}: '{entry}' must not be under permissions.allow - it runs "
+                f"arbitrary input, so in auto mode it would skip the classifier for "
+                f"anything; allow a named verb instead (`uv run pytest:*`)"
+            )
         for entry in sorted(_inner_wildcard_allows(allow)):
             errors.append(
                 f"{settings}: '{entry}' must not be under permissions.allow - a "

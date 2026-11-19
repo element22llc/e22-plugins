@@ -1,0 +1,16 @@
+kind: Fixed
+time: 2026-11-19T14:00:00.000000000-05:00
+custom:
+  Slug: automode-classifier-allowlist
+body: |-
+  - **Fixed: auto-mode sessions send far fewer Bash calls to the classifier.**
+    In auto mode a Bash call no allow rule covers costs a classifier review,
+    including `cat`, `grep` and `head`, and a compound command is covered only
+    when every part is; a 30-day sample of consumer sessions classified 94% of
+    Bash calls. The scaffold `.claude/settings.json` now allowlists the plain
+    text readers, the read-only git plumbing and the named local check verbs
+    (`uv run pytest`, `pnpm test`, `mise run test`, `gh pr ready`, ...), which
+    `/steer:setup sync` adds to existing repos. Reads and writes outside the
+    repo still go to the classifier. Rule `03-output` adds that files are read
+    and edited with Read/Grep/Edit rather than inline scripts, and that
+    commands carry no `cd` or `VAR=...;` preamble.

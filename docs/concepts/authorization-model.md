@@ -278,11 +278,29 @@ the bundled `scan-spine-state.sh`, and a second assertion,
 anywhere under `skills/`. That half of the class *is* closed mechanically, because
 the fix never varies: wrap the reads in a bundled script and grant that.
 
-!!! warning "Chained commands defeat the allowlist"
-    A permission rule matches a *single* command string. `git status && git diff`
-    matches no rule even when both are allowlisted, so it prompts anyway. Skills run
-    inspection commands as separate invocations - chaining with `&&`/pipes is the
-    most common reason a repo that looks allowlisted still asks for approval.
+!!! warning "A compound command is covered only when every part is"
+    Claude Code splits a command on `&&`, `||`, `;`, pipes and newlines and needs
+    an allow rule for **each** part. `git diff | head` is silent only because both
+    `git diff` and `head` are allowlisted; one uncovered part sends the whole call
+    to a prompt, or in auto mode to the classifier.
+
+!!! note "Auto mode: the allowlist is what keeps the classifier idle"
+    In auto mode every Bash call no allow rule covers costs a classifier review -
+    including the commands Claude Code treats as read-only (`cat`, `grep`, `head`,
+    `wc`), which skip the prompt in default mode but not the classifier. A 30-day
+    sample of auto-mode sessions in consumer repos sent 94% of Bash calls to the
+    classifier. The scaffold therefore also allowlists the plain text readers
+    (`cat`, `head`, `tail`, `grep`, `rg`, `wc`, `ls`, `sort`, `uniq`, `cut`, `tr`,
+    `diff`, `sed -n`, `jq`, `echo`, `printf`, ...), the read-only git plumbing
+    (`git ls-files`, `ls-tree`, `cat-file`, `grep`, `blame`, ...) and the named
+    local check verbs (`uv run pytest`/`ruff`/`mypy`/`ty`, `pnpm test`/`lint`/
+    `typecheck`, `pnpm exec biome`/`vitest`/`tsc`, `mise run test`/`lint`/
+    `changelog:new`, `gh pr ready`). Path checks still apply on top of a rule: a
+    read or redirect outside the repo goes to the classifier anyway. Interpreters,
+    wrappers and anything that can execute arbitrary input (`find`, `awk`,
+    `xargs`, `python3`, `mise exec`, `gh api`) stay with the classifier. Rule
+    `03-output` adds the behavioural half: Read/Grep/Edit over shell for files,
+    and no `cd` or `VAR=...;` preamble, which no allow rule can cover.
 
 ## What is gated
 
