@@ -22,10 +22,10 @@ Two invariants underpin everything:
 
 ## Operating model (local-first, issue-first)
 
-1. **Local interactive Claude Code is the primary worker.** Unattended GitHub
-   Actions execution runs only in a repo that declared the automation opt-in
-   (`policy/automation.yml` -> `loops: true`), through `/steer:loop` and rule
-   `53-autonomous-loops`.
+1. **Local interactive Claude Code is the primary worker.** Unattended execution
+   runs only in a repo that declared the automation opt-in
+   (`policy/automation.yml` -> `loops: true`), through `/steer:work drive` and
+   rule `53-autonomous-loops`.
 2. **High-risk work and the six value cases have a GitHub issue first** - in a
    GitHub-adopted repo (`/spec/tracker.md` -> `system: github`), reuse the issue
    the user names or create one before the first mutation when the work is

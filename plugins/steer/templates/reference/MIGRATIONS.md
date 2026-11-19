@@ -94,6 +94,21 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - the `loop` skill retired; its Actions workflow is the repo's own
+
+- **What & why:** the `loop` skill and its `steer-loop.yml` template are retired;
+  `/steer:work drive` is the autonomous entry point, repeated by `/goal`,
+  `/loop` or a cloud scheduled task. An installed `steer-loop.yml` keeps
+  running - its prompt names only live skills - but nothing in steer verifies or
+  updates it any more, and rule 53 now names `drive` as the way to loop.
+- **Precondition:** `test -f .github/workflows/steer-loop.yml`.
+- **Action:** ask the dev, never decide: **keep** it as the repo's own
+  workflow (no change; steer no longer verifies or updates it), or **remove**
+  it and re-run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` so the
+  lock matches the workflows left. Leave `policy/automation.yml` alone either
+  way. Never delete the file without a yes. **No history entry is earned**
+  unless it is removed: then the entry records who disarmed the loop and when.
+
 ### v7.25.0 - Dependabot groups security updates, and docker covers `apps/*`
 
 - **What & why:** a `groups` entry without `applies-to` covers version updates

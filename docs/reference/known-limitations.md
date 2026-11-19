@@ -196,16 +196,16 @@ and the stacked-PR gate on a PR whose base is a work branch (both in
 any code until scope is recorded on its issue. In headless or scheduled (cron) runs there is no human at
 the gate, and **interactively-authenticated MCP servers may be absent**, so the
 MCP-first tracker path can silently fall back. Don't run the gated workflows
-unattended and expect the approvals to happen - the scheduled loop Claude
-scaffolds when you ask for one (`/steer:loop`, behind the automation opt-in in
-`policy/automation.yml`) is the sanctioned scheduled/headless path precisely
-because it stops at those gates (it opens draft PRs and never merges).
+unattended and expect the approvals to happen - `/steer:work drive`, repeated
+by `/goal` or `/loop` and behind the automation opt-in in
+`policy/automation.yml` once nobody watches, is the sanctioned autonomous path
+precisely because it stops at those gates (it never merges, approves or creates
+an issue).
 
 A **cloud scheduled task** (`/schedule`) runs without steer unless the org
 delivers the plugin through server-managed settings: cloud sessions install
 neither a repo's `enabledPlugins` nor the plugins on your machine. That is why
-`/steer:loop` keeps the Actions workflow as its default and offers the cloud
-task only where the org has done so.
+`/steer:work drive` offers a cloud task only where the org has done so.
 
 ## GitHub auth / `gh`
 

@@ -134,10 +134,9 @@ fi
 # an imperative - check_standards.py's check 11 is what polices "Run /steer:X" in
 # the installed docs.
 #
-# `loop` is the same class, reached from rule 53 ("Scaffold loops with
-# /steer:loop"), which a repo carries only once it declared the automation opt-in.
-# `weekly-update` likewise: the router rule sends a weekly tracker update there.
-MODEL_ONLY=" reference report loop weekly-update "
+# `weekly-update` is the same class: the router rule sends a weekly tracker
+# update there.
+MODEL_ONLY=" reference report weekly-update "
 
 # Reference modes from the `<!-- steer:modes a,b,c -->` marker (single source of
 # truth for which `/steer:reference <mode>` topics exist).

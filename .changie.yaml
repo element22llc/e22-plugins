@@ -108,7 +108,7 @@ replacements:
   - path: plugins/steer/evals/routes-missing-mise-to-doctor/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
-  - path: plugins/steer/evals/routes-nightly-loop-to-loop/scaffold.sh
+  - path: plugins/steer/evals/routes-autonomous-drive-to-work/scaffold.sh
     find: '^\d+\.\d+\.\d+$'
     replace: '{{.VersionNoPrefix}}'
   - path: plugins/steer/evals/routes-open-questions-to-questions/scaffold.sh

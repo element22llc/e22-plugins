@@ -36,14 +36,14 @@ Arguments carry through unchanged - `/steer:adr accept 3` becomes
 
 ## What did not change
 
-`/steer:reference`, `/steer:report` and `/steer:loop` also stopped being typable,
+`/steer:reference` and `/steer:report` also stopped being typable,
 but **their invocation strings are the same**. No front door absorbed them: the
 model reaches them from an always-on rule, so a mention in your `CLAUDE.md` or
 README is still correct as written. Ask for what you want ("load the polyrepo
 reference", "report this steer bug") rather than typing the name.
 
-`/steer:loop` additionally requires the automation opt-in in `policy/` before it
-will scaffold anything.
+The `loop` skill, internal since 7.0, was later retired outright:
+`/steer:work drive` replaced it.
 
 ## Migrating a repo
 

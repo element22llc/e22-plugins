@@ -10,10 +10,11 @@ when_to_use: >-
   ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks
   through a UI change's flows in a real browser. Modes that take no issue:
   `promote` (ship main to production), `review` (clear the PR review queue,
-  "review my PRs"), `tidy` (clean up the repo root, organize stray documents
+  "review my PRs"), `drive` (work on its own, attended or on a schedule:
+  fix your open PRs, review the queue, hand ready issues to subagents), `tidy` (clean up the repo root, organize stray documents
   and diagrams), `walkthrough` (record a demo video). `issues`: backlog work
   with no code this turn - capture, triage, decompose, a ranked board.
-argument-hint: "[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
+argument-hint: "[start | resume | status | finish | queue | drive | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -34,11 +35,17 @@ allowed-tools:
   - Bash(gh pr edit *)
   - Bash(gh pr ready *)
   - Bash(gh pr list *)
+  - Bash(gh pr view *)
+  - Bash(gh pr diff *)
+  - Bash(gh pr comment *)
   - Bash(gh repo view *)
   - Bash(gh pr checks *)
   - Bash(gh run view *)
   - Bash(gh run watch *)
   - Bash(orca reference add *)
+  - Bash(orca skills get *)
+  - Bash(orca worktree list *)
+  - Bash(orca orchestration worker-start *)
   - mcp__github__create_pull_request
   - mcp__github__update_pull_request
   - mcp__github__list_pull_requests
@@ -46,7 +53,7 @@ allowed-tools:
   - mcp__plugin_steer_github__update_pull_request
   - mcp__plugin_steer_github__list_pull_requests
 ---
-<!-- steer:modes start,resume,status,finish,queue,debug,qa,promote,tidy,review,walkthrough,issues -->
+<!-- steer:modes start,resume,status,finish,queue,drive,debug,qa,promote,tidy,review,walkthrough,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the
@@ -85,6 +92,8 @@ These hold for the whole run, in every mode.
    skip steps 1 and 3** - none is issue-scoped, so none reads the tracker or
    finds-or-creates an issue. Read `modes/promote.md` / `modes/review.md` /
    `modes/debug.md` from Step 1; `tidy` and `walkthrough` -> their rows.
+0c. **`drive` skips step 3** - it finds work, never creates it; read
+   `modes/drive.md` after step 2.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
    open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
@@ -114,7 +123,7 @@ commit, push, and open/update the PR - the full delivery loop up to the merge
 
 > **Pre-approved shell scope.** `allowed-tools` covers read-only git/PR/CI
 > inspection, `git fetch`, branch create/switch, `git add` / `git commit` / `git push`, and
-> `gh pr create` / `edit` / `ready` (the MCP PR tools when `gh` is not
+> `gh pr create` / `edit` / `ready` / `view` / `diff` / `comment` (the MCP PR tools when `gh` is not
 > authenticated), so the CI watch runs without a prompt per poll. It does **not**
 > pre-approve `gh pr merge`, `gh pr review`, `gh api`, `gh workflow
 > run`, or destructive git (`push --force` flag-first, `reset --hard`, `clean -fdx`,
@@ -153,6 +162,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`status #N`** | **Read-only** execution state - claimant, branch, PR, blockers, validation. Mutates nothing. |
 | **`finish #N`** | Validate, code gate (non-Trivial), commit, push, PR (**ready** only on a clean gate, CI watched; else a **draft**), -> `validate`, **stop**. Never `done` because a PR opened, never on a *skipped* check. |
 | **`queue #A #B ...`** | Several independent issues, one fresh worker each running `start` -> `finish`; ends at PRs. Automatic for two or more. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
+| **`drive [--max N] [--label <l>]`** | One autonomous cycle: your PRs with change requests or red CI, then the review queue (cards only), then up to N ready issues, each to a fresh worker. Ends on `Drive: idle` or `Drive: work remains` for `/goal` or `/loop` to repeat. Never merges, approves or creates an issue. -> [`modes/drive.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/drive.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
 | **`qa [#N]`** | Opt-in: click through the flows the diff touches in a real browser. Read `modes/qa.md` first. |
 | **`promote`** | **Not issue-scoped** - opens the `release/*` -> `prod` Release PR from what is merged; **merging it deploys production and is the human's gate.** -> `modes/promote.md` |
