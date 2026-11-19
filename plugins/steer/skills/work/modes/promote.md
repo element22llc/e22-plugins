@@ -1,7 +1,7 @@
 # `/steer:work promote` - open the production release PR
 
-Read this file only when `promote` is the subcommand. It is the one unit of work
-in `/steer:work` that is **not issue-scoped**: the thing being delivered is
+Read this file only when `promote` is the subcommand. It is **not
+issue-scoped**: the thing being delivered is
 everything already merged to the default branch, which is why the skill's
 Preconditions step 0b exempts it from the tracker read and the issue
 find-or-create.
@@ -57,7 +57,7 @@ it. Then:
     body, its commit list from the release branch) and run the drop check
     below against it, report it, and **stop** - no new cut, no second
     snapshot. Pending fragments on `main` belong to the next release.
-  - a `main` head (left by the earlier flow) -> **stop** and ask to close it
+  - a `main` head -> **stop** and ask to close it
     before a snapshot replaces it; close it (`gh pr close`) only on a yes.
 - **Prod is merged back.** Every merge into `prod` is merged back into `main`
   (and into a release in QA) by a merge-back PR; a release cut before that lands
@@ -203,7 +203,7 @@ Per `NEXT-ACTIONS.md`, derived from where the run stopped:
 |---|---|---|
 | `production_gate` is not `prod-branch-pr` | Human decision required | The declared gate is the human's own step (no command) |
 | No `prod` branch, or it is unprotected | Blocking now | `/steer:setup protect` |
-| An old `main -> prod` PR is open | Human decision required | Close it so a snapshot can replace it (no command) |
+| A `main -> prod` PR is open | Human decision required | Close it so a snapshot can replace it (no command) |
 | Prod is not merged back into `main` | Human decision required | A dev merges the open merge-back PR with **Create a merge commit** (no command) |
 | Default branch red | Blocking now | Fix the build before promoting |
 | Changelog cut PR open | Human decision required | A dev reviews and merges the cut (no command) |

@@ -109,7 +109,8 @@ The current as-built stack and how the pieces fit together live in
 
 ## Patterns we follow
 
-The baseline (Drizzle/parameterized SQL, schema-validated boundaries,
+The baseline (data access through the ORM only - never raw SQL,
+schema-validated boundaries,
 server-first, static typing, ...) is injected by the plugin. Add only
 product-specific patterns the team learns here. A lesson not yet a pattern
 lives in `spec/learnings/`; promote it here once it recurs.

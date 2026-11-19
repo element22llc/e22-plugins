@@ -1,0 +1,18 @@
+kind: Fixed
+time: 2026-11-19T18:00:00.000000-05:00
+custom:
+  Slug: prompt-audit-drift
+body: |
+  - **Fixed: instruction files that had drifted from each other or from the
+    plugin since the last prompt audit.** Rule 53 points ADR ratification at
+    the gates rule, not High-risk. The context-hygiene reference now matches
+    the review loop's mid-tier reviewers. In an OpenSpec repo, the session
+    notice and `/steer:setup` agree with rule 33 on steer's four artifacts, and
+    the notice names `spec/app/` too. Recommendations from `/steer:spec` and
+    issue reconcile name `/steer:work issues ...`, not an internal skill. Sync
+    takes each capability's verbatim files from `CAPABILITIES.md`, so it also
+    re-copies `ci-lib.sh` and `spec-questions.sh`. The live-version check uses
+    `uvx pip index versions`, which works where `uv pip index` does not. The
+    tracker-sync caller lists name the modes that use companion ops. Smaller
+    stale facts and dated phrasing are cleared in promote, debug, protect,
+    status, STACKS, INVOCATION, COVERAGE and the product `CLAUDE.md` template.

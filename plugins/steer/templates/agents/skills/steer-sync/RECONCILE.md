@@ -180,7 +180,8 @@ is visible rather than silent.
      *has* a `.gitattributes` gets its content reconciled additively in step 5.
    - **`mis-wired`** -> for `verbatim` files **re-copy** from the plugin source -
      but **show the diff first** (or, for a generated set, the changed-file list)
-     and warn that local edits are lost. Two capabilities are `verbatim`: the
+     and warn that local edits are lost. Each capability's `Verbatim:` field in
+     `CAPABILITIES.md` names its verbatim files - among them the
      **version-pin scripts** (move product-specific pins to `policy/versions.yml`)
      and the **generated agent surface** (`agent-surface-current` -
      `.github/copilot-instructions.md`, `.agents/skills/`, `.github/agents/`,

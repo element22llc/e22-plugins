@@ -85,8 +85,8 @@ the spine state *means* - see "Polyrepo" below - so read both lines before routi
 `spec/.version` - a second, competing spine beside the one the repo actually
 uses (rule `33-spec-workflow-openspec`). What such a repo can still need from
 this door is the **bundled scaffold** (mise, compose, CI, PR template) and
-steer's two artifacts, which live under `openspec/steer/`. Lay those down
-directly; they are single files, not a bootstrap.
+steer's `openspec/steer/tracker.md` (rule 33 names the rest, each created on
+first use). Lay it down directly; it is one file, not a bootstrap.
 
 The `unmanaged`-with-code vs `unmanaged`-greenfield call is the one judgment the
 state helper can't make alone: check for app code (a populated `apps/`/`src/`,

@@ -75,7 +75,8 @@ reasons above want different tiers:
   caller to catch, and the read volume is the same either way, so this cuts
   *cost*, not token count.
 - **Reviewer / verify / judge delegations** (the examples below) -> keep on the
-  **session model** (`inherit`). A missed or mis-ranked finding here
+  **session model** (`inherit`), except the bounded diff checks `REVIEW-LOOP.md`
+  section 6 tiers down. A missed or mis-ranked finding here
   is expensive and hard to catch downstream, so don't trade capability for cost at the
   step whose whole job is to be trustworthy.
 
@@ -83,7 +84,7 @@ One caveat: a cheaper model inside a **budget-capped agentic loop** can take mor
 iterations and burn both the wall-clock and the saving - keep those on the session
 model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
 
-**The canonical steer examples to follow (all reviewer delegations - session-model):**
+**The canonical steer examples to follow (reviewer delegations):**
 
 - `/steer:audit` fans out one read-only `steer-reviewer` subagent per dimension on
   large repos, then vets the gathered summaries.
@@ -95,7 +96,8 @@ model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
   as the rubric, and read access to the repo.
 - `/steer:work finish` spawns one for its code gate on every non-Trivial change,
   given the branch diff and the `REVIEW-LOOP.md` section 4 rubric, plus a
-  specialist per lens the diff triggers and a verifier per high finding.
+  specialist per lens the diff triggers and a verifier per high finding (both
+  `steer-pr-reviewer`, mid tier - `REVIEW-LOOP.md` section 6).
 - `/steer:work drive` hands every change to a worker whose `finish` runs that
   code gate - rule `53-autonomous-loops` splits ideation from verification, so
   the reviewer that checks the loop's work is never the context that produced it.

@@ -50,7 +50,7 @@ an explained mechanism is a guess, and the next symptom is its bill.
 
 ## Escalate, don't thrash
 
-Three refuted hypotheses or three failed fixes is the Verify loop's cap: stop,
+Cap the Verify loop at three refuted hypotheses or three failed fixes: stop,
 and report what was ruled out and what the repeated failure points at. A cause
 that is a wrong responsibility, shared state or a broken assumption is a design
 question for the dev - a `contract.md` change or an ADR via `/steer:spec` -

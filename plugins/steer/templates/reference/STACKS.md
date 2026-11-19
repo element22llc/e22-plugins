@@ -70,8 +70,8 @@ non-interactive form, so restructuring is `unstack` and then `init` + `submit`.
   `merge-async` API call. Report the stack's state instead.
 - **No `gh stack alias`.** It installs a wrapper (`gs` by default) that hides
   `gh stack` from steer's gates; call `gh stack` by its full name.
-- **Drafts.** `gh stack submit --auto` creates new PRs as drafts, matching
-  `/steer:work`. Never pass `--open` to `submit` or `link`: it also marks the
+- **Drafts.** `gh stack submit --auto` creates new PRs as drafts.
+  Never pass `--open` to `submit` or `link`: it also marks the
   stack's existing PRs ready, which is each author's call.
 - **Opening a stack is a stacking decision.** `submit` and `link` are where the
   dependency is recorded, so the stacked-PR gate asks on both, as on a

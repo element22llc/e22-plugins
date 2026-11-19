@@ -241,7 +241,7 @@ you may not record their approval for them.
 3. Write **one** `/spec/history/` entry file (what / why / who-asked / refs) -
    in a member, to the workspace's ledger per `/steer-reference polyrepo`.
 4. Recommend the local next action - decompose into work
-   (`/steer-issues decompose`, then execute each via
+   (`/steer-work issues decompose`, then execute each via
    `/steer-work`) or, for a PO-driven build,
    `/steer-build` (which delegates to `work` once governed) - per
    the `## Recommended next actions - /steer-spec approve <id>` block.

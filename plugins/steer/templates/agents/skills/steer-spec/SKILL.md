@@ -181,13 +181,14 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    `draft` for them to come back and flip. On PO approval, run **`approve <id>`**
    (`MODES.md`) to record the approval and flip `Status:` to `approved` in one change,
    then offer:
-   - file it via `/steer-issues` (which routes through the tracker gateway) ->
+   - file it via `/steer-work issues` (which routes through the tracker
+     gateway) ->
      create or refresh the tracker item from this intent, writing the ref back
      into the `> Tracker:` line.
    - hand off for implementation **in a separate session** - this skill stops
      here. In a GitHub-adopted repo (`tracker.md` -> `system: github`),
      implementation runs through `/steer-work` (decompose via
-     `/steer-issues` first); PO-driven builds go through
+     `/steer-work issues decompose` first); PO-driven builds go through
      `/steer-build` (which itself delegates to `work` once
      governed). Don't hand off to a "just implement it" path that skips the issue.
 8. **Recommend the next action.** Close with a `## Recommended next actions -

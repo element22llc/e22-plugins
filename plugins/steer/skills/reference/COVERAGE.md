@@ -91,9 +91,9 @@ It covers, in detail:
 - **Worked examples** - a PO's day and a dev's day through the same workflow.
 
 The lean always-on versions of these rules are `30-spec` -> Living documentation,
-`35-tracker`, `30-spec` -> Internal ids, and rule `50-done`'s Drift gates and
-Audit-aligned delivery sections - this reference is their full rationale and
-how-to.
+`35-tracker`, `30-spec` -> Internal ids, and rule `50-done`'s Drift gates
+section, with its SOC 2 / ISO 27001 paragraph - this reference is their full
+rationale and how-to.
 
 ## `design-sources`
 

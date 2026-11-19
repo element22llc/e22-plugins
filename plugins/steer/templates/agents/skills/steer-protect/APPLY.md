@@ -85,9 +85,8 @@ When rules are drifted or absent:
      keep the classic review count as the only approval gate - and say that PRs
      into `prod` must then be merged with **Create a merge commit** by hand, so
      prod's history stays the release's own and each merge-back merges clean.
-4. After applying, re-run the verify diff and report the new state. The
-   required-reviewers rule is new on GitHub (GA 2026-02): after the first apply
-   on a repo, say so and ask the dev to confirm on one Release PR that a PO
+4. After applying, re-run the verify diff and report the new state. After the
+   first apply on a repo, ask the dev to confirm on one Release PR that a PO
    **and** a dev approval are both required before it can merge.
 5. **Graduating a solo-trunk repo.** Update the product `CLAUDE.md`
    `## Delivery mode` section to `PR flow` - both the prose **and** the
