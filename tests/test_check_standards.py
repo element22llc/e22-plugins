@@ -586,12 +586,18 @@ def test_arbitrary_exec_allows_flags_interpreters_not_named_verbs():
         "Bash(sed:*)",
         "Bash(uv run pytest:*)",
         "Bash(sed -n:*)",
+        "Bash(python3 -c:*)",
+        "Bash(rg --pre:*)",
+        "Bash(sedx:*)",
         "Bash(cat:*)",
         "mcp__github__issue_read",
     }
     assert sorted(check_standards._arbitrary_exec_allows(allow)) == [
         "Bash(find:*)",
+        "Bash(python3 -c:*)",
         "Bash(python3:*)",
+        "Bash(rg --pre:*)",
+        "Bash(sed -n:*)",
         "Bash(sed:*)",
         "Bash(uv run *)",
         "Bash(uv run:*)",
@@ -602,7 +608,7 @@ def test_scaffold_settings_keeps_readers_off_the_classifier():
     settings = check_standards.PLUGIN_ROOT / "templates/scaffold/claude/settings.json"
     allow = set(json.loads(settings.read_text(encoding="utf-8"))["permissions"]["allow"])
     assert check_standards._arbitrary_exec_allows(allow) == []
-    for reader in ("Bash(cat:*)", "Bash(head:*)", "Bash(grep:*)", "Bash(sed -n:*)"):
+    for reader in ("Bash(cat:*)", "Bash(head:*)", "Bash(grep:*)", "Bash(wc:*)"):
         assert reader in allow
 
 

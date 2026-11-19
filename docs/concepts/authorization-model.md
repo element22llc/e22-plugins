@@ -290,15 +290,19 @@ the fix never varies: wrap the reads in a bundled script and grant that.
     `wc`), which skip the prompt in default mode but not the classifier. A 30-day
     sample of auto-mode sessions in consumer repos sent 94% of Bash calls to the
     classifier. The scaffold therefore also allowlists the plain text readers
-    (`cat`, `head`, `tail`, `grep`, `rg`, `wc`, `ls`, `sort`, `uniq`, `cut`, `tr`,
-    `diff`, `sed -n`, `jq`, `echo`, `printf`, ...), the read-only git plumbing
-    (`git ls-files`, `ls-tree`, `cat-file`, `grep`, `blame`, ...) and the named
+    (`cat`, `head`, `tail`, `grep`, `wc`, `ls`, `cut`, `tr`, `diff`, `echo`,
+    `printf`, ...), the read-only git plumbing (`git ls-files`, `ls-tree`,
+    `cat-file`, `blame`, ...) and the named
     local check verbs (`uv run pytest`/`ruff`/`mypy`/`ty`, `pnpm test`/`lint`/
     `typecheck`, `pnpm exec biome`/`vitest`/`tsc`, `mise run test`/`lint`/
     `changelog:new`, `gh pr ready`). Path checks still apply on top of a rule: a
-    read or redirect outside the repo goes to the classifier anyway. Interpreters,
-    wrappers and anything that can execute arbitrary input (`find`, `awk`,
-    `xargs`, `python3`, `mise exec`, `gh api`) stay with the classifier. Rule
+    read or redirect outside the repo goes to the classifier anyway, and so does
+    a `$(...)` or backtick substitution. A rule never sees later flags, though,
+    so interpreters, wrappers and readers whose own flags write or execute stay
+    with the classifier: `find`, `awk`, `xargs`, `python3`, `mise exec`, `gh api`,
+    `sed` (`w` / `-i`), `rg --pre`, `git grep -O`, `sort --compress-program`,
+    `uniq` (writes its second argument) and `jq` (`env` dumps the environment).
+    `check_standards.py` rejects those forms in the scaffold `allow` list. Rule
     `03-output` adds the behavioural half: Read/Grep/Edit over shell for files,
     and no `cd` or `VAR=...;` preamble, which no allow rule can cover.
 
