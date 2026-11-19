@@ -110,7 +110,7 @@ SCOPE_PRECONDITIONS: dict[str, str] = {
     "automation-optin": (
         "**Applies only to a repo that has declared the automation opt-in** - "
         "`policy/automation.yml` with `loops: true`. A repo without that file runs "
-        "no steer-scaffolded loop, so skip this section entirely."
+        "no steer autonomous loop, so skip this section entirely."
     ),
     "tracker-github": (
         "**Applies only where the tracker declaration says `system: github`** - "

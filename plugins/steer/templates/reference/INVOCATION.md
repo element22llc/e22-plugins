@@ -74,7 +74,6 @@ Not a user's first move.
 | `/steer:weekly-update` | Applies a week's work to an Artifact-hosted project tracker. Reached from rule 00 for a weekly tracker update. |
 | `/steer:reference <topic>` | The reference-prose loader - conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo, stacks. Reached from a rule or a skill that names the topic it needs; the user describes the question instead. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. **Auto-files** with no confirmation step, which is why the model owns the channel: the user reports the misbehaviour in plain language. |
-| `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. Reached when a dev asks for a scheduled sweep in plain language, and named by rule 53, which a repo carries only once it declared the automation opt-in (`policy/automation.yml`). A repo that never opted in is refused by the skill's first step, not by the marker. |
 
 ## Drift detection & auto-repair (managed repos)
 
@@ -105,11 +104,10 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 | `noncallable-gateway` | `<skill>` is `user-invocable: false` and **no** door absorbed it - `spec-scaffold` and `tracker-sync`, which an owning skill drives mid-procedure | **human decision** - route to a front door (`spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
 
-Four `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
-name in the scanner (`MODEL_ONLY`): `reference`, `report`, `loop` and
+Three `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
+name in the scanner (`MODEL_ONLY`): `reference`, `report` and
 `weekly-update`. Live prose
-names them as a delegation ("Claude loads `/steer:reference gates`", rule 53's
-"Scaffold loops with `/steer:loop`"), not as something
+names them as a delegation ("Claude loads `/steer:reference gates`"), not as something
 the reader types, and unlike an absorbed mode none has a front door to be
 rewritten to - so a finding there would be unfixable by construction. The
 exemption is the modern spelling only; a pre-rebrand `e22-report` still gets its

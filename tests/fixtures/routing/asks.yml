@@ -119,9 +119,12 @@ fixtures:
   - ask: "does the build still match what the tracker asked for?"
     skill: audit
     signals: ["drift", "spec"]
+  - ask: "work through the backlog on your own - pick up issues, hand them to subagents, fix my open PRs, and keep going"
+    skill: work
+    signals: ["drive", "subagents"]
   - ask: "set up a nightly loop that triages CI failures on its own"
-    skill: loop
-    signals: ["autonomous loop", "schedule"]
+    skill: work
+    signals: ["on its own", "schedule"]
   - ask: "record the decision to move to Postgres"
     skill: spec
     signals: ["hard-to-reverse", "decision"]

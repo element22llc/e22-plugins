@@ -1,8 +1,8 @@
 <!-- steer:inject-when=automation-optin -->
 ## Autonomous loops - automate the navigation, never the authority
 
-An **autonomous loop** is a scheduled automation (a cron workflow, a cloud
-scheduled task) that wakes on its own, discovers work - CI failures, open
+An **autonomous loop** is a run nobody watches (`/steer:work drive` repeated by
+`/loop` or a cloud scheduled task) that wakes on its own, discovers work - CI failures, open
 issues, drift - and drives it through steer's skills unattended. It removes the prompting, **not**
 the responsibility: still ship code you *confirmed* works (Definition of done).
 
@@ -27,5 +27,5 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
 - **Only loop on checkable work.** Judgment calls, design decisions, and
   long-compute runs have no fast pass/fail - the loop surfaces them for a
   human, it never decides them.
-- **Scaffold loops with `/steer:loop`** - never hand-roll an automation that
+- **Loop through `/steer:work drive`** - never hand-roll an automation that
   can cross a gate.

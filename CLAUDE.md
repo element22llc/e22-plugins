@@ -36,8 +36,8 @@ plugins/steer/
 |-- .claude-plugin/mcp.json         # plugin MCP servers (github, context7), named by plugin.json
 |-- .github/mcp.json                # GENERATED Copilot CLI copy (no PAT header; `mise run gen:copilot`)
 |-- agents/                         # subagents: steer-reviewer (driven by /steer:audit,
-|                                   #   /steer:work --reviewed, and the /steer:loop workflow);
-|                                   #   steer-pr-reviewer (/steer:work review + code gate)
+|                                   #   /steer:work --reviewed); steer-pr-reviewer
+|                                   #   (/steer:work review + drive + code gate)
 |-- hooks/                          # SessionStart hooks -> inject rules/*.md + orientation;
 |                                   #   PreToolUse/PostToolUse/Stop gates;
 |                                   #   CwdChanged/SessionEnd/WorktreeRemove lifecycle hooks
@@ -57,9 +57,8 @@ plugins/steer/
 |                                   #           (-> spec); issues, tidy, walkthrough (-> work); explain
 |                                   #           (-> status); help (-> next); spec-scaffold,
 |                                   #           tracker-sync (gateways, called by many
-|                                   #           skills); reference, report, loop,
-|                                   #           weekly-update (reached by a rule; loop
-|                                   #           behind the automation opt-in)
+|                                   #           skills); reference, report,
+|                                   #           weekly-update (reached by a rule)
 |                                   # (no commands/ - see "invocation syntax" below)
 `-- templates/
     |-- spec/                       # spec artifacts skills instantiate (intent, contract, adr,
@@ -77,7 +76,7 @@ plugins/steer/
     |                               #   pull_request_template.md) + the GENERATED Copilot artifacts
     |                               #   (copilot-instructions.md, agents/, instructions/ -
     |                               #    via `mise run gen:copilot`)
-    |-- agents/skills/              # GENERATED cross-tool skill surface (all 29 skills in the
+    |-- agents/skills/              # GENERATED cross-tool skill surface (all 28 skills in the
     |                               #   open Agent Skills format) - consumers install it as
     |                               #   .agents/skills/; via `mise run gen:copilot`
     `-- scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, ...)

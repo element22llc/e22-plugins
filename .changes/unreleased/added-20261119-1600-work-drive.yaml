@@ -1,0 +1,19 @@
+kind: Added
+time: 2026-11-19T16:00:00.000000-05:00
+custom:
+  Slug: work-drive
+body: |
+  - **Added: `/steer:work drive`, one autonomous cycle over PRs, reviews and
+    issues.** The session orchestrates and implements nothing itself: it hands
+    each of your open PRs with change requests on its current head, red CI or a
+    conflict to a fresh worker that addresses the feedback and re-requests
+    review; cards the PRs waiting on your review without posting anything; then
+    starts up to `--max` (default 3) ready, unclaimed issues as `queue` does.
+    A PR already tried at its current head is not retried, and an unattended
+    cycle lists the review queue instead of paying for reviewers again. Each
+    cycle ends on `Drive: idle` or `Drive: work remains`, so Claude Code's
+    `/goal` drains the backlog and a self-paced `/loop` keeps watching. It never
+    merges, approves, creates an issue or runs in solo-trunk, and a run nobody
+    watches needs the `policy/automation.yml` opt-in, which `drive` now asks for
+    and writes. `/steer:work` pre-approves `gh pr view`, `diff` and `comment`
+    for it.

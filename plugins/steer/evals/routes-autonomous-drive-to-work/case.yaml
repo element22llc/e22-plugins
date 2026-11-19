@@ -1,6 +1,6 @@
 # Routing case - see ../README.md for what this suite measures.
 schema_version: "1.1"
-name: routes-nightly-loop-to-loop
+name: routes-autonomous-drive-to-work
 tags: [routing, mode]
 
 context:
@@ -9,7 +9,7 @@ context:
 
 execution:
   prompt: |
-    set up a nightly loop that triages CI failures on its own
+    work through the backlog on your own - pick up issues, hand them to subagents, fix my open PRs, and keep going
   # Not yet measured: the managed default. Raise it from the first run's
   # "Reached maximum number of turns" errors, and record what you saw.
   max_turns: 12

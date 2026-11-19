@@ -13,7 +13,7 @@ End every invocation with a `## Recommended next actions - /steer-work` block
 `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the **locality
 rule**, consider only this issue, its branch, PR, criteria, validation, and any
 blocker directly hit - not the wider workspace. A `queue` run's locality is its
-list of issues. Map execution state to actions
+list of issues; a `drive` run's is what its cycle touched. Map execution state to actions
 without redefining the subcommands in `SKILL.md`:
 
 | State | Category | Action / suggested command |
@@ -30,6 +30,8 @@ without redefining the subcommands in `SKILL.md`:
 | PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed - a merged PR is necessary, not sufficient (`/steer-work resume #N`) |
 | `queue` ended, issues blocked or set aside | Blocking now | The one move recorded for the first in run order - usually `/steer-work resume #N` |
 | `queue` ended, drafts open | Human decision required | Read each draft, then ready them and watch CI - `/steer-work review --mine` (a ready one is already the reviewer's) |
+| `drive` ended `Drive: work remains` | Blocking now | Run the next cycle - `/steer-work drive` (or let `/goal` / `/loop` repeat it) |
+| `drive` ended `Drive: idle`, items wait on the human | Human decision required | The first waiting item: a merge (no command), a review pick - `/steer-work review`, or a gate question |
 | Issue `done` | Complete | Optional: start another ready issue - `/steer-work start #N`, else `No action is currently required.` |
 
 Choose one `Current recommended action` by precedence. The block recommends only -

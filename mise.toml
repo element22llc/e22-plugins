@@ -134,9 +134,6 @@ run = [
   # Each runs under the shipped actionlint.yaml, as a consumer repo would.
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/ci.yml",
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/ci-workspace.yml",
-  # The on-demand autonomous-loop workflow (instantiated by /steer:loop) also
-  # ships outside .github/ - lint it explicitly for the same reason.
-  "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/steer-loop.yml",
   # The Copilot coding-agent setup workflow ships outside .github/ too.
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/copilot-setup-steps.yml",
   "actionlint -config-file plugins/steer/templates/github/actionlint.yaml plugins/steer/templates/github/workflows/merge-back.yml",

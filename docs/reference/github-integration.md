@@ -2,9 +2,8 @@
 
 steer ships a few kinds of GitHub Actions integration. Two are installed by
 default - `claude.yml` (keeps CI Claude consistent with local sessions) and
-Dependabot (keeps dependencies patched, and manages the resulting PRs). Three
-more are opt-in: `steer-loop.yml`, the scheduled autonomous loop `/steer:loop`
-scaffolds on demand; a `gh aw` recipe for unattended automation; and
+Dependabot (keeps dependencies patched, and manages the resulting PRs). Two
+more are opt-in: a `gh aw` recipe for unattended automation, and
 `copilot-setup-steps.yml`, which preinstalls the toolchain for GitHub's cloud
 coding agent (see [Copilot support](../concepts/copilot-support.md)).
 
@@ -191,33 +190,14 @@ drift. A GitHub App token is the opt-in for opening it automatically. See
 [Deployment & environments](../concepts/deployment.md#promotion) for the full
 promotion model.
 
-## `steer-loop.yml` - the scheduled autonomous loop (on demand)
-
-`/steer:loop` instantiates `.github/workflows/steer-loop.yml` from
-`plugins/steer/templates/github/workflows/steer-loop.yml`. It is **not**
-bootstrapped by `/steer:setup init` or `/steer:setup adopt` and is deliberately absent from
-`MANIFEST.md`'s install map - a repo runs a loop only when someone asks for one
-(rule `53-autonomous-loops`). The first thing `scaffold` asks for is the
-**automation opt-in** where `policy/automation.yml` does not already declare
-`loops: true`: an in-session decision with the trade stated, taken before
-anything is written.
-
-It is steer's own **unattended** path: the template ships a `schedule:` trigger
-defaulting to weekday mornings (`cron: "0 13 * * 1-5"`, 13:00 UTC), which
-`/steer:loop` confirms or adjusts with the dev at scaffold time, plus a
-`workflow_dispatch` so the loop can be tested before its first scheduled run.
-Keep the cadence modest - an hourly loop burns API budget and opens draft-PR
-noise. The `verify` mode reports an installed loop; `remove` takes it back out.
-
 ## Agentic workflows (`gh aw`) - optional, opt-in
 
 [GitHub Agentic Workflows](https://github.com/githubnext/gh-aw) (`gh aw`) is a
 GitHub Next tool for authoring CI automation as natural-language Markdown that
 **compiles** to a standard Actions `.lock.yml`. It can run **unattended** - on
 repository events or a schedule, with no `@claude` mention - which `claude.yml`
-cannot do, since it only reacts to `@claude`. (steer's own unattended path is
-`steer-loop.yml`, above; gh-aw differs in authoring CI automation as
-natural-language Markdown rather than a fixed loop.)
+cannot do, since it only reacts to `@claude`. (steer's own autonomous path is
+`/steer:work drive`, run in a Claude Code session rather than in Actions.)
 
 steer ships **one example** workflow,
 `plugins/steer/templates/github/agentic/triage.md` (unattended issue triage that

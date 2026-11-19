@@ -1,12 +1,12 @@
 ---
 type: tool_used
 tool: Skill
-input_match: 'steer:loop\b'
+input_match: 'steer:work\b'
 arm: both
 weight: 3
 ---
 
-The run must actually **enter** `loop` - asserted on the `Skill` tool call, not
+The run must actually **enter** `work` (its `drive` lane) - asserted on the `Skill` tool call, not
 on the prose.
 
 `last_message` was the wrong surface for this claim. `rules/00-router.md` says

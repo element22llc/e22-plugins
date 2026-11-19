@@ -5,12 +5,14 @@ weight: 2
 ---
 
 The response must route this ask the way steer's standards route it: to
-scaffolding a scheduled automation that triages and drafts fixes but stops at
-every human gate.
+the `drive` cycle, which hands ready issues and its own open PRs' feedback to
+fresh workers, reviews the PRs awaiting the user, and stops at every human
+gate - never merging, approving or deploying on its own.
 
 A passing response has to do **both** of these:
 
-1. **Name the owning skill.** `/steer:loop` appears somewhere in the response -
+1. **Name the owning skill.** `/steer:work drive` - or `/steer:work` with the
+   drive lane named in the body - appears somewhere in the response -
    an announce line, the body, or the closing handoff heading. Where it appears
    does not matter.
 2. **Spend the body on that skill's work** - running it, carrying it as far as a
@@ -29,7 +31,7 @@ Fail the response if it:
 - names no `/steer:*` skill at all - a competent plan, readout, interview or
   scaffold that never names one fails, however good it reads. That is the
   no-plugin answer this case exists to tell apart;
-- does the **wrong** workflow's work instead - hand-rolling a cron workflow or
-  cloud scheduled task outside `/steer:loop`, or one that merges or deploys on
-  its own;
+- does the **wrong** workflow's work instead - hand-rolling its own
+  orchestration loop outside `/steer:work drive`, or one that merges, approves
+  or deploys on its own;
 - restates the ask back without identifying an owner or a next step.
