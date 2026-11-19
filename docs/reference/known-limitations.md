@@ -434,7 +434,8 @@ the generated tree writes every path a command touches - the helper, its
 template argument, a plugin directory handed to `grep` or `find` - as
 `"${STEER_PLUGIN_ROOT}/..."`. No host exports that variable to an agent's
 shell, so the skill carries a probe that resolves it: the variable if set, then
-the Copilot CLI install (`${COPILOT_HOME:-~/.copilot}/installed-plugins/*/steer`),
+the Copilot CLI install under `${COPILOT_HOME:-~/.copilot}/installed-plugins/`
+(`e22-plugins/steer` first, then any other marketplace's `steer`),
 then `plugins/steer` in a checkout of this repo. On any other host - Codex
 included - the agent must set the variable to its installed steer directory.
 With no local copy the agent skips the step and says what it would have
