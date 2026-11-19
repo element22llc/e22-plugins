@@ -98,8 +98,10 @@ and stop; cards held by nobody would be paid for again on every run
 From Step 0's issues, drop any claimed or assigned to someone else, any whose
 branch or PR already exists, and apply `queue` Step 1's set-asides (not ready
 for its kind, High-risk without recorded scope, dependent on another selected
-issue). Order the rest by the composite sort key in `NEXT-ACTIONS.md` and take
-the first `--max`, minus the workers Step 1 already started. Run them as
+issue). Order the rest by the composite sort key in `NEXT-ACTIONS.md`, from
+what `find` returns: delivery reads core ops only, so Priority, blocked-by and
+milestone rank as unset and lifecycle depth, age and number decide. Take the
+first `--max`, minus the workers Step 1 already started. Run them as
 `queue` Steps 2-4, with one change: **a worker in an unattended run always
 opens a draft** (rule 53).
 

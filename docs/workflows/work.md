@@ -7,7 +7,7 @@ while the subcommands below read an issue and deliver it.
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish | queue | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish | queue | drive | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "Review gates - `finish` and `--reviewed`"
     `finish` runs an independent code gate on every non-Trivial change (a
@@ -115,6 +115,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `status` | Report progress on the issue(s) - read-only. |
 | `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - and transition to `validate`. The PR opens **ready** only when the code gate came back clean - no high finding is open (a Trivial change, which skips the gate, qualifies), nothing went under *Notes for the reviewer*, no drift class is flagged, no question awaits confirmation - and `finish` then watches its CI to conclusion; a later clean `finish` readies an earlier draft. Anything else opens **as a draft** and stops: the author reads it and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. With no authenticated `gh`, the PR is opened or updated through the GitHub MCP server (always as a draft, since its CI cannot be watched), and with neither it prints the compare URL for you to open as a draft; the CI watch needs `gh`, so without it a ready PR's or trunk push's CI is reported as not watched. |
 | `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. Entered automatically when an implement ask names two or more issues. |
+| `drive [--max N] [--label <l>]` | One autonomous cycle over your PRs, your review queue and ready issues - see below. Not issue-scoped. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
 | `debug [#N \| <symptom>]` | Root cause before the fix - see below. With only a symptom and no fix asked, diagnosis only and not issue-scoped. |
 | `qa [#N]` | Opt-in browser QA of the flows the branch diff touches - see below. |
@@ -159,6 +160,29 @@ verifies the branches when you come back. Subagents stay the default.
 It ends with one table of issue -> PR or blocker, and points at
 `/steer:work review --mine` to ready the drafts. **The orchestrator never merges
 or readies a PR.** `--reviewed` carries over to every worker; `--hotfix` is refused.
+
+## Autonomous cycle - `/steer:work drive`
+
+`drive` runs one cycle without a prompt per step. The session orchestrates and
+implements nothing itself; every change is made by a fresh worker running the
+ordinary `resume` or `start` -> `finish` flow.
+
+1. **Your open PRs first** - one with red CI, a conflict, or changes requested
+   on its current head goes to a worker that addresses the feedback, pushes,
+   comments what changed and re-requests review. A PR already tried at its
+   current head waits for a human instead of being retried.
+2. **PRs waiting on your review** - attended, each gets a review card and
+   nothing is posted; unattended, the queue is only listed.
+3. **New issues, up to `--max`** (default 3) - ready, unclaimed issues, set
+   aside and run as `queue` does. In an unattended run every worker opens a
+   draft.
+
+Each cycle ends on `Drive: idle` or `Drive: work remains`, so `/goal` can drain
+the backlog (`/goal run /steer:work drive until a report ends with "Drive:
+idle"`) and a self-paced `/loop /steer:work drive` keeps watching. A run nobody
+watches needs the `policy/automation.yml` opt-in, which `drive` asks for and
+writes on a branch with its PR. It refuses solo-trunk, and it **never merges,
+approves, creates an issue or deploys**.
 
 ## Batch review - `/steer:work review`
 

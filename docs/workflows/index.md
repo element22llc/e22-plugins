@@ -92,7 +92,7 @@ below give the detail.
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code`, `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:setup sync` |
 | Generate a release-milestone timeline | [`/steer:spec roadmap`](spec.md) |
-| Let Claude work on its own: fix your PRs' feedback, review the queue, pick up ready issues | `/steer:work drive` - one cycle per run, each change by a fresh subagent; repeat it with `/goal` until it reports `Drive: idle`. Never merges or approves (rule 53) |
+| Let Claude work on its own: fix your PRs' feedback, review the queue, pick up ready issues | [`/steer:work drive`](work.md#autonomous-cycle-steerwork-drive) - one cycle per run, each change by a fresh subagent; repeat it with `/goal` until it reports `Drive: idle`. Never merges or approves (rule 53) |
 | Lock branch protection or flip the delivery mode | `/steer:setup protect` |
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (section 0 diagnoses it locally) |
