@@ -32,7 +32,7 @@ CONTRACT (mirrors template-reconcile.sh)
       written (git could not honour it) and is reported with `~`.
     Never deletes, reorders, or changes an existing value/line.
 
-  PERMISSION TIERS - the one place this merge removes content. A Claude Code
+  PERMISSION TIERS - one of the two places this merge removes content. A Claude Code
   `permissions` block has three sibling lists evaluated by precedence
   deny > ask > allow, so the SAME pattern string in two tiers is a
   contradiction, never a meaningful choice: the lower-precedence copy is dead
@@ -45,6 +45,11 @@ CONTRACT (mirrors template-reconcile.sh)
   disk; it never changes effective behavior (the surviving tier is the one that
   already governed), so it is not a clobber of any real decision. Reported with
   a `-` prefix in the delta.
+
+  RETIRED PERMISSIONS - the other removal. A pattern an earlier scaffold
+  shipped and the template has since withdrawn (RETIRED_PERMISSIONS) is dropped
+  from every tier, since an additive merge alone would keep it forever. Only
+  exact strings steer itself wrote are listed. Reported with a `-` prefix.
 
   PLACEHOLDERS - never auto-injected. A template-only value that still carries
   an unresolved placeholder (`[Replace ...]`, `[Product Name]`, `[e.g., ...]`) is
@@ -163,9 +168,16 @@ def merge_json(
 # contradiction and only the most-restrictive copy governs.
 _PERMISSION_TIERS = ("deny", "ask", "allow")
 
+# Patterns an earlier scaffold shipped and the template no longer carries.
+# `sh *scripts/issue-body.sh*`: its leading wildcard also matched
+# `sh -c '<anything>' ...` as an allow (#924), and as an ask it overrode the
+# auto-mode classifier, prompting on every issue-marker write.
+RETIRED_PERMISSIONS = frozenset({"Bash(sh *scripts/issue-body.sh*)"})
+
 
 def _dedupe_permission_tiers(merged: object, added: list[str]) -> None:
-    """Keep each permission pattern only in its most-restrictive tier.
+    """Keep each permission pattern only in its most-restrictive tier, and drop
+    every RETIRED_PERMISSIONS pattern.
 
     Mutates ``merged["permissions"]`` in place and records every dropped copy in
     ``added`` (``-`` prefix). A no-op unless a pattern appears in more than one
@@ -184,6 +196,12 @@ def _dedupe_permission_tiers(merged: object, added: list[str]) -> None:
             continue
         kept: list[object] = []
         for item in lst:
+            if item in RETIRED_PERMISSIONS:
+                added.append(
+                    f"- {_fmt_path(['permissions', tier])}[] = "
+                    f"{json.dumps(item, ensure_ascii=False)} (retired by the scaffold)"
+                )
+                continue
             if isinstance(item, str) and item in claimed:
                 added.append(
                     f"- {_fmt_path(['permissions', tier])}[] = "
@@ -220,6 +238,7 @@ def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
 
     # Resolve permission-tier contradictions the union may have created (or that
     # were already on disk): deny > ask > allow, most-restrictive copy wins.
+    # Retired patterns go too.
     _dedupe_permission_tiers(merged, added)
 
     if not added and not skipped:

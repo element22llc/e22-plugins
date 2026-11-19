@@ -356,18 +356,25 @@ def test_missing_template_exits_3(tmp_path: Path):
     assert sr.main(["json", str(existing), str(tmp_path / "nope.json")]) == 3
 
 
-def test_sync_evicts_the_retired_issue_body_wildcard_allow(tmp_path: Path):
-    # #924: releases 7.22-7.24 put a leading-wildcard allow in consumers; the
-    # template now carries it under ask so the tier dedupe removes the allow copy.
+def test_sync_drops_the_retired_issue_body_pattern_from_every_tier(tmp_path: Path):
+    # #924 left it in allow (7.22-7.24) or ask (7.25); as an ask it overrode the
+    # auto-mode classifier and prompted on every issue-marker write.
     retired = "Bash(sh *scripts/issue-body.sh*)"
     existing = tmp_path / "settings.json"
     existing.write_text(
-        json.dumps({"permissions": {"allow": ["Bash(git status:*)", retired]}}),
+        json.dumps({"permissions": {"allow": ["Bash(git status:*)", retired], "ask": [retired]}}),
         encoding="utf-8",
     )
     template = REPO_ROOT / "plugins/steer/templates/scaffold/claude/settings.json"
 
     assert sr.main(["json", str(existing), str(template), "--apply"]) == 0
     perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
-    assert retired not in perms["allow"]
-    assert retired in perms["ask"]
+    assert all(retired not in perms[tier] for tier in ("allow", "ask", "deny"))
+    assert "Bash(git status:*)" in perms["allow"]
+
+
+def test_scaffold_template_carries_no_retired_permission():
+    template = REPO_ROOT / "plugins/steer/templates/scaffold/claude/settings.json"
+    perms = json.loads(template.read_text(encoding="utf-8"))["permissions"]
+    shipped = {p for tier in perms.values() for p in tier}
+    assert not shipped & sr.RETIRED_PERMISSIONS

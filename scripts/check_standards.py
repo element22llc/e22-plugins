@@ -768,11 +768,6 @@ _NO_COMMIT_RE = re.compile(
 )
 
 
-# Allow entries shipped by an earlier scaffold with a wildcard before the fixed
-# command tail. They stay in `ask` so a consumer sync evicts the old allow copy.
-_RETIRED_WILDCARD_ALLOWS = ("Bash(sh *scripts/issue-body.sh*)",)
-
-
 def _inner_wildcard_allows(allow: set[str]) -> list[str]:
     """Bash allow entries that are bare, all-wildcard, or carry a ``*`` anywhere
     but a trailing ``:*`` / ``*``."""
@@ -1047,13 +1042,6 @@ def check_authorization(errors: list[str]) -> None:
                 f"`sh -c '<anything>' ...`, and a bare `Bash` or `Bash(*)` "
                 f"allows every command (#924); allow only a fixed prefix + `:*`"
             )
-        for retired in _RETIRED_WILDCARD_ALLOWS:
-            if retired not in ask:
-                errors.append(
-                    f"{settings}: '{retired}' must stay under permissions.ask - the "
-                    f"tier dedupe in scaffold_reconcile.py evicts the copy earlier "
-                    f"releases put in a consumer's allow only while it is there (#924)"
-                )
 
     # 4. build documents both modes and delegates governed implementation to
     #    work (the sole execution owner).
