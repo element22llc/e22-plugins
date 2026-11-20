@@ -164,9 +164,10 @@ rulesets beside them, because GitHub has no classic equivalent:
   when the branch is created (`do_not_enforce_on_create`), so `promote` can
   create it at its changelog cut; `ci` then runs on the Release PR. The
   trade-off: GitHub applies neither rule to the push that creates a branch, so
-  a writer can create a `release/**` branch at any commit, reviewed or not, and
-  an environment whose branch policy admits `release/**` deploys it once its
-  Release PR opens. The gate into `prod` is unchanged. A repo whose ruleset
+  a writer can create a `release/**` branch at any commit, reviewed or not. A
+  workflow that runs on a push to `release/**` runs that commit's own copy, and
+  under the release hold the held environment deploys it once its Release PR
+  opens. The gate into `prod` is unchanged. A repo whose ruleset
   predates the flag re-runs `/steer:setup protect` once - until then `promote`
   stops at the refused push and says so.
 

@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - a release is one PR; the release ruleset stops asking for `ci` at creation
+### v7.27.0 - a release is one PR; the release ruleset stops asking for `ci` at creation
 
 - **What & why:** `/steer:work promote` no longer opens a changelog cut PR into
   `main`. It commits the cut on the `release/vX.Y.Z` branch and opens the
