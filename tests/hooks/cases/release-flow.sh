@@ -119,6 +119,33 @@ g merge -q --no-ff --no-edit "${P2}"
 promo release/v1.1.0 "$(sha HEAD)" "${P2}"
 assert_eq "ci-promotion: the hotfix merged back into the release passes" "${rc}" "0"
 
+# A release cut on its own branch: the merge-back carries the cut into a main that has moved on.
+g switch -q main
+g merge -q --no-ff --no-edit prod
+mkdir -p "${R}/.changes/unreleased"
+commit .changes/unreleased/added-a.yaml fragA
+commit src/app.ts feat3
+g switch -q -c release/v1.2.0
+g rm -q .changes/unreleased/added-a.yaml
+commit .changes/v1.2.0.md cut3
+promo release/v1.2.0 "$(sha HEAD)" "${P2}"
+assert_eq "ci-promotion: a release carrying its own cut passes" "${rc}" "0"
+g switch -q prod
+g merge -q --no-ff --no-edit release/v1.2.0
+g update-ref refs/remotes/origin/prod prod
+g switch -q main
+mkdir -p "${R}/.changes/unreleased"
+commit .changes/unreleased/added-b.yaml fragB
+commit src/app.ts feat4
+BEFORE_MB="$(sha main)"
+g switch -q -C mb3 main
+g merge -q --no-ff --no-edit prod
+(cd "${R}" && STEER_CI_BASE="${BEFORE_MB}" sh scripts/ci-changelog.sh >/dev/null 2>&1)
+assert_eq "ci-changelog: the merge-back of a release cut needs no fragment" "$?" "0"
+assert_eq "merge-back: brings the cut and drops only the fragments it consumed" \
+	"$(g ls-files .changes/v1.2.0.md .changes/unreleased | tr '\n' ' ')" \
+	".changes/unreleased/added-b.yaml .changes/v1.2.0.md "
+
 # release-target.sh: the held environment follows the one open release branch, failing closed.
 mkdir -p "${R}/policy"
 printf "policy/\n" >>"${R}/.git/info/exclude"

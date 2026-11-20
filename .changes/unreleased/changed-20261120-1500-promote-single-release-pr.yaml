@@ -1,0 +1,19 @@
+kind: Changed
+time: 2026-11-20T15:00:00.000000-05:00
+custom:
+  Slug: promote-single-release-pr
+body: |
+  - **Changed: a release is one PR.** `/steer:work promote` no longer opens a
+    changelog cut PR into `main` and waits for it to merge. It cuts
+    `release/vX.Y.Z` from `main`, commits the changelog cut on that branch, and
+    opens the Release PR into `prod` in the same run. The merge-back that
+    already follows every release brings the cut to `main`, as it does for a
+    hotfix; until it lands, `main` still lists the fragments the release
+    consumed and `promote` refuses the next release. A version already cut on
+    `main` the old way is snapshotted as before. GitHub refuses a new
+    `release/**` branch whose tip has no green `ci`, so `/steer:setup protect`
+    now builds the `steer: release branches` ruleset with
+    `do_not_enforce_on_create: true`: `ci` and the pull-request rule still bind
+    every later push, and `ci` runs on the Release PR. **A repo protected before
+    this version must re-run `/steer:setup protect` once** - `promote` stops at
+    the refused push and says so until then (`MIGRATIONS.md`).

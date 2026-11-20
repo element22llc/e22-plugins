@@ -39,7 +39,7 @@ if [ -n "${strays}" ]; then
 fi
 
 # Promotion carries changes already gated on their way into main, and the cut
-# before it consumed their fragments - there is nothing left to add.
+# on its branch consumed their fragments - there is nothing left to add.
 if [ "${STEER_CI_EVENT:-}" = pull_request ] && [ "${STEER_CI_BASE_REF:-}" = prod ]; then
 	printf 'ci:changelog - promotion to prod; fragments were checked on main.\n'
 	exit 0
@@ -74,7 +74,7 @@ if [ ! -f .changie.yaml ]; then
 fi
 
 # A diff that adds a released version file carries a cut that consumed its
-# fragments: the merge-back of a hotfix that was cut on prod.
+# fragments: the merge-back of a release or a hotfix, each cut on its own branch.
 cut="$(git -c core.quotePath=false diff --diff-filter=A --name-only "${base}...HEAD" -- ':(glob).changes/*.md' 2>/dev/null ||
 	git -c core.quotePath=false diff --diff-filter=A --name-only "${base}" HEAD -- ':(glob).changes/*.md')"
 if [ -n "${cut}" ]; then

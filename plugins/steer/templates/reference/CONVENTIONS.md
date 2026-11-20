@@ -531,8 +531,11 @@ is metadata driving the version bump and grouping, and is not rendered.
   `changie batch auto && changie merge`, where each kind's `auto:` level picks
   the bump (no kind maps to major - cut `changie batch major` for a breaking
   change). For an `app` / `service` the release moment is the **`prod`
-  promotion** (see Deployment & environments); a production hotfix cuts
-  `changie batch patch` in its own PR. A repo that cut date versions
+  promotion** (see Deployment & environments): the cut is a commit on the
+  `release/vX.Y.Z` branch, and a production hotfix cuts `changie batch patch` in
+  its own PR. Either way the cut reaches `main` through the merge-back, so
+  between a release's cut and its merge-back `main` still lists the fragments
+  that release consumed. A repo that cut date versions
   (`2026.9.15`) before keeps going from its last one - it is valid semver, so
   `auto` bumps it like any other.
 - **Publishing is automatic.** `.github/workflows/release.yml` tags `vX.Y.Z`
@@ -877,11 +880,11 @@ needs an ADR.
 - **Branch-driven promotion** - promotion moves code between branches rather than
   triggering environments by hand:
   - merge to `main` -> **auto-deploy non-prod**, unless a release is open;
-  - **release snapshot** - `/steer:work promote` cuts the changelog on `main`,
-    then a `release/vX.Y.Z` branch at that cut's merge commit, and opens the
-    **Release PR** into a long-lived **`prod` branch**. That PR is the
-    **production approval gate**; merging it -> **auto-deploy prod**. Prod gets
-    exactly what QA tested while `main` keeps taking merges;
+  - **release snapshot** - `/steer:work promote` cuts a `release/vX.Y.Z` branch
+    from `main`, commits the changelog cut on it, and opens the **Release PR**
+    into a long-lived **`prod` branch** - one PR per release, none into `main`.
+    That PR is the **production approval gate**; merging it -> **auto-deploy
+    prod**. Prod gets exactly what QA tested while `main` keeps taking merges;
   - **the hold** - while the Release PR is open, the `release_hold` environment
     runs the release branch and the PO tests it there, for as long as QA needs;
     merges into `main` land but deploy only once it closes. Steer ships no deploy workflow: a product's deploy job asks

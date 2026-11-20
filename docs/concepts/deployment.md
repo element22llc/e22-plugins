@@ -58,7 +58,7 @@ flowchart LR
   is in QA (below).
 - **Prod is gated by a Release PR from a `release/vX.Y.Z` snapshot into a
   long-lived `prod` branch.** [`/steer:work promote`](../workflows/work.md) cuts
-  the snapshot at the changelog cut's merge commit on `main`, opens the Release
+  the snapshot from `main`, commits the changelog cut on it, opens the Release
   PR and stops; merging it auto-deploys production. Prod receives exactly what QA
   tested while `main` keeps taking merges. **Never push directly to `prod`.**
 - **While the Release PR is open, non-prod runs the release branch**, and the
@@ -77,9 +77,10 @@ flowchart LR
   continuously, so its changelog is cut at promotion, from the fragments
   accumulated since the last one - `changie batch auto` then `changie merge`,
   a semver `vX.Y.Z` whose bump the fragments' kinds decide (every profile
-  versions this way). The cut lands first, as its own PR to
-  the default branch (`.changes/unreleased/` lives there, and you cannot push to a
-  protected `main`); `promote` cuts the release branch once that has merged. See
+  versions this way). The cut is the first commit on the release branch, so a
+  release is one PR: nothing goes to `main` up front. The merge-back brings the
+  cut to `main` afterwards - until then `main` still lists the fragments the
+  release consumed, and `promote` refuses the next release. See
   [Repository contract](../reference/repository-contract.md#what-a-managed-repo-carries).
 - **Every release is tagged and published automatically.** When a new version
   reaches `prod` - a promotion or a hotfix - the scaffold's `release.yml`
@@ -119,12 +120,12 @@ flowchart LR
 | Step | Who acts | What happens |
 |---|---|---|
 | 1. Feature PR | Dev | A second dev approves; the merge deploys non-prod. |
-| 2. Cut the release branch | Dev or PO | `/steer:work promote` cuts the changelog, then a temporary `release/vX.Y.Z` from `main`, and opens the Release PR into `prod`. |
+| 2. Cut the release branch | Dev or PO | `/steer:work promote` cuts a temporary `release/vX.Y.Z` from `main` with the changelog cut on it, and opens the Release PR into `prod` - the release's only PR. |
 | 3. QA on non-prod | PO, dev | Non-prod runs the release branch; the PO tests, a dev fixes by a `qa-fix/<n>` PR into it. `main` keeps merging. |
 | 4. Approve the Release PR | PO, dev | One PO team member and one dev team member approve; never the author. |
 | 5. Ship and tag | Automation | The merge deploys prod, `release.yml` tags `vX.Y.Z` and publishes the Release, GitHub deletes the release branch. |
 | 6. Hotfix | Dev, PO | Cut from `prod`; the same PO and dev approvals as a Release PR. |
-| 7. Merge-back | Automation, dev | `merge-back.yml` pushes a branch at prod's tip and posts a link; a dev opens the PR and merges it with a merge commit. The next release fails `ci:promotion` until it lands. |
+| 7. Merge-back | Automation, dev | `merge-back.yml` pushes a branch at prod's tip and posts a link; a dev opens the PR and merges it with a merge commit, which also brings the changelog cut to `main`. The next release fails `ci:promotion` until it lands. |
 
 ## Hotfixes
 

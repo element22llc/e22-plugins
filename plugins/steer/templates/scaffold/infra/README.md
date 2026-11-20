@@ -136,10 +136,11 @@ aren't available on this plan): the gate is the required approvals on a PR into
    exercise the change there.
 2. **PR merged to `main`** (one dev approval) -> the change **auto-deploys to
    non-prod**, unless a release is in QA (step 4); the review app is torn down.
-3. **`/steer:work promote`**, run by a dev or the PO, cuts the changelog on `main` (its own PR), then
-   cuts a **`release/vX.Y.Z`** snapshot branch at that cut's merge commit and
-   opens the **Release PR** `release/vX.Y.Z` -> `prod` (a promotion with no
-   version uses `release/<short-sha>`).
+3. **`/steer:work promote`**, run by a dev or the PO, cuts a
+   **`release/vX.Y.Z`** snapshot branch from `main`, commits the changelog cut
+   on it, and opens the **Release PR** `release/vX.Y.Z` -> `prod` - the only PR
+   a release needs (a promotion with no version uses `release/<short-sha>`).
+   The cut reaches `main` with the merge-back (step 8).
 4. **While the Release PR is open, non-prod runs the release branch** (the
    environment `policy/delivery.yml` names in `release_hold`). Merges into
    `main` continue but do not deploy until the Release PR closes.

@@ -94,6 +94,49 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - a release is one PR; the release ruleset stops asking for `ci` at creation
+
+- **What & why:** `/steer:work promote` no longer opens a changelog cut PR into
+  `main`. It commits the cut on the `release/vX.Y.Z` branch and opens the
+  Release PR only; the merge-back brings the cut to `main`. GitHub applies a
+  ruleset's status-check rule to a new branch's tip, and the cut is a commit no
+  `ci` run has seen, so a `steer: release branches` ruleset applied before this
+  version refuses the push (`Required status check "ci" is expected`).
+- **Precondition:** either check prints a line -
+
+  ```sh
+  if ids="$(gh api 'repos/{owner}/{repo}/rulesets' --jq '.[] | select(.name == "steer: release branches") | .id')"; then
+    for id in ${ids}; do
+      if flag="$(gh api "repos/{owner}/{repo}/rulesets/${id}" \
+        --jq '.rules[] | select(.type == "required_status_checks") | .parameters.do_not_enforce_on_create // false')"; then
+        [ "${flag}" = true ] || echo stale-ruleset
+      else
+        echo unknown-ruleset
+      fi
+    done
+  else
+    echo unknown-ruleset
+  fi
+  grep -q 'cuts the changelog on `main`' infra/README.md 2>/dev/null && echo stale-readme
+  ```
+
+  No output => already migrated, or the repo has neither => no-op.
+- **Action:** read-then-propose.
+  - `stale-ruleset`: a sync edits no GitHub setting. Tell the dev to run
+    `/steer:setup protect`, which reports the ruleset as `drifted` and, on a
+    yes from a repo admin, sets `do_not_enforce_on_create: true` on its
+    status-check rule; until then `promote` stops at the refused push. The
+    pull-request rule and `ci` still bind every later push to a release branch.
+  - `unknown-ruleset`: the rulesets could not be read (no `gh`, or no access).
+    Say so and name `/steer:setup protect verify` as the check; never report
+    this entry as applied.
+  - `stale-readme`: in `infra/README.md`, propose the scaffold's step 3 of
+    `## Release flow & promotion` in place of the repo's, carrying the
+    product's own wording forward.
+
+  A changelog cut PR still open from the old flow is the dev's to merge or
+  close before the next `/steer:work promote`, which stops on it and asks.
+
 ### v7.26.0 - the `loop` skill retired; its Actions workflow is the repo's own
 
 - **What & why:** the `loop` skill and its `steer-loop.yml` template are retired;

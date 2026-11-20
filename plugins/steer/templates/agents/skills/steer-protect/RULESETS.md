@@ -17,7 +17,18 @@ takes no patterns. They resolve to two rulesets protect owns by name:
 `required_reviewers` entry per team with `minimum_approvals: 1` and
 `file_patterns: ["**"]`, the merge methods, `ci`, no bypass actors) and
 `steer: release branches` (target `refs/heads/<release_branches.pattern>`: a
-PR with its approval count and `ci`, no bypass). A `team` slug left `""` is
+PR with its approval count and `ci`, no bypass, and `do_not_enforce_on_create:
+true` on the status-check rule). That flag is what lets `/steer-work promote`
+create the branch at its changelog cut: GitHub applies the status-check rule to
+a new branch's tip, a commit no `ci` run has seen, and refuses the push without
+it. What it opens: GitHub applies neither rule to the push that creates a
+branch, so a writer can create a `release/**` branch at any commit, reviewed or
+not, where before its tip needed a green `ci`. A workflow that runs on a push
+to `release/**` runs that commit's own copy, and with the release hold the held
+environment deploys it once its Release PR opens - so an environment whose
+branch policy admits `release/**` admits any writer. The gate into `prod` is
+unchanged - `ci` runs on the Release PR, and the pull-request rule and `ci`
+bind every later push to the branch. A `team` slug left `""` is
 **not resolved yet**: ask the dev for the PO and the dev team slugs, write them
 into the repo's policy copy (as `APPLY.md` step 0 writes `profile:`), then
 resolve each to its numeric id (`gh api orgs/<org>/teams/<slug> --jq .id`).
@@ -32,7 +43,9 @@ there and keep the classic review count.
 For the **schema 7 rulesets**, read `gh api repos/${OWNER}/${REPO}/rulesets`, find
 each one by its `steer:` name, then `gh api repos/${OWNER}/${REPO}/rulesets/<id>`
 for its rules, and diff them field by field like the classic protection. A
-missing ruleset is `absent`; an edited one is `drifted`.
+missing ruleset is `absent`; an edited one is `drifted`. So is a release
+ruleset without `do_not_enforce_on_create`: say that `/steer-work promote`
+cannot cut a release until it is applied.
 
 ## Classic protection and rulesets together
 
