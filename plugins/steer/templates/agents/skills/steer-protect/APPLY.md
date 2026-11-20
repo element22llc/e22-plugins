@@ -77,7 +77,8 @@ When rules are drifted or absent:
      requires even when the policy is silent: `require_code_owner_review:
      false`, `required_review_thread_resolution: false`),
      `required_status_checks` (with `strict_required_status_checks_policy`
-     from the policy's `strict`) and, for prod, `non_fast_forward` and
+     from the policy's `strict` and, on the release ruleset only,
+     `do_not_enforce_on_create: true`) and, for prod, `non_fast_forward` and
      `deletion`. Show the exact JSON
      before running it, as for the protection PUT. Under `solo`, skip the
      `required_reviewers` entries. A `422` naming `required_reviewers` means the
