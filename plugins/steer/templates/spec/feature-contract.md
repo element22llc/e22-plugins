@@ -1,7 +1,6 @@
 # [Feature Name] - Contract
 
 > Owner: dev team
-> Last updated: YYYY-MM-DD
 > Implements: ./intent.md
 
 ## Behavior rules
