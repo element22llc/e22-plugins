@@ -162,7 +162,13 @@ rulesets beside them, because GitHub has no classic equivalent:
 - **`steer: release branches`** on `release/**` - a QA fix lands only through a
   PR with one approval and a green `ci`. The `ci` requirement is not enforced
   when the branch is created (`do_not_enforce_on_create`), so `promote` can
-  create it at its changelog cut; `ci` then runs on the Release PR.
+  create it at its changelog cut; `ci` then runs on the Release PR. The
+  trade-off: GitHub applies neither rule to the push that creates a branch, so
+  a writer can create a `release/**` branch at any commit, reviewed or not, and
+  an environment whose branch policy admits `release/**` deploys it once its
+  Release PR opens. The gate into `prod` is unchanged. A repo whose ruleset
+  predates the flag re-runs `/steer:setup protect` once - until then `promote`
+  stops at the refused push and says so.
 
 It also turns on the repo settings `delete_branch_on_merge`, so a merged release,
 hotfix or merge-back branch is deleted and the release snapshot lives only as
