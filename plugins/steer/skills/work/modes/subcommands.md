@@ -64,7 +64,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   round, not per commit**: a round is the work one message from the dev or one
   review asks for (a red build: below) - each fix committed as you go, the local
   gates green, then one push at the end of that turn. Never hold commits for
-  asks not yet made. A PR `finish` opens is a **draft** (`gh pr
+  asks not yet made. A push that cannot wait for the round's end goes to a
+  draft (Draft or ready, below); on a ready PR you may not move back to draft,
+  push only commits whose local gates are green, once, never a WIP checkpoint.
+  A PR `finish` opens is a **draft** (`gh pr
   create --draft`), which the shipped `ci.yml` does not run, unless the code
   gate comes back clean (Draft or ready, below); a push made before the local
   gates are green (a WIP checkpoint, a backup) always goes to a draft, and
@@ -129,7 +132,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   flagged; and no question awaits its owner's confirmation. Anything else
   stays a draft: its author reads it and marks it ready, which starts CI
   (`ready_for_review`) and makes that run theirs. A later `finish` that comes
-  back clean readies its draft; a ready PR is never moved back to draft. An
+  back clean readies its draft. A ready PR goes back to draft only when you
+  readied it earlier in this conversation (opened it ready, or ran `gh pr
+  ready` yourself - not a spawned worker's PR, and not one you cannot point to
+  that step for), no review has been submitted on it since, and you must push
+  before the round is done - work you cannot keep local, never the
+  exploratory push for a CI-only failure (below), which needs the run: `gh pr
+  ready --undo` before that push; when the round ends, push its last commits,
+  then `gh pr ready` only on the conditions above, else it stays a draft for
+  its author. An
   unattended run (rule `53-autonomous-loops`) always opens a draft. A PR
   `finish` opened or readied, and a push to one already ready, starts CI: watch
   that run to conclusion (`gh pr checks --watch`) - after `gh pr ready`, wait
