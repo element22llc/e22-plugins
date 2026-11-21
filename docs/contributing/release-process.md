@@ -61,16 +61,22 @@ misremembered:
 
 - `scripts/release_preflight.py` computes the preconditions - clean tree, base
   current with `origin/main`, pending fragments present, manifests in
-  agreement, the `vX.Y.Z` anchor tag for the last release, the newest
-  routing-eval sweep (stale, or a case under the floor), deployed-docs
+  agreement, the `vX.Y.Z` anchor tag for the last release, the audit scope
+  the delta earns, the newest routing-eval sweep (owed again because the
+  routing surface changed since it ran, or a case under the floor), deployed-docs
   freshness, and the upstream `validator-compat` job - and prints
   `[ok]/[blocker]/[high]/[warn]` markers. The skills inject its output at
   invocation via dynamic context, so the facts arrive with the skill body.
 - The saved `pre-release-audit` workflow (`.claude/workflows/`) runs the judgment
-  review: one read-only reviewer per coherence dimension plus the documentation
-  reviewer, scoped to the release delta, with a failed dispatch retried once,
+  review: every coherence dimension plus documentation accuracy, scoped to the
+  release delta, with a failed dispatch retried once,
   cross-dimension dedupe, and one verifier per finding before anything becomes a
-  ledger candidate. It also re-verifies every open ledger row whose file has
+  ledger candidate. `/release` sizes the fan-out to the delta: the preflight
+  computes a tier from the path and line counts of what the dimensions read
+  (the plugin and the docs, not repo tooling or tests), and a small delta gets
+  one combined reviewer covering every dimension where a large one gets a
+  reviewer each. The tier is computed, never chosen, and the only override
+  raises it (`/release full`). It also re-verifies every open ledger row whose file has
   changed since the row was confirmed, so a finding the tree already repaired is
   closed by `scripts/audit_ledger.py reconcile` instead of lingering as open.
 - `scripts/release_cut.py` performs the cut itself: `changie batch` folds the
@@ -112,7 +118,9 @@ One other post-merge run is worth watching: `docs-deploy.yml` publishes the
 documentation site from `main` (a red run leaves the live site stale). The
 model-graded routing evals are **local-only**: `mise run evals` is deliberately
 outside `ci` and off the PR path, and the release path is where it is meant to
-run.
+run - on a cut made after the routing surface (the router rule or a skill's
+frontmatter) changed since the last recorded sweep, which the preflight
+computes.
 
 Because the tag is created here, `git describe --tags` stays an accurate anchor
 for the next release's diff - nothing about tagging is manual.

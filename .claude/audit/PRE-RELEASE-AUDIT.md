@@ -9,7 +9,7 @@ subagents, compile a ranked report. It never edits, branches, or commits - the
 
 | Caller | Runs | Then |
 | --- | --- | --- |
-| `/release` Phase A | Steps 1-5, once | Blocks the cut on any `[blocker]` - which, after Step 5 capping, means a red gate or release-critical manifest drift only. |
+| `/release` Phase A | Steps 1-5, once, Step 3 + 4a at the computed tier | Blocks the cut on any `[blocker]` - which, after Step 5 capping, means a red gate or release-critical manifest drift only. |
 | `/audit-loop` | Steps 1-5, once per round | Fixes the in-scope findings in-tree and re-audits; capped at 2 rounds, and it never edits `non-shipping` paths. |
 | `/quick-release` Phase A | Steps 1, 2, 4b, 5 only | Skips the judgment review (Steps 3 + 4a) by design. |
 
@@ -22,7 +22,8 @@ half of Step 2, and Step 4b are computed by `scripts/release_preflight.py`, whic
 every caller injects at invocation and re-runs per round (`--caller` sets which
 base is legal). Steps 3 and 4a are the saved `pre-release-audit` workflow
 (`.claude/workflows/pre-release-audit.js`), which owns the dispatch, the
-retry-once rule, cross-dimension dedupe and per-finding verification. The prose
+retry-once rule, cross-dimension dedupe and per-finding verification; how many
+reviewers it dispatches is computed by the same script (`--plan`). The prose
 below says *what* each step checks and *why*; when it names a check the script or
 workflow already performs, the machinery is the implementation and this file is
 its specification.
@@ -64,13 +65,18 @@ them by hand.
   back. Re-run it (`gh workflow run release-publish.yml -f version=X.Y.Z`) before
   trusting the delta.
 - The **newest routing-eval sweep** (`plugins/steer/evals/ledger.jsonl`) is
-  reported as **`[warn] evals`** when it started before `$LAST_RELEASE` - no
-  sweep covers this candidate, the normal state at invocation - when a case
-  scored under the script's floor (one missed `routed` grader in three runs),
-  each named with the command for a 6-run recheck, or when the ledger cannot be
-  read. Never a blocker: three runs per case are noisy. The caller says whether
-  the cut owes a sweep (minor or major) or skips it (patch), and re-runs the
-  preflight once the sweep is recorded.
+  reported as **`[warn] evals`** when the routing surface the suite reads -
+  `rules/00-router.md`, or any skill's frontmatter - has changed since that
+  sweep ran, so this cut owes one; when a case scored under the script's floor
+  (one missed `routed` grader in three runs), each named with the command for a
+  6-run recheck; or when the ledger cannot be read. The surface is diffed from
+  the newest commit on this history at the sweep's start time, not from
+  `$LAST_RELEASE`: a cut that moved the surface and skipped its sweep leaves
+  the next cut owing it. With the surface unchanged since the sweep the line is
+  `[ok]` and says no sweep is owed, however old the sweep is. The bump level is
+  not an input - the surface is diffed, not inferred. Never a blocker: three
+  runs per case are noisy. The caller re-runs the preflight once an owed sweep
+  is recorded.
 
 ## Step 2 - deterministic gate, up front
 
@@ -152,6 +158,46 @@ Give each subagent the delta file list explicitly. A finding whose `path` is not
 in the delta is **out of scope for the gate**: record it in the ledger and move
 on. Do not widen a dimension because a nearby file looks suspect.
 
+**The fan-out is sized to the delta; the coverage is not.** Every dimension
+below is reviewed on every `/release`. What `scripts/release_preflight.py`
+computes (`audit_scope`, printed as the `audit-scope` line and carried in
+`--plan`) is how many reviewers that takes:
+
+| Tier | When | Review |
+| --- | --- | --- |
+| `light` | at most 20 sized paths and 800 changed lines, no release-critical path in the delta | **one** combined reviewer works through every dimension and names the ones it completed |
+| `full` | anything larger, a release-critical path in the delta, or `--plan --full` | one reviewer per dimension, in parallel, the docs dimension on the `documentation-reviewer` agent |
+
+Paths and lines are **sized** over what a dimension reads - `plugins/steer/**`,
+`docs/**`, and the root `CHANGELOG.md`, `CLAUDE.md`, `README.md`,
+`CROSS-SURFACE.md` - minus generated mirrors (`templates/agents/skills/`, the
+Copilot instructions and agents). Repo tooling, tests and the pending fragments
+are still handed to the reviewers, and a finding on them is recorded as before;
+they do not size the review because no dimension is about them. A mirror is
+left out of the reviewed delta altogether: its source is in the same delta,
+and a sync gate in `mise run ci` proves the two match, so a reviewer reading
+both reads one change twice.
+
+The limits are an estimate of what one reviewer holds in a single context, not
+a natural break in the data. Replayed over the 25 cuts from v7.5.0 to v7.27.0
+they make eight light (the largest 18 paths / 392 lines) and seventeen full
+(the smallest 21 paths / 302 lines). They are two constants in
+`release_preflight.py`; move them with evidence from real runs.
+
+The tier is **computed, never judged**, for the reason severity is: a caller
+allowed to decide a delta "looks small" has been handed the discretion this
+procedure exists to remove. The only override raises it (`--full`). The
+workflow takes the tier from the plan it is handed and does not re-derive it,
+which is why the plan is passed unedited. A light
+round claims no more than it did: a dimension the combined reviewer does not
+list as completed is `unverified`, exactly as a failed dispatch is, and the
+round is not clean. And the trade is advisory coverage, not gate safety - after
+Step 5 capping, a judgment finding can reach `[blocker]` only on a
+release-critical path, and a delta that touches one is `full` by rule.
+
+`/audit-loop` passes no plan and always runs the full fan-out: its confirming
+round is the coverage claim a whole PR rests on.
+
 **Dimension 2 is no longer dispatched.** Version and manifest coherence is fully
 covered deterministically - `claude plugin tag --dry-run --force`,
 `check_plugin.check_copilot_version_sync`, `check_changelog.py`'s release
@@ -165,16 +211,18 @@ so every existing cross-reference to a dimension number stays valid.
 `name: "pre-release-audit"`; the permission rule `Workflow(pre-release-audit)` in
 `.claude/settings.json` pre-approves it). It is the implementation of this step
 and of Step 4a: a scout stage derives `$LAST_RELEASE` and the delta list (or
-takes them from `args`), a **reconcile** stage re-verifies every `open` ledger
-row whose file has changed since the row was confirmed (`audit_ledger.py open
---touched`) and returns a `holds` verdict per row, one read-only reviewer per
-dimension runs **in parallel** against a findings schema (so a finding cannot arrive as prose), a
+takes them, with the tier and the touched ledger rows, from the `--plan` JSON
+passed as `args` - then no scout is dispatched), a **reconcile** stage
+re-verifies every `open` ledger row whose file has changed since the row was
+confirmed (`audit_ledger.py open --touched`), one verifier per cited file, and
+returns a `holds` verdict per row, the read-only review runs at the tier above
+against a findings schema (so a finding cannot arrive as prose), a
 reviewer that returns nothing usable is **re-dispatched exactly once** and
 otherwise recorded as `unverified`, findings are deduplicated across dimensions
 by `path` + claim slug (the ledger's identity), and every in-delta finding is
 then handed to a **verifier** that re-reads the cited line and may only lower
-the severity. The result carries `candidates` (ledger-ready), `coverage` per
-dimension, `refuted`, `unverified`, `outOfDelta`, `reconcile` (verdicts on the
+the severity. The result carries `candidates` (ledger-ready), `tier`, `coverage`
+per dimension, `refuted`, `unverified`, `outOfDelta`, `reconcile` (verdicts on the
 re-verified ledger rows), and `clean`. Each reviewer is
 told: *read-only; every finding must carry `path:line` evidence and a one-line
 statement of the incoherence; default to silence over speculation.* The
@@ -255,9 +303,11 @@ Cover both:
 
 ### 4a. Accuracy (judgment)
 
-The `pre-release-audit` workflow dispatches the **`documentation-reviewer`**
-agent (`agentType: documentation-reviewer`, `ruleId: docs-accuracy`) alongside
-the Step 3 dimensions to deep-review the `docs/` pages that describe the changed
+At the `full` tier the `pre-release-audit` workflow dispatches the
+**`documentation-reviewer`** agent (`agentType: documentation-reviewer`,
+`ruleId: docs-accuracy`) alongside the Step 3 dimensions; at `light` the
+combined reviewer takes this dimension with the rest. Either way the brief is
+the same: deep-review the `docs/` pages that describe the changed
 plugin surfaces, plus every `docs/` file in the delta, against the plugin source
 of truth (skill frontmatter, `hooks.json`, rules) for staleness, coverage gaps,
 and claims that don't trace back to source. Its findings go through the same

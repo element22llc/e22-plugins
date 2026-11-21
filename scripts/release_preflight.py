@@ -5,7 +5,8 @@
 is the tree clean, is the base current, is there anything to release, where is
 the last release, does the live docs site match ``main``, did the upstream
 validator-compat job pass, is anything untriaged sitting in the ledger, does
-the newest routing-eval sweep cover this candidate and did it hold. Until
+the newest routing-eval sweep cover this candidate and did it hold, how much
+judgment review does this delta need. Until
 now the release skills *recalled* those checks from prose and read ``gh run
 list`` tables by eye -- which is how a piped exit status, a stale anchor, and a
 cancelled docs deploy each slipped through once.
@@ -22,15 +23,18 @@ Usage::
     uv run python scripts/release_preflight.py                  # gate: exit 1 on blockers
     uv run python scripts/release_preflight.py --report          # always exit 0 (for injection)
     uv run python scripts/release_preflight.py --caller audit-loop --no-fetch --json
+    uv run python scripts/release_preflight.py --plan [--full]  # pre-release-audit workflow args
 
 The GitHub checks go through ``gh``; when it is missing or unauthenticated they
-degrade to ``[warn]`` rather than pretending to pass. Stdlib only.
+degrade to ``[warn]`` rather than pretending to pass. Stdlib only, apart from
+the generator constants ``generated_mirrors`` borrows.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
@@ -52,6 +56,25 @@ EVAL_LEDGER = REPO_ROOT / "plugins/steer/evals/ledger.jsonl"
 EVAL_FLOOR = 0.85
 EVAL_RECHECK = "mise run evals -- --case <name> --runs 6"
 
+ROUTER_RULE = "plugins/steer/rules/00-router.md"
+SKILL_MD = re.compile(r"^plugins/steer/skills/([^/]+)/SKILL\.md$")
+# An estimate of what one reviewer holds in a single context, not a natural
+# break. Replayed over the 25 cuts v7.5.0-v7.27.0 it makes eight light (the
+# largest 18 paths / 392 lines) and seventeen full (the smallest 21 / 302).
+LIGHT_MAX_PATHS = 20
+LIGHT_MAX_LINES = 800
+# What the judgment dimensions read (the inputs table in the audit-loop skill,
+# plus docs/ for the docs dimension). Tooling, tests and fragments are handed to
+# the reviewers but no dimension is about them, so they do not size the review.
+DIMENSION_INPUTS = (
+    "plugins/steer/",
+    "docs/",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "README.md",
+    "CROSS-SURFACE.md",
+)
+
 SEVERITY_ORDER = ("blocker", "high", "warn", "info", "ok")
 CALLERS = ("release", "quick-release", "audit-loop")
 GH_TIMEOUT = 30
@@ -62,6 +85,14 @@ class Check:
     id: str
     status: str  # one of SEVERITY_ORDER
     detail: str
+
+
+@dataclass
+class Scope:
+    tier: str  # "light" or "full"
+    reason: str
+    files: list[str]  # the delta a reviewer is handed
+    omitted: int  # generated mirrors left out of it
 
 
 def _git(*args: str, check: bool = False) -> subprocess.CompletedProcess:
@@ -157,13 +188,46 @@ def validator_compat(jobs: list[dict] | None) -> Check:
     )
 
 
-def eval_sweep(
-    rows: list[dict], anchor: str | None, anchor_time: datetime | None, floor: float = EVAL_FLOOR
-) -> Check:
-    """Interpret the routing-eval ledger: does the newest sweep cover this candidate, did it hold.
+def frontmatter(text: str | None) -> str | None:
+    match = re.match(r"---\n(.*?)\n---\n", text or "", re.S)
+    return match.group(1) if match else None
 
-    ``anchor_time`` is the instant of the last release, ``None`` when it could
-    not be dated. Never above ``warn``: three runs per case are noisy, so a low
+
+def routing_surface(files: list[str], read_old, read_new) -> list[str]:
+    """Delta paths that move what the routing evals read.
+
+    That surface is the router rule plus each skill's frontmatter (its
+    ``description``, ``when_to_use`` and tier). ``read_old`` / ``read_new``
+    return a path's text at the last release and now, ``None`` when absent, so
+    an added or removed skill counts.
+    """
+    hits = []
+    for path in files:
+        if path == ROUTER_RULE:
+            hits.append("rules/00-router.md")
+        elif (skill := SKILL_MD.match(path)) and frontmatter(read_old(path)) != frontmatter(
+            read_new(path)
+        ):
+            hits.append(f"skills/{skill.group(1)}")
+    return hits
+
+
+def eval_sweep(
+    rows: list[dict],
+    anchor: str | None,
+    anchor_time: datetime | None,
+    surface: list[str] | None = None,
+    floor: float = EVAL_FLOOR,
+) -> Check:
+    """Interpret the routing-eval ledger: does this cut owe a sweep, did the newest one hold.
+
+    ``surface`` is ``routing_surface`` between the tree the newest sweep ran on
+    and now: a sweep is owed again exactly when that moved, however many
+    releases ago the sweep ran. Measuring from the sweep rather than from the
+    last release is what keeps a skipped sweep owed at the next cut. ``None``
+    means it could not be computed, and the rule falls back to the sweep's age
+    against ``anchor_time`` (the instant of the last release, ``None`` when
+    undated). Never above ``warn``: three runs per case are noisy, so a low
     case is a prompt to recheck, not a verdict.
     """
     if not rows:
@@ -172,12 +236,22 @@ def eval_sweep(
     started = datetime.fromisoformat(row["started"])
     low = sorted((score, name) for name, score in row["below"].items() if score < floor)
     notes = []
-    if anchor_time is None:
+    aside = ""
+    if surface:
+        shown = ", ".join(surface[:4]) + (f", +{len(surface) - 4} more" if surface[4:] else "")
+        notes.append(
+            f"the routing surface changed since it ran ({shown}) -- this cut owes a sweep: "
+            "run `mise run evals`, record it and re-run this check"
+        )
+    elif surface is not None:
+        aside = "; the routing surface is unchanged since it ran, so this cut owes no sweep"
+    elif anchor_time is None:
         notes.append("its age against the last release is not verified")
     elif started < anchor_time:
         notes.append(
-            f"it predates {anchor}, so no sweep covers this candidate -- a minor or major cut "
-            "runs `mise run evals`, records it and re-runs this check; a patch skips it"
+            f"it predates {anchor}, and whether the routing surface changed since it ran is "
+            "not verified -- run `mise run evals` if rules/00-router.md or a skill's "
+            "frontmatter changed"
         )
     if low:
         notes.append(
@@ -191,7 +265,42 @@ def eval_sweep(
     )
     if notes:
         return Check("evals", "warn", f"{head}; " + "; ".join(notes))
+    if aside:
+        return Check("evals", "ok", f"{head}{aside}")
     return Check("evals", "ok", f"{head} after {anchor}, no case under {floor}")
+
+
+def audit_scope(
+    numstat: list[tuple[str, int]],
+    mirrors: tuple[str, ...] = (),
+    critical: frozenset[str] = frozenset(),
+    force_full: bool = False,
+) -> Scope:
+    """Size the judgment review to the delta: which reviewer fan-out it needs.
+
+    ``numstat`` is ``(path, changed lines)`` per delta path. Generated mirrors
+    are dropped from what a reviewer reads (their sources are in the same delta
+    and a sync gate proves they match); the size is counted over
+    ``DIMENSION_INPUTS`` only. Both tiers review every dimension -- ``light``
+    hands them to one reviewer, ``full`` to one each -- so the tier moves cost,
+    never coverage.
+    """
+    kept = [(path, n) for path, n in numstat if not path.startswith(mirrors)]
+    files = [path for path, _ in kept]
+    sized = [(path, n) for path, n in kept if path.startswith(DIMENSION_INPUTS)]
+    paths, lines = len(sized), sum(n for _, n in sized)
+    size = f"{paths} path(s) / {lines} line(s)"
+    limit = f"the light limit ({LIGHT_MAX_PATHS} / {LIGHT_MAX_LINES})"
+    touched = sorted(path for path in files if path in critical)
+    if force_full:
+        tier, reason = "full", f"{size}; full fan-out forced by the caller"
+    elif touched:
+        tier, reason = "full", f"{size}; release-critical path in the delta: {', '.join(touched)}"
+    elif paths > LIGHT_MAX_PATHS or lines > LIGHT_MAX_LINES:
+        tier, reason = "full", f"{size} exceeds {limit}"
+    else:
+        tier, reason = "light", f"{size} within {limit}"
+    return Scope(tier, reason, files, len(numstat) - len(kept))
 
 
 def worst(checks: list[Check]) -> str:
@@ -336,6 +445,96 @@ def check_delta(anchor: str | None) -> Check:
     )
 
 
+def generated_mirrors() -> tuple[str, ...]:
+    """Path prefixes ``mise run gen:copilot`` regenerates from sources elsewhere in the tree."""
+    try:
+        import gen_agent_skills  # noqa: PLC0415
+        import gen_copilot_agents  # noqa: PLC0415
+        import gen_copilot_instructions  # noqa: PLC0415
+    except ImportError:
+        return ()  # nothing omitted: reviewers read more, never less
+    return (
+        f"{gen_agent_skills.OUT_DIR.as_posix()}/",
+        f"{gen_copilot_agents.OUT_DIR.as_posix()}/",
+        f"{gen_copilot_instructions.INSTRUCTIONS_DIR.as_posix()}/",
+        gen_copilot_instructions.ARTIFACT.as_posix(),
+    )
+
+
+def delta_numstat(anchor: str) -> list[tuple[str, int]] | None:
+    diff = _git("diff", "--numstat", "--no-renames", f"{anchor}..HEAD")
+    if diff.returncode != 0:
+        return None  # an unreadable delta must not read as an empty, light one
+    rows = []
+    for line in diff.stdout.splitlines():
+        added, deleted, path = line.split("\t", 2)
+        # Binary files report "-" for both counts.
+        rows.append((path, sum(int(n) for n in (added, deleted) if n.isdigit())))
+    return rows
+
+
+def resolve_scope(anchor: str | None, force_full: bool = False) -> Scope | None:
+    from audit_severity import RELEASE_CRITICAL  # noqa: PLC0415
+
+    numstat = delta_numstat(anchor) if anchor else None
+    if numstat is None:
+        return None
+    return audit_scope(numstat, generated_mirrors(), RELEASE_CRITICAL, force_full)
+
+
+def check_scope(anchor: str | None) -> Check:
+    scope = resolve_scope(anchor)
+    if scope is None:
+        return Check(
+            "audit-scope", "warn", "delta not readable; run the audit workflow with no args"
+        )
+    fan_out = "one combined reviewer" if scope.tier == "light" else "one reviewer per dimension"
+    omitted = f"; {scope.omitted} generated mirror(s) not reviewed" if scope.omitted else ""
+    return Check("audit-scope", "info", f"{scope.tier}: {scope.reason} -> {fan_out}{omitted}")
+
+
+def pending_fragments() -> str:
+    lines = []
+    for path in sorted(UNRELEASED_DIR.glob("*.yaml")):
+        kind = re.search(r"^kind:\s*(\S+)", path.read_text(encoding="utf-8"), re.M)
+        name = path.relative_to(REPO_ROOT).as_posix()
+        lines.append(f"- {name} (kind: {kind.group(1) if kind else '?'})")
+    return "\n".join(lines) or "(none)"
+
+
+def touched_ledger_rows() -> list[dict]:
+    out = subprocess.run(
+        [sys.executable, "scripts/audit_ledger.py", "open", "--touched", "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=REPO_ROOT,
+    )
+    try:
+        rows = json.loads(out.stdout)["rows"]
+    except (json.JSONDecodeError, KeyError):
+        return []
+    return [{k: r.get(k) for k in ("id", "ruleId", "path", "line", "claim")} for r in rows]
+
+
+def build_plan(force_full: bool = False) -> dict | None:
+    """The ``args`` of the ``pre-release-audit`` workflow, so it dispatches no scout."""
+    anchor, _ = resolve_anchor()
+    scope = resolve_scope(anchor, force_full)
+    if scope is None:
+        return None
+    return {
+        "tier": scope.tier,
+        "tierReason": scope.reason,
+        "lastRelease": anchor,
+        "pluginVersion": json.loads(PLUGIN_JSON.read_text(encoding="utf-8")).get("version", ""),
+        "files": scope.files,
+        "omittedMirrors": scope.omitted,
+        "unreleased": pending_fragments(),
+        "ledgerRows": touched_ledger_rows(),
+    }
+
+
 def check_ledger() -> Check:
     try:
         from audit_ledger import load  # noqa: PLC0415
@@ -349,6 +548,30 @@ def check_ledger() -> Check:
     return Check("ledger", "ok", f"no untriaged blockers ({len(open_rows)} open below the gate)")
 
 
+def sweep_commit(started: datetime) -> str | None:
+    """The newest commit on this history when a sweep started: the tree it read, near enough."""
+    out = _git("rev-list", "-1", f"--before={int(started.timestamp())}", "HEAD")
+    return out.stdout.strip() or None
+
+
+def routing_surface_since(ref: str | None) -> list[str] | None:
+    if ref is None:
+        return None
+    diff = _git("diff", "--name-only", "--no-renames", f"{ref}..HEAD")
+    if diff.returncode != 0:
+        return None
+
+    def read_old(path: str) -> str | None:
+        shown = _git("show", f"{ref}:{path}")
+        return shown.stdout if shown.returncode == 0 else None
+
+    def read_new(path: str) -> str | None:
+        target = REPO_ROOT / path
+        return target.read_text(encoding="utf-8") if target.is_file() else None
+
+    return routing_surface(diff.stdout.splitlines(), read_old, read_new)
+
+
 def check_evals(anchor: str | None) -> Check:
     try:
         rows = [
@@ -358,7 +581,9 @@ def check_evals(anchor: str | None) -> Check:
         ]
         stamp = _git("log", "-1", "--format=%ct", anchor).stdout.strip() if anchor else ""
         anchor_time = datetime.fromtimestamp(int(stamp), UTC) if stamp else None
-        return eval_sweep(rows, anchor, anchor_time)
+        newest = max((datetime.fromisoformat(r["started"]) for r in rows), default=None)
+        surface = routing_surface_since(sweep_commit(newest)) if newest else None
+        return eval_sweep(rows, anchor, anchor_time, surface)
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         return Check("evals", "warn", f"routing-eval ledger unreadable: {exc!r}")
 
@@ -418,7 +643,10 @@ def check_validator_compat() -> Check:
 def run_all(caller: str, fetch: bool, offline: bool) -> tuple[list[Check], str | None]:
     checks = [check_tree(), check_base(fetch, caller), check_unreleased(caller), check_manifests()]
     anchor, anchor_check = resolve_anchor()
-    checks += [anchor_check, check_delta(anchor), check_ledger(), check_evals(anchor)]
+    checks += [anchor_check, check_delta(anchor)]
+    if caller == "release":
+        checks.append(check_scope(anchor))
+    checks += [check_ledger(), check_evals(anchor)]
     if offline:
         checks += [
             Check("docs-deploy", "warn", "skipped (--offline)"),
@@ -436,7 +664,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-fetch", action="store_true", help="do not git fetch origin main")
     parser.add_argument("--offline", action="store_true", help="skip the gh-backed checks")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--plan", action="store_true", help="print the pre-release-audit workflow args as JSON"
+    )
+    parser.add_argument(
+        "--full", action="store_true", help="with --plan: force one reviewer per dimension"
+    )
     args = parser.parse_args(argv)
+
+    if args.plan:
+        plan = build_plan(args.full)
+        if plan is None:
+            print("delta not readable; run the workflow with no args", file=sys.stderr)
+            return 1
+        print(json.dumps(plan, indent=2))
+        return 0
 
     checks, anchor = run_all(args.caller, fetch=not args.no_fetch, offline=args.offline)
     if args.json:
