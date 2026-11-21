@@ -1,0 +1,15 @@
+kind: Fixed
+time: 2026-11-21T01:41:00.000000-05:00
+custom:
+  Slug: push-once-per-round
+body: |
+  - **Fixed: follow-up work on a ready PR is pushed once per round, not once
+    per commit.** Every push to a ready PR or the solo-trunk `main` runs the
+    whole CI pipeline on billed runner minutes, and agent sessions were pushing
+    each fix as they committed it, in chains minutes apart. Rule 45 now says
+    so, and `/steer:work finish` defines the round: the work one message from
+    the dev or one review asks for, each fix committed, the local gates green,
+    then one push at the end of that turn - never held for asks not yet made.
+    A `/steer:work drive` worker pushes once after addressing every review
+    point, and one that runs out of budget pushes only green commits, never a
+    WIP checkpoint to a ready PR.
