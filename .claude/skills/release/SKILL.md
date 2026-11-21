@@ -3,11 +3,12 @@ name: release
 description: >-
   Cut a steer plugin release - first run a deep, read-only pre-release audit of
   the plugin codebase (computed preconditions + deterministic gate + strict docs
-  build + the pre-release-audit workflow's judgment review) and BLOCK on any
-  release-stopping finding; then confirm the semver bump with the user and cut
-  the release with scripts/release_cut.py (heading rename, manifest bumps,
-  re-gate) and open the release PR. Repo-local dev helper for e22-plugins; does
-  not ship.
+  build + the pre-release-audit workflow's judgment review, its reviewer fan-out
+  sized to the delta) and BLOCK on any release-stopping finding; then confirm
+  the semver bump with the user and cut the release with scripts/release_cut.py
+  (heading rename, manifest bumps, re-gate) and open the release PR. Repo-local
+  dev helper for e22-plugins; does not ship.
+argument-hint: "[full]"
 disable-model-invocation: true
 allowed-tools:
   - Read
@@ -79,9 +80,9 @@ The block below is produced by `scripts/release_preflight.py` **when you invoke
 this skill**, not recalled from prose. It is procedure Step 1, the CI-status half
 of Step 2, and Step 4b, computed: tree cleanliness, base currency, pending
 fragment count, manifest agreement, the `$LAST_RELEASE` anchor, the delta's worst
-severity ceiling, the ledger gate, the newest routing-eval sweep, deployed-docs
-freshness, and the upstream `validator-compat` job. Read the markers, not the
-prose around them.
+severity ceiling, the audit scope that delta earns, the ledger gate, whether the
+cut owes a routing-eval sweep, deployed-docs freshness, and the upstream
+`validator-compat` job. Read the markers, not the prose around them.
 
 ```!
 uv run python scripts/release_preflight.py --report --caller release
@@ -102,6 +103,17 @@ it and execute **Steps 1-5 in full** - every dimension, no subset (that subset i
 `/quick-release`'s job). If that file and the index below ever disagree, the
 procedure file is authoritative.
 
+**The review is sized to the delta, and the size is computed.** The
+`audit-scope` line above reads `light` or `full`, from the path and line counts
+of what the dimensions read (`release_preflight.audit_scope`; tooling, tests
+and fragments do not count): `light` is one combined reviewer
+working through every dimension, `full` is one reviewer per dimension. Coverage
+is the same either way - what scales is the number of agents. You do not pick
+the tier and you do not downgrade it; a delta that "looks small" but reads
+`full` gets the full fan-out. The one override runs upward: invoked as
+`/release full` (arguments: `$ARGUMENTS`), add `--full` to the plan command in
+Step 3.
+
 As the `/release` caller, you supply these pre/post-conditions around it:
 
 - **Base contract (procedure Step 1).** The base must be current `main` - the
@@ -114,13 +126,18 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   docs changes deploy only after this PR merges; Phase A proves the docs source
   is current and that *prior* docs changes are live. The post-merge deploy is a
   Phase-B follow-up the user owns (Step B8).
-- **Routing evals, on a minor or major cut.** The model-graded suite
-  (`mise run evals`, ~$23 and an hour) is steer's only check that a plain-language ask
-  still lands on its skill, and a minor bump is what moves the surface it reads:
-  `rules/00-router.md` and every skill's `description` / `when_to_use`. It is not
-  in `mise run ci` because it spends real tokens, so **this is its declared
-  cadence** (`plugins/steer/evals/README.md` -> "When it runs"). Run it here in
-  Phase A, before cutting, report `aggregates.meanDelta` against its ceiling in
+- **Routing evals, when the `evals` line says this cut owes a sweep.** The
+  model-graded suite (`mise run evals`, ~$23 and an hour) is steer's only check
+  that a plain-language ask still lands on its skill. It reads
+  `rules/00-router.md` and every skill's frontmatter (`description`,
+  `when_to_use`, tier), so the preflight diffs exactly that surface against
+  the tree the newest recorded sweep ran on: changed, and the line reads
+  `[warn] ... this cut owes a sweep`; unchanged, `[ok] ... owes no sweep` -
+  whatever the bump level, and however many cuts ago that sweep ran. It is
+  not in `mise run ci` because it spends real tokens, so **this is its declared
+  cadence** (`plugins/steer/evals/README.md` -> "When it runs"). When owed, run
+  it here in Phase A, before cutting, report `aggregates.meanDelta` against its
+  ceiling in
   the release PR (B6), record the sweep with `ledger.py add --latest` in the
   release commit, and treat a case scoring
   below `--threshold` as a Phase-A finding rather than a footnote. Once the
@@ -129,10 +146,10 @@ As the `/release` caller, you supply these pre/post-conditions around it:
   describes this one: each case it names gets the 6-run recheck it prints, with
   the result in the release PR. (While the recorded row is uncommitted,
   `tree-clean` reads `[blocker]` on that re-run; only the `evals` line is being
-  read.) A **patch**
-  release skips it - say so rather than leaving the reader guessing. The suite
-  needs `plugin eval` early access; where the machine does not have it, say the
-  cadence could not be honoured instead of recording a pass.
+  read.) When it is not owed, say so in the PR with the line's reason rather
+  than leaving the reader guessing. The suite needs `plugin eval` early access;
+  where the machine does not have it, say the cadence could not be honoured
+  instead of recording a pass.
 
 The one-line index, for orientation only:
 
@@ -140,14 +157,18 @@ The one-line index, for orientation only:
 - **Step 2 - deterministic gate.** `mise run ci` + the strict `mise run
   docs:build`, up front and blocking. The `validator-compat` status is computed
   above (`[high]`, not a blocker - it tracks upstream Claude Code, not the diff).
-- **Step 3 + 4a - judgment review.** Run the saved **`pre-release-audit`**
-  workflow (Workflow tool, `name: "pre-release-audit"`, no args). It scouts the
-  delta, re-verifies every open ledger row whose file changed since it was
-  confirmed, dispatches the five coherence dimensions and the
-  `documentation-reviewer` in parallel, retries a failed dispatch once, dedupes,
-  and verifies every in-delta finding against its cited line. It returns
-  ledger-ready `candidates`, `reconcile` verdicts for the ledger, and a
-  `coverage` map - a dimension marked `unverified` means the round is not clean.
+- **Step 3 + 4a - judgment review.** Run
+  `uv run python scripts/release_preflight.py --plan` and pass the JSON it
+  prints, unedited, as the `args` of the saved **`pre-release-audit`** workflow
+  (Workflow tool, `name: "pre-release-audit"`). The plan carries the tier, the
+  delta (generated mirrors left out - their sources are in it) and the open
+  ledger rows whose file changed, so the workflow dispatches no scout. It
+  re-verifies those rows one file at a time, reviews all five coherence
+  dimensions plus docs accuracy at the plan's tier, retries a failed dispatch
+  once, dedupes, and verifies every in-delta finding against its cited line. It
+  returns ledger-ready `candidates`, `reconcile` verdicts for the ledger, the
+  `tier`, and a `coverage` map - a dimension marked `unverified` means the round
+  is not clean, at either tier.
 - **Step 4b - deployed-site freshness.** Computed above.
 - **Step 5 - compile, rank, classify.** Severity is **capped** from the path by
   `scripts/audit_severity.py` when the candidates are recorded (never judged,
@@ -307,9 +328,10 @@ the human gate on outbound actions:
   uv run python scripts/release_cut.py pr-body X.Y.Z --via release --audit <verdict-file>
   ```
 
-  where `<verdict-file>` holds the Phase-A verdict you wrote (gates green;
-  coherence/doc dimensions clean or the non-blocking `[high]/[medium]/[low]`
-  findings the user chose to defer; the `coverage` map). The command pastes the
+  where `<verdict-file>` holds the Phase-A verdict you wrote (gates green; the
+  audit tier and its computed reason; coherence/doc dimensions clean or the
+  non-blocking `[high]/[medium]/[low]` findings the user chose to defer; the
+  `coverage` map; whether a routing sweep was owed). The command pastes the
   released bullets so reviewers see the scope, embeds that verdict so the reviewer
   inherits the audit rather than just the diff, and appends the always-on
   context-budget table from `check_context_budget.py --report` so context weight
@@ -328,8 +350,9 @@ re-gate result.
   merge (`docs-deploy.yml`) - watch that run go green so the live site at
   `https://ai.element-22.com` actually reflects the release; a red deploy leaves
   the published docs stale (and the next preflight will flag it).
-- The **routing evals** are local-only, but they are not optional on a minor or
-  major cut: they belong to Phase A above, before the PR, not to this list.
+- The **routing evals** are local-only, but they are not optional on a cut
+  that owes a sweep: they belong to Phase A above, before the PR, not to this
+  list.
 - The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
   `release-publish.yml`, which fires on the merge commit that changed
   `plugin.json` and asserts afterwards that the tag resolves to that commit.

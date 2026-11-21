@@ -477,10 +477,16 @@ plugins/steer/evals/` before reading a jump as the plugin's.
 
 Not on the PR path, so the cadence is declared rather than triggered:
 
-- **Every minor or major release cut** - `/release` Phase A names it, and the
-  release PR records the score. A patch release does not need it: the routing
-  surface it reads (`rules/00-router.md` plus each skill's `description` +
-  `when_to_use`) is what a minor bump moves.
+- **Every release cut made after the routing surface moved** - the surface
+  this suite reads is `rules/00-router.md` plus each skill's frontmatter
+  (`description`, `when_to_use`, tier), and `scripts/release_preflight.py`
+  diffs exactly that between the tree the newest sweep in `ledger.jsonl` ran on
+  (the newest commit at its `started` time) and `HEAD`. `/release` Phase A
+  reads its `evals` line: `owes a sweep` means run it and record the score in
+  the release PR; `owes no sweep` means nothing the suite reads has changed
+  since it last ran. A sweep that was owed and skipped therefore stays owed at
+  the next cut. The bump level is not the test - a patch that rewrites the
+  router owes one, a minor that only adds a template does not.
 - **Before merging a PR that edits that surface** - the router rule, a public
   skill's `description`/`when_to_use`, or a skill's public/internal tier.
   `check_routing_fixtures.py` runs on every such PR and is the cheap half; this

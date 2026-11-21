@@ -52,7 +52,10 @@ that a machine can check still runs and still blocks.
 **When to use which.** Reach for `/quick-release` for a small, well-understood
 cut: a single bug-fix patch, a one-feature minor, a hotfix you need out now,
 where the set of pending fragments is short and you already know the
-changes cohere. Reach for the full **`/release`** for a substantive or
+changes cohere. `/release` is no longer the expensive alternative on a cut that
+size - it sizes its review to the delta and runs one combined reviewer on a
+small one - so choose this skill to skip the judgment review, not to avoid a
+six-reviewer fan-out. Reach for the full **`/release`** for a substantive or
 multi-feature cut, anything touching rules <-> skills <-> templates interplay, or
 any release where prose/coherence drift across the accumulated changes is
 plausible. **If in doubt, run `/release`** - the audit it adds is exactly the
@@ -65,7 +68,7 @@ safety net this skill removes.
 | Computed preconditions (`release_preflight.py`: tree, base, bullets, manifests, anchor, ledger, routing-eval sweep, docs freshness, validator-compat) | yes | yes |
 | `mise run ci` (full deterministic gate) | yes | yes |
 | `mise run docs:build` (strict Zensical build) | yes | yes |
-| `pre-release-audit` workflow (CHANGELOG<->diff, cross-ref, brand, payload, behavioral, docs accuracy) | yes | no, skipped |
+| `pre-release-audit` workflow (CHANGELOG<->diff, cross-ref, brand, payload, behavioral, docs accuracy) | yes, sized to the delta (one combined reviewer on a small one) | no, skipped |
 | Phase B cut (`release_cut.py`, re-gate, PR) | yes | yes (identical) |
 
 The skipped workflow is pure **human-judgment** review - it catches *coherence*
@@ -190,10 +193,12 @@ only:
   fast-path honesty note below; PR titled `Release steer X.Y.Z`.
 - **B7 - Report:** new version, branch, PR URL, gate result.
 - **B8 - Post-merge follow-ups** (consumer `/plugin update`, docs deploy). The
-  **routing evals** are not a follow-up: their declared cadence is a minor or
-  major cut (`plugins/steer/evals/README.md` -> "When it runs"), so a
-  **minor** cut on this fast path either runs `mise run evals` before the PR or
-  names the skip in the Q5 honesty note. A patch cut owes them nothing. The
+  **routing evals** are not a follow-up: their declared cadence is a cut made
+  after the routing surface moved (`plugins/steer/evals/README.md` -> "When it
+  runs"), and the computed `evals` line says which this is. A cut that owes a
+  sweep on this fast path either runs `mise run evals` before the PR or names
+  the skip in the Q5 honesty note, and a skipped sweep stays owed at the next
+  cut; one the line marks as owing none skips it. The
   `vX.Y.Z` tag + GitHub Release are cut automatically by
   `release-publish.yml` on merge - just confirm that run went green.
 
