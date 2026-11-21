@@ -477,7 +477,9 @@ Delivery has **two modes**, keyed to the product `CLAUDE.md` marker
 - **Get the local gates green before you push**: CI confirms, it is not the
   loop you iterate in. `/steer:work` opens its PR as a **draft**, which its
   author marks ready, and CI runs then; it opens ready when its code gate came
-  back clean, and a hotfix's always does. Watch every run that follows - a ready PR's, a trunk push's -
+  back clean, and a hotfix's always does. A push to a ready PR or to the
+  solo-trunk `main` is a full CI run: commit each fix, and push once when what
+  the current request asked for is done, in that turn. Watch every run that follows - a ready PR's, a trunk push's -
   to conclusion and fix a red build before the work counts as complete. **Merge and deploy stay human-gated in every mode** -
   never `gh pr merge`, never deploy, never push to a protected `prod` branch.
 

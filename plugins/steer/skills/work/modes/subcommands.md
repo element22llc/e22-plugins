@@ -60,7 +60,11 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   else the repo's lint, typecheck and test tasks), fixed until green. **CI is
   the confirming run, not the iteration loop** - every push to a ready PR re-runs
   the whole pipeline on billed runner minutes, so a fix you could have found
-  locally costs a full CI run. A PR `finish` opens is a **draft** (`gh pr
+  locally costs a full CI run. **On a ready PR or a trunk push, push once per
+  round, not per commit**: a round is the work one message from the dev or one
+  review asks for (a red build: below) - each fix committed as you go, the local
+  gates green, then one push at the end of that turn. Never hold commits for
+  asks not yet made. A PR `finish` opens is a **draft** (`gh pr
   create --draft`), which the shipped `ci.yml` does not run, unless the code
   gate comes back clean (Draft or ready, below); a push made before the local
   gates are green (a WIP checkpoint, a backup) always goes to a draft, and

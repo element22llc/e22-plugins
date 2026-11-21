@@ -73,11 +73,13 @@ running `/steer-work resume #N` in a worktree on the PR's branch, with this
 addition to its brief: read the feedback with `gh pr view <n> --json
 reviews,comments` and the inline threads (`gh api
 repos/{owner}/{repo}/pulls/<n>/comments`; where that read is refused, work from
-the reviews and say so), address each point or answer why not, push to the same
-branch, then post one `gh pr comment` listing each point and what changed, and
-re-request review from whoever asked for changes (`gh pr edit <n>
+the reviews and say so), address each point or answer why not, push once to the
+same branch when every point is done, then post one `gh pr comment` listing
+each point and what changed, and re-request review from whoever asked for changes (`gh pr edit <n>
 --add-reviewer <login>`). It never resolves a thread, dismisses a review or
-force-pushes. A worker that pushes nothing records `drive: stuck at <sha>` and
+force-pushes. On a ready PR, a worker that stops short on its budget pushes
+only commits whose local gates are green, once, never a WIP checkpoint, and its
+comment lists the points still open. A worker that pushes nothing records `drive: stuck at <sha>` and
 its one reason in the issue's managed block. A PR with no issue link is
 reported, not worked.
 
