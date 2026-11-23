@@ -266,6 +266,21 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    gh pr create --base "$BASE" --head feat/sync ...
    ```
 
+   **When the diff touches a mise config or lock file** (`git diff --name-only
+   "$BASE"` lists a `mise.toml`, `mise.lock`, `mise.*.toml` or `.tool-versions`
+   at any depth), the PR body says so: its first CI run misses the
+   `jdx/mise-action` tool cache, which is keyed on those files, and installs the
+   tools fresh. A red `Setup mise` whose error carries `trustPolicy=no-downgrade`
+   is mise's npm supply-chain check failing on a dependency of the `npm:<tool>`
+   it names. If that tool is unchanged from `BASE`, the cache was masking a
+   pre-existing exposure, not one this sync introduced; if this sync added or
+   changed it, it is the sync's own, and a failing steer pin goes to
+   `/steer:report`. The narrow remedy is the dev's, after reviewing that release:
+   exempt only the version the error names, on that one tool -
+   `"npm:<tool>" = { version = "<v>", trust_policy_excludes = ["<dep>@<ver>"] }` -
+   then run `mise lock` and commit `mise.lock` with its `.mise/locks/` sidecar.
+   Sync never adds an exclude itself.
+
    Run the end-of-session checklist.
 
 9. **Recommend the next action.** Emit a `## Recommended next actions -
