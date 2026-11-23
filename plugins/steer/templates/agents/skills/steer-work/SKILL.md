@@ -138,7 +138,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`start #N`** | Validate and **claim** the issue, branch + work marker (pr-flow), load linked specs, implement. |
 | **`resume #N`** | Rebuild context from the issue, recorded branch/PR and tree; continue from the real lifecycle state. |
 | **`status #N`** | **Read-only** execution state - claimant, branch, PR, blockers, validation. Mutates nothing. |
-| **`finish #N`** | Validate, code gate (non-Trivial), commit, push, PR (**ready** only on a clean gate, CI watched; else a **draft**), -> `validate`, **stop**. Never `done` because a PR opened, never on a *skipped* check. |
+| **`finish #N`** | Validate, code gate (non-Trivial), commit, push, PR (**ready** only on a clean gate, its notes asked in-session when the author is present, CI watched; else a **draft**), -> `validate`, **stop**. Never `done` because a PR opened, never on a *skipped* check. |
 | **`queue #A #B ...`** | Several independent issues, one fresh worker each running `start` -> `finish`; ends at PRs. Automatic for two or more. -> [`modes/queue.md`](modes/queue.md) |
 | **`drive [--max N] [--label <l>]`** | One autonomous cycle: your PRs with change requests or red CI, then the review queue (cards only), then up to N ready issues, each to a fresh worker. Ends on `Drive: idle` or `Drive: work remains` for `/goal` or `/loop` to repeat. Never merges, approves or creates an issue. -> [`modes/drive.md`](modes/drive.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |

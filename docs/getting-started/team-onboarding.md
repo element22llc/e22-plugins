@@ -141,8 +141,10 @@ it maps everyday intents to the skill that handles them.
 - **Commits, pushes, and opens the PR autonomously** on a non-`main` branch
   (`/steer:work` defaults to `issue/<number>-<slug>`; otherwise the repo's
   convention, else `feat/*` / `fix/*`). `/steer:work` opens it **ready** when
-  its code review left nothing to read, and watches CI; otherwise as a
-  **draft**, and stops: its author reads it and marks it ready, which starts CI. Nothing
+  its code review left nothing to read, and watches CI. Reviewer notes are put
+  to the author in the session when they are there, then the PR is readied;
+  otherwise it opens as a **draft**, and stops: its author reads it and marks
+  it ready, which starts CI. Nothing
   merges without the reviewer - the backstop, enforced by branch protection.
 
 See the [Hooks reference](../reference/hooks.md) and

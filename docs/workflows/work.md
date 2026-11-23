@@ -74,9 +74,12 @@ flowchart TD
     GATES --> CLEAN{Code gate clean?}
     CLEAN -->|yes| RPR[Open the PR ready<br/>transition to validate]
     RPR --> CI[CI runs, watched to conclusion]
+    CLEAN -->|notes only, author present| ASK{{Ask the author each note in-session}}
+    ASK -->|all answered| RPR
+    ASK -->|decide later| PR
     CLEAN -->|no| PR[Open a draft PR]
     PR --> STATE[Transition to validate and stop]
-    STATE --> READY{{Author reads the PR, marks it ready}}
+    STATE --> READY{{Author answers the notes, marks it ready}}
     READY --> CI
     CI -->|red| FIX["/steer:work resume #123<br/>fix locally, push once, re-watch"]
     FIX --> CI

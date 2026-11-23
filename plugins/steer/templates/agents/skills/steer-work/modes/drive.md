@@ -110,7 +110,8 @@ opens a draft** (rule 53).
 ## Step 4 - verify and report
 
 Verify every card as `queue` Step 3 does. A gate question goes to the human now
-when present (rule `61-gates`); otherwise it is recorded and the issue left
+when present (rule `61-gates`), and so do a draft's reviewer notes when that
+human is its author (`queue` Step 4); otherwise it is recorded and the issue left
 claimed and waiting. Stop the cycle on `queue`'s whole-run stop conditions.
 
 Report one table - item, what happened (`fixed #n`, `ready #n`, `draft #n`,

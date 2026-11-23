@@ -23,13 +23,13 @@ without redefining the subcommands in `SKILL.md`:
 | Implemented, PR not opened | Blocking now (next transition) | `/steer-work finish #N` |
 | `qa` added fix commits | Blocking now | Re-run the gates on them - `/steer-work finish #N` |
 | PR open, diff touches UI paths, `qa` not run this branch | Recommended | Drive the changed flows in a browser before review - `/steer-work qa #N` (opt-in, never auto-run) |
-| Draft PR open, in `validate` | Human decision required | Its author reads the PR, then marks it ready, which runs CI (no command - a draft's skipped checks are not green) |
+| Draft PR open, in `validate` | Human decision required | Author in the session: ask its reviewer notes now (`subcommands.md` -> Ask the author), then ready it and watch CI. Otherwise its author answers them with `/steer-work finish #N` (a draft's skipped checks are not green) |
 | Ready PR, CI running | Blocking now | Watch to conclusion - `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | Ready PR, CI red | Blocking now | `/steer-work resume #N` - reproduce and fix locally until the local gates are green, then push once and re-watch |
 | Ready PR, CI green, awaiting review | Human decision required | A reviewer reviews the PR - several waiting: `/steer-work review` |
 | PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed - a merged PR is necessary, not sufficient (`/steer-work resume #N`) |
 | `queue` ended, issues blocked or set aside | Blocking now | The one move recorded for the first in run order - usually `/steer-work resume #N` |
-| `queue` ended, drafts open | Human decision required | Read each draft, then ready them and watch CI - `/steer-work review --mine` (a ready one is already the reviewer's) |
+| `queue` ended, drafts open | Human decision required | Only drafts whose notes got `Decide later` or no answer (`queue.md` Step 4 asked the rest) - `/steer-work review --mine` asks them again and readies each (a ready one is already the reviewer's) |
 | `drive` ended `Drive: work remains` | Blocking now | Run the next cycle - `/steer-work drive` (or let `/goal` / `/loop` repeat it) |
 | `drive` ended `Drive: idle`, items wait on the human | Human decision required | The first waiting item: a merge (no command), a review pick - `/steer-work review`, or a gate question |
 | Issue `done` | Complete | Optional: start another ready issue - `/steer-work start #N`, else `No action is currently required.` |

@@ -1,0 +1,17 @@
+kind: Changed
+time: 2026-11-23T16:00:00.000000-05:00
+custom:
+  Slug: ask-reviewer-notes-in-session
+body: |
+  - **Changed: `/steer:work` asks its reviewer notes in the session instead
+    of leaving a draft for later** (#1017). A medium finding or design question
+    the code gate leaves used to keep the PR a draft, with a handoff telling the
+    author to read the notes and mark it ready. When the author is in the
+    session, `finish` now puts each note to them, one question per note with a
+    recommended resolution and `Decide later`. It records each answer under
+    the note as decided in-session, applies any change an answer asks for,
+    then readies the PR and watches CI. A `queue` worker still never asks: its
+    card now lists the notes, and the orchestrator asks them at Step 4 and
+    sends the answers back to the worker. `drive` and `review --mine` do the
+    same. A PR stays a draft on an unattended run, an open high finding, a
+    flagged drift class, or a note answered `Decide later`.

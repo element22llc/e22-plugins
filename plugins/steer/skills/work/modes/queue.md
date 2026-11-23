@@ -73,8 +73,9 @@ earlier issue's context into the next. Brief it to:
   and return a **partial** card. In solo-trunk, commit nothing: leave the work
   in the main checkout for the worker that resumes it;
 - return a card - issue, branch, PR URL or `none`, draft or ready, local gate
-  result, high code-gate findings left open, the gate question or blocker, or
-  `none`; a partial card says what is done and what is left.
+  result, high code-gate findings left open, each reviewer note that kept it a
+  draft (one line: the note and the recommended resolution), the gate question
+  or blocker, or `none`; a partial card says what is done and what is left.
 
 **solo-trunk.** No worktree: `main` can be checked out in only one place. Run
 each worker in the main checkout, one at a time, fast-forwarded to
@@ -129,6 +130,12 @@ The issues are independent branches, so one failure does not stop the next.
   findings would not resolve, a blocking `Proposed` ADR, a product question): ask the human now, per rule `61-gates`. Their answer
   goes back to that worker (Claude Code: `SendMessage`), else to a fresh worker
   running `resume #N` with it. `Decide later` records the issue and moves on.
+- **A draft held by its reviewer notes** - when the human here is the PR's
+  author, ask the card's notes now, as `finish` does (`subcommands.md` -> Ask
+  the author). The answers go back to that worker, else to a fresh worker
+  running `finish #N` with them; it records them, applies any change, and
+  readies the PR once nothing is left unanswered. Never hand the author a
+  "read the notes, then mark it ready" step instead.
 - **A partial card** (the worker reached its budget): hand what is left to a
   fresh worker with the same Step 2 brief, running `resume #N` instead of
   `start` - in solo-trunk, next, before any other issue. A second partial on
