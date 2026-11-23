@@ -72,8 +72,9 @@ or no UI in the diff, say there is nothing to drive and stop.
    - Three fix attempts that do not converge -> stop and report it as open.
 5. **Capture before/after**, once the fixes are in - pr-flow only: solo-trunk
    has no PR body to render images, so skip this step and say so in the record.
-   - **After:** re-run `mise run dev:setup` on this stack first, so both sides
-     start from the same seed data.
+   - **After:** reset this stack first - `mise run docker:clean`, then `mise
+     run dev:setup` - since the seed is idempotent and keeps what driving
+     changed; both sides then start from the same seed data.
    - **Before:** `git fetch origin <default>`, then `git worktree add --detach
      <scratchpad>/qa-before origin/<default>`. Copy the files
      `.worktreeinclude` lists from the primary checkout, since a hand-made
@@ -100,9 +101,9 @@ or no UI in the diff, say there is nothing to drive and stop.
      `gh`, it is the PR URL cut to `https://<host>/<owner>/<repo>`. The helper
      pushes the images to `refs/steer-assets/<branch>`, which is not a branch
      and which a default clone never fetches, then prints one URL per file.
-     Only these `github.com` blob URLs render for reviewers of a private repo;
-     a repo-relative path or a `raw.githubusercontent.com` link shows a broken
-     image.
+     Link only these URLs: a repo-relative path or a
+     `raw.githubusercontent.com` link shows a broken image to reviewers of a
+     private repo.
    - A non-zero exit (a push ruleset, no push rights, no git identity) means
      no images: record `screenshots not hosted: <reason>`. Never commit them
      instead.

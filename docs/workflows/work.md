@@ -263,8 +263,8 @@ the unpushed trunk commits in solo-trunk - with the app on a fresh local stack:
    narrow width, from the default branch (booted in a throwaway worktree) and
    from the branch. They are pushed to a hidden ref,
    `refs/steer-assets/<branch>`, which is not a branch and which a default
-   clone never fetches, and linked by commit SHA, the one form GitHub renders
-   in a private repo's PR body. The ref is kept as review evidence; `git push
+   clone never fetches, and linked as `github.com` blob URLs pinned to a commit
+   SHA, which render in a private repo's PR body. The ref is kept as review evidence; `git push
    origin --delete refs/steer-assets/<branch>` prunes it. Solo-trunk has no PR
    body, so it skips this step.
 5. **Record** the flows driven, what passed, what was fixed and what was filed

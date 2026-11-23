@@ -2,9 +2,10 @@
 # steer helper - host PR images (the `/steer:work qa` before/after screenshots)
 # on a hidden ref, refs/steer-assets/<key>, and print a URL per file that renders
 # in a PR body for signed-in reviewers of a private repo (spike: issue #1006).
-# Only github.com blob URLs pinned to a SHA render there; raw.githubusercontent
-# and repo-relative paths do not. A non-branch ref is never fetched by a default
-# clone and never enters the default branch's history.
+# github.com URLs render there; raw.githubusercontent and repo-relative paths do
+# not. The SHA pin keeps URLs already posted working after a re-run. A
+# non-branch ref is never fetched by a default clone and never enters the
+# default branch's history.
 #
 # USAGE
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh" [--remote <name>] <repo-url> <key> <file>...
