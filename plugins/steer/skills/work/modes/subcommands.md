@@ -115,7 +115,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `Decide later` in this conversation. An answer that changes the code is a
   fix like any other: commit it, local gates green, then one code-gate round on
   those commits unless they are Trivial; a new note from that round is asked
-  the same way. Record each answer under the note as decided in-session, by
+  the same way once, and any further one stays for the reviewer. Record each answer under the note as decided in-session, by
   whom and when; `Decide later` leaves the note as it was. An open high finding
   or a flagged drift class is never offered for a waiver here - it stays for
   the reviewer.

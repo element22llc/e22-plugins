@@ -403,8 +403,8 @@ Claude Code's own delivery tools fit this flow without moving the merge gate.
   pushes, and opening the PR are autonomous; **merging is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
 - **`finish` opens its PR as a draft and stops** unless its code gate came back
-  clean, when it opens it ready and watches its CI (a `--hotfix` always opens
-  it ready, and readies it once you answer its reviewer notes in the session); a draft's CI runs once the author marks it ready. Every run after that - a ready PR's, a trunk push's - is watched to
+  clean, or you answered its reviewer notes in the session, when it opens it
+  ready and watches its CI (a `--hotfix` always opens it ready); a draft's CI runs once the author marks it ready. Every run after that - a ready PR's, a trunk push's - is watched to
   green and a red build fixed before the work counts as done - the skill pre-approves `git push` /
   `gh pr create|edit|ready` plus read-only CI status (`gh pr checks`, `gh run
   view`, `gh run watch`) for this; the merge

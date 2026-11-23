@@ -121,8 +121,8 @@ exists to avoid.
 - A mismatch records the issue as blocked, with the fact that failed.
 - Remove the worktree once its branch is pushed and the tree is clean: `git
   worktree remove <path>` refuses a dirty tree, so never add `--force`. A dirty
-  or unpushed one stays, its path recorded, and so does one whose card lists
-  reviewer notes, until Step 4 settles them.
+  or unpushed one stays, its path recorded. One whose card lists reviewer notes
+  stays until Step 4 is done with it.
 
 ## Step 4 - record and continue
 
@@ -134,11 +134,13 @@ The issues are independent branches, so one failure does not stop the next.
   running `resume #N` with it. `Decide later` records the issue and moves on.
 - **A draft held by its reviewer notes** - when the human here is the PR's
   author (`subcommands.md` -> Ask the author), ask the card's notes now, the
-  same way. The answers go back to that worker, else to a fresh worker with
-  the same Step 2 brief running `finish #N` with them; it records them, applies
-  any change, and readies the PR when Draft or ready holds. Re-verify it as
-  Step 3, report its final state, then remove its worktree. Never hand the
-  author a "read the notes, then mark it ready" step instead.
+  same way. The answers go back to that worker in its kept worktree, else to a
+  fresh worker with the same Step 2 brief running `finish #N` with them in that
+  same worktree; it records them, applies any change, and readies the PR when
+  Draft or ready holds. Re-verify it as Step 3 and report its final state. Then
+  remove the worktree as Step 3 does - also when the author is not here or
+  answered `Decide later`. Never hand the author a "read the notes, then mark
+  it ready" step instead.
 - **A partial card** (the worker reached its budget): hand what is left to a
   fresh worker with the same Step 2 brief, running `resume #N` instead of
   `start` - in solo-trunk, next, before any other issue. A second partial on
