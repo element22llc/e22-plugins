@@ -6,7 +6,8 @@ authorization in `SKILL.md` apply unchanged.
 Unit and integration tests cover the code; nobody clicks through the changed
 flows until the reviewer does. `qa` does that first: it maps the user flows the
 branch touches, drives them in a real browser, fixes what it can prove broken,
-and leaves the rest written down for the reviewer. It **hunts for breakage**,
+and leaves the rest written down for the reviewer, with before/after
+screenshots of each changed screen in the PR. It **hunts for breakage**,
 where `walkthrough` films a happy path for a PO.
 
 ## When it runs
@@ -69,20 +70,69 @@ or no UI in the diff, say there is nothing to drive and stop.
      on the default branch** -> a separate linked issue (`SKILL.md` ->
      Discovered work). Never widen this branch to absorb it.
    - Three fix attempts that do not converge -> stop and report it as open.
-5. **Record it for the reviewer.** Under the PR's *Notes for the reviewer* (in
+5. **Capture before/after**, once the fixes are in - pr-flow only: solo-trunk
+   has no PR body to render images, so skip this step and say so in the record.
+   - **After:** reset this stack first - `mise run docker:clean`, then `mise
+     run dev:setup` - since the seed is idempotent and keeps what driving
+     changed; both sides then start from the same seed data.
+   - **Before:** `git fetch origin <default>`, then `git worktree add --detach
+     <scratchpad>/qa-before origin/<default>`. Copy the files
+     `.worktreeinclude` lists from the primary checkout, since a hand-made
+     worktree gets none - only git-ignored regular files inside the checkout,
+     never an absolute path, a `..` path or a symlink. Run `mise trust -C
+     <worktree>` only when `mise trust --show`, run in the primary checkout,
+     says `trusted`; otherwise ask - never create trust. Boot it as in
+     Precondition 1; a linked worktree gets its own ports. When it cannot
+     boot, capture "after" only and say why.
+   - Each changed screen of each flow, in the same state on both sides, at
+     desktop (1280 wide) and narrow (390 wide). Name each file
+     `<flow>-<before|after>-<desktop|narrow>.png` and keep it in its own
+     `<scratchpad>/qa-shots/` directory, apart from sign-in state, never in
+     the repo.
+   - **Look at every image before it leaves the machine.** A pushed image
+     stays readable after a prune until GitHub garbage-collects it, so skip
+     or crop any screen showing a key, a token (a URL bar, a magic-link
+     toast), an email or other personal data. Seeded data only, never a
+     stack wired to a real service. A leaked image is a leaked secret: delete
+     the ref and rotate the secret.
+   - Host them: `sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh"
+     <repo-url> <branch> <scratchpad>/qa-shots/*.png`. `<repo-url>` is the
+     repo `origin` points at, from `gh repo view --json url -q .url`; with no
+     `gh`, it is the PR URL cut to `https://<host>/<owner>/<repo>`. The helper
+     pushes the images to `refs/steer-assets/<branch>`, which is not a branch
+     and which a default clone never fetches, then prints one URL per file.
+     Link only these URLs: a repo-relative path or a
+     `raw.githubusercontent.com` link shows a broken image to reviewers of a
+     private repo.
+   - A non-zero exit (a push ruleset, no push rights, no git identity) means
+     no images: record `screenshots not hosted: <reason>`. Never commit them
+     instead.
+6. **Record it for the reviewer.** Under the PR's *Notes for the reviewer* (in
    solo-trunk, the trunk commit body): the flows driven, the criteria that
    passed, each defect fixed with its test, each one filed with its issue ref,
-   and anything that could not be exercised locally. A fix adds commits, so the
-   next step is `finish` again, which re-runs the local gates and the code gate
-   on them.
+   and anything that could not be exercised locally. Under *Visual changes*,
+   replace the table with one `| Flow | Viewport | Before | After |` row per
+   capture, each image an inline Markdown image of its printed URL. A fix adds
+   commits, so the next step is `finish` again, which re-runs the local gates
+   and the code gate on them.
+
+**Every exit tears down what `qa` started**, the stop paths included (no driver,
+fixes that do not converge): the dev server, and the before stack - `mise run
+docker:clean` inside it, then `git worktree remove --force`, since the copied
+boot files are untracked; check the directory is gone, else delete it.
 
 ## Gotchas
 
-- **Commit no QA script.** This is exploration. A check worth keeping becomes a
+- **Commit no QA script or screenshot.** This is exploration. A check worth keeping becomes a
   regression test in the repo's own suite, not a browser script beside it.
 - **The browser state is evidence only when the stack is clean.** Leftover local
   data hides or fakes a defect; drive after `dev:setup`, not on a long-lived
   database.
 - **A green test suite is not a pass here.** A flow passes when the browser
   showed it working.
+- **The images outlive the branch.** The ref is kept as review evidence; prune
+  one with `git push origin --delete refs/steer-assets/<branch>`, which breaks
+  that PR's images once GitHub garbage-collects the commit.
+- **`<repo-url>` names the repo the helper pushes to.** From a fork that is the
+  fork, not the PR's base repo; a mismatch links a SHA the URL's repo lacks.
 - **Close the browser** when done.

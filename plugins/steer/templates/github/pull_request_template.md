@@ -114,6 +114,17 @@ is no global coverage threshold and no test-file-naming gate in either case.
 - [ ] No secrets, keys, or credentials in the diff
 - [ ] High-risk areas were explicitly scoped by a dev before implementation
 
+## Visual changes
+
+When this PR changes what a user sees, show it: before/after screenshots of each
+changed screen at desktop and narrow width (`/steer:work qa` captures and hosts
+them).
+
+| Flow | Viewport | Before | After |
+|---|---|---|---|
+
+- [ ] N/A - no visible UI change
+
 ## Notes for the reviewer
 
 Anything reviewers should pay special attention to?
