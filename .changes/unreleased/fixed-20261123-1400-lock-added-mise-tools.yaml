@@ -1,0 +1,23 @@
+kind: Fixed
+time: 2026-11-23T14:00:00.000000-05:00
+custom:
+  Slug: lock-added-mise-tools
+body: |
+  - **Fixed: adding a mise tool to a locked repo no longer breaks CI, and Semgrep
+    runs pinned through `uvx`.** The v7.23.0 gitleaks migration and the
+    `security-gate` repair added `[tools]` entries with no lock step, and
+    `mise install` records a new tool's version but no platform URLs, so CI's
+    locked install failed on a multi-platform `mise.lock` (#953). They now lock
+    the added tool by name for the platforms the lock already covers, derived
+    from the lock itself; `CONVENTIONS.md` -> "Adding a tool to a locked repo"
+    states the rule, and sync, adopt and the reference summary point at it. The
+    scaffold's `"pipx:semgrep"` tool, which can force a lockfile format upgrade
+    that rewrites every entry (#925), is gone: `scripts/ci-security.sh` runs
+    `uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from
+    "semgrep==${STEER_SEMGREP_VERSION}"`: Semgrep pinned to 1.185.0, and its
+    transitive deps bounded to packages published by 2026-11-16, the two set
+    together on adjacent lines. Its error messages print the same command for a
+    local run. Two migrations carry repos forward: one moves a repo off
+    `pipx:semgrep` to the pinned `uvx` call, the other locks a gitleaks or Trivy
+    entry that lacks CI's `linux-x64` platform. gitleaks and Trivy stay
+    `latest` in `mise.toml`, pinned by `mise.lock`.

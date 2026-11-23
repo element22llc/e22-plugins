@@ -94,6 +94,90 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `ci:security` runs Semgrep pinned through `uvx`, not a `pipx:` tool
+
+- **What & why:** the scaffold installed Semgrep as `"pipx:semgrep" = "latest"`.
+  On a repo with a committed `mise.lock`, a `pipx:` tool can demand a lockfile
+  format upgrade (`mise lock --upgrade`) that rewrites every entry, so the
+  `security-gate` repair could not land as an additive lock change.
+  `scripts/ci-security.sh` now runs
+  `uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from "semgrep==${STEER_SEMGREP_VERSION}"`:
+  an exact version, and a date that bounds Semgrep's transitive deps to the
+  7-day cooldown, set together on two adjacent lines. `[tools]` drops the
+  `pipx:` entry. The script is not verbatim and the capability checks wiring
+  only, so a repo carrying the older script or tool entry needs this entry.
+- **Precondition:** either check prints a line -
+
+  ```sh
+  test -f scripts/ci-security.sh && grep -q 'semgrep scan' scripts/ci-security.sh &&
+    { ! grep -q '^STEER_SEMGREP_VERSION=' scripts/ci-security.sh ||
+      ! grep -q '^STEER_SEMGREP_EXCLUDE_NEWER=' scripts/ci-security.sh; } && echo script
+  grep -q '^[[:space:]]*"pipx:semgrep"' mise.toml 2>/dev/null && echo tools
+  ```
+
+  No output => already migrated, or no stage => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes.
+  - `script`: in `scripts/ci-security.sh`, put the template's
+    `STEER_SEMGREP_VERSION=` and `STEER_SEMGREP_EXCLUDE_NEWER=` lines with their
+    three-line comment, and a blank line, directly above the Semgrep block's
+    first comment (or above `steer_ci_group 'semgrep` when that comment is
+    absent), replacing either line already there - the two are always set
+    together. Copy both values from `templates/scaffold/scripts/ci-security.sh`,
+    never from memory. Then rewrite only these tokens, so the pins live in one
+    place:
+    - the scan line's command prefix - a bare `semgrep scan `, or a hand-written
+      `uvx ... semgrep scan ` carrying a literal pin - becomes
+      `uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from "semgrep==${STEER_SEMGREP_VERSION}" semgrep scan `,
+      the rest of the line (the product's own flags) unchanged;
+    - in the double-quoted error messages, `run 'semgrep scan` (or a
+      hand-written `run 'uvx ... semgrep scan`) becomes
+      `run 'uvx --exclude-newer ${STEER_SEMGREP_EXCLUDE_NEWER} --from semgrep==${STEER_SEMGREP_VERSION} semgrep scan`.
+
+    A hand pin moves to the template's version; say so in the PR.
+  - `tools`: delete the `"pipx:semgrep"` line from `mise.toml` `[tools]`. With a
+    committed `mise.lock`, run `mise lock --platform "${platforms}"` with no tool
+    argument (platforms derived as in `CONVENTIONS.md` -> "Adding a tool to a
+    locked repo"): it prunes the stale `pipx:semgrep` entry and its
+    `.mise/locks/pipx-semgrep/` sidecar. Keep the result only if it removes
+    nothing else and adds nothing beyond missing gitleaks or Trivy platform
+    tables; otherwise restore `mise.lock` and `.mise/locks/` from `HEAD` and say
+    in the PR that the stale entry stays - a locked install ignores it.
+
+  Either way `uvx` needs `uv` in `[tools]`: re-add `uv = "latest"` if the repo
+  pruned it, locked by name. Run `mise run ci:security` and report what it
+  finds; fixing or waiving a finding is the reviewer's call. **No history entry
+  is earned.**
+
+### [Unreleased] - lock gitleaks and Trivy for every platform `mise.lock` covers
+
+- **What & why:** the v7.23.0 gitleaks entry and the `security-gate` repair
+  added `[tools]` entries with no lock step, and `mise install` records a new
+  tool's version but no `platforms.*` tables. On a multi-platform lock CI's
+  locked install then fails with *"No lockfile URL found ... (--locked
+  mode)"*. Both now lock the tool by name; this entry repairs a lock written
+  the old way.
+- **Precondition:** the lock covers CI's `linux-x64` but its gitleaks or Trivy
+  entry does not -
+
+  ```sh
+  if grep -qF 'platforms.linux-x64' mise.lock 2>/dev/null; then
+    for t in aqua:gitleaks/gitleaks aqua:aquasecurity/trivy; do
+      grep -qF "[[tools.\"${t}\"]]" mise.lock &&
+        ! grep -qF "[tools.\"${t}\".\"platforms.linux-x64\"]" mise.lock && echo "${t}"
+    done
+  fi
+  ```
+
+  No output => already locked, or no multi-platform lock => no-op. Only these
+  two aqua tools are checked: a `pipx:` or `npm:` entry legitimately has no
+  platform tables, and keying on `linux-x64` alone keeps a platform an aqua
+  tool has no build for from firing it forever.
+- **Action:** read-then-propose. Run `mise lock --platform "${platforms}"`
+  followed by each tool the precondition printed, platforms derived as in
+  `CONVENTIONS.md` -> "Adding a tool to a locked repo". Show that the
+  `mise.lock` diff only adds lines, then commit it. **No history entry is
+  earned.**
+
 ### [Unreleased] - keep the tags a 7.23.0 lock run wrote over SHA pins
 
 - **What & why:** the v7.23.0 `actions.lock` entry told sync to leave the
@@ -265,8 +349,10 @@ Name the file and say what to carry forward.
 - **Action:** read-then-propose; show the diff and apply on a yes. Section
   re-take of `scripts/ci-security.sh`: replace the region from
   `steer_ci_group 'semgrep` through its `steer_ci_endgroup` with the
-  scaffold's Semgrep block, from its comment through
-  `[ "${rc}" -eq 0 ] || exit "${rc}"`: the `findings` temp file, both traps
+  scaffold's Semgrep block, from the comment above its `STEER_SEMGREP_VERSION=`
+  and `STEER_SEMGREP_EXCLUDE_NEWER=` lines through
+  `[ "${rc}" -eq 0 ] || exit "${rc}"`: both pin lines, the `findings`
+  temp file, both traps
   (`EXIT`, and `HUP INT TERM`), `rc=0`, the group with the extracted
   `listed` lines, and the error branches. Carry
   any flag the product added to its `semgrep scan` line (an extra `--config`,
@@ -360,7 +446,17 @@ Name the file and say what to carry forward.
   `steer_ci_endgroup`) directly after the `ci-lib.sh` source line, ahead of the
   stack check; carry every other line forward unchanged. Add
   `"aqua:gitleaks/gitleaks" = "latest"` to `mise.toml` `[tools]` beside the
-  Trivy entry, then run `mise install` and commit the refreshed `mise.lock`.
+  Trivy entry. With a committed `mise.lock`, lock it by name for the platforms
+  the lock already covers (`CONVENTIONS.md` -> "Adding a tool to a locked
+  repo"), never with `mise install` alone - that records no platform URLs and
+  CI's locked install fails:
+
+  ```sh
+  platforms="$(sed -n 's/^\[.*platforms\.\([a-z0-9_-]*\).*/\1/p' mise.lock | sort -u | paste -sd, -)"
+  mise lock --platform "${platforms}" aqua:gitleaks/gitleaks
+  ```
+
+  Then `mise install`, and commit the `mise.lock` diff, which only adds lines.
   Run `mise run ci:security` and report what it finds. A finding in history
   is a compromised secret: the dev rotates it, then its fingerprint goes in
   `.gitleaksignore`. A deliberate fake in a fixture takes a trailing
@@ -1272,7 +1368,9 @@ Name the file and say what to carry forward.
      loses content silently. Rename it to `CHANGELOG-archive.md`, add a line to
      `.changes/header.tpl.md` pointing at it, and start fragments from empty.
      Say plainly in the PR that older entries live in the archive.
-  3. **Wire the gate:** add `changie = "1.26.0"` to `[tools]`, the
+  3. **Wire the gate:** add `changie = "1.26.0"` to `[tools]` (with a committed
+     `mise.lock`, lock it by name: `CONVENTIONS.md` -> "Adding a tool to a
+     locked repo"), the
      `changelog:new` / `changelog:merge` tasks and the `ci:changelog` task to
      `mise.toml` (adding `ci:changelog` to the `ci` task's `depends`), copy
      `scripts/ci-changelog.sh`, and add the `Changelog fragment` step to

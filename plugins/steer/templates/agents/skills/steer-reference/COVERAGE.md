@@ -23,6 +23,8 @@ It covers, in detail:
   only the host platform, so the lock must be re-locked for every CI/dev platform
   or CI's `mise install --locked` fails on `linux-x64`). Until a populated lock
   is committed CI installs unlocked; never commit an empty / comment-only lock.
+  A tool added later is locked by name for the platforms the lock already
+  covers (`mise lock --platform <those> <tool>`), never by `mise install` alone.
   Bump via `mise upgrade`; backends must work on both macOS and Linux.
 - **Lockfile discipline** - `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
   `.terraform.lock.hcl` are committed and updated with every dependency/tool

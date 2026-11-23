@@ -482,17 +482,22 @@ and **Repair**.
 
 ### security-gate - HIGH/CRITICAL findings block the required check
 - **Files:** `scripts/ci-security.sh`, the `ci:security` task in `mise.toml`
-  (inside the `ci` task's `depends`), the gitleaks, Trivy and Semgrep `[tools]` entries,
-  and its step in `.github/workflows/ci.yml`
+  (inside the `ci` task's `depends`), the gitleaks and Trivy `[tools]` entries
+  beside the baseline `uv` (Semgrep runs pinned through `uvx`, never as a
+  `pipx:` tool), and its step in `.github/workflows/ci.yml`
 - **Conditional:** a Node or Python stack (`stack` is not `none`); without one
   it is `n/a`, so sync never proposes it to a workspace. A stack-less repo that
   carries the stage (the infra profile) still runs its secret scan.
 - **Wired-when:** `ci.yml` runs `mise run ci:security`, `mise.toml` defines
   `ci:security`, and `scripts/ci-security.sh` is present.
-- **Repair:** copy the script from the scaffold, add the three `[tools]` entries,
-  the `ci:security` task and its `ci` depends entry to `mise.toml`, and splice
-  the `Security scan` step into `ci.yml` after the image build - additively,
-  never over a product's own steps. Then run `mise run ci:security` and say in
+- **Repair:** copy the script from the scaffold, add the two `[tools]` entries
+  (and `uv` if the repo pruned it), the `ci:security` task and its `ci` depends
+  entry to `mise.toml`, and splice the `Security scan` step into `ci.yml` after
+  the image build - additively, never over a product's own steps. With a
+  committed `mise.lock`, lock the added tools by name for the platforms it
+  already covers (`CONVENTIONS.md` -> "Adding a tool to a locked repo"):
+  `mise lock --platform "${platforms}" aqua:gitleaks/gitleaks aqua:aquasecurity/trivy`,
+  and show that the lock diff only adds lines. Then run `mise run ci:security` and say in
   the PR what it finds: each finding is fixed, or waived in `.trivyignore.yaml`
   (with `statement` and `expired_at`), by a `# nosemgrep: <rule>` with its
   why-comment, or - for a secret - rotated and listed in `.gitleaksignore` - a
