@@ -363,7 +363,30 @@ def test_skill_script_grants_require_anchored_grant_and_literal_call(monkeypatch
         anchored,
         '```sh\nsh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" \\\n  .\n```',
     )
+    _write_skill(skills, "noscriptsdir", "allowed-tools:\n  - Bash(sh *scan-prereqs.sh*)\n", call)
+    _write_skill(
+        skills, "closedquote", anchored, 'Run `sh "${CLAUDE_PLUGIN_ROOT}"/scripts/scan-prereqs.sh`'
+    )
+    _write_skill(
+        skills, "twospaces", anchored, 'Run `sh  "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh"`'
+    )
+    _write_skill(
+        skills,
+        "secondcall",
+        anchored,
+        f"{call[:-1]} && sh ${{CLAUDE_PLUGIN_ROOT}}/scripts/scan-prereqs.sh x`",
+    )
+    # A frontmatter grant spelled like a call must not count as one: if it did,
+    # the python3 grant here would mask the uncovered sh call in the body.
+    _write_skill(
+        skills,
+        "fmgrant",
+        "allowed-tools:\n"
+        '  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)\n',
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py"`',
+    )
     _write_skill(skills, "clean", anchored, call)
+    _write_skill(skills, "zsh", "", "Run `zsh scripts/x.sh` in the product repo.")
 
     monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
     errors: list[str] = []
@@ -373,11 +396,28 @@ def test_skill_script_grants_require_anchored_grant_and_literal_call(monkeypatch
         return [e for e in errors if f"skills/{name}/" in e]
 
     assert not hits("clean")
-    for name in ("unanchored", "pyunanchored"):
+    assert not hits("zsh")
+    for name in ("unanchored", "pyunanchored", "noscriptsdir"):
         assert any("not anchored" in e for e in hits(name)), name
-    for name in ("unquoted", "unbraced"):
-        assert any("without the quoted" in e for e in hits(name)), name
+    for name in ("unquoted", "unbraced", "closedquote", "twospaces", "secondcall"):
+        assert any("without the exact" in e for e in hits(name)), name
     assert any("backslash continuation" in e for e in hits("continued"))
+    assert any("no allowed-tools grant covers" in e for e in hits("fmgrant"))
+
+
+def test_executed_reference_calls_hold_the_grant_spelling(monkeypatch, tmp_path: Path):
+    root = tmp_path / "plugin"
+    (root / "templates/reference").mkdir(parents=True)
+    (root / "templates/reference/OK.md").write_text(
+        'sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" a b\n', encoding="utf-8"
+    )
+    (root / "templates/reference/BAD.md").write_text(
+        'sh "$CLAUDE_PLUGIN_ROOT/scripts/template-reconcile.sh" \\\n  a b\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", root)
+    errors: list[str] = []
+    check_standards.check_executed_reference_calls(errors)
+    assert len(errors) == 1 and "BAD.md" in errors[0]
 
 
 def _write_wf(root: Path, body: str) -> None:

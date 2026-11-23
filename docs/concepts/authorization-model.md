@@ -262,7 +262,8 @@ grants the bundled plugin helper scripts its body - including a factored-out
 the skill's own directory** (`_SCRIPT_INVOCATION` matches
 `${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`; it also rejects an unanchored
 grant, an unquoted or unbraced call, and a call split across a backslash
-continuation), so a helper reached through a
+continuation, there and in `templates/reference/` and the scaffold `MANIFEST.md`),
+so a helper reached through a
 cross-referenced convention is outside it. That blind spot has bitten once:
 `/steer:setup sync` step 5 delegates to the Template-reconciliation convention in
 `templates/reference/SPEC-FRAMEWORK.md`, whose command is

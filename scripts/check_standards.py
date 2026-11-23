@@ -1325,11 +1325,15 @@ def check_noncallable_imperatives(errors: list[str]) -> None:
 # so the canonical invocation is quoted, braced and on one line. Looser spellings
 # are still captured so they can be flagged rather than silently ignored.
 _SCRIPT_INVOCATION = re.compile(
-    r"(?P<interp>sh|bash|python3?|uv run(?:\s+python3?)?)\s+"
-    r"(?P<root>[\"']?\$\{?CLAUDE_PLUGIN_ROOT\}?)/scripts/(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))"
-    r"(?P<rest>[^\n]*)"
+    r"(?<![\w-])(?P<interp>sh|bash|python3?|uv[ \t]+run(?:[ \t]+python3?)?)(?P<sep>[ \t]+)"
+    r"(?P<root>[\"']?\$\{?CLAUDE_PLUGIN_ROOT\}?[\"']?)/scripts/"
+    r"(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))"
+    # A lookahead, so a second call on the same line is still found.
+    r"(?=(?P<rest>[^\n]*))"
 )
 _CANONICAL_ROOT = '"${CLAUDE_PLUGIN_ROOT}'
+# Files outside skills/ whose helper calls a skill runs as written.
+_EXECUTED_REFERENCE_GLOBS = ("templates/reference/*.md", "templates/scaffold/MANIFEST.md")
 
 # A helper grant must be anchored to the plugin root (#1010): the old
 # `Bash(sh *scripts/<name>*)` shape also matched `sh -c '<anything>' x
@@ -1359,6 +1363,42 @@ def _grant_covers(interp: str, script: str, grants: list[str]) -> bool:
     return _expected_grant(interp, script) in (g.strip() for g in grants if isinstance(g, str))
 
 
+def _helper_names() -> set[str]:
+    scripts = PLUGIN_ROOT / "scripts"
+    return {p.name for p in scripts.iterdir() if p.suffix in (".sh", ".py")}
+
+
+def _invocation_shape_errors(text: str, rel: str) -> list[str]:
+    errors = []
+    for m in _SCRIPT_INVOCATION.finditer(_markdown_body(text)):
+        script = m.group("script")
+        if (
+            m.group("root") != _CANONICAL_ROOT
+            or m.group("sep") != " "
+            or not m.group("rest").startswith('"')
+        ):
+            errors.append(
+                f"{rel}: runs scripts/{script} without the exact `<interp> "
+                f'"${{CLAUDE_PLUGIN_ROOT}}/scripts/<name>"` spelling - the grant matches '
+                f"the command string literally, so this spelling prompts (#1010)"
+            )
+        elif m.group("rest").rstrip().endswith("\\"):
+            errors.append(
+                f"{rel}: runs scripts/{script} across a backslash continuation - the "
+                f"anchored grant never matches a multi-line command, so keep the call "
+                f"on one line (#1010)"
+            )
+    return errors
+
+
+def check_executed_reference_calls(errors: list[str]) -> None:
+    """Hold helper calls in reference files skills execute to the grant's spelling."""
+    for pattern in _EXECUTED_REFERENCE_GLOBS:
+        for md in sorted(PLUGIN_ROOT.glob(pattern)):
+            rel = str(md.relative_to(PLUGIN_ROOT))
+            errors.extend(_invocation_shape_errors(md.read_text(encoding="utf-8"), rel))
+
+
 def check_skill_script_grants(errors: list[str]) -> None:
     """Assert every skill grants the bundled plugin scripts its body runs.
 
@@ -1369,6 +1409,7 @@ def check_skill_script_grants(errors: list[str]) -> None:
     ``PROCEDURE.md``), since a run step can live in a secondary file while the
     grants live only in SKILL.md frontmatter.
     """
+    helpers = _helper_names()
     for skill_dir in sorted(p for p in SKILLS_DIR.iterdir() if p.is_dir()):
         skill_md = skill_dir / "SKILL.md"
         if not skill_md.is_file():
@@ -1381,33 +1422,23 @@ def check_skill_script_grants(errors: list[str]) -> None:
             if (
                 isinstance(grant, str)
                 and grant.startswith("Bash(")
-                and "scripts/" in grant
+                and any(name in grant for name in helpers)
                 and not _ANCHORED_GRANT.fullmatch(grant.strip())
             ):
                 errors.append(
-                    f"{rel}: allowed-tools grant {grant!r} is not anchored to the "
-                    f'plugin root - use Bash(<interp> "${{CLAUDE_PLUGIN_ROOT}}/scripts/'
-                    f'<name>" *); a wildcard before scripts/ also matches '
+                    f"{rel}: allowed-tools grant {grant!r} names a plugin helper but is "
+                    f'not anchored to the plugin root - use Bash(<interp> "${{CLAUDE_PLUGIN_'
+                    f'ROOT}}/scripts/<name>" *); a leading wildcard also matches '
                     f"`sh -c '<anything>' x scripts/<name>` (#1010)"
                 )
         # Collect (interpreter, script) invocations across all body files.
         invocations: dict[str, str] = {}
         for md in sorted(skill_dir.rglob("*.md")):
-            md_rel = f"skills/{skill_dir.name}/{md.relative_to(skill_dir)}"
-            for m in _SCRIPT_INVOCATION.finditer(_markdown_body(md.read_text(encoding="utf-8"))):
+            text = md.read_text(encoding="utf-8")
+            for m in _SCRIPT_INVOCATION.finditer(_markdown_body(text)):
                 invocations.setdefault(m.group("script"), m.group("interp"))
-                if m.group("root") != _CANONICAL_ROOT or not m.group("rest").startswith('"'):
-                    errors.append(
-                        f"{md_rel}: runs scripts/{m.group('script')} without the quoted "
-                        f'"${{CLAUDE_PLUGIN_ROOT}}/scripts/<name>" path - the grant matches '
-                        f"the command string literally, so this spelling prompts (#1010)"
-                    )
-                elif m.group("rest").rstrip().endswith("\\"):
-                    errors.append(
-                        f"{md_rel}: runs scripts/{m.group('script')} across a backslash "
-                        f"continuation - the anchored grant never matches a multi-line "
-                        f"command, so keep the call on one line (#1010)"
-                    )
+            md_rel = f"skills/{skill_dir.name}/{md.relative_to(skill_dir)}"
+            errors.extend(_invocation_shape_errors(text, md_rel))
         if not invocations:
             continue
         if not grants:
@@ -1842,6 +1873,7 @@ def run_checks(errors: list[str]) -> None:
     check_payload_debranded(errors)
     check_noncallable_imperatives(errors)
     check_skill_script_grants(errors)
+    check_executed_reference_calls(errors)
     check_skill_helper_sourcing(errors)
     check_workspace_task_namespace(errors)
     check_migration_precondition_converges(errors)
