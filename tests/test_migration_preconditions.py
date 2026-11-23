@@ -169,6 +169,53 @@ def test_lockfile_precondition_fires_under_zsh(tmp_path, entry):
     assert out.stdout.strip() == "stale"
 
 
+RESTORED_SHA = "keep the tags a 7.23.0 lock run wrote over SHA pins"
+SHA = "11bd71901bbe5b1630ceea73d27597364c9af683"
+TAG_LOCK = "workflows:\n    '.github/workflows/ci.yml':\n        - 'actions/checkout@v4.2.2'\n"
+
+
+def _sha_repo(repo: Path, uses: str, lock: str | None) -> None:
+    wf = repo / ".github/workflows"
+    wf.mkdir(parents=True)
+    (wf / "ci.yml").write_text(
+        f"on: push\njobs:\n  a:\n    steps:\n      - uses: {uses}\n", encoding="utf-8"
+    )
+    if lock is not None:
+        (wf / "actions.lock").write_text(lock, encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("uses", "lock", "expected"),
+    [
+        (f"actions/checkout@{SHA} # v4.2.2", TAG_LOCK, True),
+        (f"actions/checkout@{SHA}", TAG_LOCK, True),
+        (f"actions/checkout@{SHA}", f"workflows:\n  x:\n    - 'actions/checkout@{SHA}'\n", False),
+        ("actions/checkout@v4.2.2", TAG_LOCK, False),
+        (f"octo-org/shared/.github/workflows/build.yml@{SHA}", TAG_LOCK, False),
+        (f"actions/checkout@{SHA}", None, False),
+    ],
+)
+def test_restored_sha_precondition(tmp_path, uses, lock, expected):
+    _sha_repo(tmp_path, uses, lock)
+    assert _fires(_precondition(RESTORED_SHA), tmp_path) is expected
+
+
+def test_restored_sha_precondition_without_github_dir(tmp_path):
+    assert not _fires(_precondition(RESTORED_SHA), tmp_path)
+
+
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+def test_restored_sha_precondition_fires_under_zsh(tmp_path):
+    _sha_repo(tmp_path, f"actions/checkout@{SHA} # v4.2.2", TAG_LOCK)
+    out = subprocess.run(
+        ["zsh", "-f", "-c", _precondition(RESTORED_SHA)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert out.stdout.strip() == f"actions/checkout@{SHA}"
+
+
 YAMLLINT_CONFIG = "runs yamllint when any one config exists"
 TEMPLATE_CI_IAC = REPO_ROOT / "plugins/steer/templates/scaffold/scripts/ci-iac.sh"
 
