@@ -100,36 +100,40 @@ Name the file and say what to carry forward.
   On a repo with a committed `mise.lock`, a `pipx:` tool can demand a lockfile
   format upgrade (`mise lock --upgrade`) that rewrites every entry, so the
   `security-gate` repair could not land as an additive lock change.
-  `scripts/ci-security.sh` now runs `uvx --from "semgrep==${STEER_SEMGREP_VERSION}"`
-  with the exact version in one variable, and `[tools]` drops the `pipx:` entry.
-  The script is not verbatim and the capability checks wiring only, so a repo
-  carrying the older script or tool entry needs this entry.
+  `scripts/ci-security.sh` now runs
+  `uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from "semgrep==${STEER_SEMGREP_VERSION}"`:
+  an exact version, and a date that bounds Semgrep's transitive deps to the
+  7-day cooldown, set together on two adjacent lines. `[tools]` drops the
+  `pipx:` entry. The script is not verbatim and the capability checks wiring
+  only, so a repo carrying the older script or tool entry needs this entry.
 - **Precondition:** either check prints a line -
 
   ```sh
   test -f scripts/ci-security.sh && grep -q 'semgrep scan' scripts/ci-security.sh &&
-    ! grep -q '^STEER_SEMGREP_VERSION=' scripts/ci-security.sh && echo script
+    { ! grep -q '^STEER_SEMGREP_VERSION=' scripts/ci-security.sh ||
+      ! grep -q '^STEER_SEMGREP_EXCLUDE_NEWER=' scripts/ci-security.sh; } && echo script
   grep -q '^[[:space:]]*"pipx:semgrep"' mise.toml 2>/dev/null && echo tools
   ```
 
   No output => already migrated, or no stage => no-op.
 - **Action:** read-then-propose; show the diff and apply on a yes.
-  - `script`: in `scripts/ci-security.sh`, insert the template's
-    `STEER_SEMGREP_VERSION=` line with its two-line comment, and a blank line,
-    directly above the Semgrep block's first comment (or above
-    `steer_ci_group 'semgrep` when that comment is absent). Copy the version from
-    `templates/scaffold/scripts/ci-security.sh`, never from memory. Then rewrite
-    only these tokens: a line that starts `semgrep scan ` starts
-    `uvx --from "semgrep==${STEER_SEMGREP_VERSION}" semgrep scan ` instead, the
-    rest of the line (the product's own flags) unchanged; and in the error
-    messages `run 'semgrep scan` becomes
-    `run 'uvx --from semgrep==${STEER_SEMGREP_VERSION} semgrep scan`. A repo
-    that already moved to uvx by hand keeps its lines, with every literal pin
-    in the file replaced so the version lives in one place: on the scan line
-    `--from semgrep==1.185.0` becomes `--from "semgrep==${STEER_SEMGREP_VERSION}"`,
-    and inside the double-quoted error messages `semgrep==1.185.0` becomes
-    `semgrep==${STEER_SEMGREP_VERSION}`. The hand pin moves to the template's
-    version; say so in the PR.
+  - `script`: in `scripts/ci-security.sh`, put the template's
+    `STEER_SEMGREP_VERSION=` and `STEER_SEMGREP_EXCLUDE_NEWER=` lines with their
+    three-line comment, and a blank line, directly above the Semgrep block's
+    first comment (or above `steer_ci_group 'semgrep` when that comment is
+    absent), replacing either line already there - the two are always set
+    together. Copy both values from `templates/scaffold/scripts/ci-security.sh`,
+    never from memory. Then rewrite only these tokens, so the pins live in one
+    place:
+    - the scan line's command prefix - a bare `semgrep scan `, or a hand-written
+      `uvx ... semgrep scan ` carrying a literal pin - becomes
+      `uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from "semgrep==${STEER_SEMGREP_VERSION}" semgrep scan `,
+      the rest of the line (the product's own flags) unchanged;
+    - in the double-quoted error messages, `run 'semgrep scan` (or a
+      hand-written `run 'uvx ... semgrep scan`) becomes
+      `run 'uvx --exclude-newer ${STEER_SEMGREP_EXCLUDE_NEWER} --from semgrep==${STEER_SEMGREP_VERSION} semgrep scan`.
+
+    A hand pin moves to the template's version; say so in the PR.
   - `tools`: delete the `"pipx:semgrep"` line from `mise.toml` `[tools]`. With a
     committed `mise.lock`, run `mise lock --platform "${platforms}"` with no tool
     argument (platforms derived as in `CONVENTIONS.md` -> "Adding a tool to a
@@ -302,8 +306,9 @@ Name the file and say what to carry forward.
 - **Action:** read-then-propose; show the diff and apply on a yes. Section
   re-take of `scripts/ci-security.sh`: replace the region from
   `steer_ci_group 'semgrep` through its `steer_ci_endgroup` with the
-  scaffold's Semgrep block, from its `STEER_SEMGREP_VERSION=` line and comment
-  through `[ "${rc}" -eq 0 ] || exit "${rc}"`: the version line, the `findings`
+  scaffold's Semgrep block, from the comment above its `STEER_SEMGREP_VERSION=`
+  and `STEER_SEMGREP_EXCLUDE_NEWER=` lines through
+  `[ "${rc}" -eq 0 ] || exit "${rc}"`: both pin lines, the `findings`
   temp file, both traps
   (`EXIT`, and `HUP INT TERM`), `rc=0`, the group with the extracted
   `listed` lines, and the error branches. Carry

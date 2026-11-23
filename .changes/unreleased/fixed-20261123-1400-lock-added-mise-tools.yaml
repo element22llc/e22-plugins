@@ -13,9 +13,11 @@ body: |
     states the rule, and sync, adopt and the reference summary point at it. The
     scaffold's `"pipx:semgrep"` tool, which can force a lockfile format upgrade
     that rewrites every entry (#925), is gone: `scripts/ci-security.sh` runs
-    `uvx --from "semgrep==${STEER_SEMGREP_VERSION}"`, pinned to 1.186.0 in that
-    one variable, and its error messages print the same command for a local
-    run. Two migrations carry repos forward: one moves a repo off
+    `uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from
+    "semgrep==${STEER_SEMGREP_VERSION}"`: Semgrep pinned to 1.185.0, and its
+    transitive deps bounded to packages published by 2026-11-16, the two set
+    together on adjacent lines. Its error messages print the same command for a
+    local run. Two migrations carry repos forward: one moves a repo off
     `pipx:semgrep` to the pinned `uvx` call, the other locks a gitleaks or Trivy
     entry that lacks CI's `linux-x64` platform. gitleaks and Trivy stay
     `latest` in `mise.toml`, pinned by `mise.lock`.

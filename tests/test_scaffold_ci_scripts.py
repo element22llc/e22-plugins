@@ -192,14 +192,18 @@ def test_image_fails_when_a_build_fails(repo: Repo) -> None:
 _GITLEAKS = "gitleaks git --no-banner --redact --log-opts=HEAD ."
 _TRIVY = "trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1"
 _SEMGREP_PIN = re.search(
-    r"^STEER_SEMGREP_VERSION=(\d+\.\d+\.\d+)$",
+    r"^STEER_SEMGREP_VERSION=(\d+\.\d+\.\d+)\nSTEER_SEMGREP_EXCLUDE_NEWER=(\d{4}-\d{2}-\d{2})$",
     (SCRIPTS / "ci-security.sh").read_text(encoding="utf-8"),
     re.MULTILINE,
 )
-assert _SEMGREP_PIN, "ci-security.sh pins no exact STEER_SEMGREP_VERSION"
+assert _SEMGREP_PIN, "ci-security.sh lacks the adjacent exact version + exclude-newer date pins"
+_SEMGREP_CMD = (
+    f"uvx --exclude-newer {_SEMGREP_PIN.group(2)} --from semgrep=={_SEMGREP_PIN.group(1)}"
+    " semgrep scan"
+)
 # The argv ends in the per-run temp file Semgrep writes its findings to.
 _SEMGREP = (
-    f"uvx --from semgrep=={_SEMGREP_PIN.group(1)} semgrep scan --config p/default"
+    f"{_SEMGREP_CMD} --config p/default"
     " --severity ERROR --error --metrics off --quiet --json --output "
 )
 
@@ -246,7 +250,7 @@ def test_security_propagates_a_semgrep_failure_without_its_output(repo: Repo) ->
     r = repo.run("ci-security.sh", STUB_FAIL="uvx")
     assert r.code == 3
     assert "Semgrep failed (exit 3)" in r.out
-    assert f"'uvx --from semgrep=={_SEMGREP_PIN.group(1)} semgrep scan" in r.out
+    assert f"'{_SEMGREP_CMD}" in r.out
 
 
 _FAKE_TOKEN = "fake_token_DO_NOT_USE_0000000000000000000000000000000000000000"

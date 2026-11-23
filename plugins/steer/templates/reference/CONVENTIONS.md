@@ -147,8 +147,8 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
   processes every tool in the lock, not only the new one. Prefer a backend with release binaries
   (`aqua:`, core); a `pipx:` tool can demand a lockfile format upgrade
   (`mise lock --upgrade`), which rewrites every entry - run a Python CLI through
-  pinned `uvx --from <pkg>==X.Y.Z` instead, as `scripts/ci-security.sh` does for
-  Semgrep.
+  pinned `uvx --exclude-newer <date> --from <pkg>==X.Y.Z` instead (the date
+  bounds its transitive deps), as `scripts/ci-security.sh` does for Semgrep.
 - **Bumping:** run `mise upgrade` to move the lock forward, review the diff like
   any other change, and - for infra tools - validate in non-prod before prod.
 

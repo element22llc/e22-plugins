@@ -219,6 +219,16 @@ def test_semgrep_uvx_precondition_fires_on_a_hand_pinned_uvx_line(tmp_path):
     assert _out(_precondition(SEMGREP_UVX), tmp_path) == ["script"]
 
 
+def test_semgrep_uvx_precondition_fires_on_a_version_without_its_date(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(
+        "STEER_SEMGREP_VERSION=1.185.0\n"
+        'uvx --from "semgrep==${STEER_SEMGREP_VERSION}" semgrep scan --config p/default\n',
+        encoding="utf-8",
+    )
+    assert _out(_precondition(SEMGREP_UVX), tmp_path) == ["script"]
+
+
 @pytest.mark.parametrize("config", ["mise.toml", "profiles/infra/mise.toml"])
 def test_semgrep_uvx_precondition_is_silent_on_the_current_template(tmp_path, config):
     (tmp_path / "scripts").mkdir()
