@@ -143,8 +143,8 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
   above instead. Then `mise install`, check that a tool with per-platform
   binaries (`aqua:`, core) now has a `platforms.linux-x64` table (`npm:`,
   `pipx:`, `cargo:` and `go:` tools never get one), and commit the purely
-  additive `mise.lock` diff. Never a bare `mise lock` here: it
-  refreshes every tool's entries, not only the new one's. Prefer a backend with release binaries
+  additive `mise.lock` diff. Never add a tool with a bare `mise lock`: it
+  processes every tool in the lock, not only the new one. Prefer a backend with release binaries
   (`aqua:`, core); a `pipx:` tool can demand a lockfile format upgrade
   (`mise lock --upgrade`), which rewrites every entry - run a Python CLI through
   pinned `uvx --from <pkg>==X.Y.Z` instead, as `scripts/ci-security.sh` does for

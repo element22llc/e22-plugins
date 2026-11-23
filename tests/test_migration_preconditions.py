@@ -272,5 +272,21 @@ def test_relock_precondition_is_silent_on_a_ci_locked_tool(tmp_path):
     assert _out(_precondition(RELOCK), tmp_path) == []
 
 
+def test_relock_precondition_fires_on_trivy_too(tmp_path):
+    (tmp_path / "mise.lock").write_text(
+        _lock('[[tools."aqua:aquasecurity/trivy"]]', '[tools.uv."platforms.linux-x64"]'),
+        encoding="utf-8",
+    )
+    assert _out(_precondition(RELOCK), tmp_path) == ["aqua:aquasecurity/trivy"]
+
+
+def test_relock_precondition_is_silent_on_a_host_only_lock(tmp_path):
+    (tmp_path / "mise.lock").write_text(
+        _lock('[[tools."aqua:gitleaks/gitleaks"]]', '[tools.uv."platforms.macos-arm64"]'),
+        encoding="utf-8",
+    )
+    assert _out(_precondition(RELOCK), tmp_path) == []
+
+
 def test_relock_precondition_without_a_lock(tmp_path):
     assert _out(_precondition(RELOCK), tmp_path) == []

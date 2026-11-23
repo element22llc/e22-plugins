@@ -124,10 +124,12 @@ Name the file and say what to carry forward.
     rest of the line (the product's own flags) unchanged; and in the error
     messages `run 'semgrep scan` becomes
     `run 'uvx --from semgrep==${STEER_SEMGREP_VERSION} semgrep scan`. A repo
-    that already moved to uvx by hand keeps its line, with its literal pin
-    (`--from semgrep==1.185.0`) replaced by
-    `--from "semgrep==${STEER_SEMGREP_VERSION}"`, so the version lives in one
-    place.
+    that already moved to uvx by hand keeps its lines, with every literal pin
+    in the file replaced so the version lives in one place: on the scan line
+    `--from semgrep==1.185.0` becomes `--from "semgrep==${STEER_SEMGREP_VERSION}"`,
+    and inside the double-quoted error messages `semgrep==1.185.0` becomes
+    `semgrep==${STEER_SEMGREP_VERSION}`. The hand pin moves to the template's
+    version; say so in the PR.
   - `tools`: delete the `"pipx:semgrep"` line from `mise.toml` `[tools]`. With a
     committed `mise.lock`, run `mise lock --platform "${platforms}"` with no tool
     argument (platforms derived as in `CONVENTIONS.md` -> "Adding a tool to a
