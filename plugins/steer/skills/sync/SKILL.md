@@ -6,8 +6,8 @@ argument-hint: "[--check]"
 # Internal update path behind `/steer:setup sync` - see the note on `init`.
 user-invocable: false
 allowed-tools:
-  - Bash(sh *scripts/convert-legacy-questions.sh*)
-  - Bash(sh *scripts/remove-question-seeds.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/convert-legacy-questions.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/remove-question-seeds.sh" *)
   - Bash(git status *)
   - Bash(git branch *)
   - Bash(git switch *)
@@ -23,15 +23,21 @@ allowed-tools:
   - Bash(git push origin *)
   - Bash(gh pr create *)
   - Bash(mise generate git-pre-commit *)
-  - Bash(sh *scripts/scan-spine-state.sh*)
-  - Bash(sh *scripts/scan-capabilities.sh*)
-  - Bash(sh *scripts/scan-invocations.sh*)
-  - Bash(sh *scripts/template-reconcile.sh*)
-  - Bash(sh *scripts/lock-workflows.sh*)
-  - Bash(python3 *scripts/scaffold_reconcile.py*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-capabilities.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-invocations.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh" *)
+  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)
 ---
 
 # Sync a repo to the current plugin (`/steer:setup sync`)
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 A repo materializes part of the plugin into itself at bootstrap time - the
 `/spec` spine, the bundled scaffold (CI, `mise.toml`, PR template, ...). Those

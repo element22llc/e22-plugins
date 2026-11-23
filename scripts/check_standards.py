@@ -88,7 +88,7 @@ import tomllib
 from pathlib import Path
 
 from check_plugin import PLUGIN_ROOT, parse_frontmatter
-from gen_agent_skills import RAW_BASE
+from gen_agent_skills import RAW_BASE, ROOT_RESOLVE_NOTE
 
 REGISTRY_PATH = PLUGIN_ROOT / "templates/reference/enums.registry"
 ENUMS_MD_PATH = PLUGIN_ROOT / "templates/reference/ENUMS.md"
@@ -1319,26 +1319,95 @@ def check_noncallable_imperatives(errors: list[str]) -> None:
 # The interpreter is captured so the grant is matched interpreter-aware, not by a
 # bare filename substring (a `Bash(sh ...x.py)` grant must not satisfy a
 # `python3 ...x.py` run).
+#
+# The harness matches a grant against the command string literally - quotes are
+# not stripped, and a backslash-continued line never matches the anchored grant -
+# so the canonical invocation is quoted, braced and on one line. Looser spellings
+# are still captured so they can be flagged rather than silently ignored.
 _SCRIPT_INVOCATION = re.compile(
-    r"(?P<interp>sh|bash|python3?|uv run(?:\s+python3?)?)\s+"
-    r"[\"']?\$\{CLAUDE_PLUGIN_ROOT\}/scripts/(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))"
+    r"(?<![\w-])(?P<interp>sh|bash|python3?|uv[ \t]+run(?:[ \t]+python3?)?)(?P<sep>[ \t]+)"
+    r"(?P<root>[\"']?\$\{?CLAUDE_PLUGIN_ROOT\}?[\"']?)/scripts/"
+    r"(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))"
+    # A lookahead, so a second call on the same line is still found.
+    r"(?=(?P<rest>[^\n]*))"
+)
+_CANONICAL_ROOT = '"${CLAUDE_PLUGIN_ROOT}'
+# Files outside skills/ whose helper calls a skill runs as written.
+_EXECUTED_REFERENCE_GLOBS = ("templates/reference/*.md", "templates/scaffold/MANIFEST.md")
+
+# A helper grant must be anchored to the plugin root (#1010): the old
+# `Bash(sh *scripts/<name>*)` shape also matched `sh -c '<anything>' x
+# scripts/<name>` and a same-named script anywhere in the repo.
+_ANCHORED_GRANT = re.compile(
+    r'Bash\((?:sh|bash|python3?|uv run(?: python3?)?) "\$\{CLAUDE_PLUGIN_ROOT\}/scripts/'
+    r'(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))" \*\)'
 )
 
 
+# A blanket grant over the helper directory names no helper; a repo-relative
+# `Bash(sh scripts/x.sh *)` is the product's own script and stays allowed.
+_PLUGIN_SCRIPTS_GRANT = re.compile(r"CLAUDE_PLUGIN_ROOT|\*[^)]*scripts/")
+
+
+def _markdown_body(text: str) -> str:
+    """Drop a leading frontmatter block: an anchored grant spells the same
+    command as the invocation it covers, so it must not be scanned as one."""
+    lines = text.splitlines(keepends=True)
+    if lines and lines[0].strip() == "---":
+        for idx in range(1, len(lines)):
+            if lines[idx].strip() == "---":
+                return "".join(lines[idx + 1 :])
+    return text
+
+
+def _expected_grant(interp: str, script: str) -> str:
+    return f'Bash({" ".join(interp.split())} "${{CLAUDE_PLUGIN_ROOT}}/scripts/{script}" *)'
+
+
 def _grant_covers(interp: str, script: str, grants: list[str]) -> bool:
-    """A grant covers an invocation when it names the same script under a
-    compatible interpreter - mirroring how the harness matches ``Bash(<glob>)``.
-    """
-    head = interp.split()[0]  # sh | bash | python3 | python | uv
-    for grant in grants:
-        m = re.match(r"Bash\((.*)\)\s*$", grant.strip())
-        if not m:
-            continue
-        inner = m.group(1).strip()
-        toks = inner.split()
-        if script in inner and toks and toks[0] == head:
-            return True
-    return False
+    return _expected_grant(interp, script) in (g.strip() for g in grants if isinstance(g, str))
+
+
+def _helper_names() -> set[str]:
+    scripts = PLUGIN_ROOT / "scripts"
+    return {p.name for p in scripts.iterdir() if p.suffix in (".sh", ".py")}
+
+
+def _invocation_shape_errors(text: str, rel: str) -> list[str]:
+    errors = []
+    body = _markdown_body(text)
+    for m in _SCRIPT_INVOCATION.finditer(body):
+        script = m.group("script")
+        line_start = body.rfind("\n", 0, m.start()) + 1
+        line = body[line_start : m.end()] + m.group("rest")
+        if (
+            m.group("root") != _CANONICAL_ROOT
+            or m.group("sep") != " "
+            or not m.group("rest").startswith('"')
+        ):
+            errors.append(
+                f"{rel}: runs scripts/{script} without the exact `<interp> "
+                f'"${{CLAUDE_PLUGIN_ROOT}}/scripts/<name>"` spelling - the grant matches '
+                f"the command string literally, so this spelling prompts (#1010)"
+            )
+        elif m.group("rest").rstrip().endswith("\\") or line.count("`") % 2:
+            errors.append(
+                f"{rel}: runs scripts/{script} split across lines (a backslash "
+                f"continuation, or an inline code span that wraps) - the anchored grant "
+                f"never matches a multi-line command, so keep the call on one line (#1010)"
+            )
+    return errors
+
+
+def _executed_reference_files() -> list[Path]:
+    return [md for pattern in _EXECUTED_REFERENCE_GLOBS for md in sorted(PLUGIN_ROOT.glob(pattern))]
+
+
+def check_executed_reference_calls(errors: list[str]) -> None:
+    """Hold helper calls in reference files skills execute to the grant's spelling."""
+    for md in _executed_reference_files():
+        rel = str(md.relative_to(PLUGIN_ROOT))
+        errors.extend(_invocation_shape_errors(md.read_text(encoding="utf-8"), rel))
 
 
 def check_skill_script_grants(errors: list[str]) -> None:
@@ -1351,26 +1420,64 @@ def check_skill_script_grants(errors: list[str]) -> None:
     ``PROCEDURE.md``), since a run step can live in a secondary file while the
     grants live only in SKILL.md frontmatter.
     """
+    helpers = _helper_names()
+    reference_calls = {
+        m.group("script")
+        for md in _executed_reference_files()
+        for m in _SCRIPT_INVOCATION.finditer(md.read_text(encoding="utf-8"))
+    }
     for skill_dir in sorted(p for p in SKILLS_DIR.iterdir() if p.is_dir()):
         skill_md = skill_dir / "SKILL.md"
         if not skill_md.is_file():
-            continue
-        # Collect (interpreter, script) invocations across all body files.
-        invocations: dict[str, str] = {}
-        for md in sorted(skill_dir.rglob("*.md")):
-            for m in _SCRIPT_INVOCATION.finditer(md.read_text(encoding="utf-8")):
-                invocations.setdefault(m.group("script"), m.group("interp"))
-        if not invocations:
             continue
         rel = f"skills/{skill_dir.name}/SKILL.md"
         fm, _ = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
         grants = (fm or {}).get("allowed-tools")
         grants = grants if isinstance(grants, list) else ([grants] if grants else [])
+        for grant in grants:
+            if (
+                isinstance(grant, str)
+                and grant.startswith("Bash(")
+                and (any(name in grant for name in helpers) or _PLUGIN_SCRIPTS_GRANT.search(grant))
+                and not _ANCHORED_GRANT.fullmatch(grant.strip())
+            ):
+                errors.append(
+                    f"{rel}: allowed-tools grant {grant!r} names a plugin helper but is "
+                    f'not anchored to the plugin root - use Bash(<interp> "${{CLAUDE_PLUGIN_'
+                    f'ROOT}}/scripts/<name>" *); a leading wildcard also matches '
+                    f"`sh -c '<anything>' x scripts/<name>` (#1010)"
+                )
+        # Collect (interpreter, script) invocations across all body files.
+        invocations: dict[str, str] = {}
+        raw_read = set()
+        for md in sorted(skill_dir.rglob("*.md")):
+            text = md.read_text(encoding="utf-8")
+            for m in _SCRIPT_INVOCATION.finditer(_markdown_body(text)):
+                invocations.setdefault(m.group("script"), m.group("interp"))
+                if md != skill_md:
+                    raw_read.add(m.group("script"))
+            md_rel = f"skills/{skill_dir.name}/{md.relative_to(skill_dir)}"
+            errors.extend(_invocation_shape_errors(text, md_rel))
+        granted = {
+            m.group("script")
+            for g in grants
+            if isinstance(g, str) and (m := _ANCHORED_GRANT.fullmatch(g.strip()))
+        }
+        raw_read |= granted & reference_calls
+        if raw_read and ROOT_RESOLVE_NOTE not in skill_md.read_text(encoding="utf-8"):
+            errors.append(
+                f"{rel}: helper(s) {sorted(raw_read)} are called from a file read after "
+                f"load, where ${{CLAUDE_PLUGIN_ROOT}} is not filled in - add "
+                f"gen_agent_skills.ROOT_RESOLVE_NOTE to the body (#1010)"
+            )
+        if not invocations:
+            continue
         if not grants:
             errors.append(
                 f"{rel}: runs bundled plugin script(s) {sorted(invocations)} but "
-                f"declares no allowed-tools - add a Bash(<interp> *scripts/<name>*) "
-                f"grant so /steer:{skill_dir.name} does not prompt on every run (#266)"
+                f"declares no allowed-tools - add a Bash(<interp> "
+                f'"${{CLAUDE_PLUGIN_ROOT}}/scripts/<name>" *) grant so '
+                f"/steer:{skill_dir.name} does not prompt on every run (#266)"
             )
             continue
         for script, interp in sorted(invocations.items()):
@@ -1378,7 +1485,7 @@ def check_skill_script_grants(errors: list[str]) -> None:
                 errors.append(
                     f"{rel}: runs scripts/{script} (via {interp.split()[0]}) but no "
                     f"allowed-tools grant covers it - add "
-                    f"Bash({interp.split()[0]} *scripts/{script}*) so "
+                    f"{_expected_grant(interp, script)} so "
                     f"/steer:{skill_dir.name} does not prompt mid-run (#266)"
                 )
 
@@ -1420,7 +1527,7 @@ def check_skill_helper_sourcing(errors: list[str]) -> None:
                 f"enables match none, and /steer:{skill_dir.name} prompts on this "
                 f"step regardless of its grants. Wrap the reads in a "
                 f"bundled scripts/*.sh helper (see scripts/scan-spine-state.sh) and "
-                f"grant it with Bash(sh *scripts/<name>.sh*) (#266)"
+                f'grant it with Bash(sh "${{CLAUDE_PLUGIN_ROOT}}/scripts/<name>.sh" *) (#266)'
             )
 
 
@@ -1766,7 +1873,7 @@ def check_skills_only_fallback(errors: list[str]) -> None:
         )
     for md in sorted(SKILLS_DIR.rglob("*.md")):
         body = md.read_text(encoding="utf-8")
-        invoked = {m.group("script") for m in _SCRIPT_INVOCATION.finditer(body)}
+        invoked = {m.group("script") for m in _SCRIPT_INVOCATION.finditer(_markdown_body(body))}
         for helper in sorted(invoked.intersection(_GUARDED_HELPERS)):
             if _NO_HELPER_ARM not in body:
                 errors.append(
@@ -1797,6 +1904,7 @@ def run_checks(errors: list[str]) -> None:
     check_payload_debranded(errors)
     check_noncallable_imperatives(errors)
     check_skill_script_grants(errors)
+    check_executed_reference_calls(errors)
     check_skill_helper_sourcing(errors)
     check_workspace_task_namespace(errors)
     check_migration_precondition_converges(errors)

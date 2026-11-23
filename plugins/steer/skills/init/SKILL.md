@@ -25,11 +25,17 @@ allowed-tools:
   - Bash(mise lock *)
   - Bash(mise generate git-pre-commit *)
   - Bash(npm view *)
-  - Bash(python3 *scripts/scaffold_reconcile.py*)
-  - Bash(sh *scripts/lock-workflows.sh*)
+  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh" *)
 ---
 
 # First-run setup for a new repo (`/steer:setup init`)
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 Run this once when a repo is first brought under the standards. Detect
 which of two entry conditions applies and follow that path - both end with the

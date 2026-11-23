@@ -13,7 +13,7 @@ when_to_use: >-
   code steer should not bootstrap (an external review, someone else's code).
 argument-hint: "[init | adopt | sync | doctor | protect | worktrees | advisory] [--check]"
 allowed-tools:
-  - Bash(sh *scripts/scan-spine-state.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
   - Bash(git status *)
   - Bash(git rev-parse *)
   - Bash(gh auth status *)

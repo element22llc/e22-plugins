@@ -158,7 +158,7 @@ coding agent), even though its install path is listed below for when you do.
 actions by exact `vX.Y.Z` tag. The commit each tag runs is recorded in
 `.github/workflows/actions.lock`, which the repo generates: it is never shipped
 and never hand-edited. After writing or changing any file under
-`.github/workflows/`, run `sh ${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh`
+`.github/workflows/`, run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"`
 from the repo root and commit the lockfile in the same commit as the workflows.
 List the locked commits it prints in the PR, since they are the code CI will run.
 It locks every workflow in the repo, the team's own included, and narrows their

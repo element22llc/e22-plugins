@@ -6,7 +6,7 @@ when_to_use: >-
   improvements, or whether the build matches what the tracker asked for.
 argument-hint: "[code | spec | all] [--since <ref>]"
 allowed-tools:
-  - Bash(sh *scripts/scan-spine-state.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
   - Bash(git status *)
   - Bash(git diff *)
   - Bash(git log *)

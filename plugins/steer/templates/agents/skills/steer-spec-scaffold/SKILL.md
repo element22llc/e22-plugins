@@ -57,8 +57,7 @@ feature, using the canonical templates bundled with this plugin.
    contract):
 
    ```sh
-   sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-     spec/features/[id]/intent.md "${STEER_PLUGIN_ROOT}/templates/spec/feature-intent.md"
+   sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/features/[id]/intent.md "${STEER_PLUGIN_ROOT}/templates/spec/feature-intent.md"
    # repeat with contract.md vs feature-contract.md
    ```
 

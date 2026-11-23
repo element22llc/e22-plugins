@@ -16,8 +16,8 @@ when_to_use: >-
   with no code this turn - capture, triage, decompose, a ranked board.
 argument-hint: "[start | resume | status | finish | queue | drive | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
-  - Bash(sh *scripts/scan-spine-state.sh*)
-  - Bash(sh *scripts/pr-assets.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh" *)
   - Bash(git status *)
   - Bash(git switch *)
   - Bash(git checkout -b *)
@@ -55,6 +55,12 @@ allowed-tools:
   - mcp__plugin_steer_github__list_pull_requests
 ---
 <!-- steer:modes start,resume,status,finish,queue,drive,debug,qa,promote,tidy,review,walkthrough,issues -->
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **delivery** door of the issue-first workflow at both of its moments: the

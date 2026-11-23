@@ -21,10 +21,10 @@ user-invocable: false
 # of the *delivery* surface (PR merge, branch protection, repo settings) is
 # deliberately NOT listed - it stays host-gated.
 #
-# `Bash(sh *scripts/issue-body.sh*)` is the exception to that backstop: the
-# scaffold lists it in no tier (#924), since its leading wildcard would also
-# match `sh -c '<anything>' ...`, so update-state's gh arm falls to the
-# session's permission mode when reached transitively.
+# The issue-body.sh grant below is the exception to that backstop: the scaffold
+# lists it in no tier (#924): the plugin's install path is machine-specific, so
+# the committed settings file has no anchored form to allow, and update-state's
+# gh arm falls to the session's permission mode when reached transitively.
 #
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
 # reads/writes, native blocked-by edges and an issue's linked PRs have no `gh issue`
@@ -72,11 +72,17 @@ allowed-tools:
   - Bash(gh search issues:*)
   - Bash(gh auth status:*)
   - Bash(gh api graphql:*)
-  - Bash(sh *scripts/issue-body.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/issue-body.sh" *)
 ---
 <!-- steer:modes pull,push -->
 
 # Sync the /spec spine with GitHub Issues
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 The plugin treats the tracker as a **pointer**, with `/spec` as the source of
 truth. This skill is the **GitHub accelerator** for that pointer: it pulls issues

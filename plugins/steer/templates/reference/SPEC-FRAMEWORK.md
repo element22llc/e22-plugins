@@ -336,8 +336,7 @@ diff is not evidence that a table is current. Pass the existing file and the cur
 template (substitute the real paths):
 
 ```sh
-sh "$CLAUDE_PLUGIN_ROOT/scripts/template-reconcile.sh" \
-  <existing-file> "$CLAUDE_PLUGIN_ROOT/<bundled-template>"
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" <existing-file> "${CLAUDE_PLUGIN_ROOT}/<bundled-template>"
 ```
 
 The command **over-reports**: a placeholder the dev replaced with real content, or

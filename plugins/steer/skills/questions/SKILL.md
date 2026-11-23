@@ -7,11 +7,17 @@ argument-hint: "[needs [--milestone <m>] | bundle [<feature-id>]]"
 # from the slash menu - see the note on `init`.
 user-invocable: false
 allowed-tools:
-  - Bash(sh *scripts/convert-legacy-questions.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/convert-legacy-questions.sh" *)
 ---
 <!-- steer:modes default,needs,bundle -->
 
 # Resolve open questions (`/steer:spec questions`)
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 Open questions are the spine's quiet failure mode: written down once, gated at
 PO acceptance, then left to rot. This skill gathers every open question across

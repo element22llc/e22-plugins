@@ -69,8 +69,7 @@ which may have gained sections under a later `/plugin update`. Don't eyeball it;
 run the diff and act on its output:
 
 ```sh
-sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/BUILD-STATUS.md "${STEER_PLUGIN_ROOT}/templates/spec/build-status.md"
+sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/BUILD-STATUS.md "${STEER_PLUGIN_ROOT}/templates/spec/build-status.md"
 ```
 
 Splice in only the genuinely-new `##` sections and checklist items it reports

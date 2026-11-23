@@ -13,7 +13,7 @@
 #   first action (the issue #266 class, on the one surface
 #   where a prompt is most expensive). Wrapping the reads in a bundled script
 #   makes the call grantable with the established
-#   `Bash(sh *scripts/<name>.sh*)` form, and brings it under
+#   `Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh" *)` form, and brings it under
 #   check_skill_script_grants, which only ever inspected `scripts/` calls.
 #
 # SCOPE

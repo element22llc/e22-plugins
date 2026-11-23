@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import check_standards  # noqa: E402
+from gen_agent_skills import ROOT_RESOLVE_NOTE  # noqa: E402
 
 
 def test_real_standards_pass():
@@ -265,7 +266,7 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
     _write_skill(
         skills,
         "granted",
-        "allowed-tools:\n  - Bash(sh *scripts/scan-prereqs.sh*)\n",
+        'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)\n',
         'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`',
     )
     # (b) invokes a script but no grant covers it -> error
@@ -297,7 +298,7 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
     _write_skill(
         skills,
         "wronginterp",
-        "allowed-tools:\n  - Bash(sh *scripts/scaffold_reconcile.py*)\n",
+        'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)\n',
         'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" x`',
     )
     # (g) target-repo script (no ${CLAUDE_PLUGIN_ROOT}) -> never a plugin grant.
@@ -315,7 +316,9 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
     assert "skills/toolless/SKILL.md" in joined and "template-reconcile.sh" in joined
     assert "skills/factored/SKILL.md" in joined and "template-reconcile.sh" in joined
     assert "skills/wronginterp/SKILL.md" in joined
-    assert len(errors) == 4
+    # factored also lacks the root note its PROCEDURE.md call needs (#1010).
+    assert any("skills/factored/" in e and "read after load" in e for e in errors)
+    assert len(errors) == 5
 
 
 def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_path: Path):
@@ -333,6 +336,101 @@ def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_pat
     errors: list[str] = []
     check_standards.check_skill_script_grants(errors)  # must not raise
     assert any("broken" in e for e in errors)
+
+
+def test_skill_script_grants_require_anchored_grant_and_literal_call(monkeypatch, tmp_path: Path):
+    """#1010: the grant is matched literally against the command string, so an
+    unanchored grant over-matches and a differently spelled call under-matches."""
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    call = 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`'
+    _write_skill(
+        skills, "unanchored", "allowed-tools:\n  - Bash(sh *scripts/scan-prereqs.sh*)\n", call
+    )
+    _write_skill(
+        skills,
+        "pyunanchored",
+        "allowed-tools:\n  - Bash(python3 *scripts/scaffold_reconcile.py*)\n",
+        'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" x`',
+    )
+    anchored = 'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)\n'
+    _write_skill(
+        skills, "unquoted", anchored, "Run `sh ${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh .`"
+    )
+    _write_skill(
+        skills, "unbraced", anchored, 'Run `sh "$CLAUDE_PLUGIN_ROOT/scripts/scan-prereqs.sh" .`'
+    )
+    _write_skill(
+        skills,
+        "continued",
+        anchored,
+        '```sh\nsh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" \\\n  .\n```',
+    )
+    _write_skill(skills, "noscriptsdir", "allowed-tools:\n  - Bash(sh *scan-prereqs.sh*)\n", call)
+    _write_skill(
+        skills, "closedquote", anchored, 'Run `sh "${CLAUDE_PLUGIN_ROOT}"/scripts/scan-prereqs.sh`'
+    )
+    _write_skill(
+        skills, "twospaces", anchored, 'Run `sh  "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh"`'
+    )
+    _write_skill(
+        skills,
+        "secondcall",
+        anchored,
+        f"{call[:-1]} && sh ${{CLAUDE_PLUGIN_ROOT}}/scripts/scan-prereqs.sh x`",
+    )
+    # A frontmatter grant spelled like a call must not count as one: if it did,
+    # the python3 grant here would mask the uncovered sh call in the body.
+    _write_skill(
+        skills,
+        "fmgrant",
+        "allowed-tools:\n"
+        '  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)\n',
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py"`',
+    )
+    _write_skill(skills, "blanket", anchored + "  - Bash(sh *scripts/*)\n", call)
+    _write_skill(
+        skills,
+        "wrapped",
+        anchored,
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh"\n  .` now.',
+    )
+    _write_skill(skills, "repolocal", anchored + "  - Bash(sh scripts/setup.sh *)\n", call)
+    _write_skill(skills, "clean", anchored, call)
+    _write_skill(skills, "zsh", "", "Run `zsh scripts/x.sh` in the product repo.")
+
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    errors: list[str] = []
+    check_standards.check_skill_script_grants(errors)
+
+    def hits(name: str) -> list[str]:
+        return [e for e in errors if f"skills/{name}/" in e]
+
+    assert not hits("clean")
+    assert not hits("zsh")
+    assert not hits("repolocal")
+    for name in ("unanchored", "pyunanchored", "noscriptsdir", "blanket"):
+        assert any("not anchored" in e for e in hits(name)), name
+    for name in ("unquoted", "unbraced", "closedquote", "twospaces", "secondcall"):
+        assert any("without the exact" in e for e in hits(name)), name
+    for name in ("continued", "wrapped"):
+        assert any("split across lines" in e for e in hits(name)), name
+    assert any("no allowed-tools grant covers" in e for e in hits("fmgrant"))
+
+
+def test_executed_reference_calls_hold_the_grant_spelling(monkeypatch, tmp_path: Path):
+    root = tmp_path / "plugin"
+    (root / "templates/reference").mkdir(parents=True)
+    (root / "templates/reference/OK.md").write_text(
+        'sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" a b\n', encoding="utf-8"
+    )
+    (root / "templates/reference/BAD.md").write_text(
+        'sh "$CLAUDE_PLUGIN_ROOT/scripts/template-reconcile.sh" \\\n  a b\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", root)
+    errors: list[str] = []
+    check_standards.check_executed_reference_calls(errors)
+    assert len(errors) == 1 and "BAD.md" in errors[0]
 
 
 def _write_wf(root: Path, body: str) -> None:
@@ -646,3 +744,26 @@ def test_skills_only_fallback_flags_missing_arm_and_url(monkeypatch, tmp_path: P
     assert len(errors) == 2
     assert "00-router.md" in errors[0]
     assert "issue-body.sh" in errors[1]
+
+
+def test_skill_reading_helper_calls_after_load_carries_the_root_note(monkeypatch, tmp_path: Path):
+    """#1010: ${CLAUDE_PLUGIN_ROOT} is filled in only in SKILL.md, so a skill whose
+    granted helper is called from another file must tell the agent to write it in."""
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    grant = 'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)\n'
+    proc = {"PROCEDURE.md": 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`'}
+    _write_skill(skills, "missing", grant, "See PROCEDURE.md.", extra=proc)
+    _write_skill(skills, "noted", grant, f"{ROOT_RESOLVE_NOTE}\n\nSee PROCEDURE.md.", extra=proc)
+    _write_skill(
+        skills, "inline", grant, 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh"`'
+    )
+
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    monkeypatch.setattr(check_standards, "_EXECUTED_REFERENCE_GLOBS", ())
+    errors: list[str] = []
+    check_standards.check_skill_script_grants(errors)
+    assert [e for e in errors if "read after load" in e] == [
+        e for e in errors if "skills/missing/" in e
+    ]
+    assert any("skills/missing/" in e for e in errors)

@@ -29,10 +29,16 @@ allowed-tools:
   - Bash(mise run check *)
   - Bash(mise run ci *)
   - Bash(pnpm dev*)
-  - Bash(sh *scripts/template-reconcile.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)
 ---
 
 # Build a working app from a PO's idea
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 This is the PO-facing path through the standard Greenfield flow
 (`SPEC-FRAMEWORK.md` -> "Greenfield flow"): interview -> spec -> PO approval ->
@@ -70,8 +76,7 @@ which may have gained sections under a later `/plugin update`. Don't eyeball it;
 run the diff and act on its output:
 
 ```sh
-sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
 ```
 
 Splice in only the genuinely-new `##` sections and checklist items it reports

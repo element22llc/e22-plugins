@@ -18,7 +18,7 @@ argument-hint: "[this-week | since <date> | milestone [<name>] | feature <id>]"
 # committing are Bash, which the frontmatter does not withhold. Write stays for the
 # temp-dir artifact only.
 allowed-tools:
-  - Bash(sh *scripts/scan-spine-state.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
   - mcp__github__issue_read
   - mcp__github__list_issues
   - mcp__github__search_issues

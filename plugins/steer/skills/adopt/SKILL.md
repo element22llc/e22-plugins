@@ -27,12 +27,18 @@ allowed-tools:
   # Phase 7 authors a root DESIGN.md against the @google/design.md schema and
   # lints it; scoped to that one package rather than a blanket `npx *`.
   - Bash(npx @google/design.md *)
-  - Bash(sh *scripts/template-reconcile.sh*)
-  - Bash(sh *scripts/lock-workflows.sh*)
-  - Bash(python3 *scripts/scaffold_reconcile.py*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh" *)
+  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)
 ---
 
 # Adopt an existing repo into the standards (`/steer:setup adopt`)
+
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 Bring a repo that never went through bootstrap - a "vibe-coded" app with
 working code but no `/spec`, no `mise.toml`, no CI, no plugin install - into the

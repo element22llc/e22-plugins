@@ -65,8 +65,7 @@ trust your memory of the template, and don't skip because the file looks
 complete):
 
 ```sh
-sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/PRODUCTIONIZATION.md "${STEER_PLUGIN_ROOT}/templates/spec/productionization.md"
+sh "${STEER_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/PRODUCTIONIZATION.md "${STEER_PLUGIN_ROOT}/templates/spec/productionization.md"
 ```
 
 It prints the `##` sections and checklist items the bundled template has that the

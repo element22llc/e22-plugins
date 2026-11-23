@@ -7,7 +7,7 @@ when_to_use: >-
   steer can do: "what can steer do?", "show me the commands".
 argument-hint: "[capabilities] [optional constraints, e.g. 'only feature-x', 'no tracker writes']"
 allowed-tools:
-  - Bash(sh *scripts/workspace-snapshot.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh" *)
   - Bash(git status *)
   - Bash(git branch *)
   - Bash(git log *)

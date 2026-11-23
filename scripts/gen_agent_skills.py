@@ -176,6 +176,17 @@ HELPER_NOTE = (
     "> path, else its failure path, and say so. Never download a helper and run it\n"
     "> from a URL."
 )
+# Claude Code fills in ${CLAUDE_PLUGIN_ROOT} only in a SKILL.md as it loads; a file
+# the agent reads later reaches Bash with the variable, which the harness refuses
+# before any grant applies (#1010). SKILL.md carries this paragraph so the agent
+# writes the path in. HELPER_NOTE does that job here, so render() drops it.
+ROOT_RESOLVE_NOTE = (
+    "**Helper calls outside this file.** In any other steer file this skill has you\n"
+    "read (its own files, another skill's, a reference doc), a helper call spells\n"
+    "the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still\n"
+    "holds it is refused. Replace every occurrence in the command with\n"
+    "`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line."
+)
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
 # A relative link that climbs out of the skill directory into `templates/`
 # resolves in the authored tree and dangles in the portable one, which sits at a
@@ -253,6 +264,7 @@ def render(skill_dir: Path, *, helpers: bool = False) -> str:
         parts.append(RESTRICTION_NOTE.format(tools="`, `".join(t for t in blocked if t)))
     if str(meta.get("context", "")).strip() == "fork":
         parts.append(FORK_NOTE)
+    body = re.sub(r"\n*" + re.escape(ROOT_RESOLVE_NOTE) + r"\n*", "\n\n", body)
     body = rewrite_refs(body, skill).strip()
     # A helper invoked only from a supporting file still needs the note up front.
     if helpers or HELPER_VAR in body:

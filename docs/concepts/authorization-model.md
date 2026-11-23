@@ -174,8 +174,12 @@ branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
 wildcard, so `gh pr merge` and unknown commands still prompt. Each flow also
 pre-approves the bundled plugin helper scripts it executes **by literal path in its
 own files**, under a matching interpreter
-(`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
-prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:setup init` and
+(`Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)`), since an
+ungranted helper prompts the user mid-flow every time. Claude Code fills in
+`${CLAUDE_PLUGIN_ROOT}` in a plugin skill's `allowed-tools` as it does in the body,
+so the grant names only the plugin's own copy. It is matched against the command
+string literally, quotes included, so the body spells each call the same way, on
+one line. The grants: `scaffold_reconcile.py` in `/steer:setup init` and
 `/steer:setup adopt` and `/steer:setup sync`, `template-reconcile.sh` in `/steer:setup adopt`,
 `/steer:build`, `/steer:spec-scaffold` and `/steer:setup sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:setup sync`,
@@ -256,7 +260,10 @@ narrow slice**, each for a different transport:
 grants the bundled plugin helper scripts its body - including a factored-out
 `PROCEDURE.md` - invokes. That reaches only helpers named by **literal path inside
 the skill's own directory** (`_SCRIPT_INVOCATION` matches
-`${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`), so a helper reached through a
+`${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`; it also rejects an unanchored
+grant, an unquoted or unbraced call, and a call split across a backslash
+continuation, there and in `templates/reference/` and the scaffold `MANIFEST.md`),
+so a helper reached through a
 cross-referenced convention is outside it. That blind spot has bitten once:
 `/steer:setup sync` step 5 delegates to the Template-reconciliation convention in
 `templates/reference/SPEC-FRAMEWORK.md`, whose command is
@@ -265,6 +272,17 @@ the step prompted. Sync now grants it, and no skill currently reaches a helper i
 hasn't pre-approved, but the gap is structural: the next indirectly-reached helper
 will be just as invisible. So the prompt-on-every-run class is narrowed by this
 assertion, not closed by it.
+
+Claude Code fills in `${CLAUDE_PLUGIN_ROOT}` only in a `SKILL.md` as it loads. A
+helper call in a file the agent reads later (a `PROCEDURE.md`, a mode file, a
+reference doc) reaches Bash with the variable still in it, and the harness
+refuses such a command before any grant applies. So every skill whose granted
+helpers are called from such a file carries a short paragraph,
+`ROOT_RESOLVE_NOTE` in `gen_agent_skills.py`, telling the agent to write the
+filled-in path into those calls. The gate requires it, and the Copilot render
+drops it in favour of its own helper note. A skill reached only in prose by
+another skill (`/steer:tracker-sync` from `/steer:work`) still loads no grants,
+so its helper falls to the session's permission mode there.
 
 A second blind spot in the same gate ran deeper. `/steer:setup`, `/steer:setup sync` and
 `/steer:work`'s `CLOSING-REF.md` reached their detection helpers by **`.`-sourcing**
