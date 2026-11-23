@@ -94,6 +94,49 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - keep the tags a 7.23.0 lock run wrote over SHA pins
+
+- **What & why:** the v7.23.0 `actions.lock` entry told sync to leave the
+  product's `@<sha> # vX.Y.Z` pins alone, while its lock run rewrote them to
+  tags and locked only the tags. A repo that put the SHA pins back passes
+  `gh actions-lock --verify`, but the runner refuses each such workflow at
+  startup (0 jobs). A workflow no PR runs, such as a scheduled one, shows it
+  only when it next runs. The v7.23.0 entry is fixed; this one reaches the
+  repos that already ran it.
+- **Precondition:** a workflow's `uses:` pinned to a full SHA that its own list
+  under `workflows:` in `actions.lock` does not carry -
+
+  ```sh
+  test -f .github/workflows/actions.lock &&
+    find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) |
+    while read -r f; do
+      listed="$(awk -v k="'.github/workflows/${f##*/}':" '
+        /^[^[:space:]]/ { inwf = ($0 == "workflows:"); next }
+        inwf && /:[[:space:]]*$/ { cur = ($1 == k); next }
+        inwf && cur { print }' .github/workflows/actions.lock)"
+      grep -v '^[[:space:]]*#' "$f" |
+        grep -oE "uses:[[:space:]]*[\"']?[^[:space:]#\"']+@[0-9a-f]{40}" |
+        sed -E "s/^uses:[[:space:]]*[\"']?//" | grep -v '/\.github/workflows/' |
+        sed -E 's#^([^/]+/[^/@]+)[^@]*@#\1@#' |
+        while read -r ref; do
+          printf '%s\n' "${listed}" | grep -qF "'${ref}'" || echo "${f##*/}: ${ref}"
+        done
+    done
+  ```
+
+  No output => already migrated, or no lockfile => no-op. A SHA pin the lock
+  run kept is on its workflow's list as `owner/repo@<sha>`, a path action's
+  too, so it does not fire. A reusable workflow called from another repository
+  is skipped: gh-actions-lock does not lock those (its README, "Limitations").
+- **Action:** read-then-propose. Run
+  `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"`; it rewrites each
+  printed pin to the tag the lockfile records for it. Show the diff, call out
+  each rewrite in the PR, and put back a `# zizmor: ignore[...]` it dropped. If
+  it fails, change nothing and report why (scaffold MANIFEST -> "Lock every
+  workflow you install or change").
+
+  **No history entry is earned.**
+
 ### v7.27.0 - a release is one PR; the release ruleset stops asking for `ci` at creation
 
 - **What & why:** `/steer:work promote` no longer opens a changelog cut PR into
@@ -350,19 +393,25 @@ Name the file and say what to carry forward.
      `merge-back.yml`, `steer-loop.yml`, `copilot-setup-steps.yml`): rewrite
      `uses: <action>@<40-hex sha> # vX.Y.Z` to `uses: <action>@vX.Y.Z`, keeping a
      `# zizmor: ignore[...]` as the trailing comment. Rewrite only where the
-     comment names an exact version, and never change the version. A SHA pin
-     with no such comment stays (`gh actions-lock` locks it and warns
-     `sha-as-ref`). A workflow the product wrote is theirs: suggest the rewrite in
-     the PR, don't make it.
+     comment names an exact version, and never change the version. Leave every
+     other SHA pin, and every workflow the product wrote, to step 3.
   2. Splice `STEER_ACTIONS_LOCK_VERSION` and `steer_ci_actions_lock` from the
      template `scripts/ci-lib.sh`, and the `actions lockfile` group from
      `scripts/ci-hygiene.sh`. Give the hygiene step in `ci.yml` the template's
      `env:` - `GH_TOKEN: ${{ github.token }}` and `STEER_CI_ACTIONS_LOCK: verify`.
   3. Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"` and commit
      `actions.lock` with the workflows; list the locked commits in the PR. It also
-     locks the product's own workflows and narrows their partial tags (`@v4` ->
-     `@v4.2.1`) - the one edit to them this entry makes, required because CI's
-     verify step fails on any unlocked workflow; show it in the diff. If it
+     locks the product's own workflows, required because CI's verify step fails
+     on any unlocked workflow, and rewrites `uses:` refs in every workflow: it
+     narrows a partial tag (`@v4` -> `@v4.2.1`) and, where it finds one, turns
+     a full-SHA pin into the tag at its commit (`@<sha> # v6.1.0` ->
+     `@v6.1.0`), read from the commit, not the comment. Those rewrites are the only edits to the product's
+     workflows this entry makes. Commit the `uses:` refs as it leaves them, show
+     each rewrite in the diff and call it out in the PR, naming any tag that
+     differs from the old comment. Never restore a SHA pin it rewrote: the
+     lockfile records only the tag, `gh actions-lock --verify` still passes, and
+     the runner refuses the workflow at startup. It drops the whole trailing
+     comment on a line it rewrites; put a `# zizmor: ignore[...]` back. If it
      fails, drop this entry's changes and report why (scaffold MANIFEST -> "Lock
      every workflow you install or change"): step 2 without a lockfile turns CI red.
   4. If `gh api repos/{owner}/{repo}/actions/permissions --jq .allowed_actions`

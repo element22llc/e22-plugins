@@ -175,10 +175,13 @@ This applies to **every** lockfile in the repo, not just mise's:
 - **`actions.lock` is regenerated, never hand-edited.** After adding or
   changing a `uses:`, run `gh actions-lock` (`scripts/lock-workflows.sh` from the
   plugin installs the pinned extension) and commit the lockfile with the
-  workflow. It locks every workflow in the repo and narrows a partial tag
-  (`@v4` -> `@v4.2.1`). A run that fails at startup with no job log - "This run
-  likely failed because of a workflow file issue" - usually means an action is
-  missing from the lockfile; the `ci:hygiene` lockfile check cannot report it
+  workflow. It locks every workflow in the repo, narrows a partial tag
+  (`@v4` -> `@v4.2.1`) and turns a full-SHA pin into the tag at its commit
+  where it finds one, dropping the line's comment. Keep those rewrites, since a restored SHA pin
+  has no lockfile entry and `--verify` does not catch it; put back a dropped
+  `# zizmor: ignore[...]`. A run that fails at startup with no job log - "This
+  run likely failed because of a workflow file issue" - usually means an action
+  is missing from the lockfile; the `ci:hygiene` lockfile check cannot report it
   when the broken workflow is `ci.yml` itself. Keep it out of the `-diff` set:
   a changed commit in it is new code your CI will run.
 - **pnpm's `minimumReleaseAge` guard stays on.** pnpm 11 refuses packages
