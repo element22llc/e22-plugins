@@ -59,7 +59,8 @@ Finishing work in flight comes before starting more. A PR of yours is
 requesting changes left on its current head - a `reviews` entry in state
 `CHANGES_REQUESTED` whose `commit.oid` is the `headRefOid`, so nothing has been
 pushed since (`latestReviews` leaves `commit.oid` empty; read `reviews`). A draft with nothing failing is the author's to ready, not this
-cycle's. **Skip, and report:**
+cycle's - in an attended run, ask its unanswered reviewer notes as `review
+--mine` does. **Skip, and report:**
 
 - a PR whose branch is checked out in another worktree (`git worktree list`) -
   another session holds it (`SKILL.md` -> Concurrency & claims);
@@ -110,9 +111,9 @@ opens a draft** (rule 53).
 ## Step 4 - verify and report
 
 Verify every card as `queue` Step 3 does. A gate question goes to the human now
-when present (rule `61-gates`), and so do a draft's reviewer notes when that
-human is its author (`queue` Step 4); otherwise it is recorded and the issue left
-claimed and waiting. Stop the cycle on `queue`'s whole-run stop conditions.
+when present (rule `61-gates`), and a draft's reviewer notes are asked as
+`queue` Step 4 does; otherwise it is recorded and the issue left claimed and
+waiting. Stop the cycle on `queue`'s whole-run stop conditions.
 
 Report one table - item, what happened (`fixed #n`, `ready #n`, `draft #n`,
 `carded`, `set aside`, `blocked`), the one fact that matters - then the review

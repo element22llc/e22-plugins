@@ -21,6 +21,7 @@ flowchart LR
     E -->|/steer:work start| F[Implementation]
     F -->|/steer:work finish| G[Draft PR]
     F -->|/steer:work finish, clean review| H
+    F -->|/steer:work finish, you answer its notes| H
     G -->|you mark it ready| H[CI + review]
 ```
 

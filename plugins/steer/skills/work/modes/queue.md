@@ -12,7 +12,8 @@ reports, and relays the human gates. It implements nothing itself. Each issue
 is delivered by the ordinary `start` -> `finish` flow, so every guarantee of
 that flow holds per issue: one branch and one PR off the default branch,
 the local gates, the code gate. A worker's `finish` opens its PR ready when its
-code gate came back clean, a draft otherwise. **The orchestrator never merges
+code gate came back clean, a draft otherwise; a draft held only by reviewer
+notes is readied once its author answers them (Step 4). **The orchestrator never merges
 and never readies a PR** - the run ends at open PRs.
 
 `queue #A #B ... [--reviewed]` runs the issues in the order given. Every
@@ -120,7 +121,8 @@ exists to avoid.
 - A mismatch records the issue as blocked, with the fact that failed.
 - Remove the worktree once its branch is pushed and the tree is clean: `git
   worktree remove <path>` refuses a dirty tree, so never add `--force`. A dirty
-  or unpushed one stays, its path recorded.
+  or unpushed one stays, its path recorded, and so does one whose card lists
+  reviewer notes, until Step 4 settles them.
 
 ## Step 4 - record and continue
 
@@ -131,11 +133,12 @@ The issues are independent branches, so one failure does not stop the next.
   goes back to that worker (Claude Code: `SendMessage`), else to a fresh worker
   running `resume #N` with it. `Decide later` records the issue and moves on.
 - **A draft held by its reviewer notes** - when the human here is the PR's
-  author, ask the card's notes now, as `finish` does (`subcommands.md` -> Ask
-  the author). The answers go back to that worker, else to a fresh worker
-  running `finish #N` with them; it records them, applies any change, and
-  readies the PR once nothing is left unanswered. Never hand the author a
-  "read the notes, then mark it ready" step instead.
+  author (`subcommands.md` -> Ask the author), ask the card's notes now, the
+  same way. The answers go back to that worker, else to a fresh worker with
+  the same Step 2 brief running `finish #N` with them; it records them, applies
+  any change, and readies the PR when Draft or ready holds. Re-verify it as
+  Step 3, report its final state, then remove its worktree. Never hand the
+  author a "read the notes, then mark it ready" step instead.
 - **A partial card** (the worker reached its budget): hand what is left to a
   fresh worker with the same Step 2 brief, running `resume #N` instead of
   `start` - in solo-trunk, next, before any other issue. A second partial on

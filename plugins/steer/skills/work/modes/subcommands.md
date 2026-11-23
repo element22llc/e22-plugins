@@ -102,17 +102,23 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   solo-trunk, the trunk commit body), so the human confirms rather than
   discovers. A skipped gate gets one line saying why.
   **Ask the author, don't leave them a note.** When the PR's author is in the
-  session - not an unattended run (rule `53-autonomous-loops`), a `queue` or
-  `drive` worker, or any spawned subagent - put each of those notes to them
-  before the push, one question per note: what it is, its tradeoff, your
-  recommended resolution first, `Decide later` last, none pre-selected. These
-  are the author's calls on review notes, not rule `61-gates` ratifications. A
-  `finish` on an open draft asks the notes already in its PR the same way. An
-  answer that changes the code is a fix like any other: commit it, local gates
-  green. Record each answer under the note as decided in-session, by whom and
-  when; `Decide later` leaves the note as it was. An open high finding or a
-  flagged drift class is never offered for a waiver here - it stays for the
-  reviewer.
+  session - the session is attended and its `gh` user is, or on create will
+  be, the PR's author (`gh pr view --json author`); never an unattended run
+  (rule `53-autonomous-loops`), a `queue` or `drive` worker, or any spawned
+  subagent - put each of those notes to them before the push, one question per
+  note: what it is, its tradeoff, your recommended resolution first, `Decide
+  later` last, none pre-selected. In solo-trunk the author is the session's
+  human and the ask comes before the trunk commit; under `--hotfix` it comes
+  after the push, never holding the fix. These are the author's calls on
+  review notes, not rule `61-gates` ratifications. A `finish` on an open draft
+  asks the notes already in its PR the same way, except those answered
+  `Decide later` in this conversation. An answer that changes the code is a
+  fix like any other: commit it, local gates green, then one code-gate round on
+  those commits unless they are Trivial; a new note from that round is asked
+  the same way. Record each answer under the note as decided in-session, by
+  whom and when; `Decide later` leaves the note as it was. An open high finding
+  or a flagged drift class is never offered for a waiver here - it stays for
+  the reviewer.
   **Capture what was learned** -
   if the work turned on reasoning that is non-obvious and absent from the final
   code, tests and docs, put it on the first rung of the enforcement ladder that
