@@ -21,6 +21,7 @@ flowchart LR
     E -->|/steer:work start| F[Implementation]
     F -->|/steer:work finish| G[Draft PR]
     F -->|/steer:work finish, clean review| H
+    F -->|/steer:work finish, you answer its notes| H
     G -->|you mark it ready| H[CI + review]
 ```
 
@@ -86,8 +87,10 @@ pass to `/steer:work` in the next step.
 
 Use the issue number from step 4's decompose output in place of `#123`. Implements
 the issue, runs the local gates, and opens the PR. When the code review below leaves nothing for you to read first, the PR opens ready and
-`finish` watches CI itself; otherwise it opens a **draft** and stops: you read
-it and mark it ready, which starts CI. Before the push, `finish` runs an
+`finish` watches CI itself. When it leaves only reviewer notes (a medium
+finding, a design question), it asks you each one in the session, records your
+answers in the PR, then readies it. Otherwise it opens a **draft** and stops:
+you read it and mark it ready, which starts CI. Before the push, `finish` runs an
 independent code review on every non-Trivial change; High-risk work also gets an
 independent plan review and your sign-off before any code (`--reviewed` adds
 that to any change). Commits, the push, and opening the PR happen

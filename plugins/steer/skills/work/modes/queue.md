@@ -12,7 +12,8 @@ reports, and relays the human gates. It implements nothing itself. Each issue
 is delivered by the ordinary `start` -> `finish` flow, so every guarantee of
 that flow holds per issue: one branch and one PR off the default branch,
 the local gates, the code gate. A worker's `finish` opens its PR ready when its
-code gate came back clean, a draft otherwise. **The orchestrator never merges
+code gate came back clean, a draft otherwise; a draft held only by reviewer
+notes is readied once its author answers them (Step 4). **The orchestrator never merges
 and never readies a PR** - the run ends at open PRs.
 
 `queue #A #B ... [--reviewed]` runs the issues in the order given. Every
@@ -73,8 +74,9 @@ earlier issue's context into the next. Brief it to:
   and return a **partial** card. In solo-trunk, commit nothing: leave the work
   in the main checkout for the worker that resumes it;
 - return a card - issue, branch, PR URL or `none`, draft or ready, local gate
-  result, high code-gate findings left open, the gate question or blocker, or
-  `none`; a partial card says what is done and what is left.
+  result, high code-gate findings left open, each reviewer note that kept it a
+  draft (one line: the note and the recommended resolution), the gate question
+  or blocker, or `none`; a partial card says what is done and what is left.
 
 **solo-trunk.** No worktree: `main` can be checked out in only one place. Run
 each worker in the main checkout, one at a time, fast-forwarded to
@@ -119,7 +121,8 @@ exists to avoid.
 - A mismatch records the issue as blocked, with the fact that failed.
 - Remove the worktree once its branch is pushed and the tree is clean: `git
   worktree remove <path>` refuses a dirty tree, so never add `--force`. A dirty
-  or unpushed one stays, its path recorded.
+  or unpushed one stays, its path recorded. One whose card lists reviewer notes
+  stays until Step 4 is done with it.
 
 ## Step 4 - record and continue
 
@@ -129,6 +132,15 @@ The issues are independent branches, so one failure does not stop the next.
   findings would not resolve, a blocking `Proposed` ADR, a product question): ask the human now, per rule `61-gates`. Their answer
   goes back to that worker (Claude Code: `SendMessage`), else to a fresh worker
   running `resume #N` with it. `Decide later` records the issue and moves on.
+- **A draft held by its reviewer notes** - when the human here is the PR's
+  author (`subcommands.md` -> Ask the author), ask the card's notes now, the
+  same way. The answers go back to that worker in its kept worktree, else to a
+  fresh worker with the same Step 2 brief running `finish #N` with them in that
+  same worktree; it records them, applies any change, and readies the PR when
+  Draft or ready holds. Re-verify it as Step 3 and report its final state. Then
+  remove the worktree as Step 3 does - also when the author is not here or
+  answered `Decide later`. Never hand the author a "read the notes, then mark
+  it ready" step instead.
 - **A partial card** (the worker reached its budget): hand what is left to a
   fresh worker with the same Step 2 brief, running `resume #N` instead of
   `start` - in solo-trunk, next, before any other issue. A second partial on

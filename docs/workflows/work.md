@@ -74,9 +74,12 @@ flowchart TD
     GATES --> CLEAN{Code gate clean?}
     CLEAN -->|yes| RPR[Open the PR ready<br/>transition to validate]
     RPR --> CI[CI runs, watched to conclusion]
+    CLEAN -->|notes only, author present| ASK{{Ask the author each note in-session}}
+    ASK -->|all answered| RPR
+    ASK -->|decide later| PR
     CLEAN -->|no| PR[Open a draft PR]
     PR --> STATE[Transition to validate and stop]
-    STATE --> READY{{Author reads the PR, marks it ready}}
+    STATE --> READY{{Author answers the notes, marks it ready}}
     READY --> CI
     CI -->|red| FIX["/steer:work resume #123<br/>fix locally, push once, re-watch"]
     FIX --> CI
@@ -113,7 +116,7 @@ flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill
 | `start` | Validate, claim (self-assigns the invoking GitHub user), branch from the freshly fetched default branch - never the checked-out work branch; stacking on another PR only when the issue needs its unmerged code, and targeting a `batch/*` branch when the dev lands many fixes as one merge - + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, pick up the non-blocking questions gated at `implementation` as decisions this slice makes, grep `spec/learnings/` frontmatter for prior lessons that match the issue, classify the change (rule `80-change-class`, the heavier class when arguable) - High-risk runs the plan gate even without `--reviewed` - then begin implementing, a defect through `debug` (cause before fix). |
 | `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s) - read-only. |
-| `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - and transition to `validate`. The PR opens **ready** only when the code gate came back clean - no high finding is open (a Trivial change, which skips the gate, qualifies), nothing went under *Notes for the reviewer*, no drift class is flagged, no question awaits confirmation - and `finish` then watches its CI to conclusion; a later clean `finish` readies an earlier draft. Anything else opens **as a draft** and stops: the author reads it and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. Every push to a ready PR or to the solo-trunk `main` is a full CI run, so follow-up work - what one of your messages or one review asks for - is committed fix by fix and pushed once, at the end of that turn. When work must be pushed before the round is done, a PR the agent readied earlier in the same conversation, with no review submitted since, goes back to draft first (`gh pr ready --undo`); at the round's end the agent pushes its last commits and readies it again only if it still qualifies. Any other ready PR stays ready and gets only green commits, once. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. With no authenticated `gh`, the PR is opened or updated through the GitHub MCP server (always as a draft, since its CI cannot be watched), and with neither it prints the compare URL for you to open as a draft; the CI watch needs `gh`, so without it a ready PR's or trunk push's CI is reported as not watched. |
+| `finish` | Run the local gates (`mise run ci`, else `mise run check`) until green before any push - CI is the confirming run, not the iteration loop, and a push made earlier goes to a draft PR. Capture any non-obvious lesson on the [enforcement ladder](#learnings-enforcement-first), then open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - and transition to `validate`. The PR opens **ready** only when the code gate came back clean - no high finding is open (a Trivial change, which skips the gate, qualifies), nothing is left unanswered under *Notes for the reviewer*, no drift class is flagged, no question awaits confirmation - and `finish` then watches its CI to conclusion; a later clean `finish` readies an earlier draft. When you are the PR's author and in the session, `finish` asks you each reviewer note (a medium finding, a design question) before the push, one question per note with a recommended resolution and *Decide later*, records your answers under the notes, applies any change one asks for, and readies the PR. Anything else opens **as a draft** and stops: the author reads it and marks it ready, which starts CI and makes that run theirs. In solo-trunk, commit straight to `main` with a `Closes #N` trailer and **watch CI to conclusion** (`gh run watch`). A red build - on a ready PR, picked up by `resume`, or on the trunk push - is reproduced and fixed locally, then pushed once, never a push per attempt. Every push to a ready PR or to the solo-trunk `main` is a full CI run, so follow-up work - what one of your messages or one review asks for - is committed fix by fix and pushed once, at the end of that turn. When work must be pushed before the round is done, a PR the agent readied earlier in the same conversation, with no review submitted since, goes back to draft first (`gh pr ready --undo`); at the round's end the agent pushes its last commits and readies it again only if it still qualifies. Any other ready PR stays ready and gets only green commits, once. When the branch changes a `contract.md`, the PR body's **Spec delta** lists the added, modified and removed requirement IDs, derived from the git diff (each removed one with a Reason and a Migration line). The PR also lists each question `start` picked up, for its owner to confirm on the running change. With no authenticated `gh`, the PR is opened or updated through the GitHub MCP server (always as a draft, since its CI cannot be watched), and with neither it prints the compare URL for you to open as a draft; the CI watch needs `gh`, so without it a ready PR's or trunk push's CI is reported as not watched. |
 | `queue #A #B ...` | Deliver several independent issues one after another, one fresh worker each - see below. Entered automatically when an implement ask names two or more issues. |
 | `drive [--max N] [--label <l>]` | One autonomous cycle over your PRs, your review queue and ready issues - see below. Not issue-scoped. |
 | `review [#PR ...] [--mine]` | Clear the PR review queue in one batch - see below. Not issue-scoped. |
@@ -148,7 +151,9 @@ nothing itself:
    `validate`.
 4. **Record and continue** - a blocked issue is recorded and the next one
    starts. Human gates (`--reviewed` plan sign-off, an unresolved plan, a `Proposed`
-   ADR, a product question) are asked in the session. The queue stops early only on a
+   ADR, a product question) are asked in the session, and so are the reviewer
+   notes that kept a worker's PR a draft, when you are its author; the worker
+   then readies it. The queue stops early only on a
    failure that would hit every issue.
 
 Under Orca, ask for it and each issue gets a visible Orca workspace instead of
@@ -158,7 +163,7 @@ parallel, you answer each one's gates in its own chat, and the orchestrator
 verifies the branches when you come back. Subagents stay the default.
 
 It ends with one table of issue -> PR or blocker, and points at
-`/steer:work review --mine` to ready the drafts. **The orchestrator never merges
+`/steer:work review --mine` for any draft whose notes you deferred. **The orchestrator never merges
 or readies a PR.** `--reviewed` carries over to every worker; `--hotfix` is refused.
 
 ## Autonomous cycle - `/steer:work drive`
@@ -216,7 +221,8 @@ The approval is yours: nothing is pre-selected, an ambient "ok" approves
 nothing, and an unattended loop never approves. **It never merges.**
 
 `review --mine` is the author's side - your own queued PRs, which GitHub will
-not let you approve. It marks finished drafts ready, routes red or conflicting
+not let you approve. It asks you any reviewer note left unanswered on a
+finished draft, then marks it ready, routes red or conflicting
 ones to `resume`, retargets an independent stacked PR onto the default branch
 (a native stack is reported to you instead - leaving one is a restructuring),
 and asks you who should review an unassigned one.
@@ -397,8 +403,8 @@ Claude Code's own delivery tools fit this flow without moving the merge gate.
   pushes, and opening the PR are autonomous; **merging is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
 - **`finish` opens its PR as a draft and stops** unless its code gate came back
-  clean, when it opens it ready and watches its CI (a `--hotfix` always opens
-  it ready); a draft's CI runs once the author marks it ready. Every run after that - a ready PR's, a trunk push's - is watched to
+  clean, or you answered its reviewer notes in the session, when it opens it
+  ready and watches its CI (a `--hotfix` always opens it ready); a draft's CI runs once the author marks it ready. Every run after that - a ready PR's, a trunk push's - is watched to
   green and a red build fixed before the work counts as done - the skill pre-approves `git push` /
   `gh pr create|edit|ready` plus read-only CI status (`gh pr checks`, `gh run
   view`, `gh run watch`) for this; the merge
