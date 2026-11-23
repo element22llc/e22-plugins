@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -190,10 +191,16 @@ def test_image_fails_when_a_build_fails(repo: Repo) -> None:
 
 _GITLEAKS = "gitleaks git --no-banner --redact --log-opts=HEAD ."
 _TRIVY = "trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1"
+_SEMGREP_PIN = re.search(
+    r"^STEER_SEMGREP_VERSION=(\d+\.\d+\.\d+)$",
+    (SCRIPTS / "ci-security.sh").read_text(encoding="utf-8"),
+    re.MULTILINE,
+)
+assert _SEMGREP_PIN, "ci-security.sh pins no exact STEER_SEMGREP_VERSION"
 # The argv ends in the per-run temp file Semgrep writes its findings to.
 _SEMGREP = (
-    "semgrep scan --config p/default --severity ERROR --error --metrics off --quiet"
-    " --json --output "
+    f"uvx --from semgrep=={_SEMGREP_PIN.group(1)} semgrep scan --config p/default"
+    " --severity ERROR --error --metrics off --quiet --json --output "
 )
 
 
@@ -236,9 +243,10 @@ def test_security_fails_on_a_dependency_finding(repo: Repo) -> None:
 
 def test_security_propagates_a_semgrep_failure_without_its_output(repo: Repo) -> None:
     repo.write("package.json", "{}")
-    r = repo.run("ci-security.sh", STUB_FAIL="semgrep")
+    r = repo.run("ci-security.sh", STUB_FAIL="uvx")
     assert r.code == 3
     assert "Semgrep failed (exit 3)" in r.out
+    assert f"'uvx --from semgrep=={_SEMGREP_PIN.group(1)} semgrep scan" in r.out
 
 
 _FAKE_TOKEN = "fake_token_DO_NOT_USE_0000000000000000000000000000000000000000"
@@ -283,7 +291,7 @@ _FINDINGS = {
 # Prints the token on both streams, as text-mode semgrep does, and writes the JSON
 # wherever --output points.
 _SEMGREP_FINDINGS_STUB = """#!/bin/sh
-printf '%s\\n' "semgrep $*" >>"${STUB_LOG}"
+printf '%s\\n' "uvx $*" >>"${STUB_LOG}"
 printf '   1| //registry.example/:_authToken=%s\\n' "${FAKE_TOKEN}"
 printf '%s\\n' "${FAKE_TOKEN}" >&2
 while [ $# -gt 0 ]; do
@@ -298,7 +306,7 @@ def test_security_reports_code_findings_without_the_matched_source(repo: Repo) -
     repo.write("package.json", "{}")
     findings = repo.root.parent / "findings.json"
     findings.write_text(json.dumps(_FINDINGS, separators=(",", ":")), encoding="utf-8")
-    (repo.bin / "semgrep").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
+    (repo.bin / "uvx").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
     r = repo.run("ci-security.sh", FAKE_TOKEN=_FAKE_TOKEN, FINDINGS_JSON=str(findings))
     assert r.code == 1
     assert _FAKE_TOKEN not in r.out
@@ -310,7 +318,7 @@ def test_security_reports_code_findings_without_the_matched_source(repo: Repo) -
 
 def test_security_does_not_report_findings_when_semgrep_wrote_none(repo: Repo) -> None:
     repo.write("package.json", "{}")
-    (repo.bin / "semgrep").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
+    (repo.bin / "uvx").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
     missing = repo.root.parent / "absent.json"
     r = repo.run("ci-security.sh", FAKE_TOKEN=_FAKE_TOKEN, FINDINGS_JSON=str(missing))
     assert r.code == 1

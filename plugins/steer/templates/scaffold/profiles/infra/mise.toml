@@ -20,10 +20,10 @@ uv = "latest"
 github-cli = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
-# ci:security - gitleaks always; Trivy and Semgrep only with a package.json or pyproject.toml.
+# ci:security - gitleaks always; Trivy (and Semgrep, through uvx) only with a package.json
+# or pyproject.toml.
 "aqua:gitleaks/gitleaks" = "latest"
 "aqua:aquasecurity/trivy" = "latest"
-"pipx:semgrep" = "latest"
 # Pinned, unlike the rest: a silent upgrade would change released output.
 changie = "1.26.0"
 

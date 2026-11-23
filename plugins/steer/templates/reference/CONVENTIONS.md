@@ -129,6 +129,26 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
   only `[[tools.*]]` version entries still fails `--locked` - and commit them.
   This is the "pin on adoption" step; it has not happened until the
   multi-platform lockfiles are committed.
+- **Adding a tool to a locked repo:** `mise install` records only the new tool's
+  version, no `platforms.*` tables, so CI's `--locked` install fails on it. In
+  the directory of the `mise.toml` you changed, lock it by name for every
+  platform the lock already covers:
+
+  ```sh
+  platforms="$(sed -n 's/^\[.*platforms\.\([a-z0-9_-]*\).*/\1/p' mise.lock | sort -u | paste -sd, -)"
+  mise lock --platform "${platforms}" aqua:gitleaks/gitleaks   # the tool(s) you added
+  ```
+
+  An empty `platforms` means the lock was never multi-platform: do "First use"
+  above instead. Then `mise install`, check that a tool with per-platform
+  binaries (`aqua:`, core) now has a `platforms.linux-x64` table (`npm:`,
+  `pipx:`, `cargo:` and `go:` tools never get one), and commit the purely
+  additive `mise.lock` diff. Never a bare `mise lock` here: it
+  refreshes every tool's entries, not only the new one's. Prefer a backend with release binaries
+  (`aqua:`, core); a `pipx:` tool can demand a lockfile format upgrade
+  (`mise lock --upgrade`), which rewrites every entry - run a Python CLI through
+  pinned `uvx --from <pkg>==X.Y.Z` instead, as `scripts/ci-security.sh` does for
+  Semgrep.
 - **Bumping:** run `mise upgrade` to move the lock forward, review the diff like
   any other change, and - for infra tools - validate in non-prod before prod.
 
@@ -166,8 +186,9 @@ This applies to **every** lockfile in the repo, not just mise's:
   resolution problem, or regenerate the lock with the owning tool
   (`mise install` / `mise upgrade` / `mise lock --platform ...`, `pnpm install`,
   `uv lock`, `tofu init`). Once a `mise.lock` holds every CI/dev platform,
-  `mise install` and `mise upgrade` keep all of those platforms in sync; you only
-  re-run `mise lock --platform ...` to add a newly-used platform.
+  `mise install` and `mise upgrade` keep those platforms in sync for the tools
+  already in it; re-run `mise lock --platform ...` to add a newly-used platform,
+  and lock a newly added tool by name ("Adding a tool to a locked repo" above).
 - Lockfile-only diffs deserve the same review as code: an unexplained large
   lockfile change is a smell, not noise. The scaffold `.gitattributes` marks
   them `-diff` so generated churn stays collapsed in review; expand it when the

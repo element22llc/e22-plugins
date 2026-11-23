@@ -388,7 +388,9 @@ linux-x64,macos-arm64` (+ the team's other platforms; `linux-x64` is mandatory -
 CI runs there), verify the `platforms.linux-x64` blocks, and commit the
 populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the
 workspace resolves). If the toolchain can't be installed now, commit **no**
-`mise.lock` - never an empty one.
+`mise.lock` - never an empty one. A dir that already has a populated
+`mise.lock` keeps it: lock only the tools the scaffold added, by name
+(same section -> "Adding a tool to a locked repo").
 
 ## Phase 11 - Reconcile layout
 

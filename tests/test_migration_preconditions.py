@@ -189,3 +189,88 @@ def test_yamllint_config_precondition_is_silent_on_the_current_template(tmp_path
 
 def test_yamllint_config_precondition_without_the_script(tmp_path):
     assert not _fires(_precondition(YAMLLINT_CONFIG), tmp_path)
+
+
+SEMGREP_UVX = "runs Semgrep pinned through `uvx`, not a `pipx:` tool"
+TEMPLATE_SCAFFOLD = REPO_ROOT / "plugins/steer/templates/scaffold"
+
+
+def _out(cmd: str, repo: Path) -> list[str]:
+    out = subprocess.run(["sh", "-c", cmd], cwd=repo, capture_output=True, text=True)
+    return out.stdout.split()
+
+
+def test_semgrep_uvx_precondition_fires_on_the_v7_24_script_and_tool(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(
+        'semgrep scan --config p/default --json --output "${findings}" >/dev/null 2>&1 || rc=$?\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "mise.toml").write_text('[tools]\n"pipx:semgrep" = "latest"\n', encoding="utf-8")
+    assert _out(_precondition(SEMGREP_UVX), tmp_path) == ["script", "tools"]
+
+
+def test_semgrep_uvx_precondition_fires_on_a_hand_pinned_uvx_line(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(
+        "uvx --from semgrep==1.185.0 semgrep scan --config p/default --json --output x\n",
+        encoding="utf-8",
+    )
+    assert _out(_precondition(SEMGREP_UVX), tmp_path) == ["script"]
+
+
+@pytest.mark.parametrize("config", ["mise.toml", "profiles/infra/mise.toml"])
+def test_semgrep_uvx_precondition_is_silent_on_the_current_template(tmp_path, config):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_bytes(TEMPLATE_CI_SECURITY.read_bytes())
+    (tmp_path / "mise.toml").write_bytes((TEMPLATE_SCAFFOLD / config).read_bytes())
+    assert _out(_precondition(SEMGREP_UVX), tmp_path) == []
+
+
+def test_semgrep_uvx_precondition_ignores_a_commented_tool(tmp_path):
+    (tmp_path / "mise.toml").write_text('[tools]\n# "pipx:semgrep" = "latest"\n', encoding="utf-8")
+    assert _out(_precondition(SEMGREP_UVX), tmp_path) == []
+
+
+def test_semgrep_uvx_precondition_without_the_files(tmp_path):
+    assert _out(_precondition(SEMGREP_UVX), tmp_path) == []
+
+
+RELOCK = "lock gitleaks and Trivy for every platform `mise.lock` covers"
+
+
+def _lock(*tables: str) -> str:
+    return "lockfile_version = 1\n\n" + "\n".join(f'{t}\nversion = "1.0.0"\n' for t in tables)
+
+
+def test_relock_precondition_fires_on_a_tool_missing_a_platform(tmp_path):
+    (tmp_path / "mise.lock").write_text(
+        _lock(
+            '[[tools."aqua:aquasecurity/trivy"]]',
+            '[tools."aqua:aquasecurity/trivy"."platforms.linux-x64"]',
+            '[tools."aqua:aquasecurity/trivy"."platforms.macos-arm64"]',
+            '[[tools."aqua:gitleaks/gitleaks"]]',
+        ),
+        encoding="utf-8",
+    )
+    assert _out(_precondition(RELOCK), tmp_path) == ["aqua:gitleaks/gitleaks"]
+
+
+def test_relock_precondition_is_silent_on_a_ci_locked_tool(tmp_path):
+    # A windows-x64 table the tool lacks never fires: the entry keys on CI's platform.
+    (tmp_path / "mise.lock").write_text(
+        _lock(
+            '[[tools."aqua:gitleaks/gitleaks"]]',
+            '[tools."aqua:gitleaks/gitleaks"."platforms.linux-x64"]',
+            '[[tools."pipx:semgrep"]]',
+            '[tools.uv."platforms.windows-x64"]',
+            "[[tools.uv]]",
+            '[tools.uv."platforms.linux-x64"]',
+        ),
+        encoding="utf-8",
+    )
+    assert _out(_precondition(RELOCK), tmp_path) == []
+
+
+def test_relock_precondition_without_a_lock(tmp_path):
+    assert _out(_precondition(RELOCK), tmp_path) == []

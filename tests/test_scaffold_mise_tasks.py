@@ -129,10 +129,21 @@ def test_root_config_installs_the_security_tools_ci_security_runs(path: str) -> 
     config = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8"))
     if "ci:security" not in config.get("tasks", {}):
         pytest.skip(f"{path} runs no ci:security")
-    missing = {"aqua:gitleaks/gitleaks", "aqua:aquasecurity/trivy", "pipx:semgrep"} - set(
+    # Semgrep needs no [tools] entry: ci-security.sh runs it pinned through uvx.
+    missing = {"aqua:gitleaks/gitleaks", "aqua:aquasecurity/trivy", "uv"} - set(
         config.get("tools", {})
     )
     assert not missing, f"{path} runs ci:security but does not install {sorted(missing)}"
+
+
+@pytest.mark.parametrize(
+    "path", sorted(str(p.relative_to(SCAFFOLD)) for p in SCAFFOLD.rglob("mise.toml"))
+)
+def test_scaffold_installs_no_pipx_tool(path: str) -> None:
+    """A pipx tool can force a mise.lock format upgrade that re-resolves every tool."""
+    tools = tomllib.loads((SCAFFOLD / path).read_text(encoding="utf-8")).get("tools", {})
+    pipx = sorted(t for t in tools if t.startswith("pipx:"))
+    assert not pipx, f"{path} installs {pipx} through pipx; run it pinned through uvx instead"
 
 
 _WORKFLOWS = REPO_ROOT / "plugins" / "steer" / "templates" / "github" / "workflows"

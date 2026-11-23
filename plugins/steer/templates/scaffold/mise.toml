@@ -26,10 +26,10 @@ changie = "1.26.0"
 biome = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
-# ci:security - gitleaks for every repo; Trivy and Semgrep for any Node or Python product.
+# ci:security - gitleaks for every repo; Trivy for any Node or Python product (Semgrep runs
+# pinned through uvx from scripts/ci-security.sh).
 "aqua:gitleaks/gitleaks" = "latest"
 "aqua:aquasecurity/trivy" = "latest"
-"pipx:semgrep" = "latest"
 # ruff = "latest"   # Python products
 # go = "latest"
 # rust = "latest"

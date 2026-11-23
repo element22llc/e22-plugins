@@ -89,7 +89,9 @@ is visible rather than silent.
    `sh "${STEER_PLUGIN_ROOT}/scripts/lock-workflows.sh"` and commit
    `.github/workflows/actions.lock` with it; when the helper fails, propose no
    workflow change and say why (MANIFEST -> "Lock every workflow you install or
-   change").
+   change"). When a change adds a `[tools]` entry beside a committed
+   `mise.lock`, lock that tool by name (`/steer-reference conventions` ->
+   "Adding a tool to a locked repo").
    For the **non-Markdown** scaffold files the heading/checklist convention can't
    parse - the line-based `.gitignore`, `.gitattributes` and `.worktreeinclude`,
    and the JSON configs (`.claude/settings.json`,
