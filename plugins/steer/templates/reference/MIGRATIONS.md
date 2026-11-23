@@ -117,6 +117,7 @@ Name the file and say what to carry forward.
       grep -v '^[[:space:]]*#' "$f" |
         grep -oE "uses:[[:space:]]*[\"']?[^[:space:]#\"']+@[0-9a-f]{40}" |
         sed -E "s/^uses:[[:space:]]*[\"']?//" | grep -v '/\.github/workflows/' |
+        sed -E 's#^([^/]+/[^/@]+)[^@]*@#\1@#' |
         while read -r ref; do
           printf '%s\n' "${listed}" | grep -qF "'${ref}'" || echo "${f##*/}: ${ref}"
         done
@@ -124,15 +125,14 @@ Name the file and say what to carry forward.
   ```
 
   No output => already migrated, or no lockfile => no-op. A SHA pin the lock
-  run kept is on its workflow's list, so it does not fire. A reusable workflow
-  called from another repository is skipped: gh-actions-lock does not lock
-  those (its README, "Limitations").
+  run kept is on its workflow's list as `owner/repo@<sha>`, a path action's
+  too, so it does not fire. A reusable workflow called from another repository
+  is skipped: gh-actions-lock does not lock those (its README, "Limitations").
 - **Action:** read-then-propose. Run
   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"`; it rewrites each
-  printed pin to the tag at its commit, the one the lockfile already records
-  for a restored pin. Show the diff, call out each
-  rewrite in the PR, and put back a `# zizmor: ignore[...]` it dropped. If it
-  fails, change nothing and report why (scaffold MANIFEST -> "Lock every
+  printed pin to the tag the lockfile records for it. Show the diff, call out
+  each rewrite in the PR, and put back a `# zizmor: ignore[...]` it dropped. If
+  it fails, change nothing and report why (scaffold MANIFEST -> "Lock every
   workflow you install or change").
 
   **No history entry is earned.**
@@ -403,9 +403,9 @@ Name the file and say what to carry forward.
      `actions.lock` with the workflows; list the locked commits in the PR. It also
      locks the product's own workflows, required because CI's verify step fails
      on any unlocked workflow, and rewrites `uses:` refs in every workflow: it
-     narrows a partial tag (`@v4` -> `@v4.2.1`) and turns a full-SHA pin into
-     the tag at its commit (`@<sha> # v6.1.0` -> `@v6.1.0`), read from the
-     commit, not the comment. Those rewrites are the only edits to the product's
+     narrows a partial tag (`@v4` -> `@v4.2.1`) and, where it finds one, turns
+     a full-SHA pin into the tag at its commit (`@<sha> # v6.1.0` ->
+     `@v6.1.0`), read from the commit, not the comment. Those rewrites are the only edits to the product's
      workflows this entry makes. Commit the `uses:` refs as it leaves them, show
      each rewrite in the diff and call it out in the PR, naming any tag that
      differs from the old comment. Never restore a SHA pin it rewrote: the

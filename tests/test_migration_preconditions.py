@@ -206,6 +206,8 @@ def _sha_repo(repo: Path, line: str, lock: str | None, name: str = "ci.yml") -> 
         (f"- uses: actions/checkout@{SHA}", _lock("ci.yml", [], [f"actions/checkout@{SHA}"]), True),
         (f"- uses: actions/checkout@{SHA}", _lock("ci.yml", [f"actions/checkout@{SHA}"]), False),
         (f'- uses: "actions/checkout@{SHA}"', _lock("ci.yml", [f"actions/checkout@{SHA}"]), False),
+        # gh-actions-lock v0.4.1 keys a kept path action by owner/repo only.
+        (f"- uses: octo-org/tools/lint@{SHA}", _lock("ci.yml", [f"octo-org/tools@{SHA}"]), False),
         ("- uses: actions/checkout@v4.2.2", TAG_LOCK, False),
         (f"# - uses: actions/checkout@{SHA}", TAG_LOCK, False),
         (f"- uses: octo-org/shared/.github/workflows/build.yml@{SHA}", TAG_LOCK, False),

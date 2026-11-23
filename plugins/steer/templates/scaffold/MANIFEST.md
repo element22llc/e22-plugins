@@ -163,8 +163,8 @@ from the repo root and commit the lockfile in the same commit as the workflows.
 List the locked commits it prints in the PR, since they are the code CI will run.
 It locks every workflow in the repo, the team's own included, since CI's verify
 step fails on any workflow left unlocked. It also narrows partial tags (`@v4` ->
-`@v4.2.1`) and turns full-SHA pins into the tag at their commit, dropping the
-line's trailing comment. Show those rewrites and keep them, since the runner
+`@v4.2.1`) and turns full-SHA pins into the tag at their commit where it finds
+one, dropping the line's trailing comment. Show those rewrites and keep them, since the runner
 refuses a SHA pin restored after the lock run; put back a dropped
 `# zizmor: ignore[...]`. **If it fails,
 do not commit the workflow files**: leave them out and say why - `gh` missing or
