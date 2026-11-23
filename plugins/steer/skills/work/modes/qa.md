@@ -77,8 +77,10 @@ or no UI in the diff, say there is nothing to drive and stop.
    - **Before:** `git fetch origin <default>`, then `git worktree add --detach
      <scratchpad>/qa-before origin/<default>`. Copy the files
      `.worktreeinclude` lists from the primary checkout, since a hand-made
-     worktree gets none. If the primary checkout is trusted, run `mise trust`
-     in the worktree; otherwise ask - never create trust. Boot it as in
+     worktree gets none - only git-ignored regular files inside the checkout,
+     never an absolute path, a `..` path or a symlink. Run `mise trust -C
+     <worktree>` only when `mise trust --show`, run in the primary checkout,
+     says `trusted`; otherwise ask - never create trust. Boot it as in
      Precondition 1; a linked worktree gets its own ports. When it cannot
      boot, capture "after" only and say why.
    - Each changed screen of each flow, in the same state on both sides, at
@@ -86,6 +88,12 @@ or no UI in the diff, say there is nothing to drive and stop.
      `<flow>-<before|after>-<desktop|narrow>.png` and keep it in its own
      `<scratchpad>/qa-shots/` directory, apart from sign-in state, never in
      the repo.
+   - **Look at every image before it leaves the machine.** A pushed image
+     stays readable after a prune until GitHub garbage-collects it, so skip
+     or crop any screen showing a key, a token (a URL bar, a magic-link
+     toast), an email or other personal data. Seeded data only, never a
+     stack wired to a real service. A leaked image is a leaked secret: delete
+     the ref and rotate the secret.
    - Host them: `sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh"
      <repo-url> <branch> <scratchpad>/qa-shots/*.png`. `<repo-url>` is the
      repo `origin` points at, from `gh repo view --json url -q .url`; with no
@@ -109,7 +117,8 @@ or no UI in the diff, say there is nothing to drive and stop.
 
 **Every exit tears down what `qa` started**, the stop paths included (no driver,
 fixes that do not converge): the dev server, and the before stack - `mise run
-docker:clean` inside it, then `git worktree remove`.
+docker:clean` inside it, then `git worktree remove --force`, since the copied
+boot files are untracked; check the directory is gone, else delete it.
 
 ## Gotchas
 

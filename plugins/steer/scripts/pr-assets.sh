@@ -49,10 +49,14 @@ git check-ref-format "${REF}" || die 2 "not a valid ref name: ${REF}"
 
 names=""
 for f in "$@"; do
-	[ -f "${f}" ] || die 2 "no such file: ${f}"
+	[ -f "${f}" ] && [ ! -L "${f}" ] || die 2 "not a regular file: ${f}"
 	n="$(basename -- "${f}")"
 	case "${n}" in *[!A-Za-z0-9._-]*) die 2 "file name must be [A-Za-z0-9._-]: ${n}" ;; esac
 	case "${n}" in *.png | *.jpg | *.jpeg | *.gif | *.webp) ;; *) die 2 "images only (png, jpg, gif, webp): ${n}" ;; esac
+	case "$(head -c 4 "${f}" | od -An -tx1 | tr -d ' \n')" in
+	89504e47 | ffd8ff* | 47494638 | 52494646) ;;
+	*) die 2 "not image content: ${n}" ;;
+	esac
 	case " ${names} " in *" ${n} "*) die 2 "duplicate file name: ${n}" ;; esac
 	names="${names} ${n}"
 done
@@ -66,7 +70,7 @@ done
 tree="$(git mktree <"${TMP}")" || die 5 "mktree failed"
 
 tip="$(git ls-remote "${REMOTE}" "${REF}")" || die 5 "ls-remote ${REMOTE} failed"
-tip="$(printf '%s' "${tip}" | cut -f1)"
+tip="$(printf '%s\n' "${tip}" | awk -v r="${REF}" '$2 == r { print $1 }')"
 if [ -n "${tip}" ]; then
 	git fetch -q "${REMOTE}" "${REF}" || die 5 "fetch ${REF} failed"
 	commit="$(git commit-tree "${tree}" -p "${tip}" -m "steer: PR assets for ${KEY}")"
