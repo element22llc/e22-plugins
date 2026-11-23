@@ -88,7 +88,7 @@ import tomllib
 from pathlib import Path
 
 from check_plugin import PLUGIN_ROOT, parse_frontmatter
-from gen_agent_skills import RAW_BASE
+from gen_agent_skills import RAW_BASE, ROOT_RESOLVE_NOTE
 
 REGISTRY_PATH = PLUGIN_ROOT / "templates/reference/enums.registry"
 ENUMS_MD_PATH = PLUGIN_ROOT / "templates/reference/ENUMS.md"
@@ -1340,7 +1340,7 @@ _EXECUTED_REFERENCE_GLOBS = ("templates/reference/*.md", "templates/scaffold/MAN
 # scripts/<name>` and a same-named script anywhere in the repo.
 _ANCHORED_GRANT = re.compile(
     r'Bash\((?:sh|bash|python3?|uv run(?: python3?)?) "\$\{CLAUDE_PLUGIN_ROOT\}/scripts/'
-    r'[A-Za-z0-9_.-]+\.(?:sh|py)" \*\)'
+    r'(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))" \*\)'
 )
 
 
@@ -1391,12 +1391,15 @@ def _invocation_shape_errors(text: str, rel: str) -> list[str]:
     return errors
 
 
+def _executed_reference_files() -> list[Path]:
+    return [md for pattern in _EXECUTED_REFERENCE_GLOBS for md in sorted(PLUGIN_ROOT.glob(pattern))]
+
+
 def check_executed_reference_calls(errors: list[str]) -> None:
     """Hold helper calls in reference files skills execute to the grant's spelling."""
-    for pattern in _EXECUTED_REFERENCE_GLOBS:
-        for md in sorted(PLUGIN_ROOT.glob(pattern)):
-            rel = str(md.relative_to(PLUGIN_ROOT))
-            errors.extend(_invocation_shape_errors(md.read_text(encoding="utf-8"), rel))
+    for md in _executed_reference_files():
+        rel = str(md.relative_to(PLUGIN_ROOT))
+        errors.extend(_invocation_shape_errors(md.read_text(encoding="utf-8"), rel))
 
 
 def check_skill_script_grants(errors: list[str]) -> None:
@@ -1410,6 +1413,11 @@ def check_skill_script_grants(errors: list[str]) -> None:
     grants live only in SKILL.md frontmatter.
     """
     helpers = _helper_names()
+    reference_calls = {
+        m.group("script")
+        for md in _executed_reference_files()
+        for m in _SCRIPT_INVOCATION.finditer(md.read_text(encoding="utf-8"))
+    }
     for skill_dir in sorted(p for p in SKILLS_DIR.iterdir() if p.is_dir()):
         skill_md = skill_dir / "SKILL.md"
         if not skill_md.is_file():
@@ -1433,12 +1441,27 @@ def check_skill_script_grants(errors: list[str]) -> None:
                 )
         # Collect (interpreter, script) invocations across all body files.
         invocations: dict[str, str] = {}
+        raw_read = set()
         for md in sorted(skill_dir.rglob("*.md")):
             text = md.read_text(encoding="utf-8")
             for m in _SCRIPT_INVOCATION.finditer(_markdown_body(text)):
                 invocations.setdefault(m.group("script"), m.group("interp"))
+                if md != skill_md:
+                    raw_read.add(m.group("script"))
             md_rel = f"skills/{skill_dir.name}/{md.relative_to(skill_dir)}"
             errors.extend(_invocation_shape_errors(text, md_rel))
+        granted = {
+            m.group("script")
+            for g in grants
+            if isinstance(g, str) and (m := _ANCHORED_GRANT.fullmatch(g.strip()))
+        }
+        raw_read |= granted & reference_calls
+        if raw_read and ROOT_RESOLVE_NOTE not in skill_md.read_text(encoding="utf-8"):
+            errors.append(
+                f"{rel}: helper(s) {sorted(raw_read)} are called from a file read after "
+                f"load, where ${{CLAUDE_PLUGIN_ROOT}} is not filled in - add "
+                f"gen_agent_skills.ROOT_RESOLVE_NOTE to the body (#1010)"
+            )
         if not invocations:
             continue
         if not grants:

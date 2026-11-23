@@ -34,6 +34,12 @@ allowed-tools:
 
 # Adopt an existing repo into the standards (`/steer:setup adopt`)
 
+**Helper calls outside this file.** In this skill's other files, and in the
+reference files it runs, a helper call spells the plugin root as the
+CLAUDE_PLUGIN_ROOT variable, and a command that still holds it is refused.
+Replace every occurrence in the command with `${CLAUDE_PLUGIN_ROOT}`, keep the
+double quotes, and keep the call on one line.
+
 Bring a repo that never went through bootstrap - a "vibe-coded" app with
 working code but no `/spec`, no `mise.toml`, no CI, no plugin install - into the
 standards. You reverse the Greenfield spec flow: read the code, write the spec

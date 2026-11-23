@@ -13,6 +13,10 @@ body: |
     fills in the plugin path there as it does in the skill body. Grants match
     the command string literally, quotes included, so the helper calls that
     were split across lines or unquoted now sit on one line in the quoted
-    form. `check_standards.py` rejects an unanchored grant, and any other
-    spelling of a helper call, including one continued with a backslash, in
-    skills and in the reference files skills run (#1010).
+    form. Claude Code fills in the path only in a `SKILL.md`, so a helper call
+    in a file the agent reads later reached Bash with the variable and was
+    refused, before and after this change. The eight skills that run such calls
+    now tell the agent to write the path in, so those helpers stop prompting
+    too. `check_standards.py` rejects an unanchored grant, any other spelling
+    of a helper call (including one continued with a backslash), and a skill
+    missing that instruction (#1010).

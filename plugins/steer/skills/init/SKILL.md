@@ -31,6 +31,12 @@ allowed-tools:
 
 # First-run setup for a new repo (`/steer:setup init`)
 
+**Helper calls outside this file.** In this skill's other files, and in the
+reference files it runs, a helper call spells the plugin root as the
+CLAUDE_PLUGIN_ROOT variable, and a command that still holds it is refused.
+Replace every occurrence in the command with `${CLAUDE_PLUGIN_ROOT}`, keep the
+double quotes, and keep the call on one line.
+
 Run this once when a repo is first brought under the standards. Detect
 which of two entry conditions applies and follow that path - both end with the
 toolchain pinned and the repo working spec-first, on a `feat/*` branch. Per

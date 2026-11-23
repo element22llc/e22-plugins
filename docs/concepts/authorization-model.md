@@ -273,6 +273,17 @@ hasn't pre-approved, but the gap is structural: the next indirectly-reached help
 will be just as invisible. So the prompt-on-every-run class is narrowed by this
 assertion, not closed by it.
 
+Claude Code fills in `${CLAUDE_PLUGIN_ROOT}` only in a `SKILL.md` as it loads. A
+helper call in a file the agent reads later (a `PROCEDURE.md`, a mode file, a
+reference doc) reaches Bash with the variable still in it, and the harness
+refuses such a command before any grant applies. So every skill whose granted
+helpers are called from such a file carries a short paragraph,
+`ROOT_RESOLVE_NOTE` in `gen_agent_skills.py`, telling the agent to write the
+filled-in path into those calls. The gate requires it, and the Copilot render
+drops it in favour of its own helper note. A skill reached only in prose by
+another skill (`/steer:tracker-sync` from `/steer:work`) still loads no grants,
+so its helper falls to the session's permission mode there.
+
 A second blind spot in the same gate ran deeper. `/steer:setup`, `/steer:setup sync` and
 `/steer:work`'s `CLOSING-REF.md` reached their detection helpers by **`.`-sourcing**
 `hooks/lib/*.sh` directly, then calling the sourced functions - a compound snippet,

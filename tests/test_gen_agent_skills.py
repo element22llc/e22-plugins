@@ -324,3 +324,13 @@ def test_the_documented_invocation_runs_the_helper(tmp_path: Path):
     env = {"PATH": os.environ["PATH"]}
     result = subprocess.run(["sh", "-c", command], env=env, capture_output=True, text=True)
     assert result.stdout == "ran\n", result.stderr
+
+
+def test_root_resolve_note_is_dropped_from_the_portable_render(tmp_path: Path):
+    # The note tells Claude Code to write in the path it filled in; the portable
+    # tree has its own helper note, and a bare root reference would become a URL.
+    note = gen_agent_skills.ROOT_RESOLVE_NOTE
+    _skill(tmp_path, "work", "name: work\ndescription: Do work.", f"# Work\n\n{note}\n\nBody.")
+    out = gen_agent_skills.build(tmp_path)[Path("steer-work/SKILL.md")]
+    assert "Helper calls outside this file" not in out
+    assert "Body." in out

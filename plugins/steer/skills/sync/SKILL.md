@@ -33,6 +33,12 @@ allowed-tools:
 
 # Sync a repo to the current plugin (`/steer:setup sync`)
 
+**Helper calls outside this file.** In this skill's other files, and in the
+reference files it runs, a helper call spells the plugin root as the
+CLAUDE_PLUGIN_ROOT variable, and a command that still holds it is refused.
+Replace every occurrence in the command with `${CLAUDE_PLUGIN_ROOT}`, keep the
+double quotes, and keep the call on one line.
+
 A repo materializes part of the plugin into itself at bootstrap time - the
 `/spec` spine, the bundled scaffold (CI, `mise.toml`, PR template, ...). Those
 copies are **frozen at the plugin version that wrote them**. `/plugin update`

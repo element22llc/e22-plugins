@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import check_standards  # noqa: E402
+from gen_agent_skills import ROOT_RESOLVE_NOTE  # noqa: E402
 
 
 def test_real_standards_pass():
@@ -315,7 +316,9 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
     assert "skills/toolless/SKILL.md" in joined and "template-reconcile.sh" in joined
     assert "skills/factored/SKILL.md" in joined and "template-reconcile.sh" in joined
     assert "skills/wronginterp/SKILL.md" in joined
-    assert len(errors) == 4
+    # factored also lacks the root note its PROCEDURE.md call needs (#1010).
+    assert any("skills/factored/" in e and "read after load" in e for e in errors)
+    assert len(errors) == 5
 
 
 def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_path: Path):
@@ -731,3 +734,26 @@ def test_skills_only_fallback_flags_missing_arm_and_url(monkeypatch, tmp_path: P
     assert len(errors) == 2
     assert "00-router.md" in errors[0]
     assert "issue-body.sh" in errors[1]
+
+
+def test_skill_reading_helper_calls_after_load_carries_the_root_note(monkeypatch, tmp_path: Path):
+    """#1010: ${CLAUDE_PLUGIN_ROOT} is filled in only in SKILL.md, so a skill whose
+    granted helper is called from another file must tell the agent to write it in."""
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    grant = 'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)\n'
+    proc = {"PROCEDURE.md": 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`'}
+    _write_skill(skills, "missing", grant, "See PROCEDURE.md.", extra=proc)
+    _write_skill(skills, "noted", grant, f"{ROOT_RESOLVE_NOTE}\n\nSee PROCEDURE.md.", extra=proc)
+    _write_skill(
+        skills, "inline", grant, 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh"`'
+    )
+
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    monkeypatch.setattr(check_standards, "_EXECUTED_REFERENCE_GLOBS", ())
+    errors: list[str] = []
+    check_standards.check_skill_script_grants(errors)
+    assert [e for e in errors if "read after load" in e] == [
+        e for e in errors if "skills/missing/" in e
+    ]
+    assert any("skills/missing/" in e for e in errors)
