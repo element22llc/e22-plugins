@@ -260,26 +260,27 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    it (Commit autonomy) - the dev's merge review of that PR is the gate. The PR base
    is **always `BASE`**, not `main` - the sync rejoins the work it continues. Do
    not ask the dev which base to use; state that the PR targets `BASE` and let
-   them correct it if wrong. When you create it:
+   them correct it if wrong.
+
+   **When the diff touches a mise config or lock file** - any path
+   `jdx/mise-action` hashes into its tool-cache key (`mise.toml`, `mise.lock`,
+   `mise.*.toml`, `.mise.toml`, `mise/config.toml`, `.tool-versions`, ...) at any
+   depth, per `git diff --name-only "$BASE"` - the PR body carries a 2-4 line
+   note: this run misses the CI tool cache and installs the tools fresh; a red
+   `Setup mise` whose error carries `trustPolicy=no-downgrade` is mise's npm
+   supply-chain check on a dependency of the `npm:<tool>` it names; the narrow
+   remedy, the dev's after reviewing that release, is
+   `"npm:<tool>" = { version = "<v>", trust_policy_excludes = ["<dep>@<ver>"] }`
+   on that one tool, then `mise lock`, committing `mise.lock` with any
+   `.mise/locks/` sidecar it writes. The note names each `npm:` tool this sync
+   added or changed: an error on any other tool is a pre-existing exposure the
+   cache was masking, not this sync's edit; one on a tool it added is the sync's
+   own, and a failing steer pin goes to `/steer:report`. Sync never adds an
+   exclude itself. When you create the PR:
 
    ```sh
    gh pr create --base "$BASE" --head feat/sync ...
    ```
-
-   **When the diff touches a mise config or lock file** (`git diff --name-only
-   "$BASE"` lists a `mise.toml`, `mise.lock`, `mise.*.toml` or `.tool-versions`
-   at any depth), the PR body says so: its first CI run misses the
-   `jdx/mise-action` tool cache, which is keyed on those files, and installs the
-   tools fresh. A red `Setup mise` whose error carries `trustPolicy=no-downgrade`
-   is mise's npm supply-chain check failing on a dependency of the `npm:<tool>`
-   it names. If that tool is unchanged from `BASE`, the cache was masking a
-   pre-existing exposure, not one this sync introduced; if this sync added or
-   changed it, it is the sync's own, and a failing steer pin goes to
-   `/steer:report`. The narrow remedy is the dev's, after reviewing that release:
-   exempt only the version the error names, on that one tool -
-   `"npm:<tool>" = { version = "<v>", trust_policy_excludes = ["<dep>@<ver>"] }` -
-   then run `mise lock` and commit `mise.lock` with its `.mise/locks/` sidecar.
-   Sync never adds an exclude itself.
 
    Run the end-of-session checklist.
 

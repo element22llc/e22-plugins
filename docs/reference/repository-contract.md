@@ -266,10 +266,10 @@ forward rather than discarding them.
 
 A sync whose diff touches a mise config or lock file changes the `jdx/mise-action`
 cache key, so its PR is the first CI run to install the tools fresh. Its PR body
-says so: a red `Setup mise` with a `trustPolicy=no-downgrade` error is usually a
-pre-existing exposure in the repo's own `npm:` tools that the cache was masking, and
-the reviewed remedy is `trust_policy_excludes` for that one version on that one tool,
-then `mise lock`. Sync never adds the exclude itself.
+says so and names any `npm:` tool the sync added: a red `Setup mise` with a
+`trustPolicy=no-downgrade` error on any other tool is a pre-existing exposure the
+cache was masking, and the reviewed remedy is `trust_policy_excludes` for that one
+version on that one tool, then `mise lock`. Sync never adds the exclude itself.
 
 Two ledger entries landed in **3.23.0**: the living global architecture diagram is renamed
 `spec/design/architecture.md` -> **`spec/design/architecture-diagram.md`** (a
