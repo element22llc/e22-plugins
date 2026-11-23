@@ -44,12 +44,6 @@ or no UI in the diff, say there is nothing to drive and stop.
 3. **Local and seeded only.** Never a deployed environment, a real account or a
    real third-party call. Saved sign-in state holds tokens: keep it in the
    scratchpad or the anchored, ignored `demo/.auth/`, never a committed path.
-4. **A "before" stack**, pr-flow only: `git worktree add --detach
-   <scratchpad>/qa-before origin/<default>`, booted the same way from inside it
-   (a linked worktree gets its own ports). It takes mise trust only when the
-   primary checkout is trusted - never create trust, ask. When it cannot boot,
-   capture "after" only and say why. Tear it down when done: `mise run
-   docker:clean` inside it, then `git worktree remove`.
 
 ## Steps
 
@@ -76,27 +70,46 @@ or no UI in the diff, say there is nothing to drive and stop.
      on the default branch** -> a separate linked issue (`SKILL.md` ->
      Discovered work). Never widen this branch to absorb it.
    - Three fix attempts that do not converge -> stop and report it as open.
-5. **Capture before/after**, once the fixes are in. Each changed screen of
-   each flow, on the before stack and on the branch, at desktop (1280 wide) and
-   narrow (390 wide), in the same state with the same seed data. Name each file
-   `<flow>-<before|after>-<desktop|narrow>.png` and keep it in the scratchpad,
-   never in the repo. Then host them:
-   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh" <repo-url> <branch> <files>`,
-   with `<repo-url>` from `gh repo view --json url` (no `gh`: the PR URL's
-   `https://<host>/<owner>/<repo>` prefix). It pushes them to
-   `refs/steer-assets/<branch>` - not a branch, never fetched by a clone - and
-   prints one URL per file. Only these `github.com` blob URLs render for
-   reviewers of a private repo; a repo-relative path or a
-   `raw.githubusercontent.com` link shows a broken image. **Solo-trunk** has no
-   PR body to render them: skip this step and say so in the record.
+5. **Capture before/after**, once the fixes are in - pr-flow only: solo-trunk
+   has no PR body to render images, so skip this step and say so in the record.
+   - **After:** re-run `mise run dev:setup` on this stack first, so both sides
+     start from the same seed data.
+   - **Before:** `git fetch origin <default>`, then `git worktree add --detach
+     <scratchpad>/qa-before origin/<default>`. Copy the files
+     `.worktreeinclude` lists from the primary checkout, since a hand-made
+     worktree gets none. If the primary checkout is trusted, run `mise trust`
+     in the worktree; otherwise ask - never create trust. Boot it as in
+     Precondition 1; a linked worktree gets its own ports. When it cannot
+     boot, capture "after" only and say why.
+   - Each changed screen of each flow, in the same state on both sides, at
+     desktop (1280 wide) and narrow (390 wide). Name each file
+     `<flow>-<before|after>-<desktop|narrow>.png` and keep it in its own
+     `<scratchpad>/qa-shots/` directory, apart from sign-in state, never in
+     the repo.
+   - Host them: `sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh"
+     <repo-url> <branch> <scratchpad>/qa-shots/*.png`. `<repo-url>` is the
+     repo `origin` points at, from `gh repo view --json url -q .url`; with no
+     `gh`, it is the PR URL cut to `https://<host>/<owner>/<repo>`. The helper
+     pushes the images to `refs/steer-assets/<branch>`, which is not a branch
+     and which a default clone never fetches, then prints one URL per file.
+     Only these `github.com` blob URLs render for reviewers of a private repo;
+     a repo-relative path or a `raw.githubusercontent.com` link shows a broken
+     image.
+   - A non-zero exit (a push ruleset, no push rights, no git identity) means
+     no images: record `screenshots not hosted: <reason>`. Never commit them
+     instead.
 6. **Record it for the reviewer.** Under the PR's *Notes for the reviewer* (in
    solo-trunk, the trunk commit body): the flows driven, the criteria that
    passed, each defect fixed with its test, each one filed with its issue ref,
    and anything that could not be exercised locally. Under *Visual changes*,
-   one `| Flow | Viewport | Before | After |` row per capture, each image an
-   inline Markdown image of its printed URL. A fix adds commits, so the
-   next step is `finish` again, which re-runs the local gates and the code gate
-   on them.
+   replace the table with one `| Flow | Viewport | Before | After |` row per
+   capture, each image an inline Markdown image of its printed URL. A fix adds
+   commits, so the next step is `finish` again, which re-runs the local gates
+   and the code gate on them.
+
+**Every exit tears down what `qa` started**, the stop paths included (no driver,
+fixes that do not converge): the dev server, and the before stack - `mise run
+docker:clean` inside it, then `git worktree remove`.
 
 ## Gotchas
 
@@ -110,4 +123,6 @@ or no UI in the diff, say there is nothing to drive and stop.
 - **The images outlive the branch.** The ref is kept as review evidence; prune
   one with `git push origin --delete refs/steer-assets/<branch>`, which breaks
   that PR's images once GitHub garbage-collects the commit.
+- **`<repo-url>` names the repo the helper pushes to.** From a fork that is the
+  fork, not the PR's base repo; a mismatch links a SHA the URL's repo lacks.
 - **Close the browser** when done.

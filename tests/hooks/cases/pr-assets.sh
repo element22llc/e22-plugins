@@ -37,8 +37,23 @@ if command -v git >/dev/null 2>&1; then
 	assert_rc "pr-assets: invalid ref name refused" "${rc}" 2
 	pa "${U}" issue/7-login "${WORK}/login-after.png" "${WORK}/login-after.png"
 	assert_rc "pr-assets: duplicate file name refused" "${rc}" 2
+	pa "${U}/pull/12" issue/7-login "${WORK}/login-after.png"
+	assert_rc "pr-assets: a PR URL is not a repo URL" "${rc}" 2
+	printf '{"token":"x"}' >"${WORK}/state.json"
+	pa "${U}" issue/7-login "${WORK}/state.json"
+	assert_rc "pr-assets: non-image file refused" "${rc}" 2
+	pa --remote "--upload-pack=touch ${WORK}/pwned" "${U}" issue/7-login "${WORK}/login-after.png"
+	assert_rc "pr-assets: option-shaped remote refused" "${rc}" 2
+	[ -e "${WORK}/pwned" ] && bad "pr-assets: option-shaped remote ran a command" || ok
 	pa --remote nope "${U}" issue/7-login "${WORK}/login-after.png"
+	assert_rc "pr-assets: unknown remote refused" "${rc}" 2
+	git -C "${PA_R}" remote add gone "${WORK}/no-such.git"
+	pa --remote gone "${U}" issue/7-login "${WORK}/login-after.png"
 	assert_rc "pr-assets: unreachable remote is a git failure" "${rc}" 5
+	mkdir -p "${PA_R}/sub"
+	out="$(cd "${PA_R}/sub" && sh "${PA}" "${U}.git" issue/7-login "${WORK}/login-after.png" 2>/dev/null)" && rc=0 || rc=$?
+	assert_rc "pr-assets: runs from a subdirectory, .git suffix dropped" "${rc}" 0
+	assert_has "pr-assets: .git stripped from the repo URL" "${out}" "${U}/blob/"
 fi
 
 finish

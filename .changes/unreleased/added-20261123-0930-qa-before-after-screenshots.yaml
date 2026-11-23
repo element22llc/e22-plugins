@@ -7,12 +7,12 @@ body: |
     On a UI diff it now captures each changed screen at desktop and narrow
     width, from the default branch (booted in a throwaway worktree) and from
     the branch, after its fixes are in. A new helper, `scripts/pr-assets.sh`,
-    pushes them as one orphan commit per branch to the hidden ref
-    `refs/steer-assets/<branch>` and links them by commit SHA. A hosting spike
+    pushes them as orphan commits to one hidden ref per branch,
+    `refs/steer-assets/<branch>`, and links them by commit SHA. A hosting spike
     (#1006) showed this is the form GitHub renders in a private repo's PR
     body; repo-relative paths and `raw.githubusercontent.com` links do not.
-    The ref is not a branch, no clone fetches it, and it never enters the
-    default branch's history. It is kept as review evidence, and `qa`
-    documents a one-line prune. The consumer PR template gains a
+    The ref is not a branch, a default clone never fetches it, and it never
+    enters the default branch's history. It is kept as review evidence, and
+    `qa` documents a one-line prune. The consumer PR template gains a
     *Visual changes* section with an N/A box. Solo-trunk has no PR body, so
     it skips the images and says so. `qa` itself stays opt-in.
