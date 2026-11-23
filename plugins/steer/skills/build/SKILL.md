@@ -29,7 +29,7 @@ allowed-tools:
   - Bash(mise run check *)
   - Bash(mise run ci *)
   - Bash(pnpm dev*)
-  - Bash(sh *scripts/template-reconcile.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)
 ---
 
 # Build a working app from a PO's idea
@@ -70,8 +70,7 @@ which may have gained sections under a later `/plugin update`. Don't eyeball it;
 run the diff and act on its output:
 
 ```sh
-sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
 ```
 
 Splice in only the genuinely-new `##` sections and checklist items it reports

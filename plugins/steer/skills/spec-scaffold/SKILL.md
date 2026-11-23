@@ -4,7 +4,7 @@ description: "Create or additively reconcile a feature's intent.md + contract.md
 when_to_use: "Invoked by the spec-authoring skills with a resolved feature id."
 argument-hint: "[feature-id]"
 allowed-tools:
-  - Bash(sh *scripts/template-reconcile.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)
 # Internal one-shot helper: invoked by /steer:spec, build, init,
 # adopt, and intake to instantiate the templates. Model-callable, hidden from the slash
 # menu, so spec authoring stays a single user-facing entry point (spec / build).
@@ -36,8 +36,7 @@ feature, using the canonical templates bundled with this plugin.
    contract):
 
    ```sh
-   sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-     spec/features/[id]/intent.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md"
+   sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/features/[id]/intent.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md"
    # repeat with contract.md vs feature-contract.md
    ```
 

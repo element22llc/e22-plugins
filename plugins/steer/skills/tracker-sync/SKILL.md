@@ -21,10 +21,10 @@ user-invocable: false
 # of the *delivery* surface (PR merge, branch protection, repo settings) is
 # deliberately NOT listed - it stays host-gated.
 #
-# `Bash(sh *scripts/issue-body.sh*)` is the exception to that backstop: the
-# scaffold lists it in no tier (#924), since its leading wildcard would also
-# match `sh -c '<anything>' ...`, so update-state's gh arm falls to the
-# session's permission mode when reached transitively.
+# The issue-body.sh grant below is the exception to that backstop: the scaffold
+# lists it in no tier (#924): the plugin's install path is machine-specific, so
+# the committed settings file has no anchored form to allow, and update-state's
+# gh arm falls to the session's permission mode when reached transitively.
 #
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
 # reads/writes, native blocked-by edges and an issue's linked PRs have no `gh issue`
@@ -72,7 +72,7 @@ allowed-tools:
   - Bash(gh search issues:*)
   - Bash(gh auth status:*)
   - Bash(gh api graphql:*)
-  - Bash(sh *scripts/issue-body.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/issue-body.sh" *)
 ---
 <!-- steer:modes pull,push -->
 

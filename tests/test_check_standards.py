@@ -265,7 +265,7 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
     _write_skill(
         skills,
         "granted",
-        "allowed-tools:\n  - Bash(sh *scripts/scan-prereqs.sh*)\n",
+        'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)\n',
         'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`',
     )
     # (b) invokes a script but no grant covers it -> error
@@ -297,7 +297,7 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
     _write_skill(
         skills,
         "wronginterp",
-        "allowed-tools:\n  - Bash(sh *scripts/scaffold_reconcile.py*)\n",
+        'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)\n',
         'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" x`',
     )
     # (g) target-repo script (no ${CLAUDE_PLUGIN_ROOT}) -> never a plugin grant.
@@ -333,6 +333,51 @@ def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_pat
     errors: list[str] = []
     check_standards.check_skill_script_grants(errors)  # must not raise
     assert any("broken" in e for e in errors)
+
+
+def test_skill_script_grants_require_anchored_grant_and_literal_call(monkeypatch, tmp_path: Path):
+    """#1010: the grant is matched literally against the command string, so an
+    unanchored grant over-matches and a differently spelled call under-matches."""
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    call = 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`'
+    _write_skill(
+        skills, "unanchored", "allowed-tools:\n  - Bash(sh *scripts/scan-prereqs.sh*)\n", call
+    )
+    _write_skill(
+        skills,
+        "pyunanchored",
+        "allowed-tools:\n  - Bash(python3 *scripts/scaffold_reconcile.py*)\n",
+        'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" x`',
+    )
+    anchored = 'allowed-tools:\n  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)\n'
+    _write_skill(
+        skills, "unquoted", anchored, "Run `sh ${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh .`"
+    )
+    _write_skill(
+        skills, "unbraced", anchored, 'Run `sh "$CLAUDE_PLUGIN_ROOT/scripts/scan-prereqs.sh" .`'
+    )
+    _write_skill(
+        skills,
+        "continued",
+        anchored,
+        '```sh\nsh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" \\\n  .\n```',
+    )
+    _write_skill(skills, "clean", anchored, call)
+
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    errors: list[str] = []
+    check_standards.check_skill_script_grants(errors)
+
+    def hits(name: str) -> list[str]:
+        return [e for e in errors if f"skills/{name}/" in e]
+
+    assert not hits("clean")
+    for name in ("unanchored", "pyunanchored"):
+        assert any("not anchored" in e for e in hits(name)), name
+    for name in ("unquoted", "unbraced"):
+        assert any("without the quoted" in e for e in hits(name)), name
+    assert any("backslash continuation" in e for e in hits("continued"))
 
 
 def _write_wf(root: Path, body: str) -> None:

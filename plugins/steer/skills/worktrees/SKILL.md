@@ -6,7 +6,7 @@ when_to_use: "Reached via /steer:setup worktrees."
 # slash menu - see the note on `init`.
 user-invocable: false
 allowed-tools:
-  - Bash(sh *scripts/scan-worktrees.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-worktrees.sh" *)
   - Bash(git worktree list *)
   - Bash(docker compose ls *)
 ---

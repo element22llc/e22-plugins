@@ -25,8 +25,8 @@ allowed-tools:
   - Bash(mise lock *)
   - Bash(mise generate git-pre-commit *)
   - Bash(npm view *)
-  - Bash(python3 *scripts/scaffold_reconcile.py*)
-  - Bash(sh *scripts/lock-workflows.sh*)
+  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh" *)
 ---
 
 # First-run setup for a new repo (`/steer:setup init`)

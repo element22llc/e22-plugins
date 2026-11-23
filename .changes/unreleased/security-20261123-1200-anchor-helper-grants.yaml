@@ -1,0 +1,17 @@
+kind: Security
+time: 2026-11-23T12:00:00.000000-05:00
+custom:
+  Slug: anchor-helper-grants
+body: |
+  - **Security: skill grants for bundled helpers are anchored to the plugin root.**
+    The 26 `allowed-tools` entries that pre-approve a helper script used the
+    shape `Bash(sh *scripts/<name>.sh*)` (and `python3` for
+    `scaffold_reconcile.py`). The leading wildcard also matched
+    `sh -c '<anything>' x scripts/<name>.sh` and a script with the same name
+    anywhere in the repo, so either ran with no prompt. Each entry is now
+    `Bash(<interp> "${CLAUDE_PLUGIN_ROOT}/scripts/<name>" *)`. Claude Code
+    fills in the plugin path there as it does in the skill body. Grants match
+    the command string literally, quotes included, so the helper calls that
+    were split across lines or unquoted now sit on one line in the quoted
+    form. `check_standards.py` rejects an unanchored grant, an unquoted
+    or unbraced call, and a call continued with a backslash (#1010).

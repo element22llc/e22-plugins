@@ -7,7 +7,7 @@ when_to_use: "Reached via /steer:setup doctor."
 user-invocable: false
 allowed-tools:
   - Bash(grep -rl *)
-  - Bash(sh *scripts/scan-prereqs.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 

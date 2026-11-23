@@ -7,7 +7,7 @@ argument-hint: "[needs [--milestone <m>] | bundle [<feature-id>]]"
 # from the slash menu - see the note on `init`.
 user-invocable: false
 allowed-tools:
-  - Bash(sh *scripts/convert-legacy-questions.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/convert-legacy-questions.sh" *)
 ---
 <!-- steer:modes default,needs,bundle -->
 

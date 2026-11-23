@@ -65,8 +65,7 @@ trust your memory of the template, and don't skip because the file looks
 complete):
 
 ```sh
-sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
-  spec/PRODUCTIONIZATION.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md"
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" spec/PRODUCTIONIZATION.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md"
 ```
 
 It prints the `##` sections and checklist items the bundled template has that the

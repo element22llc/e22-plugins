@@ -16,8 +16,8 @@ when_to_use: >-
   with no code this turn - capture, triage, decompose, a ranked board.
 argument-hint: "[start | resume | status | finish | queue | drive | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
-  - Bash(sh *scripts/scan-spine-state.sh*)
-  - Bash(sh *scripts/pr-assets.sh*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh" *)
   - Bash(git status *)
   - Bash(git switch *)
   - Bash(git checkout -b *)

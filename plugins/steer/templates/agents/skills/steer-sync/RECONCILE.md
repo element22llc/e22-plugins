@@ -99,12 +99,9 @@ is visible rather than silent.
 
    ```
    # check (read-only): empty output = current; any output = additive delta
-   python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
-     auto .gitignore "${STEER_PLUGIN_ROOT}/templates/scaffold/gitignore"
+   python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto .gitignore "${STEER_PLUGIN_ROOT}/templates/scaffold/gitignore"
    # apply the additive merge once you've shown the delta
-   python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
-     auto .claude/settings.json \
-     "${STEER_PLUGIN_ROOT}/templates/scaffold/claude/settings.json" --apply
+   python3 "${STEER_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto .claude/settings.json "${STEER_PLUGIN_ROOT}/templates/scaffold/claude/settings.json" --apply
    ```
 
    This is the **content**-level merge (permission lists, companion-plugin

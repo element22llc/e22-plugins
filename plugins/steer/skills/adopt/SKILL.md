@@ -27,9 +27,9 @@ allowed-tools:
   # Phase 7 authors a root DESIGN.md against the @google/design.md schema and
   # lints it; scoped to that one package rather than a blanket `npx *`.
   - Bash(npx @google/design.md *)
-  - Bash(sh *scripts/template-reconcile.sh*)
-  - Bash(sh *scripts/lock-workflows.sh*)
-  - Bash(python3 *scripts/scaffold_reconcile.py*)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh" *)
+  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)
 ---
 
 # Adopt an existing repo into the standards (`/steer:setup adopt`)

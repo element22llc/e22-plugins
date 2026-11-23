@@ -174,8 +174,12 @@ branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
 wildcard, so `gh pr merge` and unknown commands still prompt. Each flow also
 pre-approves the bundled plugin helper scripts it executes **by literal path in its
 own files**, under a matching interpreter
-(`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
-prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:setup init` and
+(`Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" *)`), since an
+ungranted helper prompts the user mid-flow every time. Claude Code fills in
+`${CLAUDE_PLUGIN_ROOT}` in a plugin skill's `allowed-tools` as it does in the body,
+so the grant names only the plugin's own copy. It is matched against the command
+string literally, quotes included, so the body spells each call the same way, on
+one line. The grants: `scaffold_reconcile.py` in `/steer:setup init` and
 `/steer:setup adopt` and `/steer:setup sync`, `template-reconcile.sh` in `/steer:setup adopt`,
 `/steer:build`, `/steer:spec-scaffold` and `/steer:setup sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:setup sync`,
@@ -256,7 +260,9 @@ narrow slice**, each for a different transport:
 grants the bundled plugin helper scripts its body - including a factored-out
 `PROCEDURE.md` - invokes. That reaches only helpers named by **literal path inside
 the skill's own directory** (`_SCRIPT_INVOCATION` matches
-`${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`), so a helper reached through a
+`${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`; it also rejects an unanchored
+grant, an unquoted or unbraced call, and a call split across a backslash
+continuation), so a helper reached through a
 cross-referenced convention is outside it. That blind spot has bitten once:
 `/steer:setup sync` step 5 delegates to the Template-reconciliation convention in
 `templates/reference/SPEC-FRAMEWORK.md`, whose command is
