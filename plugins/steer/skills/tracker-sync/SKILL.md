@@ -78,11 +78,11 @@ allowed-tools:
 
 # Sync the /spec spine with GitHub Issues
 
-**Helper calls outside this file.** In this skill's other files, and in the
-reference files it runs, a helper call spells the plugin root as the
-CLAUDE_PLUGIN_ROOT variable, and a command that still holds it is refused.
-Replace every occurrence in the command with `${CLAUDE_PLUGIN_ROOT}`, keep the
-double quotes, and keep the call on one line.
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 The plugin treats the tracker as a **pointer**, with `/spec` as the source of
 truth. This skill is the **GitHub accelerator** for that pointer: it pulls issues

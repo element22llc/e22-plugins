@@ -388,6 +388,14 @@ def test_skill_script_grants_require_anchored_grant_and_literal_call(monkeypatch
         '  - Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" *)\n',
         'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py"`',
     )
+    _write_skill(skills, "blanket", anchored + "  - Bash(sh *scripts/*)\n", call)
+    _write_skill(
+        skills,
+        "wrapped",
+        anchored,
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh"\n  .` now.',
+    )
+    _write_skill(skills, "repolocal", anchored + "  - Bash(sh scripts/setup.sh *)\n", call)
     _write_skill(skills, "clean", anchored, call)
     _write_skill(skills, "zsh", "", "Run `zsh scripts/x.sh` in the product repo.")
 
@@ -400,11 +408,13 @@ def test_skill_script_grants_require_anchored_grant_and_literal_call(monkeypatch
 
     assert not hits("clean")
     assert not hits("zsh")
-    for name in ("unanchored", "pyunanchored", "noscriptsdir"):
+    assert not hits("repolocal")
+    for name in ("unanchored", "pyunanchored", "noscriptsdir", "blanket"):
         assert any("not anchored" in e for e in hits(name)), name
     for name in ("unquoted", "unbraced", "closedquote", "twospaces", "secondcall"):
         assert any("without the exact" in e for e in hits(name)), name
-    assert any("backslash continuation" in e for e in hits("continued"))
+    for name in ("continued", "wrapped"):
+        assert any("split across lines" in e for e in hits(name)), name
     assert any("no allowed-tools grant covers" in e for e in hits("fmgrant"))
 
 

@@ -1344,6 +1344,11 @@ _ANCHORED_GRANT = re.compile(
 )
 
 
+# A blanket grant over the helper directory names no helper; a repo-relative
+# `Bash(sh scripts/x.sh *)` is the product's own script and stays allowed.
+_PLUGIN_SCRIPTS_GRANT = re.compile(r"CLAUDE_PLUGIN_ROOT|\*[^)]*scripts/")
+
+
 def _markdown_body(text: str) -> str:
     """Drop a leading frontmatter block: an anchored grant spells the same
     command as the invocation it covers, so it must not be scanned as one."""
@@ -1370,8 +1375,11 @@ def _helper_names() -> set[str]:
 
 def _invocation_shape_errors(text: str, rel: str) -> list[str]:
     errors = []
-    for m in _SCRIPT_INVOCATION.finditer(_markdown_body(text)):
+    body = _markdown_body(text)
+    for m in _SCRIPT_INVOCATION.finditer(body):
         script = m.group("script")
+        line_start = body.rfind("\n", 0, m.start()) + 1
+        line = body[line_start : m.end()] + m.group("rest")
         if (
             m.group("root") != _CANONICAL_ROOT
             or m.group("sep") != " "
@@ -1382,11 +1390,11 @@ def _invocation_shape_errors(text: str, rel: str) -> list[str]:
                 f'"${{CLAUDE_PLUGIN_ROOT}}/scripts/<name>"` spelling - the grant matches '
                 f"the command string literally, so this spelling prompts (#1010)"
             )
-        elif m.group("rest").rstrip().endswith("\\"):
+        elif m.group("rest").rstrip().endswith("\\") or line.count("`") % 2:
             errors.append(
-                f"{rel}: runs scripts/{script} across a backslash continuation - the "
-                f"anchored grant never matches a multi-line command, so keep the call "
-                f"on one line (#1010)"
+                f"{rel}: runs scripts/{script} split across lines (a backslash "
+                f"continuation, or an inline code span that wraps) - the anchored grant "
+                f"never matches a multi-line command, so keep the call on one line (#1010)"
             )
     return errors
 
@@ -1430,7 +1438,7 @@ def check_skill_script_grants(errors: list[str]) -> None:
             if (
                 isinstance(grant, str)
                 and grant.startswith("Bash(")
-                and any(name in grant for name in helpers)
+                and (any(name in grant for name in helpers) or _PLUGIN_SCRIPTS_GRANT.search(grant))
                 and not _ANCHORED_GRANT.fullmatch(grant.strip())
             ):
                 errors.append(

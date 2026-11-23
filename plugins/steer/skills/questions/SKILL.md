@@ -13,11 +13,11 @@ allowed-tools:
 
 # Resolve open questions (`/steer:spec questions`)
 
-**Helper calls outside this file.** In this skill's other files, and in the
-reference files it runs, a helper call spells the plugin root as the
-CLAUDE_PLUGIN_ROOT variable, and a command that still holds it is refused.
-Replace every occurrence in the command with `${CLAUDE_PLUGIN_ROOT}`, keep the
-double quotes, and keep the call on one line.
+**Helper calls outside this file.** In any other steer file this skill has you
+read (its own files, another skill's, a reference doc), a helper call spells
+the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still
+holds it is refused. Replace every occurrence in the command with
+`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line.
 
 Open questions are the spine's quiet failure mode: written down once, gated at
 PO acceptance, then left to rot. This skill gathers every open question across

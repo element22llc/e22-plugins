@@ -95,8 +95,9 @@ or no UI in the diff, say there is nothing to drive and stop.
      toast), an email or other personal data. Seeded data only, never a
      stack wired to a real service. A leaked image is a leaked secret: delete
      the ref and rotate the secret.
-   - Host them: `sh "${STEER_PLUGIN_ROOT}/scripts/pr-assets.sh"
-     <repo-url> <branch> <scratchpad>/qa-shots/*.png`. `<repo-url>` is the
+   - Host them:
+     `sh "${STEER_PLUGIN_ROOT}/scripts/pr-assets.sh" <repo-url> <branch> <scratchpad>/qa-shots/*.png`.
+     `<repo-url>` is the
      repo `origin` points at, from `gh repo view --json url -q .url`; with no
      `gh`, it is the PR URL cut to `https://<host>/<owner>/<repo>`. The helper
      pushes the images to `refs/steer-assets/<branch>`, which is not a branch

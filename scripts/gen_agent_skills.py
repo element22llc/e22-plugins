@@ -181,11 +181,11 @@ HELPER_NOTE = (
 # before any grant applies (#1010). SKILL.md carries this paragraph so the agent
 # writes the path in. HELPER_NOTE does that job here, so render() drops it.
 ROOT_RESOLVE_NOTE = (
-    "**Helper calls outside this file.** In this skill's other files, and in the\n"
-    "reference files it runs, a helper call spells the plugin root as the\n"
-    "CLAUDE_PLUGIN_ROOT variable, and a command that still holds it is refused.\n"
-    "Replace every occurrence in the command with `${CLAUDE_PLUGIN_ROOT}`, keep the\n"
-    "double quotes, and keep the call on one line."
+    "**Helper calls outside this file.** In any other steer file this skill has you\n"
+    "read (its own files, another skill's, a reference doc), a helper call spells\n"
+    "the plugin root as the CLAUDE_PLUGIN_ROOT variable, and a command that still\n"
+    "holds it is refused. Replace every occurrence in the command with\n"
+    "`${CLAUDE_PLUGIN_ROOT}`, keep the double quotes, and keep the call on one line."
 )
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
 # A relative link that climbs out of the skill directory into `templates/`
@@ -264,7 +264,8 @@ def render(skill_dir: Path, *, helpers: bool = False) -> str:
         parts.append(RESTRICTION_NOTE.format(tools="`, `".join(t for t in blocked if t)))
     if str(meta.get("context", "")).strip() == "fork":
         parts.append(FORK_NOTE)
-    body = rewrite_refs(body.replace(ROOT_RESOLVE_NOTE + "\n\n", ""), skill).strip()
+    body = re.sub(r"\n*" + re.escape(ROOT_RESOLVE_NOTE) + r"\n*", "\n\n", body)
+    body = rewrite_refs(body, skill).strip()
     # A helper invoked only from a supporting file still needs the note up front.
     if helpers or HELPER_VAR in body:
         parts.append(HELPER_NOTE)

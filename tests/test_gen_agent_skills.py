@@ -331,6 +331,9 @@ def test_root_resolve_note_is_dropped_from_the_portable_render(tmp_path: Path):
     # tree has its own helper note, and a bare root reference would become a URL.
     note = gen_agent_skills.ROOT_RESOLVE_NOTE
     _skill(tmp_path, "work", "name: work\ndescription: Do work.", f"# Work\n\n{note}\n\nBody.")
-    out = gen_agent_skills.build(tmp_path)[Path("steer-work/SKILL.md")]
-    assert "Helper calls outside this file" not in out
-    assert "Body." in out
+    _skill(tmp_path, "last", "name: last\ndescription: Note last.", f"# Last\n\nBody.\n\n{note}")
+    tree = gen_agent_skills.build(tmp_path)
+    for name in ("work", "last"):
+        out = tree[Path(f"steer-{name}/SKILL.md")]
+        assert "Helper calls outside this file" not in out, name
+        assert "Body." in out
