@@ -259,9 +259,15 @@ the unpushed trunk commits in solo-trunk - with the app on a fresh local stack:
 3. **Fix or file.** Breakage this diff introduced is fixed through `debug`, with
    a regression test; anything larger, needing a product decision, or already
    broken on the default branch becomes a separate linked issue.
-4. **Record** the flows driven, what passed, what was fixed and what was filed
-   under the PR's *Notes for the reviewer*, then `finish` again for the new
-   commits.
+4. **Capture before/after** screenshots of each changed screen, at desktop and
+   narrow width, from the default branch (booted in a throwaway worktree) and
+   from the branch. They are pushed to a hidden ref,
+   `refs/steer-assets/<branch>`, which is not a branch and which no clone
+   fetches, and linked by commit SHA, the one form GitHub renders in a private
+   repo's PR body. Solo-trunk has no PR body, so it skips this step.
+5. **Record** the flows driven, what passed, what was fixed and what was filed
+   under the PR's *Notes for the reviewer*, and the before/after table under
+   *Visual changes*, then `finish` again for the new commits.
 
 It is opt-in: `finish` suggests it when the diff touches UI paths and never
 runs it. The driver is the walkthrough's - the Playwright CLI with a shell, the

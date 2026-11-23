@@ -17,6 +17,7 @@ when_to_use: >-
 argument-hint: "[start | resume | status | finish | queue | drive | debug | qa | promote | tidy | review | walkthrough <feature> | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
+  - Bash(sh *scripts/pr-assets.sh*)
   - Bash(git status *)
   - Bash(git switch *)
   - Bash(git checkout -b *)
@@ -164,7 +165,7 @@ modes**; they differ only in the branch/PR ceremony.
 | **`queue #A #B ...`** | Several independent issues, one fresh worker each running `start` -> `finish`; ends at PRs. Automatic for two or more. -> [`modes/queue.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/queue.md) |
 | **`drive [--max N] [--label <l>]`** | One autonomous cycle: your PRs with change requests or red CI, then the review queue (cards only), then up to N ready issues, each to a fresh worker. Ends on `Drive: idle` or `Drive: work remains` for `/goal` or `/loop` to repeat. Never merges, approves or creates an issue. -> [`modes/drive.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/drive.md) |
 | **`debug [#N \| <symptom>]`** | Cause before fix; symptom only -> diagnosis only, not issue-scoped. Read `modes/debug.md` first. |
-| **`qa [#N]`** | Opt-in: click through the flows the diff touches in a real browser. Read `modes/qa.md` first. |
+| **`qa [#N]`** | Opt-in: click through the flows the diff touches in a real browser, then attach before/after screenshots to the PR. Read `modes/qa.md` first. |
 | **`promote`** | **Not issue-scoped** - opens the `release/*` -> `prod` Release PR from what is merged; **merging it deploys production and is the human's gate.** -> `modes/promote.md` |
 | **`review [#PR ...] [--mine]`** | **Not issue-scoped** - batch-reviews the PR queue, approves only the PRs the human names; `--mine` readies your own. Never merges. -> `modes/review.md` |
 | **`tidy`** | **Not issue-scoped** - file loose root documents into `/spec/reference`, `/spec/design`; renames and deletes wait for a yes. Never changes behavior. |

@@ -6,7 +6,8 @@ authorization in `SKILL.md` apply unchanged.
 Unit and integration tests cover the code; nobody clicks through the changed
 flows until the reviewer does. `qa` does that first: it maps the user flows the
 branch touches, drives them in a real browser, fixes what it can prove broken,
-and leaves the rest written down for the reviewer. It **hunts for breakage**,
+and leaves the rest written down for the reviewer, with before/after
+screenshots of each changed screen in the PR. It **hunts for breakage**,
 where `walkthrough` films a happy path for a PO.
 
 ## When it runs
@@ -43,6 +44,12 @@ or no UI in the diff, say there is nothing to drive and stop.
 3. **Local and seeded only.** Never a deployed environment, a real account or a
    real third-party call. Saved sign-in state holds tokens: keep it in the
    scratchpad or the anchored, ignored `demo/.auth/`, never a committed path.
+4. **A "before" stack**, pr-flow only: `git worktree add --detach
+   <scratchpad>/qa-before origin/<default>`, booted the same way from inside it
+   (a linked worktree gets its own ports). It takes mise trust only when the
+   primary checkout is trusted - never create trust, ask. When it cannot boot,
+   capture "after" only and say why. Tear it down when done: `mise run
+   docker:clean` inside it, then `git worktree remove`.
 
 ## Steps
 
@@ -69,20 +76,38 @@ or no UI in the diff, say there is nothing to drive and stop.
      on the default branch** -> a separate linked issue (`SKILL.md` ->
      Discovered work). Never widen this branch to absorb it.
    - Three fix attempts that do not converge -> stop and report it as open.
-5. **Record it for the reviewer.** Under the PR's *Notes for the reviewer* (in
+5. **Capture before/after**, once the fixes are in. Each changed screen of
+   each flow, on the before stack and on the branch, at desktop (1280 wide) and
+   narrow (390 wide), in the same state with the same seed data. Name each file
+   `<flow>-<before|after>-<desktop|narrow>.png` and keep it in the scratchpad,
+   never in the repo. Then host them:
+   `sh "${STEER_PLUGIN_ROOT}/scripts/pr-assets.sh" <repo-url> <branch> <files>`,
+   with `<repo-url>` from `gh repo view --json url` (no `gh`: the PR URL's
+   `https://<host>/<owner>/<repo>` prefix). It pushes them to
+   `refs/steer-assets/<branch>` - not a branch, never fetched by a clone - and
+   prints one URL per file. Only these `github.com` blob URLs render for
+   reviewers of a private repo; a repo-relative path or a
+   `raw.githubusercontent.com` link shows a broken image. **Solo-trunk** has no
+   PR body to render them: skip this step and say so in the record.
+6. **Record it for the reviewer.** Under the PR's *Notes for the reviewer* (in
    solo-trunk, the trunk commit body): the flows driven, the criteria that
    passed, each defect fixed with its test, each one filed with its issue ref,
-   and anything that could not be exercised locally. A fix adds commits, so the
+   and anything that could not be exercised locally. Under *Visual changes*,
+   one `| Flow | Viewport | Before | After |` row per capture, each image an
+   inline Markdown image of its printed URL. A fix adds commits, so the
    next step is `finish` again, which re-runs the local gates and the code gate
    on them.
 
 ## Gotchas
 
-- **Commit no QA script.** This is exploration. A check worth keeping becomes a
+- **Commit no QA script or screenshot.** This is exploration. A check worth keeping becomes a
   regression test in the repo's own suite, not a browser script beside it.
 - **The browser state is evidence only when the stack is clean.** Leftover local
   data hides or fakes a defect; drive after `dev:setup`, not on a long-lived
   database.
 - **A green test suite is not a pass here.** A flow passes when the browser
   showed it working.
+- **The images outlive the branch.** The ref is kept as review evidence; prune
+  one with `git push origin --delete refs/steer-assets/<branch>`, which breaks
+  that PR's images once GitHub garbage-collects the commit.
 - **Close the browser** when done.

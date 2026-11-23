@@ -1,0 +1,73 @@
+#!/usr/bin/env sh
+# steer helper - host PR images (the `/steer:work qa` before/after screenshots)
+# on a hidden ref, refs/steer-assets/<key>, and print a URL per file that renders
+# in a PR body for signed-in reviewers of a private repo (spike: issue #1006).
+# Only github.com blob URLs pinned to a SHA render there; raw.githubusercontent
+# and repo-relative paths do not. A non-branch ref is never fetched by a default
+# clone and never enters the default branch's history.
+#
+# USAGE
+#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh" [--remote <name>] <repo-url> <key> <file>...
+#   <repo-url> is the repo's web URL, https://<host>/<owner>/<repo> (`gh repo
+#   view --json url`, or the PR URL's prefix) - never derived from the remote,
+#   whose URL may be an SSH host alias. <key> is the work branch name. Prints
+#   `<file-name><TAB><url>` per file. A re-run on the same key commits on top of
+#   the last one, so URLs already posted keep resolving.
+#   Prune: git push <remote> --delete refs/steer-assets/<key>
+#
+# EXIT  0 pushed | 2 usage | 5 git failed
+#
+# CONSTRAINTS (per repo CLAUDE.md): POSIX sh, no jq.
+
+set -u
+
+die() { # <rc> <message>
+	printf 'pr-assets: %s\n' "$2" >&2
+	exit "$1"
+}
+
+REMOTE=origin
+if [ "${1:-}" = --remote ]; then
+	[ $# -ge 2 ] || die 2 "--remote needs a value"
+	REMOTE="$2"
+	shift 2
+fi
+[ $# -ge 3 ] || die 2 "usage: pr-assets.sh [--remote <name>] <repo-url> <key> <file>..."
+BASE="${1%/}"
+KEY="$2"
+shift 2
+case "${BASE}" in https://*/*/*) ;; *) die 2 "repo URL must be https://<host>/<owner>/<repo>: ${BASE}" ;; esac
+REF="refs/steer-assets/${KEY}"
+git check-ref-format "${REF}" || die 2 "not a valid ref name: ${REF}"
+
+names=""
+for f in "$@"; do
+	[ -f "${f}" ] || die 2 "no such file: ${f}"
+	n="$(basename -- "${f}")"
+	case "${n}" in *[!A-Za-z0-9._-]*) die 2 "file name must be [A-Za-z0-9._-]: ${n}" ;; esac
+	case " ${names} " in *" ${n} "*) die 2 "duplicate file name: ${n}" ;; esac
+	names="${names} ${n}"
+done
+
+TMP="$(mktemp "${TMPDIR:-/tmp}/pr-assets.XXXXXX")" || die 5 "mktemp failed"
+trap 'rm -f "${TMP}"' EXIT
+for f in "$@"; do
+	blob="$(git hash-object -w -- "${f}")" || die 5 "hash-object failed: ${f}"
+	printf '100644 blob %s\t%s\n' "${blob}" "$(basename -- "${f}")" >>"${TMP}"
+done
+tree="$(git mktree <"${TMP}")" || die 5 "mktree failed"
+
+remote_tip="$(git ls-remote "${REMOTE}" "${REF}")" || die 5 "ls-remote ${REMOTE} failed"
+if [ -n "${remote_tip}" ]; then
+	git fetch -q "${REMOTE}" "${REF}" || die 5 "fetch ${REF} failed"
+	commit="$(git commit-tree "${tree}" -p FETCH_HEAD -m "steer: PR assets for ${KEY}")"
+else
+	commit="$(git commit-tree "${tree}" -m "steer: PR assets for ${KEY}")"
+fi
+[ -n "${commit}" ] || die 5 "commit-tree failed"
+git push -q "${REMOTE}" "${commit}:${REF}" || die 5 "push to ${REF} failed"
+
+for f in "$@"; do
+	n="$(basename -- "${f}")"
+	printf '%s\t%s/blob/%s/%s?raw=true\n' "${n}" "${BASE}" "${commit}" "${n}"
+done
