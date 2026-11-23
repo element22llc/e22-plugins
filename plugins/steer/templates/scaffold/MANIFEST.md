@@ -164,8 +164,9 @@ List the locked commits it prints in the PR, since they are the code CI will run
 It locks every workflow in the repo, the team's own included, since CI's verify
 step fails on any workflow left unlocked. It also narrows partial tags (`@v4` ->
 `@v4.2.1`) and turns full-SHA pins into the tag at their commit, dropping the
-line's trailing comment: show that diff and keep it, since the runner refuses a
-SHA pin restored after the lock run. **If it fails,
+line's trailing comment. Show those rewrites and keep them, since the runner
+refuses a SHA pin restored after the lock run; put back a dropped
+`# zizmor: ignore[...]`. **If it fails,
 do not commit the workflow files**: leave them out and say why - `gh` missing or
 not signed in, or a local `./` action that uses remote actions (the dev chooses
 `--migrate-local-actions` or `--ignore-local-actions`; never choose for them) -

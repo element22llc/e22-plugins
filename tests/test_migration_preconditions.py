@@ -171,33 +171,55 @@ def test_lockfile_precondition_fires_under_zsh(tmp_path, entry):
 
 RESTORED_SHA = "keep the tags a 7.23.0 lock run wrote over SHA pins"
 SHA = "11bd71901bbe5b1630ceea73d27597364c9af683"
-TAG_LOCK = "workflows:\n    '.github/workflows/ci.yml':\n        - 'actions/checkout@v4.2.2'\n"
 
 
-def _sha_repo(repo: Path, uses: str, lock: str | None) -> None:
+def _lock(workflow: str, refs: list[str], deps: list[str] | None = None) -> str:
+    lines = ["version: 'v0.0.3'", "workflows:", f"    '.github/workflows/{workflow}':"]
+    lines += [f"        - '{r}'" for r in refs]
+    lines.append("dependencies:")
+    for d in deps or []:
+        lines += [f"    '{d}':", f"        ref: '{d.split('@')[1]}'"]
+    return "\n".join(lines) + "\n"
+
+
+TAG_LOCK = _lock("ci.yml", ["actions/checkout@v4.2.2"], ["actions/checkout@v4.2.2"])
+
+
+def _sha_repo(repo: Path, line: str, lock: str | None, name: str = "ci.yml") -> None:
     wf = repo / ".github/workflows"
     wf.mkdir(parents=True)
-    (wf / "ci.yml").write_text(
-        f"on: push\njobs:\n  a:\n    steps:\n      - uses: {uses}\n", encoding="utf-8"
-    )
+    (wf / name).write_text(f"on: push\njobs:\n  a:\n    steps:\n      {line}\n", encoding="utf-8")
     if lock is not None:
         (wf / "actions.lock").write_text(lock, encoding="utf-8")
 
 
 @pytest.mark.parametrize(
-    ("uses", "lock", "expected"),
+    ("line", "lock", "expected"),
     [
-        (f"actions/checkout@{SHA} # v4.2.2", TAG_LOCK, True),
-        (f"actions/checkout@{SHA}", TAG_LOCK, True),
-        (f"actions/checkout@{SHA}", f"workflows:\n  x:\n    - 'actions/checkout@{SHA}'\n", False),
-        ("actions/checkout@v4.2.2", TAG_LOCK, False),
-        (f"octo-org/shared/.github/workflows/build.yml@{SHA}", TAG_LOCK, False),
-        (f"actions/checkout@{SHA}", None, False),
+        (f"- uses: actions/checkout@{SHA} # v4.2.2", TAG_LOCK, True),
+        (f"- uses: actions/checkout@{SHA}", TAG_LOCK, True),
+        (f'- uses: "actions/checkout@{SHA}"', TAG_LOCK, True),
+        (f"- uses: 'actions/checkout@{SHA}'", TAG_LOCK, True),
+        (f"- uses: octo-org/tools/lint@{SHA}", TAG_LOCK, True),
+        # Listed only as another workflow's or a transitive dependency's key.
+        (f"- uses: actions/checkout@{SHA}", _lock("other.yml", [f"actions/checkout@{SHA}"]), True),
+        (f"- uses: actions/checkout@{SHA}", _lock("ci.yml", [], [f"actions/checkout@{SHA}"]), True),
+        (f"- uses: actions/checkout@{SHA}", _lock("ci.yml", [f"actions/checkout@{SHA}"]), False),
+        (f'- uses: "actions/checkout@{SHA}"', _lock("ci.yml", [f"actions/checkout@{SHA}"]), False),
+        ("- uses: actions/checkout@v4.2.2", TAG_LOCK, False),
+        (f"# - uses: actions/checkout@{SHA}", TAG_LOCK, False),
+        (f"- uses: octo-org/shared/.github/workflows/build.yml@{SHA}", TAG_LOCK, False),
+        (f"- uses: actions/checkout@{SHA}", None, False),
     ],
 )
-def test_restored_sha_precondition(tmp_path, uses, lock, expected):
-    _sha_repo(tmp_path, uses, lock)
+def test_restored_sha_precondition(tmp_path, line, lock, expected):
+    _sha_repo(tmp_path, line, lock)
     assert _fires(_precondition(RESTORED_SHA), tmp_path) is expected
+
+
+def test_restored_sha_precondition_reads_yaml_workflows(tmp_path):
+    _sha_repo(tmp_path, f"- uses: actions/checkout@{SHA}", TAG_LOCK, name="ci.yaml")
+    assert _fires(_precondition(RESTORED_SHA), tmp_path)
 
 
 def test_restored_sha_precondition_without_github_dir(tmp_path):
@@ -206,14 +228,14 @@ def test_restored_sha_precondition_without_github_dir(tmp_path):
 
 @pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
 def test_restored_sha_precondition_fires_under_zsh(tmp_path):
-    _sha_repo(tmp_path, f"actions/checkout@{SHA} # v4.2.2", TAG_LOCK)
+    _sha_repo(tmp_path, f"- uses: actions/checkout@{SHA} # v4.2.2", TAG_LOCK)
     out = subprocess.run(
         ["zsh", "-f", "-c", _precondition(RESTORED_SHA)],
         cwd=tmp_path,
         capture_output=True,
         text=True,
     )
-    assert out.stdout.strip() == f"actions/checkout@{SHA}"
+    assert out.stdout.strip() == f"ci.yml: actions/checkout@{SHA}"
 
 
 YAMLLINT_CONFIG = "runs yamllint when any one config exists"

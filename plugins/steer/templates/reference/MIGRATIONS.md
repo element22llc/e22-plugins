@@ -100,28 +100,37 @@ Name the file and say what to carry forward.
   product's `@<sha> # vX.Y.Z` pins alone, while its lock run rewrote them to
   tags and locked only the tags. A repo that put the SHA pins back passes
   `gh actions-lock --verify`, but the runner refuses each such workflow at
-  startup (0 jobs). A workflow a PR runs shows it at once; one that runs only
-  on a schedule, a push or a release fails later. The v7.23.0 entry is fixed;
-  this one reaches the repos that already ran it.
-- **Precondition:** a `uses:` pinned to a full SHA that `actions.lock` does not
-  list -
+  startup (0 jobs). A workflow no PR runs, such as a scheduled one, shows it
+  only when it next runs. The v7.23.0 entry is fixed; this one reaches the
+  repos that already ran it.
+- **Precondition:** a workflow's `uses:` pinned to a full SHA that its own list
+  under `workflows:` in `actions.lock` does not carry -
 
   ```sh
   test -f .github/workflows/actions.lock &&
-    find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) \
-      -exec grep -hoE 'uses:[[:space:]]*[^[:space:]#]+@[0-9a-f]{40}' {} + |
-    sed -E 's/^uses:[[:space:]]*//' | grep -v '/\.github/workflows/' | sort -u |
-    while read -r ref; do
-      grep -qF "'${ref}'" .github/workflows/actions.lock || echo "${ref}"
+    find .github/workflows/ -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) |
+    while read -r f; do
+      listed="$(awk -v k="'.github/workflows/${f##*/}':" '
+        /^[^[:space:]]/ { inwf = ($0 == "workflows:"); next }
+        inwf && /:[[:space:]]*$/ { cur = ($1 == k); next }
+        inwf && cur { print }' .github/workflows/actions.lock)"
+      grep -v '^[[:space:]]*#' "$f" |
+        grep -oE "uses:[[:space:]]*[\"']?[^[:space:]#\"']+@[0-9a-f]{40}" |
+        sed -E "s/^uses:[[:space:]]*[\"']?//" | grep -v '/\.github/workflows/' |
+        while read -r ref; do
+          printf '%s\n' "${listed}" | grep -qF "'${ref}'" || echo "${f##*/}: ${ref}"
+        done
     done
   ```
 
   No output => already migrated, or no lockfile => no-op. A SHA pin the lock
-  run kept is listed in the lockfile, and a reusable workflow from another
-  repository is never locked, so neither fires.
+  run kept is on its workflow's list, so it does not fire. A reusable workflow
+  called from another repository is skipped: gh-actions-lock does not lock
+  those (its README, "Limitations").
 - **Action:** read-then-propose. Run
   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lock-workflows.sh"`; it rewrites each
-  printed pin to the tag the lockfile records. Show the diff, call out each
+  printed pin to the tag at its commit, the one the lockfile already records
+  for a restored pin. Show the diff, call out each
   rewrite in the PR, and put back a `# zizmor: ignore[...]` it dropped. If it
   fails, change nothing and report why (scaffold MANIFEST -> "Lock every
   workflow you install or change").
