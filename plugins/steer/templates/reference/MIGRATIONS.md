@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `ci:security` runs Semgrep pinned through `uvx`, not a `pipx:` tool
+### v7.28.0 - `ci:security` runs Semgrep pinned through `uvx`, not a `pipx:` tool
 
 - **What & why:** the scaffold installed Semgrep as `"pipx:semgrep" = "latest"`.
   On a repo with a committed `mise.lock`, a `pipx:` tool can demand a lockfile
@@ -148,7 +148,7 @@ Name the file and say what to carry forward.
   finds; fixing or waiving a finding is the reviewer's call. **No history entry
   is earned.**
 
-### [Unreleased] - lock gitleaks and Trivy for every platform `mise.lock` covers
+### v7.28.0 - lock gitleaks and Trivy for every platform `mise.lock` covers
 
 - **What & why:** the v7.23.0 gitleaks entry and the `security-gate` repair
   added `[tools]` entries with no lock step, and `mise install` records a new
@@ -178,7 +178,7 @@ Name the file and say what to carry forward.
   `mise.lock` diff only adds lines, then commit it. **No history entry is
   earned.**
 
-### [Unreleased] - keep the tags a 7.23.0 lock run wrote over SHA pins
+### v7.28.0 - keep the tags a 7.23.0 lock run wrote over SHA pins
 
 - **What & why:** the v7.23.0 `actions.lock` entry told sync to leave the
   product's `@<sha> # vX.Y.Z` pins alone, while its lock run rewrote them to
