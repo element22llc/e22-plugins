@@ -61,6 +61,8 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/worktree-lifecycle.sh"
 
 if [ "${1:-}" = --stop ]; then
+	# Out of the worktree, or this process would count as a session inside it.
+	cd / || :
 	steer_wt_claude_live "$2" "${3:-}" || steer_wt_teardown "$2" stop
 	exit 0
 fi

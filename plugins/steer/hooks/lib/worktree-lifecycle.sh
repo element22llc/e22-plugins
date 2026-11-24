@@ -127,12 +127,16 @@ steer_wt_teardown() {
 	return 0
 }
 
-# steer_wt_is_claude <args> - true when a `ps` args line is a Claude Code process:
-# the native `claude` binary, or the npm CLI. Matched anywhere, not on the first
-# word, because the Desktop app's binary lives under `Application Support/`.
+# steer_wt_is_claude <pid> <comm> - true when that process is Claude Code: the
+# native binary by its executable name (macOS reports a full path, Linux the
+# basename), or the npm CLI under node. Never by args alone: a wrapper or a
+# pager whose arguments name a claude path is not a session.
 steer_wt_is_claude() {
-	case "$1" in
-	claude | claude\ * | */claude | */claude\ * | *claude-code/cli.*) return 0 ;;
+	case "$2" in
+	claude | claude\ * | */claude) return 0 ;;
+	node | */node)
+		case "$(ps -o args= -p "$1" 2>/dev/null)" in *claude-code/cli.*) return 0 ;; esac
+		;;
 	esac
 	return 1
 }
@@ -142,7 +146,7 @@ steer_wt_claude_ancestor() {
 	_ca_pid=$$
 	_ca_i=0
 	while [ "${_ca_i}" -lt 8 ] && [ "${_ca_pid:-0}" -gt 1 ]; do
-		if steer_wt_is_claude "$(ps -o args= -p "${_ca_pid}" 2>/dev/null)"; then
+		if steer_wt_is_claude "${_ca_pid}" "$(ps -o comm= -p "${_ca_pid}" 2>/dev/null)"; then
 			printf '%s' "${_ca_pid}"
 			return 0
 		fi
@@ -158,17 +162,18 @@ steer_wt_cwd_of() {
 		readlink "/proc/$1/cwd"
 		return
 	fi
-	command -v lsof >/dev/null 2>&1 || return 1
-	lsof -a -d cwd -p "$1" -Fn 2>/dev/null | sed -n 's/^n//p'
+	_cw_lsof="$(command -v lsof 2>/dev/null)" || _cw_lsof=/usr/sbin/lsof
+	[ -x "${_cw_lsof}" ] || return 1
+	"${_cw_lsof}" -a -d cwd -p "$1" -Fn 2>/dev/null | sed -n 's/^n//p'
 }
 
 # steer_wt_claude_live <root> [exclude-pid] - true when a Claude Code process
 # other than <exclude-pid> has its working directory in <root>. False when it
 # cannot tell, so an unreadable process table never blocks the stop.
 steer_wt_claude_live() {
-	_cl_pids="$(ps -A -o pid= -o args= 2>/dev/null | while read -r _cl_p _cl_a; do
+	_cl_pids="$(ps -A -o pid= -o comm= 2>/dev/null | while read -r _cl_p _cl_c; do
 		[ "${_cl_p}" = "${2:-}" ] && continue
-		steer_wt_is_claude "${_cl_a}" && printf '%s\n' "${_cl_p}"
+		steer_wt_is_claude "${_cl_p}" "${_cl_c}" && printf '%s\n' "${_cl_p}"
 	done)"
 	for _cl_p in ${_cl_pids}; do
 		_cl_cwd="$(steer_wt_cwd_of "${_cl_p}")" || continue

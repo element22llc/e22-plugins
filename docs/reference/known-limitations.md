@@ -338,15 +338,16 @@ stacked-PR gates). Be honest about the tiers:
   returns at once, so the containers stop a few seconds after the session
   exits. It skips the stop while another Claude Code session still has its
   working directory in that worktree; a plain terminal or a `mise run dev` there
-  does not count, so its stack goes down. A new session started in the worktree
+  does not count, so its stack goes down, and where the process table or the
+  working directories cannot be read the stop proceeds. A new session started in the worktree
   within those seconds can see its stack stopping. `mise run docker:up`
   (`ws:docker:up` in a workspace root) brings it back.
 - **The detached stop has no time limit and no lock.** A `docker compose down`
   that hangs (Docker Desktop half-started) waits, invisibly, until Docker
   answers. A `docker:clean` from `WorktreeRemove` or an Orca archive hook run
   right after exit can overlap it on the same compose project; if Compose fails
-  one of them, the volumes left behind are what the primary checkout's session
-  check reports.
+  one of them, the volumes are left behind; the primary checkout's session
+  check reports them only where Claude Code worktrees were used.
 - **`WorktreeRemove` fires only for a worktree a `WorktreeCreate` hook
   created.** Claude Code removes the worktrees it creates itself (`claude
   --worktree`, `EnterWorktree`, `isolation: worktree`) without raising it, and

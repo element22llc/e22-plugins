@@ -157,14 +157,34 @@ grep -q "mise run -C ${LCA4_W} docker:down" "${LC_LOG}" && ok ||
 } 2>/dev/null
 
 # (a5) end to end: the hook finds the exiting session as its own ancestor, so a
-#      session whose cwd is the worktree still stops it on exit. The fake lingers
-#      after its hook, as Claude does, so the detached check sees it alive.
+#      session whose cwd is the worktree still stops it on exit. The fake lives
+#      on after its hook until the stop lands, so the check always sees it.
 : >"${LC_LOG}"
-(cd "${LCA4_W}" && env PATH="${LC_STUBS}:/usr/bin:/bin:/usr/sbin" MISE_STUB_LOG="${LC_LOG}" \
+(cd "${LCA4_W}" && exec env PATH="${LC_STUBS}:/usr/bin:/bin:/usr/sbin" MISE_STUB_LOG="${LC_LOG}" \
 	MISE_STUB_TASKS="${LC_TASKS}" HOOK="${HOOKS}/on-session-end.sh" IN="$(session_end_json "${LCA4_W}" logout)" \
-	"${LC_FAKE}/claude" -c 'printf "%s" "${IN}" | sh "${HOOK}"; sleep 2; :' >/dev/null 2>&1)
+	"${LC_FAKE}/claude" -c 'printf "%s" "${IN}" | sh "${HOOK}"; while :; do sleep 1; done' >/dev/null 2>&1) &
+LC_FAKE_PID=$!
 lc_wait "mise run -C ${LCA4_W} docker:down" && ok ||
 	bad "session-end: the exiting session (hook ancestor) is excluded (log: $(cat "${LC_LOG}"))"
+{
+	kill "${LC_FAKE_PID}"
+	wait "${LC_FAKE_PID}"
+} 2>/dev/null
+
+# (a6) a worktree named `claude`: the detached stop's own args end in `/claude`,
+#      and it must not mistake itself for a live session there. Run from the
+#      worktree, as Claude runs the hook from the session's cwd.
+LCA6_P="${WORK}/lcA6"
+LCA6_W="${LCA6_P}/.claude/worktrees/claude"
+mkdir -p "${LCA6_P}/.git/worktrees/claude" "${LCA6_W}"
+printf '' >"${LCA6_P}/.git/HEAD"
+printf 'gitdir: %s/.git/worktrees/claude\n' "${LCA6_P}" >"${LCA6_W}/.git"
+printf 'services: {}\n' >"${LCA6_W}/compose.yaml"
+: >"${LC_LOG}"
+out="$(cd "${LCA6_W}" && ENV="${LC_PATH}:/usr/sbin MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
+	run_hook on-session-end.sh "$(session_end_json "${LCA6_W}" logout)")"
+lc_wait "mise run -C ${LCA6_W} docker:down" && ok ||
+	bad "session-end: a worktree named claude is still stopped (log: $(cat "${LC_LOG}"))"
 
 # (b) SessionEnd with reason=clear / resume -> nothing. Those continue the same
 #     working session (the rules are re-injected for exactly that reason), so a
@@ -194,8 +214,7 @@ lc_settle
 [ -s "${LC_LOG}" ] &&
 	bad "session-end: plain checkout must not invoke mise (log: $(cat "${LC_LOG}"))" || ok
 
-# (c2) SessionEnd gates checked before detaching: the opt-out, and a linked
-#      worktree with no compose file, never reach mise.
+# (c2) the opt-out, and a linked worktree with no compose file, never reach mise.
 # shellcheck disable=SC2046
 set -- $(lc_pair lcC2)
 : >"${LC_LOG}"
