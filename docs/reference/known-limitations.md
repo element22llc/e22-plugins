@@ -331,14 +331,13 @@ stacked-PR gates). Be honest about the tiers:
   `docker:clean` because the checkout is being deleted. A plain checkout is never
   touched, and setting `STEER_NO_WORKTREE_TEARDOWN` to any non-empty value turns both off. Neither can
   **block** - no decision control - and both discard their JSON output fields.
-- **The `SessionEnd` teardown is best-effort and will often not complete.**
-  `SessionEnd` hooks share a **1.5-second** budget, and a timeout declared by a
-  *plugin* does not raise it - only one in your own settings file does. steer's
-  declared `"timeout": 60` is therefore inert, and `mise tasks ls` plus
-  `mise run ... docker:down` frequently exceeds 1.5s, in which case the hook is
-  cancelled mid-run. **Do not rely on exiting a session to free a worktree's
-  ports.** Raise the budget yourself if you want it to fit:
-  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.
+- **The `SessionEnd` teardown finishes after the session has gone.**
+  `SessionEnd` hooks share a **1.5-second** budget that a *plugin* cannot raise,
+  and `mise tasks ls` plus `mise run ... docker:down` often outlives it. The
+  hook therefore starts the stop detached and returns at once, so the
+  containers stop a few seconds after the session exits. A new session started
+  in the same worktree within those seconds can see its stack stopping;
+  `mise run dev:setup` brings it back.
 - **`WorktreeRemove` fires only for a worktree a `WorktreeCreate` hook
   created.** Claude Code removes the worktrees it creates itself (`claude
   --worktree`, `EnterWorktree`, `isolation: worktree`) without raising it, and

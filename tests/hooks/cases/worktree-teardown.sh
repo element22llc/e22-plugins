@@ -20,6 +20,7 @@ mkdir -p "${LC_STUBS}"
 # value with spaces would be read as a second assignment (and then as a command).
 cat >"${LC_STUBS}/mise" <<'STUB'
 #!/bin/sh
+[ "$1" = run ] && [ -n "${MISE_STUB_SLEEP:-}" ] && sleep "${MISE_STUB_SLEEP}"
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
 case "$1" in
 tasks)
@@ -42,6 +43,17 @@ chmod +x "${LC_STUBS}/docker"
 
 LC_PATH="PATH=${LC_STUBS}:/usr/bin:/bin"
 LC_TASKS="docker:up,docker:down,docker:clean,db:migrate"
+
+# lc_wait <pattern> - the SessionEnd stop runs detached, so poll its log (10s cap).
+lc_wait() {
+	_lw_i=0
+	while [ "${_lw_i}" -lt 100 ]; do
+		grep -q -- "$1" "${LC_LOG}" && return 0
+		sleep 0.1
+		_lw_i=$((_lw_i + 1))
+	done
+	return 1
+}
 
 session_end_json() { # <cwd> <reason>
 	printf '{"session_id":"se","cwd":"%s","hook_event_name":"SessionEnd","reason":"%s"}' "$1" "$2"
@@ -70,10 +82,26 @@ LCA_W="$2"
 out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 	run_hook on-session-end.sh "$(session_end_json "${LCA_W}" prompt_input_exit)")"
 assert_empty "session-end: silent (output is discarded by the harness)" "${out}"
-grep -q "mise run -C ${LCA_W} docker:down" "${LC_LOG}" && ok ||
+lc_wait "mise run -C ${LCA_W} docker:down" && ok ||
 	bad "session-end: stops the worktree's services (log: $(cat "${LC_LOG}"))"
 grep -q 'docker:clean' "${LC_LOG}" &&
 	bad "session-end: must NOT remove volumes on a session ending" || ok
+
+# (a2) the stop is detached: a slow `mise run` must not hold the hook, which
+#      shares a 1.5s SessionEnd budget a plugin cannot raise (#1020).
+# shellcheck disable=SC2046
+set -- $(lc_pair lcA2)
+LCA2_W="$2"
+: >"${LC_LOG}"
+_t0="$(date +%s)"
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} MISE_STUB_SLEEP=4" \
+	run_hook on-session-end.sh "$(session_end_json "${LCA2_W}" logout)")"
+_elapsed=$(($(date +%s) - _t0))
+assert_empty "session-end: detached stop is silent" "${out}"
+[ "${_elapsed}" -lt 3 ] && ok ||
+	bad "session-end: returns without waiting for the stop (took ${_elapsed}s)"
+lc_wait "mise run -C ${LCA2_W} docker:down" && ok ||
+	bad "session-end: detached stop still completes (log: $(cat "${LC_LOG}"))"
 
 # (b) SessionEnd with reason=clear / resume -> nothing. Those continue the same
 #     working session (the rules are re-injected for exactly that reason), so a
@@ -219,7 +247,7 @@ assert_has "worktree-trust: Orca worktree outside the repo inherits" "${out}" "i
 : >"${LC_LOG}"
 out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 	run_hook on-session-end.sh "$(session_end_json "${ORCA_W}" logout)")"
-grep -q "mise run -C ${ORCA_W} docker:down" "${LC_LOG}" && ok ||
+lc_wait "mise run -C ${ORCA_W} docker:down" && ok ||
 	bad "session-end: stops an Orca worktree's services (log: $(cat "${LC_LOG}"))"
 unset ENV
 

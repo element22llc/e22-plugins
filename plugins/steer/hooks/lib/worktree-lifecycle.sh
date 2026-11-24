@@ -16,9 +16,8 @@
 #   is real, but it fires only for a worktree a `WorktreeCreate` hook created -
 #   never for the ones Claude Code creates and removes itself, whose volumes
 #   check-worktree-orphans.sh reports instead; `SessionEnd` hooks share a
-#   1.5-second budget that a PLUGIN-declared timeout cannot raise, so the
-#   `docker:down` pass there is best-effort and will often be cancelled before it
-#   finishes. Do not describe the SessionEnd half as a guarantee.
+#   1.5-second budget that a PLUGIN-declared timeout cannot raise, so
+#   on-session-end.sh runs this helper detached rather than inside the budget.
 #
 # THE TWO MODES ARE NOT THE SAME ACT
 #   stop   `docker:down` - stops this worktree's containers, KEEPS its volumes.

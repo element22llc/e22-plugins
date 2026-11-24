@@ -1,0 +1,12 @@
+kind: Fixed
+time: 2026-11-24T14:15:00.000000-05:00
+custom:
+  Slug: detach-session-end-teardown
+body: |
+  - **Fixed: ending a session in a linked worktree now actually stops its
+    stack.** `on-session-end.sh` ran `mise tasks ls` and `docker:down` inside
+    the 1.5s budget all `SessionEnd` hooks share, which a plugin cannot raise,
+    so it was usually cancelled and the containers stayed up. The hook now
+    keeps its cheap gates (linked worktree, compose file, opt-out) in line and
+    runs the stop detached, so it returns at once and the containers stop a few
+    seconds after the session exits. Volumes are still kept.
