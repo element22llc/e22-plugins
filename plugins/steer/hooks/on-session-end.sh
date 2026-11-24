@@ -35,9 +35,16 @@
 #   hooks.json is inert. `mise tasks ls` plus `mise run -C ... docker:down`
 #   routinely outlives 1.5s, and a hook cancelled at the budget leaves its work
 #   unfinished - the stack stayed up. So the cheap gates (no mise, no docker)
-#   run here and the mise work runs detached, ignoring SIGHUP, its streams on
-#   /dev/null: the hook returns at once and the stop finishes after the
-#   session has gone.
+#   run here and the hook re-runs itself as `--stop` detached, ignoring SIGHUP,
+#   its streams on /dev/null, and in a new session (`setsid`, or perl's on
+#   macOS) so a host that kills Claude's process group cannot take it down.
+#   The hook returns at once and the stop finishes after the session has gone.
+#
+# ANOTHER LIVE SESSION
+#   The detached stop skips when another Claude Code process still has its
+#   working directory in the worktree: its stack is in use. The exiting session
+#   is excluded by pid, found by walking this hook's ancestors. A plain terminal
+#   does not count - Orca keeps one open in every worktree.
 #
 #   (Upstream contract, verified verbatim:
 #   https://docs.claude.com/en/docs/claude-code/hooks.md - "SessionEnd hooks have
@@ -52,6 +59,11 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/worktree-lifecycle.sh"
+
+if [ "${1:-}" = --stop ]; then
+	steer_wt_claude_live "$2" "${3:-}" || steer_wt_teardown "$2" stop
+	exit 0
+fi
 
 # shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
 STEER_INPUT="$(cat 2>/dev/null)"
@@ -70,8 +82,17 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 steer_wt_is_linked "${ROOT}" || exit 0
 steer_wt_has_compose "${ROOT}" || exit 0
 
+SELF="${CLAUDE_PLUGIN_ROOT}/hooks/on-session-end.sh"
+EXITING="$(steer_wt_claude_ancestor)" || EXITING=""
+if command -v setsid >/dev/null 2>&1; then
+	set -- setsid sh "${SELF}" --stop "${ROOT}" "${EXITING}"
+elif command -v perl >/dev/null 2>&1; then
+	set -- perl -MPOSIX -e 'POSIX::setsid(); exec @ARGV' sh "${SELF}" --stop "${ROOT}" "${EXITING}"
+else
+	set -- sh "${SELF}" --stop "${ROOT}" "${EXITING}"
+fi
 (
 	trap '' HUP
-	steer_wt_teardown "${ROOT}" stop >/dev/null 2>&1 </dev/null &
+	"$@" >/dev/null 2>&1 </dev/null &
 )
 exit 0

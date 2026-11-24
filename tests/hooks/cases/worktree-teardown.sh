@@ -21,6 +21,7 @@ mkdir -p "${LC_STUBS}"
 cat >"${LC_STUBS}/mise" <<'STUB'
 #!/bin/sh
 [ "$1" = run ] && [ -n "${MISE_STUB_SLEEP:-}" ] && sleep "${MISE_STUB_SLEEP}"
+[ "$1" = run ] && [ -n "${MISE_STUB_PGID:-}" ] && ps -o pgid= -p $$ | tr -d ' ' >"${MISE_STUB_PGID}"
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
 case "$1" in
 tasks)
@@ -105,6 +106,65 @@ assert_empty "session-end: detached stop is silent" "${out}"
 	bad "session-end: returns without waiting for the stop (took ${_elapsed}s)"
 lc_wait "mise run -C ${LCA2_W} docker:down" && ok ||
 	bad "session-end: detached stop still completes (log: $(cat "${LC_LOG}"))"
+
+# (a3) the stop leaves this process group, so a host that kills Claude's group
+#      on exit cannot take it down with the session.
+# shellcheck disable=SC2046
+set -- $(lc_pair lcA3)
+: >"${LC_LOG}"
+LC_PGID="${WORK}/lcpgid"
+out="$(ENV="${LC_PATH}:/usr/sbin MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} MISE_STUB_PGID=${LC_PGID}" \
+	run_hook on-session-end.sh "$(session_end_json "$2" logout)")"
+lc_wait "mise run -C $2 docker:down" && ok || bad "session-end: escaped stop completes"
+_own_pgid="$(ps -o pgid= -p $$ | tr -d ' ')"
+[ -s "${LC_PGID}" ] && [ "$(cat "${LC_PGID}")" != "${_own_pgid}" ] && ok ||
+	bad "session-end: stop runs outside the hook's process group (pgid $(cat "${LC_PGID}" 2>/dev/null), ours ${_own_pgid})"
+
+# (a4) another live Claude Code session in the worktree -> its stack is in use,
+#      the stop skips; the exiting session (the exclude pid) never counts. The
+#      fake is bash under the name `claude`, so `ps` shows `.../claude -c ...`.
+LC_FAKE="${WORK}/lcfake"
+mkdir -p "${LC_FAKE}"
+ln -s /bin/bash "${LC_FAKE}/claude"
+lc_fake_claude() { # <cwd> -> starts a fake live session there, sets LC_FAKE_PID
+	(cd "$1" && exec "${LC_FAKE}/claude" -c 'while :; do sleep 1; done') &
+	LC_FAKE_PID=$!
+	_lf_i=0
+	while [ "${_lf_i}" -lt 50 ]; do
+		ps -o args= -p "${LC_FAKE_PID}" 2>/dev/null | grep -q '/claude -c' && return 0
+		sleep 0.1
+		_lf_i=$((_lf_i + 1))
+	done
+}
+lc_stop() { # <root> <exclude-pid> - the detached half, run in the foreground
+	env PATH="${LC_STUBS}:/usr/bin:/bin:/usr/sbin" MISE_STUB_LOG="${LC_LOG}" MISE_STUB_TASKS="${LC_TASKS}" \
+		sh "${HOOKS}/on-session-end.sh" --stop "$1" "$2" >/dev/null 2>&1
+}
+# shellcheck disable=SC2046
+set -- $(lc_pair lcA4)
+LCA4_W="$2"
+lc_fake_claude "${LCA4_W}"
+: >"${LC_LOG}"
+lc_stop "${LCA4_W}" ""
+[ -s "${LC_LOG}" ] && grep -q 'mise run' "${LC_LOG}" &&
+	bad "session-end: another live session in the worktree must block the stop (log: $(cat "${LC_LOG}"))" || ok
+lc_stop "${LCA4_W}" "${LC_FAKE_PID}"
+grep -q "mise run -C ${LCA4_W} docker:down" "${LC_LOG}" && ok ||
+	bad "session-end: the exiting session itself must not block the stop (log: $(cat "${LC_LOG}"))"
+{
+	kill "${LC_FAKE_PID}"
+	wait "${LC_FAKE_PID}"
+} 2>/dev/null
+
+# (a5) end to end: the hook finds the exiting session as its own ancestor, so a
+#      session whose cwd is the worktree still stops it on exit. The fake lingers
+#      after its hook, as Claude does, so the detached check sees it alive.
+: >"${LC_LOG}"
+(cd "${LCA4_W}" && env PATH="${LC_STUBS}:/usr/bin:/bin:/usr/sbin" MISE_STUB_LOG="${LC_LOG}" \
+	MISE_STUB_TASKS="${LC_TASKS}" HOOK="${HOOKS}/on-session-end.sh" IN="$(session_end_json "${LCA4_W}" logout)" \
+	"${LC_FAKE}/claude" -c 'printf "%s" "${IN}" | sh "${HOOK}"; sleep 2; :' >/dev/null 2>&1)
+lc_wait "mise run -C ${LCA4_W} docker:down" && ok ||
+	bad "session-end: the exiting session (hook ancestor) is excluded (log: $(cat "${LC_LOG}"))"
 
 # (b) SessionEnd with reason=clear / resume -> nothing. Those continue the same
 #     working session (the rules are re-injected for exactly that reason), so a

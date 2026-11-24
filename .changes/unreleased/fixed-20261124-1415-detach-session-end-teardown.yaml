@@ -8,5 +8,7 @@ body: |
     the 1.5s budget all `SessionEnd` hooks share, which a plugin cannot raise,
     so it was usually cancelled and the containers stayed up. The hook now
     keeps its cheap gates (linked worktree, compose file, opt-out) in line and
-    runs the stop detached, so it returns at once and the containers stop a few
-    seconds after the session exits. Volumes are still kept.
+    runs the stop detached, in its own process session, so it returns at once
+    and the containers stop a few seconds after the session exits. The stop is
+    skipped while another Claude Code session still has its working directory in
+    that worktree. Volumes are still kept.

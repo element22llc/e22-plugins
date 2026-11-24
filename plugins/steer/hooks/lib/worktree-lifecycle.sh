@@ -126,3 +126,53 @@ steer_wt_teardown() {
 	mise run -C "${_td_root}" "${_td_task}" >/dev/null 2>&1 || :
 	return 0
 }
+
+# steer_wt_is_claude <args> - true when a `ps` args line is a Claude Code process:
+# the native `claude` binary, or the npm CLI. Matched anywhere, not on the first
+# word, because the Desktop app's binary lives under `Application Support/`.
+steer_wt_is_claude() {
+	case "$1" in
+	claude | claude\ * | */claude | */claude\ * | *claude-code/cli.*) return 0 ;;
+	esac
+	return 1
+}
+
+# steer_wt_claude_ancestor - pid of the nearest Claude Code ancestor of this shell.
+steer_wt_claude_ancestor() {
+	_ca_pid=$$
+	_ca_i=0
+	while [ "${_ca_i}" -lt 8 ] && [ "${_ca_pid:-0}" -gt 1 ]; do
+		if steer_wt_is_claude "$(ps -o args= -p "${_ca_pid}" 2>/dev/null)"; then
+			printf '%s' "${_ca_pid}"
+			return 0
+		fi
+		_ca_pid="$(ps -o ppid= -p "${_ca_pid}" 2>/dev/null | tr -d ' ')"
+		_ca_i=$((_ca_i + 1))
+	done
+	return 1
+}
+
+# steer_wt_cwd_of <pid> - that process's working directory, via /proc or lsof.
+steer_wt_cwd_of() {
+	if [ -d "/proc/$1" ]; then
+		readlink "/proc/$1/cwd"
+		return
+	fi
+	command -v lsof >/dev/null 2>&1 || return 1
+	lsof -a -d cwd -p "$1" -Fn 2>/dev/null | sed -n 's/^n//p'
+}
+
+# steer_wt_claude_live <root> [exclude-pid] - true when a Claude Code process
+# other than <exclude-pid> has its working directory in <root>. False when it
+# cannot tell, so an unreadable process table never blocks the stop.
+steer_wt_claude_live() {
+	_cl_pids="$(ps -A -o pid= -o args= 2>/dev/null | while read -r _cl_p _cl_a; do
+		[ "${_cl_p}" = "${2:-}" ] && continue
+		steer_wt_is_claude "${_cl_a}" && printf '%s\n' "${_cl_p}"
+	done)"
+	for _cl_p in ${_cl_pids}; do
+		_cl_cwd="$(steer_wt_cwd_of "${_cl_p}")" || continue
+		case "${_cl_cwd}/" in "$1"/*) return 0 ;; esac
+	done
+	return 1
+}
