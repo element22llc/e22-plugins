@@ -163,9 +163,6 @@ the org stack defaults in rule `10-stack`:
   the session check reporting stacks deleted worktrees left behind.
 - **`STEER_WORKTREE_OFFSET`** - pin one worktree's host-port offset when two
   draw the same one (rule `47-worktree-services`), instead of editing shared files.
-- **`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** - Claude Code's own knob, not
-  steer's: raises the `SessionEnd` budget above its 1.5s default so the teardown
-  has time to finish (see [Hooks](hooks.md)).
 - **`STEER_CLAUDE_CODE_VERSION`** (in this marketplace repo's `mise.toml` - a
   maintainer setting, not a consumer one) - the pinned Claude Code version the
   required CI job installs, for reproducible `claude plugin validate --strict`.

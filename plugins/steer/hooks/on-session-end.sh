@@ -6,10 +6,9 @@
 #   started. A rule can only ask, it costs always-on bytes every session, and the
 #   moment it matters is the moment the session is over. SessionEnd is that
 #   moment, and it is a real event - so the port-freeing half of that checklist
-#   item is now attempted automatically instead of requested (best-effort: see
-#   the 1.5s budget below). The volume-destroying half belongs to WorktreeRemove,
-#   or to the orphan sweep where that never fires; see
-#   hooks/lib/worktree-lifecycle.sh for why they differ.
+#   item now runs automatically instead of being requested. The
+#   volume-destroying half belongs to WorktreeRemove, or to the orphan sweep
+#   where that never fires; see hooks/lib/worktree-lifecycle.sh for why they differ.
 #
 # WHAT IT WILL NOT DO
 #   * Never touches a plain checkout. A dev's main stack is theirs; only a LINKED
@@ -29,21 +28,23 @@
 #   and the harness discards its JSON output fields (`systemMessage` and the rest).
 #   An `exit 2` would surface stderr to the user, but a teardown has nothing worth
 #   interrupting a shutdown for, so this hook stays silent and always exits 0.
-#   Everything it does is a side effect or nothing at all.
 #
-# BEST-EFFORT, NOT GUARANTEED - THE 1.5s BUDGET
+# DETACHED - THE 1.5s BUDGET
 #   SessionEnd hooks share a 1.5-second budget, and a timeout declared by a
 #   PLUGIN does not raise it: the `"timeout": 60` on this registration in
-#   hooks.json is inert, because only a timeout in a user's own settings file
-#   raises the budget (to at most 60s). A hook cancelled at the budget has its
-#   output discarded and its work left unfinished. `mise tasks ls` plus
-#   `mise run -C ... docker:down` will often not finish inside 1.5s, so treat this
-#   hook as an opportunistic port-freeing pass, NOT a guarantee that containers
-#   stopped. `WorktreeRemove` takes the ordinary command-hook timeout, so the 60s
-#   there is real - but it fires only for worktrees a `WorktreeCreate` hook made.
+#   hooks.json is inert. `mise tasks ls` plus `mise run -C ... docker:down`
+#   routinely outlives 1.5s, and a hook cancelled at the budget leaves its work
+#   unfinished - the stack stayed up. So the cheap gates (no mise, no docker)
+#   run here and the hook re-runs itself as `--stop` detached, ignoring SIGHUP,
+#   its streams on /dev/null, and in a new session (`setsid`, or perl's on
+#   macOS) so a host that kills Claude's process group cannot take it down.
+#   The hook returns at once and the stop finishes after the session has gone.
 #
-#   A dev who wants the full teardown to fit can raise the budget themselves:
-#   `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.
+# ANOTHER LIVE SESSION
+#   The detached stop skips when another Claude Code process still has its
+#   working directory in the worktree: its stack is in use. The exiting session
+#   is excluded by pid, found by walking this hook's ancestors. A plain terminal
+#   does not count - Orca keeps one open in every worktree.
 #
 #   (Upstream contract, verified verbatim:
 #   https://docs.claude.com/en/docs/claude-code/hooks.md - "SessionEnd hooks have
@@ -59,6 +60,13 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/worktree-lifecycle.sh"
 
+if [ "${1:-}" = --stop ]; then
+	# Out of the worktree, or this process would count as a session inside it.
+	cd / || :
+	steer_wt_claude_live "$2" "${3:-}" || steer_wt_teardown "$2" stop
+	exit 0
+fi
+
 # shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
 STEER_INPUT="$(cat 2>/dev/null)"
 
@@ -72,6 +80,21 @@ CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 
 ROOT="$(steer_repo_root "${CWD}")" || exit 0
+[ -z "${STEER_NO_WORKTREE_TEARDOWN:-}" ] || exit 0
+steer_wt_is_linked "${ROOT}" || exit 0
+steer_wt_has_compose "${ROOT}" || exit 0
 
-steer_wt_teardown "${ROOT}" stop || :
+SELF="${CLAUDE_PLUGIN_ROOT}/hooks/on-session-end.sh"
+EXITING="$(steer_wt_claude_ancestor)" || EXITING=""
+if command -v setsid >/dev/null 2>&1; then
+	set -- setsid sh "${SELF}" --stop "${ROOT}" "${EXITING}"
+elif command -v perl >/dev/null 2>&1; then
+	set -- perl -MPOSIX -e 'POSIX::setsid(); exec @ARGV' sh "${SELF}" --stop "${ROOT}" "${EXITING}"
+else
+	set -- sh "${SELF}" --stop "${ROOT}" "${EXITING}"
+fi
+(
+	trap '' HUP
+	"$@" >/dev/null 2>&1 </dev/null &
+)
 exit 0

@@ -20,6 +20,14 @@ mkdir -p "${LC_STUBS}"
 # value with spaces would be read as a second assignment (and then as a command).
 cat >"${LC_STUBS}/mise" <<'STUB'
 #!/bin/sh
+if [ "$1" = run ] && [ -n "${MISE_STUB_GATE:-}" ]; then
+	_g=0
+	while [ ! -e "${MISE_STUB_GATE}" ] && [ "${_g}" -lt 200 ]; do
+		sleep 0.1
+		_g=$((_g + 1))
+	done
+fi
+[ "$1" = run ] && [ -n "${MISE_STUB_PGID:-}" ] && ps -o pgid= -p $$ | tr -d ' ' >"${MISE_STUB_PGID}"
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
 case "$1" in
 tasks)
@@ -42,6 +50,21 @@ chmod +x "${LC_STUBS}/docker"
 
 LC_PATH="PATH=${LC_STUBS}:/usr/bin:/bin"
 LC_TASKS="docker:up,docker:down,docker:clean,db:migrate"
+
+# lc_wait <pattern> - the SessionEnd stop runs detached, so poll its log. The
+# 30s cap is for a loaded CI runner; a pass returns as soon as the line lands.
+lc_wait() {
+	_lw_i=0
+	while [ "${_lw_i}" -lt 300 ]; do
+		grep -q -- "$1" "${LC_LOG}" && return 0
+		sleep 0.1
+		_lw_i=$((_lw_i + 1))
+	done
+	return 1
+}
+# lc_settle - before a negative SessionEnd assertion: a stop that wrongly ran
+# detached would log only after the hook returned.
+lc_settle() { sleep 1; }
 
 session_end_json() { # <cwd> <reason>
 	printf '{"session_id":"se","cwd":"%s","hook_event_name":"SessionEnd","reason":"%s"}' "$1" "$2"
@@ -70,10 +93,107 @@ LCA_W="$2"
 out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 	run_hook on-session-end.sh "$(session_end_json "${LCA_W}" prompt_input_exit)")"
 assert_empty "session-end: silent (output is discarded by the harness)" "${out}"
-grep -q "mise run -C ${LCA_W} docker:down" "${LC_LOG}" && ok ||
+lc_wait "mise run -C ${LCA_W} docker:down" && ok ||
 	bad "session-end: stops the worktree's services (log: $(cat "${LC_LOG}"))"
 grep -q 'docker:clean' "${LC_LOG}" &&
 	bad "session-end: must NOT remove volumes on a session ending" || ok
+
+# (a2) the stop is detached: a `mise run` that blocks must not hold the hook,
+#      which shares a 1.5s SessionEnd budget a plugin cannot raise. The stub
+#      blocks until released, so no wall-clock threshold: a hook that waited
+#      returns only after the stub's 20s cap, with the stop already logged.
+# shellcheck disable=SC2046
+set -- $(lc_pair lcA2)
+LCA2_W="$2"
+LC_GATE="${WORK}/lcgate"
+: >"${LC_LOG}"
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} MISE_STUB_GATE=${LC_GATE}" \
+	run_hook on-session-end.sh "$(session_end_json "${LCA2_W}" logout)")"
+assert_empty "session-end: detached stop is silent" "${out}"
+grep -q 'mise run' "${LC_LOG}" &&
+	bad "session-end: returns without waiting for the stop (log: $(cat "${LC_LOG}"))" || ok
+: >"${LC_GATE}"
+lc_wait "mise run -C ${LCA2_W} docker:down" && ok ||
+	bad "session-end: detached stop still completes (log: $(cat "${LC_LOG}"))"
+
+# (a3) the stop leaves this process group, so a host that kills Claude's group
+#      on exit cannot take it down with the session.
+# shellcheck disable=SC2046
+set -- $(lc_pair lcA3)
+: >"${LC_LOG}"
+LC_PGID="${WORK}/lcpgid"
+out="$(ENV="${LC_PATH}:/usr/sbin MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} MISE_STUB_PGID=${LC_PGID}" \
+	run_hook on-session-end.sh "$(session_end_json "$2" logout)")"
+lc_wait "mise run -C $2 docker:down" && ok || bad "session-end: escaped stop completes"
+_own_pgid="$(ps -o pgid= -p $$ | tr -d ' ')"
+[ -s "${LC_PGID}" ] && [ "$(cat "${LC_PGID}")" != "${_own_pgid}" ] && ok ||
+	bad "session-end: stop runs outside the hook's process group (pgid $(cat "${LC_PGID}" 2>/dev/null), ours ${_own_pgid})"
+
+# (a4) another live Claude Code session in the worktree -> its stack is in use,
+#      the stop skips; the exiting session (the exclude pid) never counts. The
+#      fake is bash under the name `claude`, so `ps` shows `.../claude -c ...`.
+LC_FAKE="${WORK}/lcfake"
+mkdir -p "${LC_FAKE}"
+ln -s /bin/bash "${LC_FAKE}/claude"
+lc_fake_claude() { # <cwd> -> starts a fake live session there, sets LC_FAKE_PID
+	(cd "$1" && exec "${LC_FAKE}/claude" -c 'while :; do sleep 1; done') &
+	LC_FAKE_PID=$!
+	_lf_i=0
+	while [ "${_lf_i}" -lt 50 ]; do
+		ps -o args= -p "${LC_FAKE_PID}" 2>/dev/null | grep -q '/claude -c' && return 0
+		sleep 0.1
+		_lf_i=$((_lf_i + 1))
+	done
+}
+lc_stop() { # <root> <exclude-pid> - the detached half, run in the foreground
+	env PATH="${LC_STUBS}:/usr/bin:/bin:/usr/sbin" MISE_STUB_LOG="${LC_LOG}" MISE_STUB_TASKS="${LC_TASKS}" \
+		sh "${HOOKS}/on-session-end.sh" --stop "$1" "$2" >/dev/null 2>&1
+}
+# shellcheck disable=SC2046
+set -- $(lc_pair lcA4)
+LCA4_W="$2"
+lc_fake_claude "${LCA4_W}"
+: >"${LC_LOG}"
+lc_stop "${LCA4_W}" ""
+[ -s "${LC_LOG}" ] && grep -q 'mise run' "${LC_LOG}" &&
+	bad "session-end: another live session in the worktree must block the stop (log: $(cat "${LC_LOG}"))" || ok
+lc_stop "${LCA4_W}" "${LC_FAKE_PID}"
+grep -q "mise run -C ${LCA4_W} docker:down" "${LC_LOG}" && ok ||
+	bad "session-end: the exiting session itself must not block the stop (log: $(cat "${LC_LOG}"))"
+{
+	kill "${LC_FAKE_PID}"
+	wait "${LC_FAKE_PID}"
+} 2>/dev/null
+
+# (a5) end to end: the hook finds the exiting session as its own ancestor, so a
+#      session whose cwd is the worktree still stops it on exit. The fake lives
+#      on after its hook until the stop lands, so the check always sees it.
+: >"${LC_LOG}"
+(cd "${LCA4_W}" && exec env PATH="${LC_STUBS}:/usr/bin:/bin:/usr/sbin" MISE_STUB_LOG="${LC_LOG}" \
+	MISE_STUB_TASKS="${LC_TASKS}" HOOK="${HOOKS}/on-session-end.sh" IN="$(session_end_json "${LCA4_W}" logout)" \
+	"${LC_FAKE}/claude" -c 'printf "%s" "${IN}" | sh "${HOOK}"; while :; do sleep 1; done' >/dev/null 2>&1) &
+LC_FAKE_PID=$!
+lc_wait "mise run -C ${LCA4_W} docker:down" && ok ||
+	bad "session-end: the exiting session (hook ancestor) is excluded (log: $(cat "${LC_LOG}"))"
+{
+	kill "${LC_FAKE_PID}"
+	wait "${LC_FAKE_PID}"
+} 2>/dev/null
+
+# (a6) a worktree named `claude`: the detached stop's own args end in `/claude`,
+#      and it must not mistake itself for a live session there. Run from the
+#      worktree, as Claude runs the hook from the session's cwd.
+LCA6_P="${WORK}/lcA6"
+LCA6_W="${LCA6_P}/.claude/worktrees/claude"
+mkdir -p "${LCA6_P}/.git/worktrees/claude" "${LCA6_W}"
+printf '' >"${LCA6_P}/.git/HEAD"
+printf 'gitdir: %s/.git/worktrees/claude\n' "${LCA6_P}" >"${LCA6_W}/.git"
+printf 'services: {}\n' >"${LCA6_W}/compose.yaml"
+: >"${LC_LOG}"
+out="$(cd "${LCA6_W}" && ENV="${LC_PATH}:/usr/sbin MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
+	run_hook on-session-end.sh "$(session_end_json "${LCA6_W}" logout)")"
+lc_wait "mise run -C ${LCA6_W} docker:down" && ok ||
+	bad "session-end: a worktree named claude is still stopped (log: $(cat "${LC_LOG}"))"
 
 # (b) SessionEnd with reason=clear / resume -> nothing. Those continue the same
 #     working session (the rules are re-injected for exactly that reason), so a
@@ -85,6 +205,7 @@ for _r in clear resume; do
 	out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 		run_hook on-session-end.sh "$(session_end_json "$2" "${_r}")")"
 	assert_empty "session-end: reason=${_r} silent" "${out}"
+	lc_settle
 	[ -s "${LC_LOG}" ] &&
 		bad "session-end: reason=${_r} must not tear anything down (log: $(cat "${LC_LOG}"))" || ok
 done
@@ -98,8 +219,25 @@ LCC_P="$1"
 out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 	run_hook on-session-end.sh "$(session_end_json "${LCC_P}" logout)")"
 assert_empty "session-end: plain checkout silent" "${out}"
+lc_settle
 [ -s "${LC_LOG}" ] &&
 	bad "session-end: plain checkout must not invoke mise (log: $(cat "${LC_LOG}"))" || ok
+
+# (c2) the opt-out, and a linked worktree with no compose file, never reach mise.
+# shellcheck disable=SC2046
+set -- $(lc_pair lcC2)
+: >"${LC_LOG}"
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} STEER_NO_WORKTREE_TEARDOWN=1" \
+	run_hook on-session-end.sh "$(session_end_json "$2" logout)")"
+assert_empty "session-end: opt-out silent" "${out}"
+# shellcheck disable=SC2046
+set -- $(wt_pair lcC3)
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
+	run_hook on-session-end.sh "$(session_end_json "$2" logout)")"
+assert_empty "session-end: no compose file silent" "${out}"
+lc_settle
+[ -s "${LC_LOG}" ] &&
+	bad "session-end: opt-out / no compose must not invoke mise (log: $(cat "${LC_LOG}"))" || ok
 
 # (d) WorktreeRemove -> FULL teardown (volumes + orphans). The checkout is about
 #     to be deleted, so its per-worktree volumes become unreachable either way.
@@ -219,7 +357,7 @@ assert_has "worktree-trust: Orca worktree outside the repo inherits" "${out}" "i
 : >"${LC_LOG}"
 out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 	run_hook on-session-end.sh "$(session_end_json "${ORCA_W}" logout)")"
-grep -q "mise run -C ${ORCA_W} docker:down" "${LC_LOG}" && ok ||
+lc_wait "mise run -C ${ORCA_W} docker:down" && ok ||
 	bad "session-end: stops an Orca worktree's services (log: $(cat "${LC_LOG}"))"
 unset ENV
 

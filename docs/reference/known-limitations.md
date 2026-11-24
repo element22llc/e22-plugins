@@ -331,14 +331,23 @@ stacked-PR gates). Be honest about the tiers:
   `docker:clean` because the checkout is being deleted. A plain checkout is never
   touched, and setting `STEER_NO_WORKTREE_TEARDOWN` to any non-empty value turns both off. Neither can
   **block** - no decision control - and both discard their JSON output fields.
-- **The `SessionEnd` teardown is best-effort and will often not complete.**
-  `SessionEnd` hooks share a **1.5-second** budget, and a timeout declared by a
-  *plugin* does not raise it - only one in your own settings file does. steer's
-  declared `"timeout": 60` is therefore inert, and `mise tasks ls` plus
-  `mise run ... docker:down` frequently exceeds 1.5s, in which case the hook is
-  cancelled mid-run. **Do not rely on exiting a session to free a worktree's
-  ports.** Raise the budget yourself if you want it to fit:
-  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.
+- **The `SessionEnd` teardown finishes after the session has gone.**
+  `SessionEnd` hooks share a **1.5-second** budget that a *plugin* cannot raise,
+  and `mise tasks ls` plus `mise run ... docker:down` often outlives it. The
+  hook therefore starts the stop detached, in its own process session, and
+  returns at once, so the containers stop a few seconds after the session
+  exits. It skips the stop while another Claude Code session still has its
+  working directory in that worktree; a plain terminal or a `mise run dev` there
+  does not count, so its stack goes down, and where the process table or the
+  working directories cannot be read the stop proceeds. A new session started in the worktree
+  within those seconds can see its stack stopping. `mise run docker:up`
+  (`ws:docker:up` in a workspace root) brings it back.
+- **The detached stop has no time limit and no lock.** A `docker compose down`
+  that hangs (Docker Desktop half-started) waits, invisibly, until Docker
+  answers. A `docker:clean` from `WorktreeRemove` or an Orca archive hook run
+  right after exit can overlap it on the same compose project; if Compose fails
+  one of them, the volumes are left behind; the primary checkout's session
+  check reports them only where Claude Code worktrees were used.
 - **`WorktreeRemove` fires only for a worktree a `WorktreeCreate` hook
   created.** Claude Code removes the worktrees it creates itself (`claude
   --worktree`, `EnterWorktree`, `isolation: worktree`) without raising it, and
