@@ -20,7 +20,13 @@ mkdir -p "${LC_STUBS}"
 # value with spaces would be read as a second assignment (and then as a command).
 cat >"${LC_STUBS}/mise" <<'STUB'
 #!/bin/sh
-[ "$1" = run ] && [ -n "${MISE_STUB_SLEEP:-}" ] && sleep "${MISE_STUB_SLEEP}"
+if [ "$1" = run ] && [ -n "${MISE_STUB_GATE:-}" ]; then
+	_g=0
+	while [ ! -e "${MISE_STUB_GATE}" ] && [ "${_g}" -lt 200 ]; do
+		sleep 0.1
+		_g=$((_g + 1))
+	done
+fi
 [ "$1" = run ] && [ -n "${MISE_STUB_PGID:-}" ] && ps -o pgid= -p $$ | tr -d ' ' >"${MISE_STUB_PGID}"
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
 case "$1" in
@@ -45,10 +51,11 @@ chmod +x "${LC_STUBS}/docker"
 LC_PATH="PATH=${LC_STUBS}:/usr/bin:/bin"
 LC_TASKS="docker:up,docker:down,docker:clean,db:migrate"
 
-# lc_wait <pattern> - the SessionEnd stop runs detached, so poll its log (10s cap).
+# lc_wait <pattern> - the SessionEnd stop runs detached, so poll its log. The
+# 30s cap is for a loaded CI runner; a pass returns as soon as the line lands.
 lc_wait() {
 	_lw_i=0
-	while [ "${_lw_i}" -lt 100 ]; do
+	while [ "${_lw_i}" -lt 300 ]; do
 		grep -q -- "$1" "${LC_LOG}" && return 0
 		sleep 0.1
 		_lw_i=$((_lw_i + 1))
@@ -91,19 +98,21 @@ lc_wait "mise run -C ${LCA_W} docker:down" && ok ||
 grep -q 'docker:clean' "${LC_LOG}" &&
 	bad "session-end: must NOT remove volumes on a session ending" || ok
 
-# (a2) the stop is detached: a slow `mise run` must not hold the hook, which
-#      shares a 1.5s SessionEnd budget a plugin cannot raise (#1020).
+# (a2) the stop is detached: a `mise run` that blocks must not hold the hook,
+#      which shares a 1.5s SessionEnd budget a plugin cannot raise. The stub
+#      blocks until released, so no wall-clock threshold: a hook that waited
+#      returns only after the stub's 20s cap, with the stop already logged.
 # shellcheck disable=SC2046
 set -- $(lc_pair lcA2)
 LCA2_W="$2"
+LC_GATE="${WORK}/lcgate"
 : >"${LC_LOG}"
-_t0="$(date +%s)"
-out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} MISE_STUB_SLEEP=4" \
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} MISE_STUB_GATE=${LC_GATE}" \
 	run_hook on-session-end.sh "$(session_end_json "${LCA2_W}" logout)")"
-_elapsed=$(($(date +%s) - _t0))
 assert_empty "session-end: detached stop is silent" "${out}"
-[ "${_elapsed}" -lt 3 ] && ok ||
-	bad "session-end: returns without waiting for the stop (took ${_elapsed}s)"
+grep -q 'mise run' "${LC_LOG}" &&
+	bad "session-end: returns without waiting for the stop (log: $(cat "${LC_LOG}"))" || ok
+: >"${LC_GATE}"
 lc_wait "mise run -C ${LCA2_W} docker:down" && ok ||
 	bad "session-end: detached stop still completes (log: $(cat "${LC_LOG}"))"
 
