@@ -34,10 +34,10 @@
 #   PLUGIN does not raise it: the `"timeout": 60` on this registration in
 #   hooks.json is inert. `mise tasks ls` plus `mise run -C ... docker:down`
 #   routinely outlives 1.5s, and a hook cancelled at the budget leaves its work
-#   unfinished - the stack stayed up (#1020). So the cheap, subprocess-free gates
-#   run here and the mise work runs detached, ignoring SIGHUP, with every stream
-#   closed: the hook returns at once and the stop finishes after the session
-#   has gone.
+#   unfinished - the stack stayed up. So the cheap gates (no mise, no docker)
+#   run here and the mise work runs detached, ignoring SIGHUP, its streams on
+#   /dev/null: the hook returns at once and the stop finishes after the
+#   session has gone.
 #
 #   (Upstream contract, verified verbatim:
 #   https://docs.claude.com/en/docs/claude-code/hooks.md - "SessionEnd hooks have

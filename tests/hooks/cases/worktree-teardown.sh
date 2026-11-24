@@ -54,6 +54,9 @@ lc_wait() {
 	done
 	return 1
 }
+# lc_settle - before a negative SessionEnd assertion: a stop that wrongly ran
+# detached would log only after the hook returned.
+lc_settle() { sleep 1; }
 
 session_end_json() { # <cwd> <reason>
 	printf '{"session_id":"se","cwd":"%s","hook_event_name":"SessionEnd","reason":"%s"}' "$1" "$2"
@@ -113,6 +116,7 @@ for _r in clear resume; do
 	out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 		run_hook on-session-end.sh "$(session_end_json "$2" "${_r}")")"
 	assert_empty "session-end: reason=${_r} silent" "${out}"
+	lc_settle
 	[ -s "${LC_LOG}" ] &&
 		bad "session-end: reason=${_r} must not tear anything down (log: $(cat "${LC_LOG}"))" || ok
 done
@@ -126,8 +130,26 @@ LCC_P="$1"
 out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
 	run_hook on-session-end.sh "$(session_end_json "${LCC_P}" logout)")"
 assert_empty "session-end: plain checkout silent" "${out}"
+lc_settle
 [ -s "${LC_LOG}" ] &&
 	bad "session-end: plain checkout must not invoke mise (log: $(cat "${LC_LOG}"))" || ok
+
+# (c2) SessionEnd gates checked before detaching: the opt-out, and a linked
+#      worktree with no compose file, never reach mise.
+# shellcheck disable=SC2046
+set -- $(lc_pair lcC2)
+: >"${LC_LOG}"
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS} STEER_NO_WORKTREE_TEARDOWN=1" \
+	run_hook on-session-end.sh "$(session_end_json "$2" logout)")"
+assert_empty "session-end: opt-out silent" "${out}"
+# shellcheck disable=SC2046
+set -- $(wt_pair lcC3)
+out="$(ENV="${LC_PATH} MISE_STUB_LOG=${LC_LOG} MISE_STUB_TASKS=${LC_TASKS}" \
+	run_hook on-session-end.sh "$(session_end_json "$2" logout)")"
+assert_empty "session-end: no compose file silent" "${out}"
+lc_settle
+[ -s "${LC_LOG}" ] &&
+	bad "session-end: opt-out / no compose must not invoke mise (log: $(cat "${LC_LOG}"))" || ok
 
 # (d) WorktreeRemove -> FULL teardown (volumes + orphans). The checkout is about
 #     to be deleted, so its per-worktree volumes become unreachable either way.

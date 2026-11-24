@@ -161,10 +161,10 @@ What they can *report* differs:
 The two teardown modes automate the cleanup rule `47-worktree-services` asks
 for, rather than requesting it: stop
 what is running when a session ends, remove the data only when the thing that
-owned it is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`. Neither half is dependable: the
-`SessionEnd` stop is opportunistic, and `WorktreeRemove` never fires for the
-worktrees Claude Code makes - so the rules still ask the agent to stop what it
-started.
+owned it is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`. Neither half is a
+guarantee: the `SessionEnd` stop runs detached after a hook the harness can
+cancel or kill, and `WorktreeRemove` never fires for the worktrees Claude Code
+makes - so the rules still ask the agent to stop what it started.
 
 No worktree tool tells steer a worktree is being deleted - not Claude Code, not
 Orca, Conductor or `git worktree remove`. The primary checkout's

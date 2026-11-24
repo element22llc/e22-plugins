@@ -337,7 +337,7 @@ stacked-PR gates). Be honest about the tiers:
   hook therefore starts the stop detached and returns at once, so the
   containers stop a few seconds after the session exits. A new session started
   in the same worktree within those seconds can see its stack stopping;
-  `mise run dev:setup` brings it back.
+  `mise run docker:up` (`ws:docker:up` in a workspace root) brings it back.
 - **`WorktreeRemove` fires only for a worktree a `WorktreeCreate` hook
   created.** Claude Code removes the worktrees it creates itself (`claude
   --worktree`, `EnterWorktree`, `isolation: worktree`) without raising it, and
