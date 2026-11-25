@@ -29,7 +29,7 @@ read-only before acting:
 |---|---|---|
 | Is `N` a stack? | `gh api repos/{owner}/{repo}/stacks/N` | 404 |
 | Which stack holds PR `N`? | `gh api 'repos/{owner}/{repo}/stacks?pull_request=N'` | `[]` |
-| Is this branch in a stack? | `gh stack view --json` | exit 2 (exit 9: stacks not enabled) |
+| Is this branch tracked locally as a stack? | `gh stack view --json` | exit 2 (exit 9: stacks not enabled) - a stack made by `gh stack link` has no local tracking, so ask the API rows |
 
 The response lists the stack's `base.ref` and its `pull_requests` (observed
 bottom to top; the docs do not state the order), each with `number`, `state`, `draft` and `merged_at`. `gh stack checkout`
@@ -119,9 +119,11 @@ builds a manual stack and, where it safely can, records it as a native one.
 - **`start`** - `git fetch origin <parent>`, then
   `git switch -c <branch> origin/<parent>`: the parent as GitHub has it.
 - **`finish`** - open the PR with `gh pr create --base <parent>`, its
-  description naming the dependency, exactly as `finish` describes. Then link
-  it into a native stack with `gh stack link <parent-pr> <this-pr>`, by PR
-  number, only when all of these hold:
+  description naming the dependency, exactly as `finish` describes. Link once:
+  when the section 1 lookup already finds this PR in a stack (a later
+  `finish`), skip the rest of this step. Otherwise link it into a native stack
+  with `gh stack link <parent-pr> <this-pr>`, by PR number, only when all of
+  these hold:
   - `gh extension list` lists `gh stack`;
   - the parent has an open PR of yours on the default branch -
     `gh pr list --head <parent> --author @me --state open --json number,baseRefName`
@@ -132,8 +134,7 @@ builds a manual stack and, where it safely can, records it as a native one.
     returns `[]`. A parent already in a stack keeps this PR a manual layer;
     say so.
 
-  Link once, when the PR is first opened; a later `finish` whose PR the section
-  1 lookup already finds in a stack skips this step. A failed `link` (exit 9:
+  A failed `link` (exit 9:
   stacks are not enabled) leaves the PR as it is, a manual layer; say so in one
   line. Never `submit`, `push` or `sync` here: each pushes every branch in the
   stack, the parent included. A stack made by `link` has no local tracking, so
@@ -144,9 +145,12 @@ builds a manual stack and, where it safely can, records it as a native one.
   `git push --force-with-lease origin <branch>`. If `--fork-point` finds
   nothing (this checkout never saw the old parent tip), stop and report rather
   than replay the parent's old commits. A parent that merged is replaced by the
-  default branch: rebase onto `origin/<default>` from the same fork point and
-  retarget the PR (`gh pr edit --base <default>`). Rebasing the parent itself is
-  its own issue's work.
+  default branch, and its remote branch is usually deleted by then: rebase
+  onto `origin/<default>` from the parent's last head
+  (`gh pr view <parent-pr> --json headRefOid`), and retarget a manual layer
+  still on the parent with `gh pr edit --base <default>` (GitHub retargets a
+  native stack's layers itself). Rebasing the parent itself is its own issue's
+  work.
 - **Never repair a stack by hand** - no cherry-picking between layers, no
   `git branch -f`, no merging the parent into the child. Those break the linear
   history a native stack needs to merge and hide what changed from review.

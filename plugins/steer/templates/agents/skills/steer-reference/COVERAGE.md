@@ -320,8 +320,8 @@ It covers, in detail:
 - **Native vs manual stacks** - a stack as a GitHub object versus PRs chained
   by `--base`; rule 45's "stack only for unmerged code" governs both.
 - **A number may be a stack** - stack numbers are repo-scoped; resolving one
-  read-only through the stacks REST endpoints or `gh stack view` (exit 2, 9),
-  and why a stack number is never claimed as an issue.
+  read-only through the stacks REST endpoints, or `gh stack view` (exit 2, 9)
+  for local tracking only, and why a stack number is never claimed as an issue.
 - **The `gh stack` CLI** - the agent-safe commands, which ones need a TTY, and
   which force-push.
 - **What steer does differently** - never `gh stack merge`, drafts via
