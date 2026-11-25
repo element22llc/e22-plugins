@@ -1,0 +1,11 @@
+kind: Fixed
+time: 2026-11-25T09:00:00.000000-05:00
+custom:
+  Slug: terraform-lockfile-classify
+body: |
+  - **Fixed: `.terraform.lock.hcl` now counts as a lockfile.** The shared path
+    classifier only matched lockfile names ending in `.lock`, so a Terraform or
+    OpenTofu provider lockfile was `unknown`. The issue-first Stop hook then
+    reported an untracked `.terraform.lock.hcl` as implementation-affecting and
+    held up the end of the session, even in read-only sessions. It is now exempt
+    like every other lockfile, at the repo root and in any subdirectory.
