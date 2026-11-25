@@ -37,7 +37,8 @@ steer_classify_path() {
 	package-lock.json | */package-lock.json | pnpm-lock.yaml | */pnpm-lock.yaml | \
 		yarn.lock | */yarn.lock | *.lock | *.lockb | Cargo.lock | */Cargo.lock | \
 		poetry.lock | */poetry.lock | uv.lock | */uv.lock | go.sum | */go.sum | \
-		composer.lock | */composer.lock | Gemfile.lock | */Gemfile.lock)
+		composer.lock | */composer.lock | Gemfile.lock | */Gemfile.lock | \
+		.terraform.lock.hcl | */.terraform.lock.hcl)
 		printf 'lockfile'
 		return
 		;;

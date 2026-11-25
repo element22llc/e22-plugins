@@ -29,6 +29,14 @@ if command -v git >/dev/null 2>&1; then
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S3}" stS3)")"
 	assert_no_block "stop-reconcile: exempt-only changes silent" "${out}"
 
+	# F2: untracked Terraform provider lockfiles are lockfiles, not unknown -> silent.
+	STF="$(git_repo stopTfLock main)"
+	mkdir -p "${STF}/infra/live/dev"
+	printf '# lock\n' >"${STF}/.terraform.lock.hcl"
+	printf '# lock\n' >"${STF}/infra/live/dev/.terraform.lock.hcl"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${STF}" stTfLock)")"
+	assert_no_block "stop-reconcile: untracked .terraform.lock.hcl silent" "${out}"
+
 	# Loop guard: stop_hook_active=true never blocks, even with a governed change.
 	S4="$(git_repo stopLoop main)"
 	mkdir -p "${S4}/src"
