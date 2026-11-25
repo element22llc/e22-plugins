@@ -19,7 +19,7 @@ CR_HOOK="${HOOKS}/check-changes-requested.sh"
 CR_DIR="${CR_TMP}/steer-$(id -u)"
 mkdir -p "${CR_CORE}" "${CR_GH}" "${CR_TMP}"
 mkdir -m 700 "${CR_DIR}"
-for _t in sh cat sed grep head tr awk find mktemp rm mv sleep dirname cksum cut date dd id setsid perl; do
+for _t in sh cat sed grep head tr awk find mkdir mktemp rm mv sleep dirname cksum cut date dd id setsid perl; do
 	_p="$(command -v "${_t}")" && ln -s "${_p}" "${CR_CORE}/${_t}"
 done
 cat >"${CR_GH}/gh" <<'EOF'
@@ -165,6 +165,20 @@ out="$(ENV="PATH=${CR_PATH} TMPDIR=${CR_SHARED} GH_STUB_LOG=${CR_LOG} GH_STUB_OU
 assert_empty "changes-requested: symlinked cache dir -> silent" "${out}"
 sleep 1
 assert_eq "changes-requested: symlinked cache dir -> no refresh" "$(cr_calls)" "0"
+# A fresh TMPDIR: the first session creates the private dir, its refresh fills
+# the cache there, and the next session prints from it.
+CR_FRESH="${WORK}/cr-fresh"
+mkdir -p "${CR_FRESH}"
+cr_case crFresh
+out="$(ENV="PATH=${CR_PATH} TMPDIR=${CR_FRESH} GH_STUB_LOG=${CR_LOG} GH_STUB_OUT=42\n" run_hook check-changes-requested.sh \
+	"$(session_json_src "${CR_REPO}" cr startup)")"
+assert_empty "changes-requested: fresh TMPDIR, first session silent" "${out}"
+cr_fresh_filled() { [ -s "${CR_FRESH}/steer-$(id -u)/$(basename "${CR_CACHE}")" ]; }
+cr_wait cr_fresh_filled
+out="$(ENV="PATH=${CR_PATH} TMPDIR=${CR_FRESH} GH_STUB_LOG=${CR_LOG} GH_STUB_RC=1" run_hook check-changes-requested.sh \
+	"$(session_json_src "${CR_REPO}" cr startup)")"
+assert_has "changes-requested: fresh TMPDIR, next session reports" "${out}" '#42\.'
+
 CR_OPEN="${WORK}/cr-open"
 mkdir -p "${CR_OPEN}/steer-$(id -u)"
 chmod 755 "${CR_OPEN}/steer-$(id -u)"

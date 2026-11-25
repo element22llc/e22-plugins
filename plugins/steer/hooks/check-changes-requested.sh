@@ -74,8 +74,10 @@ command -v gh >/dev/null 2>&1 || exit 0
 USER_ID="$(id -u)"
 DIR="${TMPDIR:-/tmp}/steer-${USER_ID}"
 mkdir -m 700 "${DIR}" 2>/dev/null
-# find, not `test -O` (not POSIX): a real directory, this user's, mode 700.
-[ -n "$(find "${DIR}" -prune -type d -user "${USER_ID}" -perm 700 2>/dev/null)" ] || exit 0
+# find, not `test -O` (not POSIX): a real directory, this user's, mode 700
+# (2700 under a setgid parent on Linux).
+[ -n "$(find "${DIR}" -prune -type d -user "${USER_ID}" \( -perm 700 -o -perm 2700 \) 2>/dev/null)" ] ||
+	exit 0
 KEY="$(steer_primary_worktree "${ROOT}" | cksum | cut -d' ' -f1)"
 CACHE="${DIR}/changes-requested.${KEY}"
 

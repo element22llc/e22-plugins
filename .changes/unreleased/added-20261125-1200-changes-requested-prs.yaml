@@ -10,9 +10,8 @@ body: |
     last check, the session gets one line with their count and numbers,
     pointing to `/steer:work drive`. Session start never waits on the network:
     the line comes from a private per-user cache under `$TMPDIR`, refreshed
-    after each session start by a
-    detached `gh pr list` capped at 5 seconds, so it is one session old. No
-    `gh`, no auth or no network means no line.
+    after each session start by a detached `gh pr list` capped at 5 seconds,
+    so it is one session old. No `gh`, no auth or no network means no line.
   - **Added: `/steer:work start` proposes closing a PR it recuts.** Reusing
     the branch of your open PR for the issue stays the default. When `start`
     cuts a new branch anyway, it proposes closing that PR with a comment
