@@ -1901,7 +1901,8 @@ def unquoted_globs(script: str) -> list[tuple[int, str]]:
     Quote state carries across lines, so a multi-line single-quoted awk program is
     one word. ``[...]`` is not flagged: in this prose it is a placeholder (``[id]``).
     ``$?``, ``$*`` and ``${...}`` are parameters, not globs. Known gaps, absent
-    today: ``case`` arms, ``$((a*b))`` and heredoc bodies would be flagged.
+    today: ``case`` arms, ``$((a*b))`` and heredoc bodies would be flagged, and a
+    glob inside ``"$(...)"`` reads as quoted, so it is missed.
     """
     hits: list[tuple[int, str]] = []
     quote = ""

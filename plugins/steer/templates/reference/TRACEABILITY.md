@@ -135,7 +135,7 @@ is worse than the conflict: being *line*-based, when two entries share a trailin
 line (`- **Areas:** apps/web` is the common case) it splices the blocks together
 and **silently drops a field** in a merge that shows no markers and gets no
 review. One file per entry means two PRs write different paths, so there is
-nothing to resolve. Read the timeline newest-first with `ls -r spec/history/*.md`.
+nothing to resolve. Read the timeline newest-first with `ls -r spec/history`.
 
 Entries are **immutable**: never rewrite, re-date, or delete one. A correction is
 a new entry carrying `- **Corrects:** <filename>`. A repo bootstrapped before the
