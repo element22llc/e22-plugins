@@ -133,7 +133,11 @@ builds a manual stack and, where it safely can, records it as a native one.
   - the parent is in no stack - the section 1 lookup
     (`gh api 'repos/{owner}/{repo}/stacks?pull_request=<parent-pr>'`)
     returns `[]`. A parent already in a stack keeps this PR a manual layer;
-    say so.
+    say so;
+  - the branch holds no merge commit of its own -
+    `git rev-list --merges --count origin/<parent>..HEAD` prints `0`. One the
+    pre-flight brought in would block the stack from merging, so the PR stays
+    a manual layer; say so.
 
   A failed `link` (exit 9: stacks are not enabled) leaves the PR as it is, a
   manual layer; say so in one line. Never `submit`, `push` or `sync` here: each

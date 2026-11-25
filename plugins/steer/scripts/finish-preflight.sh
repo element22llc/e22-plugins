@@ -26,7 +26,8 @@
 #         never stack parents. An open PR that is a layer of a GitHub native
 #         stack and is behind its base takes no merge: `native-stack` and no
 #         merge lines, unless its parent merged and the stack holds only that
-#         parent and this PR - then `unstack` comes first.
+#         parent and this PR - then `unstack` comes first. When the stack
+#         cannot be read, no merge is printed.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   Never HEAD, a branch, the index or the working tree. It fetches the base,
@@ -167,6 +168,7 @@ query($owner: String!, $name: String!, $n: Int!) {
 			prq=failed
 		else
 			pr=""
+			prq=failed
 			emit base unchecked "PR base of ${branch}: gh unavailable, a stack parent would be missed"
 		fi
 	fi
@@ -297,10 +299,12 @@ EOF
 				return
 			fi
 		else
-			emit base unchecked "native stack of PR #${pr}: lookup failed, a stack layer would take a merge"
+			emit base unchecked "native stack of PR #${pr}: lookup failed, no merge predicted"
+			return
 		fi
 	elif [ -n "${behind}" ] && [ -n "${prq}" ]; then
-		emit base unchecked "PR of ${branch}: gh unavailable, a native stack layer would be missed"
+		emit base unchecked "PR of ${branch}: gh unavailable, no merge predicted"
+		return
 	fi
 
 	tip="$(git rev-parse HEAD)"

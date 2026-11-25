@@ -288,6 +288,8 @@ fp
 assert_has "finish-preflight: gh failing on the PR base lookup -> unchecked" "${out}" \
 	"^base${T}unchecked${T}PR base of issue/3-stacked: gh unavailable"
 assert_has "finish-preflight: ... and still checks the default branch" "${out}" "^base${T}against${T}origin/main$"
+assert_has "finish-preflight: ... but, its native stack unknown, predicts no merge" "${out}" \
+	"^base${T}unchecked${T}PR of issue/3-stacked: gh unavailable, no merge predicted$"
 git -C "${R}" switch -q main
 fp
 assert_eq "finish-preflight: on the default branch, no PR lookup" "${out}" \
@@ -382,6 +384,17 @@ base${T}unstack${T}60
 base${T}merge${T}origin/pull/90/head
 base${T}merge${T}origin/pull/90/pre-squash
 base${T}merge-ours${T}origin/pull/90/squash"
+git -C "${R}" switch -q -c issue/11-nc
+commit "${R}" n.txt n1-child
+printf '91 main\n' >"${GHS}/open-issue_11-nc"
+fp
+assert_eq "finish-preflight: a conflict after a merged native parent lists unstack with the merges" "${out}" \
+	"base${T}parent-merged${T}feat/n #90
+base${T}against${T}origin/main
+base${T}conflict${T}n.txt
+base${T}unstack${T}60
+base${T}merge${T}origin/pull/90/head"
+git -C "${R}" switch -q issue/9-n
 printf '60 90 91 92\n' >"${GHS}/stack-91"
 fp
 assert_eq "finish-preflight: ... but not out of a stack that holds more than the two" "${out}" \
@@ -390,15 +403,16 @@ base${T}against${T}origin/main
 base${T}native-stack${T}60"
 : >"${GHS}/fail-stack"
 fp
-assert_has "finish-preflight: stack lookup failing -> unchecked" "${out}" \
-	"^base${T}unchecked${T}native stack of PR #91: lookup failed"
-assert_has "finish-preflight: ... and the merges are still predicted" "${out}" \
-	"^base${T}merge-ours${T}origin/pull/90/squash$"
+assert_eq "finish-preflight: stack lookup failing -> unchecked, and no merge predicted" "${out}" \
+	"base${T}parent-merged${T}feat/n #90
+base${T}against${T}origin/main
+base${T}unchecked${T}native stack of PR #91: lookup failed, no merge predicted"
 rm -f "${GHS}/fail-stack"
 : >"${GHS}/fail"
 fp --base main
-assert_has "finish-preflight: --base with the PR lookup failing -> unchecked" "${out}" \
-	"^base${T}unchecked${T}PR of issue/9-n: gh unavailable, a native stack layer would be missed$"
+assert_eq "finish-preflight: --base with the PR lookup failing -> unchecked, and no merge predicted" "${out}" \
+	"base${T}against${T}origin/main
+base${T}unchecked${T}PR of issue/9-n: gh unavailable, no merge predicted"
 rm -f "${GHS}/fail"
 assert_eq "finish-preflight: never runs gh stack" "$(cat "${GHS}/stack-calls" 2>/dev/null)" ""
 

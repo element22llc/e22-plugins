@@ -29,6 +29,7 @@ body: |
     --no-edit origin/*` and `git merge --abort` for those steps; the `-s ours`
     merge and `gh stack unstack` prompt. The helper changes no branch or
     working tree, and anything it cannot determine (offline, no `gh`, old
-    git) is reported
-    as unchecked, never as a conflict. Its checks are named, so later checks
-    plug into the same call.
+    git) is reported as unchecked, never as a conflict; when it cannot read
+    the PR's native stack it predicts no merge. A branch holding a merge
+    commit of its own is not linked into a native stack. Its checks are
+    named, so later checks plug into the same call.
