@@ -159,19 +159,57 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/learning.md`, updating a matching
   learning over adding one (`/steer-reference traceability` section 3). Writing
   nothing is the normal outcome; whatever is written ships in this delivery.
+  **Pre-flight the base** (pr-flow) - the one procedure for bringing a base
+  in, a stack parent's included: commit everything first - it checks the
+  committed `HEAD` - then, before the push, run
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh"`
+  when the PR targets the default branch, else
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
+  (a stack parent, `batch/<slug>`, `prod` for a hotfix). It fetches and pins
+  refs under `origin/pull/<n>/`, never touching the branch; a printed ref
+  that no longer resolves means pre-flight again. Its `merge` and
+  `merge-ours` lines bring the base in, in order,
+  each run as `git merge --no-edit <ref>` or, for `merge-ours` (a squash of
+  a merged stack parent whose content this branch already holds), `git merge
+  --no-edit -s ours <ref>`: merges, never a rebase, so a pushed branch needs
+  no force-push and CI runs on the current base; an unpushed branch merges
+  the same way, so one prediction covers both. A step that fails or is
+  refused (`merge-ours` and `unstack` are not pre-approved) stops the push,
+  reported. `clean`: run those lines,
+  get the local gates green, and push. An `unstack <N>` line comes first
+  when this PR is a layer of native stack `N` whose parent merged and the
+  stack holds only the two: run `gh stack unstack <N>` (it pushes nothing),
+  then the merges; on a `conflict` it is one of the lines that rule
+  governs. `native-stack <N>`: stop before the push and report it, the
+  retarget below included - this PR is a native layer behind its
+  base, and a merge commit would block the stack from merging
+  (`/steer-reference stacks` section 6). After a
+  `parent-merged` line the PR targets the `against` branch: a new PR opens on
+  it, an open one still on the old parent is retargeted (`gh pr edit --base
+  <it>`). `conflict`: run those lines only when every listed path is
+  mechanical (a generated file regenerated, a lockfile re-resolved,
+  independent additions to one list), as a fix like any other (local gates
+  green, then one code-gate round on those commits unless they are Trivial),
+  then pre-flight again. Any other conflict, including one met mid-merge
+  (`git merge --abort`), stops the push, reported with its paths.
+  `parent-closed`: stop before the push and report it - the code this branch
+  stacks on was abandoned, the author's call. `unchecked`, or no helper on
+  disk: one line saying what went unchecked, and carry on; when the PR or
+  its native stack could not be read it prints no merge line (`merges
+  withheld`), so push without merging, and a `conflict` it lists stops the
+  push.
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch
   changes a `contract.md` (below), and listing each question `start` picked up
   as settled by this change, for its owner to confirm on the running change. A
-  dependent branch's PR opens with `--base <parent>` (the default branch if
-  the parent merged first), then is linked into a native stack
+  dependent branch's PR opens with `--base <parent>` (the `against` branch
+  if the parent merged first), then is linked into a native stack
   (`gh stack link`) when the extension is installed and the parent's PR is
-  yours, on the default branch and in no stack. A parent that moved or merged
-  is rebased onto while the branch is unpushed; once pushed, it is merged in
-  (a native layer leaves the stack when its parent merged, and stops when it
-  only moved), never cherry-picks, `git branch -f` or a force-push
-  (`/steer-reference stacks` section 6). An
+  yours, on the default branch and in no stack, and the branch holds no
+  merge commit of its own (`/steer-reference stacks` section 6); a parent
+  that moved or merged is followed by the pre-flight above, never by a
+  cherry-pick, `git branch -f` or a force-push. An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer-questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Prune the markers of closed

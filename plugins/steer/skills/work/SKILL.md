@@ -19,6 +19,7 @@ argument-hint: "[start | resume | status | finish | queue | drive | debug | qa |
 allowed-tools:
   - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh" *)
   - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/pr-assets.sh" *)
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" *)
   - Bash(git status *)
   - Bash(git switch *)
   - Bash(git checkout -b *)
@@ -33,6 +34,8 @@ allowed-tools:
   - Bash(git push)
   - Bash(git push -u origin *)
   - Bash(git push origin *)
+  - Bash(git merge --no-edit origin/*)
+  - Bash(git merge --abort)
   - Bash(gh auth status *)
   - Bash(gh pr create *)
   - Bash(gh pr edit *)

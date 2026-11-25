@@ -53,7 +53,16 @@ moves a repo between the two and reconciles the marker.
   nothing; the delivery skills (`work`, `init`, `adopt`, `intake`, `sync`,
   `build`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
   (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
-  the same grants - `gh pr edit` included. In
+  the same grants - `gh pr edit` included. `work` also grants the plain
+  merges its `finish` pre-flight prints - `git merge --no-edit origin/*` and
+  `git merge --abort` - never a rebase or a force-push. The `merge-ours` step
+  (`git merge --no-edit -s ours <ref>`, recording a squash-merged parent the
+  branch already holds) and `gh stack unstack` are not granted and prompt:
+  `-s ours` on any other ref than the pinned `origin/pull/<n>/squash` would
+  record base commits as merged without their content. The wildcard is a
+  residual only the skill's prose bounds: options after the ref (`-s ours`,
+  `--no-verify`) still pass it, which is why the skill writes `-s ours`
+  before the ref. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
   (gated by the `check-bash-actions` trunk-push hook only once graduation signals stand -
   see [Hooks](../reference/hooks.md)).
@@ -187,7 +196,8 @@ one line. The grants: `scaffold_reconcile.py` in `/steer:setup init` and
 `/steer:setup adopt` and `/steer:setup sync`, `template-reconcile.sh` in `/steer:setup adopt`,
 `/steer:build`, `/steer:spec-scaffold` and `/steer:setup sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:setup sync`,
-`scan-prereqs.sh` in `/steer:setup doctor`, `workspace-snapshot.sh` in `/steer:next`, and
+`scan-prereqs.sh` in `/steer:setup doctor`, `workspace-snapshot.sh` in `/steer:next`,
+`finish-preflight.sh` in `/steer:work`, and
 `scan-spine-state.sh` in `/steer:setup`, `/steer:setup sync`, `/steer:work`,
 `/steer:status` and `/steer:audit`.
 The `doctor` skill behind `/steer:setup doctor` carries one broad grant that is
