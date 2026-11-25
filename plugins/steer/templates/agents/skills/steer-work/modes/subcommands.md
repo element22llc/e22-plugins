@@ -128,6 +128,27 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/learning.md`, updating a matching
   learning over adding one (`/steer-reference traceability` section 3). Writing
   nothing is the normal outcome; whatever is written ships in this delivery.
+  **Pre-flight the base** (pr-flow): commit everything first - it checks the
+  committed `HEAD` - then, before the push, run
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh"`
+  on a branch cut from the default branch, or
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <parent>`
+  on a dependent one. It only reads and fetches; act on its lines in this
+  order. `parent-merged`: move the branch onto the branch its `against` line
+  names (`git rebase --onto origin/<that branch> <parent-head>`, the SHA it
+  printed), retarget the PR (`gh pr edit --base <that branch>`), force-push
+  as `git push --force-with-lease origin <branch>` (it asks), and pre-flight
+  again with that `--base`; an unattended run or a `queue` or `drive` worker
+  stops and reports it instead. `parent-closed`: stop before the push and
+  report it - the code this branch stacks on was abandoned, the author's call.
+  `conflict`: bring the base in only when every listed path is mechanical (a
+  generated file regenerated, a lockfile re-resolved, independent additions to
+  one list) - rebase before the first push, merge the base in once the branch
+  is pushed - as a fix like any other (local gates green, then one code-gate
+  round on those commits unless they are Trivial), then pre-flight again. Any
+  other conflict, including one met mid-rebase (`git rebase --abort` / `git
+  merge --abort`), stops the push, reported with its paths. `unchecked`, or no
+  helper on disk: one line saying what went unchecked, and carry on.
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch

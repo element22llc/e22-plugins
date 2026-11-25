@@ -1,0 +1,19 @@
+kind: Added
+time: 2026-11-25T12:00:00.000000-05:00
+custom:
+  Slug: finish-preflight-base
+body: |
+  - **Added: `/steer:work finish` pre-flights the base before the push.** A new
+    helper, `scripts/finish-preflight.sh`, runs `git merge-tree` of the
+    committed branch against the freshly fetched default branch, or against
+    the stack parent of a dependent branch, and lists the conflicting paths. It
+    also reports a parent whose PR merged or closed; after a merged parent it
+    checks against the branch the parent merged into, from the fork point, so
+    a squash-merge does not show as a false conflict. Long-lived bases
+    (`develop`, `staging`, `release/*`) are never treated as stack parents.
+    `finish` moves a branch off a merged parent, brings the base in only where
+    every conflict is mechanical, and otherwise stops before the push with the
+    paths. The helper changes no branch or
+    working tree, and anything it cannot determine (offline, no `gh`, old git)
+    is reported as unchecked, never as a conflict. Its checks are named, so
+    later checks plug into the same call.
