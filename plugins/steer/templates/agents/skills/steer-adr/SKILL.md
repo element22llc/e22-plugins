@@ -13,6 +13,25 @@ user-invocable: false
 
 **When to use.** Reached via /steer-spec adr.
 
+> **Helper scripts run from a local steer copy.** Commands below that use
+> `"${STEER_PLUGIN_ROOT}/..."` (a helper, its template argument, a plugin directory) need
+> it to name the steer plugin directory. No host sets it for you; resolve it
+> once, before the first such command:
+>
+> ```sh
+> sh -c 'c="${COPILOT_HOME:-$HOME/.copilot}/installed-plugins"; for d in "$STEER_PLUGIN_ROOT" "$c/e22-plugins/steer" "$c"/*/steer ./plugins/steer; do [ -n "$d" ] && [ -f "$d/hooks/lib/repo-root.sh" ] && CDPATH= cd -- "$d" && pwd && exit; done; exit 1'
+> ```
+>
+> It tries the variable, then the Copilot CLI install, then `plugins/steer` in
+> a checkout of `element22llc/e22-plugins`; on another host, export the
+> variable as its installed steer directory first. Shell state may not survive
+> between commands, so start each one with the printed path and a semicolon -
+> `STEER_PLUGIN_ROOT='<path>'; sh "${STEER_PLUGIN_ROOT}/scripts/..."`; a `VAR=value cmd` prefix
+> would not work, since the shell expands the arguments first. Nothing printed
+> means no local copy: treat the helper as failed, take the step's no-helper
+> path, else its failure path, and say so. Never download a helper and run it
+> from a URL.
+
 <!-- steer:modes default,accept -->
 
 # Write an ADR (`/steer-spec adr`)
@@ -37,7 +56,15 @@ the product repo, from the bundled template.
    already running. When any of them is the caller, proceed and let the bootstrap
    own the stamp. Route only a **direct** invocation against an unmanaged repo.
 2. Decide the next sequential number: list `spec/decisions/` and use the highest
-   existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
+   existing `000N` + 1 (start at `0001`). **Never renumber** an ADR already on
+   the default branch. Local is not the whole picture - another open branch
+   may hold the same number - so once step 4 has copied the file, run
+   `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" numbers`. A
+   `numbers taken` line naming the new file means the default branch or an
+   open PR (`#<n>`) already uses that number: move the file to the next number
+   up and re-run, until no `taken` line names it. `unchecked`, a nonzero exit
+   or no helper on disk: keep the number and say in one line what went
+   unchecked.
 3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
 4. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
    `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/adr.md` -> `spec/decisions/000N-[slug].md`.

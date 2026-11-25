@@ -3,6 +3,8 @@ name: adr
 description: "Create a numbered ADR and offer its Deciders ratification; `accept` moves it Proposed to Accepted."
 when_to_use: "Reached via /steer:spec adr."
 argument-hint: "[<slug> | accept <n>]"
+allowed-tools:
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" *)
 # Internal decision-capture path behind `/steer:spec adr`. Model-callable,
 # hidden from the slash menu - see the note on `init`.
 user-invocable: false
@@ -31,7 +33,15 @@ the product repo, from the bundled template.
    already running. When any of them is the caller, proceed and let the bootstrap
    own the stamp. Route only a **direct** invocation against an unmanaged repo.
 2. Decide the next sequential number: list `spec/decisions/` and use the highest
-   existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
+   existing `000N` + 1 (start at `0001`). **Never renumber** an ADR already on
+   the default branch. Local is not the whole picture - another open branch
+   may hold the same number - so once step 4 has copied the file, run
+   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" numbers`. A
+   `numbers taken` line naming the new file means the default branch or an
+   open PR (`#<n>`) already uses that number: move the file to the next number
+   up and re-run, until no `taken` line names it. `unchecked`, a nonzero exit
+   or no helper on disk: keep the number and say in one line what went
+   unchecked.
 3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
 4. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/adr.md` -> `spec/decisions/000N-[slug].md`.

@@ -198,6 +198,27 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   its native stack could not be read it prints no merge line (`merges
   withheld`), so push without merging, and a `conflict` it lists stops the
   push.
+  **Numbers** - the same run prints `numbers taken <path> <where> <other
+  path>` when an ADR or numbered migration this branch adds reuses a number
+  already on the default branch (`where` is `origin/<default>`) or in an
+  open PR (`#<n>`). On a stacked PR, a path the branch inherited from its
+  parent (not added since `origin/<parent>`) is the parent's to fix: report
+  it and leave it. Taken on the default branch: an ADR is renumbered (below);
+  a migration stops the push, reported with both paths - regenerating it
+  (Drizzle's `meta/` journal and snapshot included) is the author's call
+  (rule `60-high-risk`). Taken by an open PR: this branch gives way when it
+  has no PR yet or `#<n>` is lower than its own PR's number (`gh pr view
+  --json number`), and otherwise keeps the number. Giving way, an ADR is
+  renumbered; a migration is pushed as it is. A kept number or a pushed
+  migration goes under *Notes for the reviewer*, naming `#<n>` - whichever
+  merges second renumbers. **Renumbering an ADR**: take the number after
+  the highest ADR on the branch, then bump it until the re-run pre-flight
+  prints no `taken` for it; rename the file and update every reference on
+  the branch (a `/spec/history/` entry included - it is immutable only once
+  merged) and in the PR title and body, and list mentions outside the repo
+  (issue comments) under *Notes for the reviewer*. It is a fix like any
+  other: commit, local gates green, pre-flight again. Under `--hotfix` a
+  `taken` line never stops the push; it goes under *Notes for the reviewer*.
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch
