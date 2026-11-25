@@ -7,8 +7,9 @@ body: |-
     plain `git rm`.** Every `git rm` used to ask, which stalled merge and rebase
     work, often inside unattended subagents. Plain `git rm` is now allowed:
     without `-f`, git refuses any file with uncommitted changes, so what it
-    removes is still in `HEAD`. Recursive and forced forms stay gated by five
+    removes is still in `HEAD`. Recursive and forced forms stay gated by seven
     narrower `ask` entries that outrank the allow: `-r`, `-f`, `--force` and its
-    abbreviations, and the `-n`/`-q` flag clusters such as `-qr` and `-nf`.
+    abbreviations, the `-n`/`-q` flag clusters such as `-qr` and `-nf`, and any
+    `{` or `$` expansion that could hide a flag.
     `/steer:setup sync` offers a migration that moves existing repos and shows
     the diff first. A repo that wants to keep the broad prompt can decline it.

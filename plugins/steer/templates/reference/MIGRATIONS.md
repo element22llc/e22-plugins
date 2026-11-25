@@ -101,11 +101,16 @@ Name the file and say what to carry forward.
   often inside unattended subagents. Plain `git rm` is safe to trust: without
   `-f` git refuses any file with local or staged changes, so what it removes
   is still in `HEAD`. The scaffold now allows `Bash(git rm:*)` and keeps
-  recursive and forced deletes gated with five narrower asks, which outrank the
+  recursive and forced deletes gated with seven narrower asks, which outrank the
   allow: `Bash(git rm* -r*)`, `Bash(git rm* -f*)`, `Bash(git rm* --f*)`
-  (`--force` and its abbreviations), `Bash(git rm* -n*)` and
-  `Bash(git rm* -q*)`. The last two exist because short flags cluster into one
-  token (`-qr`, `-nf`), and git rm has no other short flags. The settings
+  (`--force` and its abbreviations), `Bash(git rm* -n*)`,
+  `Bash(git rm* -q*)`, `Bash(git rm*{*)` and `Bash(git rm*$*)`. The `-n` and
+  `-q` asks exist because short flags cluster into one token (`-qr`, `-nf`),
+  and git rm has no other short flags. The `{` and `$` asks exist because a
+  brace or `$` expansion (`-{r,f}`, `$'-rf'`) hides the flag from the other
+  asks, and in auto mode the classifier would then decide. A security review
+  that flags the `Bash(git rm:*)` allow on its own is reading it without these
+  asks, which still prompt on every form it would object to. The settings
   reconcile cannot make this move: the new allow is the same string as the old
   ask, so its tier dedupe keeps the ask.
 - **Precondition:** the installed file still asks for every `git rm` -
@@ -117,11 +122,14 @@ Name the file and say what to carry forward.
 
   No output => already migrated, or no file => no-op.
 - **Action:** read-then-propose; show the diff and apply on a yes, as one
-  edit: remove `"Bash(git rm:*)"` from `permissions.ask`, add each of the five
+  edit: remove `"Bash(git rm:*)"` from `permissions.ask`, add each of the seven
   narrow asks it lacks to `permissions.ask`, then add `"Bash(git rm:*)"` to
-  `permissions.allow`. Never write the allow unless all five asks are present.
+  `permissions.allow`. Never write the allow unless all seven asks are present.
   Leave every other entry. If the repo keeps the broad gate on purpose (an ADR,
-  or the PR that tightened it), surface the conflict instead of applying.
+  or the PR that tightened it), surface the conflict instead of applying. A
+  repo that declines keeps its broad ask, and every later settings reconcile
+  reports the template's `Bash(git rm:*)` allow as added and then dropped
+  again; that pair is expected, not drift.
 
   **No history entry is earned.**
 

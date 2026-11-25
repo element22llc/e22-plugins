@@ -854,6 +854,8 @@ GIT_RM_ASKS = (
     "Bash(git rm* --f*)",
     "Bash(git rm* -n*)",
     "Bash(git rm* -q*)",
+    "Bash(git rm*{*)",
+    "Bash(git rm*$*)",
 )
 
 
@@ -1107,7 +1109,9 @@ def check_authorization(errors: list[str]) -> None:
                 )
         # Plain `git rm` is allowed (#735); these asks outrank that allow and keep the
         # recursive/forced forms #294 flagged gated. git rm's short flags (f, n, r, q)
-        # cluster into one token, so `-n`/`-q` are what catch `-qr` and `-nf`.
+        # cluster into one token, so `-n`/`-q` are what catch `-qr` and `-nf`. In auto
+        # mode a brace or `$` expansion (`-{r,f}`, `$'-rf'`) skips the flag asks and
+        # reaches the classifier, so `{` and `$` ask too.
         for required_ask in GIT_RM_ASKS:
             if required_ask not in ask:
                 errors.append(

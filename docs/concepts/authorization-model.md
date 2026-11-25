@@ -70,8 +70,9 @@ moves a repo between the two and reconciles the marker.
     allowlist. `mise run dev` is a **named** task, not the banned `mise run:*`
     wildcard - `mise run deploy` still prompts. Plain `git rm` is allowed (without
     `-f`, git refuses to drop uncommitted changes), but recursive and forced
-    `git rm` (`-r`, `-f`, `--force`, and the `-n`/`-q` flag clusters such as `-qr`)
-    sits under `ask`, which outranks the allow. Bare `git checkout -- <file>`
+    `git rm` (`-r`, `-f`, `--force`, the `-n`/`-q` flag clusters such as `-qr`,
+    and any `{` or `$` expansion that could hide a flag) sits under `ask`, which
+    outranks the allow. Bare `git checkout -- <file>`
     (discards work) and every **merge/deploy** verb stay gated too - `gh pr merge`
     sits under `ask`. `git push` and `gh pr create`/`edit` are *not* gated: they
     are autonomous delivery (rule `45-delivery`). `check_standards.py` pins

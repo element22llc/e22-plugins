@@ -384,6 +384,15 @@ def test_sync_without_the_migration_keeps_every_git_rm_gated(tmp_path: Path):
     perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
     assert "Bash(git rm:*)" in perms["ask"]
     assert "Bash(git rm:*)" not in perms["allow"]
+    assert {
+        "Bash(git rm* -r*)",
+        "Bash(git rm* -f*)",
+        "Bash(git rm* --f*)",
+        "Bash(git rm* -n*)",
+        "Bash(git rm* -q*)",
+        "Bash(git rm*{*)",
+        "Bash(git rm*$*)",
+    } <= set(perms["ask"])
 
 
 def test_scaffold_template_carries_no_retired_permission():
