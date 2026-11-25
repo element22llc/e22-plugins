@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 # finish-preflight.sh - the deterministic checks /steer:work finish runs on the
 # committed HEAD before the push, so a defect a script can see never costs a
-# review round (issue #1025). /steer:spec adr runs `numbers` alone.
+# review round (issue #1025). /steer:spec adr runs `numbers` alone; that check
+# reads uncommitted files too.
 #
 # USAGE
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" [--remote <name>] [--base <branch>] [<check>...]

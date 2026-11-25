@@ -192,6 +192,14 @@ git -C "${R}" switch -q issue/1-none
 fp --remote off numbers
 assert_eq "numbers: offline with nothing numbered added -> silent" "${out}" ""
 
+cut_branch issue/9-sparse
+add "${R}" spec/decisions/0002-again.md
+rm "${R}/spec/decisions/0002-theirs.md"
+fp numbers
+assert_eq "numbers: a file missing only from the work tree (sparse, unstaged rm) still holds its number" "${out}" \
+	"numbers${T}taken${T}spec/decisions/0002-again.md${T}origin/main${T}spec/decisions/0002-theirs.md"
+git -C "${R}" checkout -q -- spec/decisions/0002-theirs.md
+
 git -C "${R}" switch -q --orphan issue/8-orphan
 add "${R}" spec/decisions/0009-alone.md
 fp numbers
