@@ -386,8 +386,8 @@ Name the file and say what to carry forward.
   `directory: /` while an `apps/*/Dockerfile` exists -
 
   ```sh
-  set -- apps/*/Dockerfile
-  test -f .github/dependabot.yml && awk -v apps="$([ -f "$1" ] && echo 1)" '
+  apps=$(find apps -mindepth 2 -maxdepth 2 -type f -name Dockerfile 2>/dev/null | grep -q . && echo 1)
+  test -f .github/dependabot.yml && awk -v apps="$apps" '
     function close_block() {
       if (eco != "" && !sec) stale = 1
       if ((eco == "docker" || eco == "terraform") && !grp) stale = 1
@@ -1774,17 +1774,18 @@ Name the file and say what to carry forward.
   grep -lE '/?spec/HISTORY\.md' \
     .github/workflows/ci.yml .github/pull_request_template.md README.md \
     spec/tracker.md 2>/dev/null
-  grep -lE '`HISTORY\.md`|\[HISTORY entry' \
-    CLAUDE.md spec/PRODUCT.md spec/sources/*/source.md 2>/dev/null
+  grep -lE '`HISTORY\.md`|\[HISTORY entry' CLAUDE.md spec/PRODUCT.md 2>/dev/null
+  find spec/sources -mindepth 2 -maxdepth 2 -type f -name source.md \
+    -exec grep -lE '`HISTORY\.md`|\[HISTORY entry' {} + 2>/dev/null
   ```
 
-  All three empty => already migrated (or a repo that never migrated a spine) => no-op.
+  All empty => already migrated (or a repo that never migrated a spine) => no-op.
   The greps are scoped to those **live** files on purpose: after the migration the only
   legitimate mentions of `spec/HISTORY.md` left in the repo are the archive pointer in
   `spec/history/README.md` and the frozen banner in the archive itself, so a
   repo-wide grep would never converge.
 
-  **Two greps, because the stale token is not the same string in every file.** Four of
+  **Two patterns, because the stale token is not the same string in every file.** Four of
   the seven surfaces name the full path `spec/HISTORY.md`; the other three do not, and a
   single pattern silently skipped them - `CLAUDE.md` and `spec/PRODUCT.md` carry a bare
   `` `HISTORY.md` `` and `spec/sources/*/source.md` carries `[HISTORY entry, ...]`. That

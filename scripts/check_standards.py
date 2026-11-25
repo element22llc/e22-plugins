@@ -71,6 +71,13 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
     strand one silently. The rule-reached set is also cross-checked against
     ``MODEL_ONLY`` in ``scan-invocations.sh``, the same fact in a second file.
 
+15. No fenced shell block in a skill or reference doc passes an unquoted ``*`` or
+    ``?`` glob. The agent runs these in the user's shell, and zsh's default
+    ``nomatch`` aborts a command whose glob matches nothing (the whole script, for
+    a special builtin like ``set --``), so a check reads clean or a step errors
+    where sh and bash would not (#1034, #937). Inline code spans are not scanned:
+    prose names glob patterns far more often than it runs them.
+
 Usage::
 
     uv run python scripts/check_standards.py
@@ -1909,6 +1916,77 @@ def check_skills_only_fallback(errors: list[str]) -> None:
                 )
 
 
+# --- check 15: fenced shell commands carry no unquoted glob ---
+
+_SHELL_FENCE = re.compile(r"^[ \t]*```(sh|bash|shell|zsh)[ \t]*\n(.*?)^[ \t]*```", re.M | re.S)
+_SHELL_GLOB_DOCS = ("skills/**/*.md", "templates/reference/**/*.md")
+
+
+def unquoted_globs(script: str) -> list[tuple[int, str]]:
+    """(line, word) for each word with a ``*`` or ``?`` outside quotes.
+
+    Quote state carries across lines, so a multi-line single-quoted awk program is
+    one word. ``[...]`` is not flagged: in this prose it is a placeholder (``[id]``).
+    ``$?``, ``$*`` and ``${...}`` are parameters, not globs. Known gaps, absent
+    today: ``case`` arms, ``$((a*b))`` and heredoc bodies would be flagged, and a
+    glob inside ``"$(...)"`` reads as quoted, so it is missed.
+    """
+    hits: list[tuple[int, str]] = []
+    quote = ""
+    start = -1
+    glob = False
+    braces = 0
+    i = 0
+    while i < len(script):
+        c = script[i]
+        prev = script[i - 1] if i else ""
+        if quote:
+            if c == quote:
+                quote = ""
+            elif c == "\\" and quote == '"':
+                i += 1
+        elif braces:
+            braces += {"{": 1, "}": -1}.get(c, 0)
+        elif c.isspace() or c in ";|&()<>`":
+            if glob:
+                hits.append((script.count("\n", 0, start) + 1, script[start:i]))
+            start, glob = -1, False
+        elif c == "#" and start < 0:
+            end = script.find("\n", i)
+            i = len(script) if end < 0 else end
+            continue
+        else:
+            if start < 0:
+                start = i
+            if c in "'\"":
+                quote = c
+            elif c == "\\":
+                i += 1
+            elif c == "{" and prev == "$":
+                braces = 1
+            elif c in "*?" and prev != "$":
+                glob = True
+        i += 1
+    if glob:
+        hits.append((script.count("\n", 0, start) + 1, script[start:]))
+    return hits
+
+
+def check_fenced_shell_globs(errors: list[str]) -> None:
+    for pattern in _SHELL_GLOB_DOCS:
+        for md in sorted(PLUGIN_ROOT.glob(pattern)):
+            text = md.read_text(encoding="utf-8")
+            for m in _SHELL_FENCE.finditer(text):
+                first = text.count("\n", 0, m.start(2)) + 1
+                for offset, word in unquoted_globs(m.group(2)):
+                    errors.append(
+                        f"{md.relative_to(PLUGIN_ROOT)}:{first + offset - 1}: unquoted glob "
+                        f"`{word}` in a shell block - zsh's default nomatch aborts the command "
+                        f"when it matches nothing. Test the directory and grep it with -r, or "
+                        f"use find with a quoted -name pattern (#1034)"
+                    )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -1939,6 +2017,7 @@ def run_checks(errors: list[str]) -> None:
     check_template_action_refs(errors)
     check_internal_skill_reachability(errors, skills)
     check_skills_only_fallback(errors)
+    check_fenced_shell_globs(errors)
 
 
 def main() -> int:

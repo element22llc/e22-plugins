@@ -793,3 +793,59 @@ def test_skill_reading_helper_calls_after_load_carries_the_root_note(monkeypatch
         e for e in errors if "skills/missing/" in e
     ]
     assert any("skills/missing/" in e for e in errors)
+
+
+# The three fenced commands origin/main shipped before #1034, verbatim.
+OLD_UNQUOTED_GLOB_SNIPPETS = [
+    (
+        "grep -rn -A8 '^### Q-' spec/vision.md spec/features/*/intent.md \\\n"
+        "  spec/PRODUCTIONIZATION.md 2>/dev/null\n",
+        [(1, "spec/features/*/intent.md")],
+    ),
+    (
+        "set -- apps/*/Dockerfile\n"
+        'test -f .github/dependabot.yml && awk -v apps="$([ -f "$1" ] && echo 1)" \'\n'
+        "  /^[[:space:]]*groups:/ { grp = 1 }\n"
+        "' .github/dependabot.yml\n",
+        [(1, "apps/*/Dockerfile")],
+    ),
+    (
+        "grep -lE '`HISTORY\\.md`|\\[HISTORY entry' \\\n"
+        "  CLAUDE.md spec/PRODUCT.md spec/sources/*/source.md 2>/dev/null\n",
+        [(2, "spec/sources/*/source.md")],
+    ),
+]
+
+
+def test_unquoted_globs_flags_the_old_snippets():
+    for script, expected in OLD_UNQUOTED_GLOB_SNIPPETS:
+        assert check_standards.unquoted_globs(script) == expected
+
+
+def test_unquoted_globs_passes_quoted_and_parameter_forms():
+    for script in [
+        "find spec/sources -name 'source.md' -exec grep -l x {} +",
+        "find .github/workflows \\( -name '*.yml' -o -name \"*.yaml\" \\)",
+        "awk '\n  /^[[:space:]]*x*/ { n++ }\n' f",
+        'echo "$?" $? $* "${x%%*}" ${y#*/}',
+        "grep -rlE --include='*.md' 'a|b' spec/learnings",
+        "ls \\*.md  # a comment with *.md",
+        "sh scripts/template-reconcile.sh spec/features/[id]/intent.md",
+    ]:
+        assert check_standards.unquoted_globs(script) == [], script
+
+
+def test_fenced_shell_globs_scans_indented_fences_only(monkeypatch, tmp_path: Path):
+    doc = tmp_path / "skills/demo/SKILL.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text(
+        "Prose naming `spec/features/*/intent.md` is fine.\n\n"
+        "1. Step:\n\n   ```sh\n   echo ok\n   grep x spec/*.md\n   ```\n\n"
+        "```text\nls *.md\n```\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_fenced_shell_globs(errors)
+    assert len(errors) == 1
+    assert errors[0].startswith("skills/demo/SKILL.md:7: unquoted glob `spec/*.md`")

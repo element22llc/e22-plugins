@@ -1,0 +1,15 @@
+kind: Fixed
+time: 2026-11-25T08:42:00.000000-05:00
+custom:
+  Slug: zsh-safe-skill-globs
+body: |
+  - **Fixed: shell commands in skills no longer break under zsh when a glob
+    matches nothing.** zsh's default `nomatch` aborts such a command before it
+    runs. `/steer:work start`'s learnings check now tests `spec/learnings/` and
+    greps it recursively, so a repo without learnings is a quiet no-op instead
+    of an error, and `resume` finds a transcript with `find`. `/steer:spec
+    questions` no longer drops `vision.md` questions in a repo with no feature
+    directories. Two `/steer:setup sync` preconditions no longer read "already
+    migrated" under zsh: v7.25.0 (Dependabot security groups) when no
+    `apps/*/Dockerfile` exists, and v4.0.0 (`spec/history/`) when no
+    `spec/sources/*/source.md` exists.
