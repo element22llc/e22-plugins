@@ -47,6 +47,89 @@ def _settings(repo: Path, deny: list[str], allow: list[str] | None = None) -> No
     )
 
 
+LAST_UPDATED = "`contract.md` drops the template's `Last updated` line"
+TEMPLATE_CONTRACT = REPO_ROOT / "plugins/steer/templates/spec/feature-contract.md"
+
+
+def _contract(repo: Path, feature: str, header: str, body: str = "## Behavior rules\n") -> None:
+    d = repo / "spec/features" / feature
+    d.mkdir(parents=True)
+    text = f"# {feature} - Contract\n\n> Owner: dev team\n{header}> Implements: ./intent.md\n\n"
+    (d / "contract.md").write_bytes((text + body).encode())
+
+
+def _lines(cmd: str, repo: Path) -> list[str]:
+    out = subprocess.run(["sh", "-c", cmd], cwd=repo, capture_output=True, text=True)
+    return sorted(out.stdout.split())
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "> Last updated: 2026-03-02\n",
+        "> Last updated: YYYY-MM-DD\n",
+        "> Last updated: 2026-03-02  \n",
+        "> Last updated: 2026-03-02\r\n",
+    ],
+)
+def test_last_updated_precondition_fires_on_the_template_form(tmp_path, header):
+    _contract(tmp_path, "refunds", header)
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == ["spec/features/refunds/contract.md:4"]
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "> Last updated: 2026-03-02 - added partial refunds\n",
+        "> Last updated: 2026-03-02 (#123)\n",
+        ">  Last updated: 2026-03-02\n",
+        "> **Last updated:** 2026-03-02\n",
+        "",
+    ],
+)
+def test_last_updated_precondition_leaves_a_customized_line(tmp_path, header):
+    _contract(tmp_path, "refunds", header)
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+def test_last_updated_precondition_ignores_the_line_below_the_header(tmp_path):
+    _contract(tmp_path, "refunds", "", "## Behavior rules\n\n> Last updated: 2026-03-02\n")
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+def test_last_updated_precondition_lists_every_stale_contract(tmp_path):
+    _contract(tmp_path, "refunds", "> Last updated: 2026-03-02\n")
+    _contract(tmp_path, "invoices", "> Last updated: 2026-03-02 - reworked\n")
+    _contract(tmp_path, "payouts", "> Last updated: YYYY-MM-DD\n")
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == [
+        "spec/features/payouts/contract.md:4",
+        "spec/features/refunds/contract.md:4",
+    ]
+
+
+def test_last_updated_precondition_is_silent_on_the_current_template(tmp_path):
+    d = tmp_path / "spec/features/refunds"
+    d.mkdir(parents=True)
+    (d / "contract.md").write_bytes(TEMPLATE_CONTRACT.read_bytes())
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+def test_last_updated_precondition_without_features(tmp_path):
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+def test_last_updated_precondition_runs_under_zsh(tmp_path):
+    _contract(tmp_path, "refunds", "> Last updated: 2026-03-02\n")
+    out = subprocess.run(
+        ["zsh", "-f", "-c", _precondition(LAST_UPDATED)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert out.stdout.strip() == "spec/features/refunds/contract.md:4"
+
+
 WIDE_ENV_DENY = "retires the wide `Bash(git add*.env*)` deny"
 
 

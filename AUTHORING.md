@@ -502,6 +502,13 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   ledger heading ahead of `plugin.json`, so a guess cannot reach `main`. For a code
   comment, describe the *shape* ("a repo bootstrapped before that shape...") rather
   than keying it to a release at all.
+- **Removing template content ships its migration.** A change that drops a line
+  or block from a template, with no replacement, adds the ledger entry that
+  removes it from instantiated files - even a line nothing reads. Additive
+  reconciliation never deletes, so without one the content lives on in every
+  repo bootstrapped before the change. The precondition matches only the
+  template's own form, so a line the product edited is left alone. The rule
+  itself lives in the ledger intro (`MIGRATIONS.md`, after "Below the bar").
 
 ## Scaffold discipline
 
