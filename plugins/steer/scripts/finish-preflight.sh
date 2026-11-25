@@ -26,8 +26,9 @@
 #         never stack parents. An open PR that is a layer of a GitHub native
 #         stack and is behind its base takes no merge: `native-stack` and no
 #         merge lines, unless its parent merged and the stack holds only that
-#         parent and this PR - then `unstack` comes first. When the stack
-#         cannot be read, no merge is printed.
+#         parent and this PR - then `unstack` comes first. When the PR or its
+#         stack cannot be read, the prediction still runs but no merge line
+#         is printed.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   Never HEAD, a branch, the index or the working tree. It fetches the base,
@@ -283,6 +284,7 @@ EOF
 	# base leaves the stack first - only when its merged parent is all the rest
 	# of it - or takes no merge at all.
 	done=""
+	withhold=""
 	if [ -n "${behind}" ] && [ -n "${pr}" ]; then
 		if sline="$(gh api "repos/{owner}/{repo}/stacks?pull_request=${pr}" \
 			--jq '.[] | "\(.number) \([.pull_requests[].number | tostring] | join(" "))"' 2>/dev/null)"; then
@@ -299,13 +301,12 @@ EOF
 				return
 			fi
 		else
-			emit base unchecked "native stack of PR #${pr}: lookup failed, no merge predicted"
-			return
+			withhold="native stack of PR #${pr}: lookup failed, merges withheld"
 		fi
 	elif [ -n "${behind}" ] && [ -n "${prq}" ]; then
-		emit base unchecked "PR of ${branch}: gh unavailable, no merge predicted"
-		return
+		withhold="PR of ${branch}: gh unavailable, merges withheld"
 	fi
+	[ -z "${withhold}" ] || emit base unchecked "${withhold}"
 
 	tip="$(git rev-parse HEAD)"
 	while read -r kind rev; do
@@ -316,7 +317,8 @@ EOF
 			merge_tree "${tip}" "${rev}"
 			if [ "${MT_RC}" -ne 0 ]; then
 				report || return
-				printf '%s%s %s\n' "${done}" "${kind}" "${rev}" | while read -r k r; do emit base "${k}" "${r}"; done
+				[ -n "${withhold}" ] ||
+					printf '%s%s %s\n' "${done}" "${kind}" "${rev}" | while read -r k r; do emit base "${k}" "${r}"; done
 				return
 			fi
 			tree="$(printf '%s\n' "${MT_OUT}" | sed -n 1p)"
@@ -333,7 +335,7 @@ EOF
 ${steps}
 EOF
 	emit base clean
-	printf '%s' "${done}" | while read -r k r; do emit base "${k}" "${r}"; done
+	[ -n "${withhold}" ] || printf '%s' "${done}" | while read -r k r; do emit base "${k}" "${r}"; done
 }
 
 for c in "$@"; do

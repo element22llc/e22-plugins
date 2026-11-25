@@ -192,7 +192,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   (`git merge --abort`), stops the push, reported with its paths.
   `parent-closed`: stop before the push and report it - the code this branch
   stacks on was abandoned, the author's call. `unchecked`, or no helper on
-  disk: one line saying what went unchecked, and carry on.
+  disk: one line saying what went unchecked, and carry on; when the PR or
+  its native stack could not be read it prints no merge line (`merges
+  withheld`), so push without merging, and a `conflict` it lists stops the
+  push.
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch
@@ -202,8 +205,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   if the parent merged first), then is linked into a native stack
   (`gh stack link`) when the extension is installed and the parent's PR is
   yours, on the default branch and in no stack, and the branch holds no
-  merge commit of its own (`/steer:reference stacks` section 6); a parent that moved or merged is followed by the pre-flight
-  above, never by a cherry-pick, `git branch -f` or a force-push. An
+  merge commit of its own (`/steer:reference stacks` section 6); a parent
+  that moved or merged is followed by the pre-flight above, never by a
+  cherry-pick, `git branch -f` or a force-push. An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Prune the markers of closed

@@ -288,8 +288,10 @@ fp
 assert_has "finish-preflight: gh failing on the PR base lookup -> unchecked" "${out}" \
 	"^base${T}unchecked${T}PR base of issue/3-stacked: gh unavailable"
 assert_has "finish-preflight: ... and still checks the default branch" "${out}" "^base${T}against${T}origin/main$"
-assert_has "finish-preflight: ... but, its native stack unknown, predicts no merge" "${out}" \
-	"^base${T}unchecked${T}PR of issue/3-stacked: gh unavailable, no merge predicted$"
+assert_has "finish-preflight: ... and still predicts the conflict" "${out}" "^base${T}conflict${T}p.txt$"
+assert_has "finish-preflight: ... but, its native stack unknown, withholds the merges" "${out}" \
+	"^base${T}unchecked${T}PR of issue/3-stacked: gh unavailable, merges withheld$"
+case "${out}" in *"${T}merge${T}"*) bad "finish-preflight: no merge line while the native stack is unknown" ;; *) ok ;; esac
 git -C "${R}" switch -q main
 fp
 assert_eq "finish-preflight: on the default branch, no PR lookup" "${out}" \
@@ -403,16 +405,18 @@ base${T}against${T}origin/main
 base${T}native-stack${T}60"
 : >"${GHS}/fail-stack"
 fp
-assert_eq "finish-preflight: stack lookup failing -> unchecked, and no merge predicted" "${out}" \
+assert_eq "finish-preflight: stack lookup failing -> unchecked, predicted, merges withheld" "${out}" \
 	"base${T}parent-merged${T}feat/n #90
 base${T}against${T}origin/main
-base${T}unchecked${T}native stack of PR #91: lookup failed, no merge predicted"
+base${T}unchecked${T}native stack of PR #91: lookup failed, merges withheld
+base${T}clean${T}"
 rm -f "${GHS}/fail-stack"
 : >"${GHS}/fail"
 fp --base main
-assert_eq "finish-preflight: --base with the PR lookup failing -> unchecked, and no merge predicted" "${out}" \
+assert_eq "finish-preflight: --base with the PR lookup failing -> conflict still predicted, merges withheld" "${out}" \
 	"base${T}against${T}origin/main
-base${T}unchecked${T}PR of issue/9-n: gh unavailable, no merge predicted"
+base${T}unchecked${T}PR of issue/9-n: gh unavailable, merges withheld
+base${T}conflict${T}n.txt"
 rm -f "${GHS}/fail"
 assert_eq "finish-preflight: never runs gh stack" "$(cat "${GHS}/stack-calls" 2>/dev/null)" ""
 
