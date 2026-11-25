@@ -45,6 +45,7 @@ SCAFFOLD_VARIANTS = {
         "routes-orca-worktrees-to-worktrees",
         "routes-promote-merged-to-work",
         "routes-pr-queue-to-work",
+        "routes-single-pr-review-to-work",
         "routes-autonomous-drive-to-work",
         "routes-release-timeline-to-roadmap",
         "routes-requirements-resent-to-intake",

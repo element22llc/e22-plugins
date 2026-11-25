@@ -1,0 +1,17 @@
+kind: Changed
+time: 2026-11-25T10:00:00.000000-05:00
+custom:
+  Slug: review-remembers-reviewed-heads
+body: |
+  - **Changed: `/steer:work review` remembers what it already reviewed, across
+    sessions.** Before spawning a reviewer it now reads your own last posted
+    review on each PR (from `reviews`, since `latestReviews` carries no commit)
+    and any card stored for it. A PR whose head has not moved costs no reviewer:
+    a posted review lists it under a new `Reviewed` bucket with that verdict
+    (tagged `re-requested` when the author asked again), an unposted card goes
+    back to the decision as-is. A moved head is reviewed as a
+    delta from the GitHub compare diff, or in full after a force-push. Every new
+    card is stored in the git-ignored `spec/.work/reviews/`, keyed by PR and head
+    SHA, before the human is asked, so a session that ends first loses nothing;
+    repos that do not ignore `spec/.work/` store nothing. The workspace snapshot
+    no longer counts that directory as a work claim.

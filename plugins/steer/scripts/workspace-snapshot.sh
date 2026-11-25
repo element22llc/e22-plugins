@@ -111,7 +111,7 @@ if [ "${BRIEF}" -eq 1 ] || [ "${ITEMS}" -eq 1 ]; then
 	done
 	_claims=0
 	for _wm in "${ROOT}"/spec/.work/*; do
-		[ -e "${_wm}" ] || continue
+		[ -f "${_wm}" ] || continue
 		_wlabel="$(sed -n -e 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)"
 		steer_claim_gone "${_wlabel}" && continue
 		_claims=$((_claims + 1))
@@ -248,7 +248,7 @@ done
 printf '\n### Work claims (spec/.work/)\n'
 _wfound=0
 for _wm in "${ROOT}"/spec/.work/*; do
-	[ -e "${_wm}" ] || continue
+	[ -f "${_wm}" ] || continue
 	_wfound=1
 	_wdetail="$(grep '^- \(issue\|branch\):' "${_wm}" 2>/dev/null | tr '\n' ' ')"
 	steer_claim_gone "$(sed -n 's/^\(- \)\{0,1\}branch: *//p' "${_wm}" | head -1)" &&

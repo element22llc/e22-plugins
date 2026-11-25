@@ -38,10 +38,13 @@ Your cost is turns times context, so spend reads only where the diff points.
 3. Aim for about **40 tool calls**. At the budget, stop and report what you
    covered and what you did not - a named gap, never a silent one.
 
-**Re-review.** When the caller gives you a previous card and the head SHA it
-was built at, review only `git diff <old-sha>..<new-head>`: say for each
-previous finding whether it is resolved, carry the open ones forward, and
-add findings only from the new commits.
+**Re-review.** When the caller gives you previous findings - a card, or a
+posted review's body - and the head SHA they were built at, review only the
+delta since that SHA: the compare diff the caller names, else `git diff
+<old-sha>..<new-head>`. Say for each previous finding whether it is resolved,
+carry the open ones forward, and add findings only from the new commits. When
+the caller says the history was rewritten, review the full diff, settling the
+previous findings the same way.
 
 **Refuting.** As a verifier, try to disprove each finding: the guard that
 already handles the case, the test that already covers it, the reading of the
