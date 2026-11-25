@@ -71,7 +71,7 @@ moves a repo between the two and reconciles the marker.
     wildcard - `mise run deploy` still prompts. Plain `git rm` is allowed (without
     `-f`, git refuses to drop uncommitted changes, except on an unmerged path
     mid-merge), but recursive and forced
-    `git rm` (`-r`, `-f`, `--force`, the `-n`/`-q` flag clusters such as `-qr`,
+    `git rm` (`-r`, `-f`, `--force`, `--sparse`, the `-n`/`-q` flag clusters such as `-qr`,
     and any `{` or `$` expansion or mid-word line continuation that could hide a
     flag) sits under `ask`, which
     outranks the allow. Bare `git checkout -- <file>`

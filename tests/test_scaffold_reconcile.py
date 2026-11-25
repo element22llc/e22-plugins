@@ -388,6 +388,7 @@ def test_sync_without_the_migration_keeps_every_git_rm_gated(tmp_path: Path):
         "Bash(git rm* -r*)",
         "Bash(git rm* -f*)",
         "Bash(git rm* --f*)",
+        "Bash(git rm* --s*)",
         "Bash(git rm* -n*)",
         "Bash(git rm* -q*)",
         "Bash(git rm*{*)",

@@ -101,12 +101,13 @@ Name the file and say what to carry forward.
   often inside unattended subagents. Plain `git rm` is low-risk: without `-f`
   git refuses a file with local or staged changes, so what it removes is
   normally still in `HEAD`. The exceptions are an unmerged path mid-merge,
-  whose hand-resolved content it deletes, a file marked `assume-unchanged`,
-  and a `skip-worktree` file when `--sparse` is passed. The scaffold now allows
-  `Bash(git rm:*)` and keeps recursive and forced deletes gated with nine
-  narrower asks, which outrank the allow: `Bash(git rm* -r*)`,
-  `Bash(git rm* -f*)`, `Bash(git rm* --f*)` (`--force` and its
-  abbreviations), `Bash(git rm* -n*)`, `Bash(git rm* -q*)`, `Bash(git rm*{*)`,
+  whose hand-resolved content it deletes, and a file marked
+  `assume-unchanged`. The scaffold now allows `Bash(git rm:*)` and keeps
+  recursive and forced deletes gated with ten narrower asks, which outrank the
+  allow: `Bash(git rm* -r*)`, `Bash(git rm* -f*)`, `Bash(git rm* --f*)`
+  (`--force` and its abbreviations), `Bash(git rm* --s*)` (`--sparse`, which
+  deletes a `skip-worktree` file's local edits, and its abbreviations),
+  `Bash(git rm* -n*)`, `Bash(git rm* -q*)`, `Bash(git rm*{*)`,
   `Bash(git rm*$*)`, `Bash(git rm*\n*)` and `Bash(git rm*\n*\n*)`, written
   here as their JSON strings (`\n` is a newline). The `-n` and `-q` asks exist
   because short flags cluster into one token (`-qr`, `-nf`), and git rm has no
@@ -127,11 +128,11 @@ Name the file and say what to carry forward.
 
   No output => already migrated, or no file => no-op.
 - **Action:** read-then-propose; show the diff and apply on a yes, as one
-  edit: remove `"Bash(git rm:*)"` from `permissions.ask`, add each of the nine
+  edit: remove `"Bash(git rm:*)"` from `permissions.ask`, add each of the ten
   narrow asks it lacks to `permissions.ask` (copy them from the scaffold
   template's `.claude/settings.json`, so the newline entries stay JSON escapes),
   then add `"Bash(git rm:*)"` to `permissions.allow`. Never write the allow
-  unless all nine asks are present.
+  unless all ten asks are present.
   Leave every other entry. If the repo keeps the broad gate on purpose (an ADR,
   or the PR that tightened it), surface the conflict instead of applying. A
   repo that declines keeps its broad ask, and every later settings reconcile

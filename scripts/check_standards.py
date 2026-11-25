@@ -852,6 +852,7 @@ GIT_RM_ASKS = (
     "Bash(git rm* -r*)",
     "Bash(git rm* -f*)",
     "Bash(git rm* --f*)",
+    "Bash(git rm* --s*)",
     "Bash(git rm* -n*)",
     "Bash(git rm* -q*)",
     "Bash(git rm*{*)",

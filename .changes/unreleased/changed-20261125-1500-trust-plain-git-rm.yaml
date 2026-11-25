@@ -8,9 +8,9 @@ body: |-
     work, often inside unattended subagents. Plain `git rm` is now allowed:
     without `-f`, git refuses a file with uncommitted changes, except on an
     unmerged path mid-merge, where it deletes any hand-resolved content.
-    Recursive and forced forms stay gated by nine
-    narrower `ask` entries that outrank the allow: `-r`, `-f`, `--force` and its
-    abbreviations, the `-n`/`-q` flag clusters such as `-qr` and `-nf`, and any
+    Recursive and forced forms stay gated by ten
+    narrower `ask` entries that outrank the allow: `-r`, `-f`, `--force`,
+    `--sparse` and their abbreviations, the `-n`/`-q` flag clusters such as `-qr` and `-nf`, and any
     `{` or `$` expansion or mid-word line continuation that could hide a flag.
     `/steer:setup sync` offers a migration that moves existing repos and shows
     the diff first. A repo that wants to keep the broad prompt can decline it.
