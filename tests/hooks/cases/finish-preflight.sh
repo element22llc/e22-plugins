@@ -161,7 +161,34 @@ fp
 assert_eq "finish-preflight: detached HEAD, no PR lookup" "${out}" \
 	"base${T}against${T}origin/main
 base${T}clean${T}"
+git -C "${O}" push -q origin main:refs/heads/prod
+fp --base prod
+assert_eq "finish-preflight: --base prod is checked, never looked up as a parent" "${out}" \
+	"base${T}against${T}origin/prod
+base${T}clean${T}"
 rm -f "${GHS}/fail"
+
+git -C "${O}" fetch -q origin
+git -C "${O}" switch -q -c batch/x origin/main
+commit "${O}" x.txt batch
+git -C "${O}" push -q origin batch/x
+BX="$(git -C "${O}" rev-parse HEAD)"
+git -C "${O}" switch -q main
+git -C "${O}" pull -q --no-rebase origin main
+commit "${O}" m.txt m1
+git -C "${O}" push -q origin main
+git -C "${R}" fetch -q origin
+git -C "${R}" switch -q -c issue/5-sibling origin/main
+commit "${R}" c.txt sibling
+commit "${O}" m.txt m2
+commit "${O}" x.txt batch
+git -C "${O}" push -q origin main
+printf 'MERGED 50 %s main\n' "${BX}" >"${GHS}/all-batch_x"
+fp --base batch/x
+assert_eq "finish-preflight: a merged batch base is replaced, from the sibling's own merge base" "${out}" \
+	"base${T}parent-merged${T}batch/x #50 ${BX}
+base${T}against${T}origin/main
+base${T}clean${T}"
 
 fp --remote nope
 assert_eq "finish-preflight: no remote -> unchecked" "${out}" "base${T}unchecked${T}no remote named nope"

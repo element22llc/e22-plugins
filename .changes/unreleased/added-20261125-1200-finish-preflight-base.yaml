@@ -9,8 +9,9 @@ body: |
     the stack parent of a dependent branch, and lists the conflicting paths. It
     also reports a parent whose PR merged or closed; after a merged parent it
     checks against the branch the parent merged into, from the fork point, so
-    a squash-merge does not show as a false conflict. Long-lived bases
-    (`develop`, `staging`, `release/*`) are never treated as stack parents.
+    a squash-merge does not show as a false conflict. Long-lived bases (`prod`,
+    `production`, `staging`, `develop`, `release/*`, `releases/*`) are never
+    treated as stack parents.
     `finish` moves a branch not yet pushed off a merged parent (a pushed one
     stops for its author, since that takes a force-push), brings the base in
     only where every conflict is mechanical, and otherwise stops before the

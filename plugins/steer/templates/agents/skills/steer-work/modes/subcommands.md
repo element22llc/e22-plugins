@@ -134,8 +134,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   when the PR targets the default branch, else
   `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
   (a stack parent, `batch/<slug>`, `prod` for a hotfix). It only reads and
-  fetches; act on its lines in this order. `parent-merged`: on a branch never
-  pushed, move it onto the branch its `against` line names (`git rebase --onto
+  fetches; act on its lines in this order. `parent-merged` on a
+  `batch/<slug>` base: nothing to move - open or retarget the PR on the branch
+  its `against` line names. Any other `parent-merged`: on a branch never
+  pushed (`git ls-remote --heads origin <branch>` prints nothing), move it onto the branch its `against` line names (`git rebase --onto
   origin/<that branch> <parent-head>`, the SHA it printed), get the local
   gates green, and pre-flight again with that `--base`; the PR then opens on
   it. On a pushed branch, stop before the push and report it with those

@@ -5,14 +5,16 @@
 #
 # USAGE
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" [--remote <name>] [--base <branch>] [<check>...]
-#   No <check> runs them all. --base names the stack parent of a dependent
-#   branch; without it an open PR's base is read, else the default branch.
+#   No <check> runs them all. --base names the base the PR targets (a stack
+#   parent, batch/<slug>, prod); without it an open PR's base is read, else
+#   the default branch.
 #
 # CHECKS
 #   base  `git merge-tree` of HEAD against the freshly fetched default branch,
 #         or the stack parent; a parent whose PR merged or closed is reported.
 #         A merged parent is replaced by the base it merged into, merged from
-#         the fork point, which predicts `git rebase --onto` after a squash-merge.
+#         the fork point, which predicts `git rebase --onto` after a squash-merge
+#         (a merged batch/<slug> base: its own merge base, nothing to move).
 #         Long-lived bases (prod, production, staging, develop, release/*,
 #         releases/*) are never stack parents.
 #         GitHub retargets a child PR when its merged parent's branch is
@@ -123,12 +125,19 @@ check_base() {
 				:
 			elif [ "${newest%% *}" = MERGED ]; then
 				emit base parent-merged "${target} #${num} ${oid}"
-				git cat-file -e "${oid}^{commit}" 2>/dev/null ||
-					git fetch -q --no-tags "${REMOTE}" "refs/pull/${num}/head" 2>/dev/null
-				fork="$(git merge-base HEAD "${oid}" 2>/dev/null)" || {
-					emit base unchecked "head ${oid} of merged parent ${target} not fetched"
-					return
-				}
+				# A batch sibling is cut from the default branch, not from the
+				# batch, so its own merge base is the right one.
+				case "${target}" in
+				batch/*) ;;
+				*)
+					git cat-file -e "${oid}^{commit}" 2>/dev/null ||
+						git fetch -q --no-tags "${REMOTE}" "refs/pull/${num}/head" 2>/dev/null
+					fork="$(git merge-base HEAD "${oid}" 2>/dev/null)" || {
+						emit base unchecked "head ${oid} of merged parent ${target} not fetched"
+						return
+					}
+					;;
+				esac
 				target="${into:-${default}}"
 			elif [ "${newest%% *}" = CLOSED ]; then
 				emit base parent-closed "${target} #${num}"
