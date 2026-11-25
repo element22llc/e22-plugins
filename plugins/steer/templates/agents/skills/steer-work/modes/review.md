@@ -23,7 +23,7 @@ Two queues, chosen by argument:
 
 ```sh
 gh pr list --search "is:open review-requested:@me" --limit 100 --json \
-  number,title,author,isDraft,baseRefName,headRefName,headRefOid,additions,deletions,files,mergeable,reviewDecision,reviews,statusCheckRollup,url
+  number,title,author,isDraft,baseRefName,headRefName,headRefOid,additions,deletions,files,mergeable,reviewDecision,reviewRequests,reviews,statusCheckRollup,url
 ```
 
 `--mine` swaps the search for `--author @me`; explicit numbers take `gh pr view
@@ -72,18 +72,21 @@ newer - the card's `built` against the review's `submittedAt` - of:
   or `DISMISSED`, at its `commit.oid`. Read `reviews`, never `latestReviews`,
   which leaves `commit.oid` empty. A `COMMENTED` review does not count: a
   reply in a thread posts one at whatever head is current. A `DISMISSED` one -
-  stale-review dismissal turns an approval into it on the next push - only
-  ever anchors a delta: at the current head it means a full review, given its
-  body to settle.
+  stale-review dismissal turns an approval into it on the next push - anchors
+  a delta, never a skip.
 
 Then, per PR:
 
 - **No prior review** - a full review, below.
-- **Prior review at the current `headRefOid`** - spawn nothing. A posted review
-  at this head puts the PR in `Reviewed` (Step 4) with that verdict; otherwise
-  its card goes to Step 4 as-is, marked with the date it was built. A fresh look
-  at an unchanged head happens only when the human asks to re-review it in so
-  many words; naming the PR number is not that ask.
+- **Prior review at the current `headRefOid`** - spawn nothing. An `APPROVED`
+  or `CHANGES_REQUESTED` review at this head puts the PR in `Reviewed` (Step 4)
+  with that verdict; a card goes to Step 4 as-is, marked with the date it was
+  built. A fresh look at an unchanged head happens only when the human asks to
+  re-review it in so many words; naming the PR number is not that ask.
+- **`DISMISSED` at the current head** - someone dismissed it by hand: a full
+  review, told to read the full diff and given that review's body, without its
+  SHA, to settle. Where no card is stored, this repeats each run until a new
+  review is posted.
 - **Head moved** - a delta. `gh api
   'repos/{owner}/{repo}/compare/<old>...<head>' -q .status` says how (the
   quotes matter: unquoted, `{` beside `...` is refused as brace expansion):
@@ -150,7 +153,7 @@ Sort every PR into a bucket and print them in this order, one line per PR
 | **Ready** | CI green, Trivial or Behavioral, tests + contract in place, no findings, no drift flag | yes |
 | **Changes** | findings a reviewer would block on | no - post as a review |
 | **Look** | High-risk, or any checked drift flag | no - line-by-line review |
-| **Reviewed** | your own review is already posted at the current head | no - shown with that verdict, tagged `re-requested` when it came from the `review-requested:@me` search (the author asked again since your review) |
+| **Reviewed** | your own `APPROVED` or `CHANGES_REQUESTED` review is already posted at the current head | no - shown with that verdict, tagged `re-requested` when your login is in `reviewRequests` (your review was requested again since) |
 | **Blocked** | draft, red CI, conflicting | no - the author's move |
 
 **`Look` never batch-approves.** A High-risk change or a flagged drift class
@@ -220,5 +223,6 @@ Per `NEXT-ACTIONS.md`, from where the batch stopped:
 | Approved PRs now mergeable | Human decision required | The human merges them (no command) |
 | `Look` PRs remain | Human decision required | Review each line by line - `/steer-work review #<n>` |
 | `Blocked` or `--mine` items remain | Blocking now | The one move Step 5 named for the oldest |
-| Only `Reviewed` PRs remain | Human decision required | Their authors act on your posted reviews (no command) |
+| A `re-requested` `Reviewed` PR remains | Human decision required | Read the replies since your review, then ask for a re-review of it in so many words - `/steer-work review #<n>` |
+| Only untagged `Reviewed` PRs remain | Human decision required | Their authors act on your posted reviews (no command) |
 | Queue empty | Complete | `No action is currently required.` |
