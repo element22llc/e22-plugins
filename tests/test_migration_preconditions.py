@@ -371,3 +371,51 @@ def test_relock_precondition_is_silent_on_a_host_only_lock(tmp_path):
 
 def test_relock_precondition_without_a_lock(tmp_path):
     assert _out(_precondition(RELOCK), tmp_path) == []
+
+
+BROAD_GIT_RM_ASK = "allows plain `git rm`, asks only for recursive and forced forms"
+GIT_RM_ASKS = [
+    "Bash(git rm* -r*)",
+    "Bash(git rm* -f*)",
+    "Bash(git rm* --f*)",
+    "Bash(git rm* -n*)",
+    "Bash(git rm* -q*)",
+]
+
+
+@pytest.mark.parametrize(
+    ("perms", "expected"),
+    [
+        ({"ask": ["Bash(git rm:*)"]}, True),
+        ({"ask": ["Bash(git rm:*)", *GIT_RM_ASKS], "allow": ["Bash(git rm:*)"]}, True),
+        ({"ask": GIT_RM_ASKS, "allow": ["Bash(git rm:*)"]}, False),
+        ({"deny": ["Bash(git rm:*)"]}, False),
+        ({}, False),
+    ],
+)
+def test_broad_git_rm_ask_precondition(tmp_path, perms, expected):
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude/settings.json").write_text(
+        json.dumps({"permissions": perms}), encoding="utf-8"
+    )
+    assert _fires(_precondition(BROAD_GIT_RM_ASK), tmp_path) is expected
+
+
+def test_broad_git_rm_ask_precondition_without_settings(tmp_path):
+    assert not _fires(_precondition(BROAD_GIT_RM_ASK), tmp_path)
+
+
+def test_broad_git_rm_ask_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude/settings.json").write_bytes(TEMPLATE_SETTINGS.read_bytes())
+    assert not _fires(_precondition(BROAD_GIT_RM_ASK), tmp_path)
+
+
+def test_git_rm_migration_names_the_asks_the_template_ships():
+    perms = json.loads(TEMPLATE_SETTINGS.read_text(encoding="utf-8"))["permissions"]
+    assert set(GIT_RM_ASKS) <= set(perms["ask"])
+    assert "Bash(git rm:*)" in perms["allow"]
+    text = (REPO_ROOT / check_migrations.LEDGER).read_text(encoding="utf-8")
+    (entry,) = [e for e in check_migrations.parse_entries(text) if BROAD_GIT_RM_ASK in e.what]
+    what = entry.field("What & why") or ""
+    assert all(f"`{a}`" in what for a in GIT_RM_ASKS)

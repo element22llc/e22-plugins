@@ -1,0 +1,14 @@
+kind: Changed
+time: 2026-11-25T15:00:00.000000-05:00
+custom:
+  Slug: trust-plain-git-rm
+body: |-
+  - **Changed: the scaffold `.claude/settings.json` no longer prompts for a
+    plain `git rm`.** Every `git rm` used to ask, which stalled merge and rebase
+    work, often inside unattended subagents. Plain `git rm` is now allowed:
+    without `-f`, git refuses any file with uncommitted changes, so what it
+    removes is still in `HEAD`. Recursive and forced forms stay gated by five
+    narrower `ask` entries that outrank the allow: `-r`, `-f`, `--force` and its
+    abbreviations, and the `-n`/`-q` flag clusters such as `-qr` and `-nf`.
+    `/steer:setup sync` offers a migration that moves existing repos and shows
+    the diff first. A repo that wants to keep the broad prompt can decline it.

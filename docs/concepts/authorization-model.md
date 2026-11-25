@@ -68,9 +68,11 @@ moves a repo between the two and reconciles the marker.
     The `build` skill carries the same grants in its frontmatter, so the
     non-technical PO flow is quiet even in a repo that predates the scaffold
     allowlist. `mise run dev` is a **named** task, not the banned `mise run:*`
-    wildcard - `mise run deploy` still prompts. Bare `git checkout -- <file>`
-    (discards work), destructive `git rm` (an unattended recursive/forced delete -
-    moved to `ask`), and every **merge/deploy** verb stay gated - `gh pr merge`
+    wildcard - `mise run deploy` still prompts. Plain `git rm` is allowed (without
+    `-f`, git refuses to drop uncommitted changes), but recursive and forced
+    `git rm` (`-r`, `-f`, `--force`, and the `-n`/`-q` flag clusters such as `-qr`)
+    sits under `ask`, which outranks the allow. Bare `git checkout -- <file>`
+    (discards work) and every **merge/deploy** verb stay gated too - `gh pr merge`
     sits under `ask`. `git push` and `gh pr create`/`edit` are *not* gated: they
     are autonomous delivery (rule `45-delivery`). `check_standards.py` pins
     two of them - `Bash(git push)` and `Bash(gh pr create:*)` - so those cannot

@@ -94,6 +94,37 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `.claude/settings.json` allows plain `git rm`, asks only for recursive and forced forms
+
+- **What & why:** the scaffold asked before every `git rm` (`Bash(git rm:*)`
+  under `permissions.ask`), which interrupts routine merge and rebase work,
+  often inside unattended subagents. Plain `git rm` is safe to trust: without
+  `-f` git refuses any file with local or staged changes, so what it removes
+  is still in `HEAD`. The scaffold now allows `Bash(git rm:*)` and keeps
+  recursive and forced deletes gated with five narrower asks, which outrank the
+  allow: `Bash(git rm* -r*)`, `Bash(git rm* -f*)`, `Bash(git rm* --f*)`
+  (`--force` and its abbreviations), `Bash(git rm* -n*)` and
+  `Bash(git rm* -q*)`. The last two exist because short flags cluster into one
+  token (`-qr`, `-nf`), and git rm has no other short flags. The settings
+  reconcile cannot make this move: the new allow is the same string as the old
+  ask, so its tier dedupe keeps the ask.
+- **Precondition:** the installed file still asks for every `git rm` -
+
+  ```sh
+  test -f .claude/settings.json && \
+    python3 -c "import json,sys; p=json.load(open('.claude/settings.json')).get('permissions',{}).get('ask',[]); sys.exit(0 if 'Bash(git rm:*)' in p else 1)" && echo pending
+  ```
+
+  No output => already migrated, or no file => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes, as one
+  edit: remove `"Bash(git rm:*)"` from `permissions.ask`, add each of the five
+  narrow asks it lacks to `permissions.ask`, then add `"Bash(git rm:*)"` to
+  `permissions.allow`. Never write the allow unless all five asks are present.
+  Leave every other entry. If the repo keeps the broad gate on purpose (an ADR,
+  or the PR that tightened it), surface the conflict instead of applying.
+
+  **No history entry is earned.**
+
 ### v7.28.0 - `ci:security` runs Semgrep pinned through `uvx`, not a `pipx:` tool
 
 - **What & why:** the scaffold installed Semgrep as `"pipx:semgrep" = "latest"`.

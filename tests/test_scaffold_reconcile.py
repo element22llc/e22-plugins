@@ -373,6 +373,19 @@ def test_sync_drops_the_retired_issue_body_pattern_from_every_tier(tmp_path: Pat
     assert "Bash(git status:*)" in perms["allow"]
 
 
+def test_sync_without_the_migration_keeps_every_git_rm_gated(tmp_path: Path):
+    # The template allows `Bash(git rm:*)`; a repo still asking for it must not
+    # gain an unprompted recursive or forced delete until the ledger moves it.
+    existing = tmp_path / "settings.json"
+    existing.write_text(json.dumps({"permissions": {"ask": ["Bash(git rm:*)"]}}), encoding="utf-8")
+    template = REPO_ROOT / "plugins/steer/templates/scaffold/claude/settings.json"
+
+    assert sr.main(["json", str(existing), str(template), "--apply"]) == 0
+    perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
+    assert "Bash(git rm:*)" in perms["ask"]
+    assert "Bash(git rm:*)" not in perms["allow"]
+
+
 def test_scaffold_template_carries_no_retired_permission():
     template = REPO_ROOT / "plugins/steer/templates/scaffold/claude/settings.json"
     perms = json.loads(template.read_text(encoding="utf-8"))["permissions"]
