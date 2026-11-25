@@ -6,6 +6,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import check_standards  # noqa: E402
@@ -96,7 +98,7 @@ def test_session_subchecks_parses_the_orchestrator_roster():
     assert "check-worktree-trust.sh" in subs
     # The orchestrator itself is not one of its own children.
     assert "session-checks.sh" not in subs
-    assert len(subs) == 7  # bump when a session sub-check is added/removed
+    assert len(subs) == 8  # bump when a session sub-check is added/removed
 
 
 def test_live_subcheck_roster_is_in_cross_surface():
@@ -708,6 +710,30 @@ def test_scaffold_settings_keeps_readers_off_the_classifier():
     assert check_standards._arbitrary_exec_allows(allow) == []
     for reader in ("Bash(cat:*)", "Bash(head:*)", "Bash(grep:*)", "Bash(wc:*)"):
         assert reader in allow
+
+
+def _git_rm_errors(monkeypatch, tmp_path: Path, drop_ask: str | None) -> list[str]:
+    src = check_standards.PLUGIN_ROOT / "templates/scaffold/claude/settings.json"
+    data = json.loads(src.read_text(encoding="utf-8"))
+    if drop_ask:
+        data["permissions"]["ask"].remove(drop_ask)
+    dst = tmp_path / "templates/scaffold/claude/settings.json"
+    dst.parent.mkdir(parents=True)
+    dst.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_authorization(errors)
+    return [e for e in errors if "git rm" in e]
+
+
+def test_scaffold_settings_allows_plain_git_rm_behind_its_asks(monkeypatch, tmp_path: Path):
+    assert _git_rm_errors(monkeypatch, tmp_path, None) == []
+
+
+@pytest.mark.parametrize("dropped", check_standards.GIT_RM_ASKS)
+def test_scaffold_settings_flags_a_missing_git_rm_ask(monkeypatch, tmp_path: Path, dropped):
+    errors = _git_rm_errors(monkeypatch, tmp_path, dropped)
+    assert len(errors) == 1 and dropped in errors[0]
 
 
 def _fallback_tree(monkeypatch, tmp_path: Path, *, rule: str, ops: str) -> list[str]:

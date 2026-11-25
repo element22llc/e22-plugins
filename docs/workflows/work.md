@@ -193,28 +193,34 @@ approves, creates an issue or deploys**.
 ## Batch review - `/steer:work review`
 
 `review` drains a review queue in one pass. It reads every PR awaiting your review (`review-requested:@me`, or the numbers
-given) and does the reviewer's legwork in parallel:
+given - `/steer:work review #12` for one PR) and does the reviewer's legwork in parallel:
 
 1. **Triage from metadata** in one `gh pr list` call - draft, red CI and
    conflicting PRs go straight to *Blocked* without a review. A stacked PR
    adds one lookup for a GitHub native stack: merging it merges every PR
    below it, so its readiness is judged across the whole stack.
-2. **One `steer-pr-reviewer` per remaining PR**, all at once, each reading
-   the diff first (a re-review reads only the commits since its last card) and
-   returning a seven-line card: what it does, change class, tests and contract
+2. **Recall before review.** A PR you already reviewed at its current head -
+   your own posted approval or change request, or a card stored in the
+   git-ignored `spec/.work/reviews/` by an earlier session - gets no reviewer.
+   A moved head is reviewed as a delta from that commit (in full after a
+   force-push), whichever session reviewed it first.
+3. **One `steer-pr-reviewer` per remaining PR**, all at once, each reading
+   the diff first and returning a seven-line card: what it does, change class, tests and contract
    coverage, drift flags, findings with `path:line`, design questions for the
    author, a suggested verdict. A fresh verifier then tries to refute each
    card's high findings: a refuted one leaves the card, an unsure one stays
-   marked unconfirmed.
-3. **Four buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
-   never batch-approved) and *Blocked*.
-4. **One question, one command.** You reply with the *Ready* PRs to approve
+   marked unconfirmed. Each card is stored before you are asked, so a session
+   that ends first loses nothing.
+4. **Five buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
+   never batch-approved), *Reviewed* (your review is already posted at this
+   head) and *Blocked*.
+5. **One question, one command.** You reply with the *Ready* PRs to approve
    (or `ready` for all of them); the approvals post in a single command, and a
    PR pushed to since its card was built is skipped. The command runs the same
    in sh, bash and zsh, and names each PR it could not look up or approve
    rather than reporting it as changed. Findings on the *Changes* PRs you name
    post as change requests.
-5. **Then each *Look* PR, presented whole** - its full card in one message,
+6. **Then each *Look* PR, presented whole** - its full card in one message,
    one decision for the PR - never in parts.
 
 The approval is yours: nothing is pre-selected, an ambient "ok" approves
