@@ -207,6 +207,33 @@ delivers the plugin through server-managed settings: cloud sessions install
 neither a repo's `enabledPlugins` nor the plugins on your machine. That is why
 `/steer:work drive` offers a cloud task only where the org has done so.
 
+## Drift flags: which paths imply a box
+
+`/steer:work finish` checks five boxes of the PR template's drift checklist
+against the branch's paths:
+
+- **Contract drift** - a modified or deleted `spec/features/<id>/contract.md`,
+  or a changed file under `openspec/specs/`. A newly added contract is not
+  drift; a feature PR that edits its own contract is, as the template's "or
+  the contract was changed to match" says.
+- **Operational** - `.github/workflows/`, `.github/actions/`,
+  `.github/dependabot.yml`, `infra/`, `scripts/ci-*.sh`, `policy/delivery.yml`,
+  a `Dockerfile`, `*.tf`, `terragrunt.hcl`. Kubernetes manifests, Helm charts
+  and other deploy configs are not recognized.
+- **Local setup / deployment changed** - `mise.toml`, a compose file,
+  `.env.example`. A file such as `infra/mise.toml` implies both this box and
+  Operational.
+- **App docs invalidated** - `spec/app/`, `openspec/steer/app/`.
+- **Architecture/stack drift** - `ARCHITECTURE.md`.
+
+Editing the app guide or `ARCHITECTURE.md` usually means the docs were kept in
+step, but the check still asks for the box, so the reviewer sees the change.
+Intent drift, undocumented behavior change, security-sensitive and
+compliance-impacting have no path signal and are never checked. The diff is
+taken against `--base`, else the default branch, never an open PR's base; a
+body without the checklist (a repo whose template drops it) is reported
+unchecked.
+
 ## GitHub auth / `gh`
 
 Anything that touches the tracker or GitHub needs an authenticated path. Tracker

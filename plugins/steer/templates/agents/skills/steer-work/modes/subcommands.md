@@ -159,12 +159,29 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/learning.md`, updating a matching
   learning over adding one (`/steer-reference traceability` section 3). Writing
   nothing is the normal outcome; whatever is written ships in this delivery.
+  **Check the drift flags** (pr-flow) - compose the whole PR body first, the
+  one you will open or update the PR with (Spec delta and *Notes for the
+  reviewer* included), write it to a file, and pass it to the pre-flight
+  below as `--body <file>`. It compares the drift boxes the branch's paths
+  imply with the boxes ticked in that body and only reports; it never edits
+  the body. `drift unticked <box> <path> <count>`: the diff touches a path
+  that box names - tick it, unless reading the change shows the class does
+  not apply; then leave it unticked and say why under *Notes for the
+  reviewer*, a note for the reviewer to answer, so either way the PR opens a
+  draft (Draft or ready, below). `drift confirm <box>`: a ticked box no path
+  implies - keep the tick (never untick a box its author set) and ask the
+  reviewer to confirm it under *Notes for the reviewer*. `unchecked`: one
+  line, carry on; no drift line stops the push. The boxes no path can imply
+  (intent, undocumented behavior, security, compliance) stay your judgment.
+  After a `parent-merged` line, check again once its merges are in
+  (`--base <the against branch> --body <file> drift`): until then the merged
+  parent's paths read as this branch's.
   **Pre-flight the base** (pr-flow) - the one procedure for bringing a base
   in, a stack parent's included: commit everything first - it checks the
   committed `HEAD` - then, before the push, run
-  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh"`
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --body <file>`
   when the PR targets the default branch, else
-  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base> --body <file>`
   (a stack parent, `batch/<slug>`, `prod` for a hotfix). It fetches and pins
   refs under `origin/pull/<n>/`, never touching the branch; a printed ref
   that no longer resolves means pre-flight again. Its `merge` and

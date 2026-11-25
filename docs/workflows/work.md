@@ -327,6 +327,20 @@ reviewer grep the learnings' `area:` / `symptoms:` / `applies_when:` frontmatter
 and read only the matches; `/steer:audit code` proposes retiring or promoting
 stale ones. Full prose: `/steer:reference traceability`.
 
+## Drift flags before the push
+
+`finish` composes the whole PR body before its pre-flight and hands it to
+`scripts/finish-preflight.sh --body <file>`. The helper derives, from the paths
+the branch changes since its merge base with the base, which boxes of the PR
+template's drift checklist they imply, and compares them with the ticked boxes.
+A box the diff implies but the body leaves unticked is ticked, or left with a
+note saying why it does not apply; a ticked box no path implies keeps its tick
+and gets a note asking the reviewer to confirm it. Either way the PR opens as a
+draft. The helper only reports: it never edits the body, never unticks a box,
+and never decides drift - that stays with the reviewer (rule `50-done` -> Drift
+gates). Which paths map to which box:
+[known limitations](../reference/known-limitations.md#drift-flags-which-paths-imply-a-box).
+
 ## Closing refs across repositories
 
 A bare `Closes #N` names an issue in the PR's own repository. If
