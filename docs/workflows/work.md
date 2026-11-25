@@ -193,7 +193,7 @@ approves, creates an issue or deploys**.
 ## Batch review - `/steer:work review`
 
 `review` drains a review queue in one pass. It reads every PR awaiting your review (`review-requested:@me`, or the numbers
-given) and does the reviewer's legwork in parallel:
+given - `/steer:work review #12` for one PR) and does the reviewer's legwork in parallel:
 
 1. **Triage from metadata** in one `gh pr list` call - draft, red CI and
    conflicting PRs go straight to *Blocked* without a review. A stacked PR
