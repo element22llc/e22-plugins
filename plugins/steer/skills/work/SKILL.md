@@ -10,7 +10,7 @@ when_to_use: >-
   ("why is this failing?"), diagnosis only when no fix is asked. `qa` clicks
   through a UI change's flows in a real browser. Modes that take no issue:
   `promote` (ship main to production), `review` (clear the PR review queue,
-  "review my PRs"), `drive` (work on its own, attended or on a schedule:
+  "review my PRs", or one PR: "review PR #12", "review #12"), `drive` (work on its own, attended or on a schedule:
   fix your open PRs, review the queue, hand ready issues to subagents), `tidy` (clean up the repo root, organize stray documents
   and diagrams), `walkthrough` (record a demo video). `issues`: backlog work
   with no code this turn - capture, triage, decompose, a ranked board.
