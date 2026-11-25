@@ -51,7 +51,7 @@ an unrelated question.
 | `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
 | `/steer:setup worktrees` | Checks worktrees another tool manages; writes trust, port and boot-file fixes on confirmation. |
 | `/steer:work promote` | Snapshots `main` as `release/vX.Y.Z` with the consumer changelog cut on it and opens the Release PR into `prod`; stops at the merge. |
-| `/steer:work review` | Batches the PR review queue. |
+| `/steer:work review` | Batches the PR review queue, or reviews one PR (`review #<n>`). |
 | `/steer:work walkthrough <feature>` | Records a captioned demo video; commits a re-recordable script and a `mise run demo:record` task. |
 
 ## Tier 3 - internal orchestration only

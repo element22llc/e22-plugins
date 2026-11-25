@@ -46,4 +46,5 @@ checked-out branch - the run still reads and stamps them; a later run prunes
 them once that work has moved on. `status`
 mutates nothing, so it reports stale markers instead of deleting them. The
 workspace snapshot already hides a marker whose branch is gone; that is display,
-not removal.
+not removal. The `spec/.work/reviews/` directory holds review cards, not
+markers: leave it alone - `modes/review.md` stores and prunes them.

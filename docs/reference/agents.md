@@ -74,8 +74,9 @@ section 4 rubric and returns the card the caller asked for.
   the reviewer reads with `Read` instead of shelling out. Its commands run
   from the checkout with no `cd` prefix or variable preamble, which keeps them
   on the allowlist instead of each going to the auto-mode classifier.
-- **Delta re-review.** Given its previous card and head SHA, it reviews only
-  the commits since and settles each earlier finding.
+- **Delta re-review.** Given its previous findings (a card or a posted review)
+  and their head SHA, it reviews only the commits since - the full diff when the
+  history was rewritten - and settles each earlier finding.
 - **Attributable cost.** Named, the reviewers show under steer in `/usage`
   instead of as `general-purpose` subagents inheriting the session model.
 - **Not `steer-reviewer`.** That agent has no shell and audits on-disk code

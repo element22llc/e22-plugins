@@ -248,7 +248,7 @@ either that skill or the public door it now lives behind.
 | (none) | `routes-explain-code-to-none`, `routes-general-knowledge-to-none` |
 
 Beyond the public doors, every **mode** - an internal skill or a lane reached
-through one - has one case of its own, tagged `mode` (`--tag mode` runs only
+through one - has at least one case of its own, tagged `mode` (`--tag mode` runs only
 these). The one gap is `work qa`, added in 7.17.0 without a case yet. A front door that routes correctly can still hand off to the wrong mode,
 and the cheap lexical gate cannot see that. Each accepts the mode or the door
 that hands off to it, the same rule as the front-door cases above.
@@ -257,7 +257,7 @@ that hands off to it, the same rule as the front-door cases above.
 |---|---|
 | `doctor`, `protect`, `worktrees` | `routes-missing-mise-to-doctor`, `routes-protect-main-to-protect`, `routes-orca-worktrees-to-worktrees` |
 | `adr`, `intake`, `questions`, `roadmap` | `routes-postgres-decision-to-adr`, `routes-requirements-resent-to-intake`, `routes-open-questions-to-questions`, `routes-release-timeline-to-roadmap` |
-| `work --hotfix`, `debug`, `promote`, `review`, `drive`, `tidy`, `walkthrough` | `routes-production-down-to-work`, `routes-root-cause-to-work`, `routes-promote-merged-to-work`, `routes-pr-queue-to-work`, `routes-autonomous-drive-to-work`, `routes-loose-documents-to-tidy`, `routes-demo-video-to-walkthrough` |
+| `work --hotfix`, `debug`, `promote`, `review`, `drive`, `tidy`, `walkthrough` | `routes-production-down-to-work`, `routes-root-cause-to-work`, `routes-promote-merged-to-work`, `routes-pr-queue-to-work`, `routes-single-pr-review-to-work`, `routes-autonomous-drive-to-work`, `routes-loose-documents-to-tidy`, `routes-demo-video-to-walkthrough` |
 | `explain`, `help` | `routes-stakeholder-page-to-explain`, `routes-what-can-steer-do-to-help` |
 | `standards`, `report`, `reference` | `routes-web-chat-to-standards`, `routes-steer-crashed-to-report`, `routes-load-conventions-to-reference` |
 

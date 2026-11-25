@@ -90,6 +90,16 @@ assert_has "snapshot --items: undashed #ref claim" "${out}" "^C${_tab}715${_tab}
 assert_has "snapshot --items: claim without branch shows its title" "${out}" "^C${_tab}29${_tab}docs: fold PR 6$"
 assert_has "snapshot --items: bare claim falls back to its file name" "${out}" "^C${_tab}31${_tab}issue_31-bare$"
 rm -f "${WS1}/spec/.work/issue_715-bot.md" "${WS1}/spec/.work/issue_29-fold" "${WS1}/spec/.work/issue_31-bare.md"
+# #1024: `review` stores cards under spec/.work/reviews/ - a directory, not a claim.
+mkdir -p "${WS1}/spec/.work/reviews"
+printf -- '- pr: 12\n- head: abc123\n' >"${WS1}/spec/.work/reviews/12-abc123.md"
+run_sh "${SNAP}" --brief "${WS1}"
+assert_has "snapshot --brief: review-card directory is not a claim" "${out}" "^claims=1$"
+run_sh "${SNAP}" --items "${WS1}"
+printf '%s' "${out}" | grep -q "^C${_tab}.*reviews" && bad "snapshot --items: review-card directory listed as a claim" || ok
+run_sh "${SNAP}" "${WS1}"
+printf '%s' "${out}" | grep -q '^- reviews' && bad "snapshot: review-card directory listed under work claims" || ok
+rm -rf "${WS1}/spec/.work/reviews"
 
 # (a4) #847: a marker whose branch is gone - deleted locally, or its pushed
 # upstream pruned - is finished work, not a claim. A live branch, even one cut
