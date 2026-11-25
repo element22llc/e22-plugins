@@ -134,14 +134,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   when the PR targets the default branch, else
   `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
   (a stack parent, `batch/<slug>`, `prod` for a hotfix). It only reads and
-  fetches. Its `merge` lines bring the base in, in order - a merged stack
-  parent's last head, then the base its `against` line names - each run as
-  `git merge --no-edit <ref>`: a merge, never a rebase, so a pushed branch
-  needs no force-push and CI runs on the current base. `clean`: run the
-  `merge` lines, get the local gates green, and push. After a
+  fetches. Its `merge` and `merge-ours` lines bring the base in, in order,
+  each run as `git merge --no-edit <ref>` or, for `merge-ours` (a squash of
+  a merged stack parent whose content this branch already holds), `git merge
+  --no-edit -s ours <ref>`: merges, never a rebase, so a pushed branch needs
+  no force-push and CI runs on the current base. `clean`: run those lines,
+  get the local gates green, and push. After a
   `parent-merged` line the PR targets the `against` branch: a new PR opens on
   it, an open one still on the old parent is retargeted (`gh pr edit --base
-  <it>`). `conflict`: run the `merge` lines only when every listed path is
+  <it>`). `conflict`: run those lines only when every listed path is
   mechanical (a generated file regenerated, a lockfile re-resolved,
   independent additions to one list), as a fix like any other (local gates
   green, then one code-gate round on those commits unless they are Trivial),

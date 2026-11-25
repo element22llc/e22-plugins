@@ -8,18 +8,20 @@ body: |
     the committed branch merges with the freshly fetched default branch, or
     the base its PR targets (a stack parent, `batch/<slug>`, `prod`), lists
     the conflicting paths, and prints the merges that bring the base in. It
-    reports a parent whose PR merged or closed, including one GitHub hid by
-    retargeting the PR to the default branch, which it finds in the PR's
-    base-change history. After a merged parent the branch merges that
-    parent's last head and then the base it merged into, so a squash-merge is
-    no false conflict. Long-lived bases (`prod`, `production`, `staging`,
+    reports a parent whose PR closed or merged - a merged one even when GitHub
+    hid it by retargeting the PR to the default branch, found in the PR's
+    automatic base-change history. After a squash-merged parent the branch
+    merges that parent's last head and the base from just before the squash,
+    then records the squash with `-s ours`, since it already holds that
+    content, so a child that edits its parent's lines does not conflict with
+    the squash. Long-lived bases (`prod`, `production`, `staging`,
     `develop`, `release/*`, `releases/*`) are never treated as stack parents.
     `finish` merges the base in whenever the branch is behind or its parent
     merged - a merge, never a rebase, so a pushed branch needs no force-push
     and CI runs on the current base - over a conflict only when every
     conflicting path is mechanical, and otherwise stops before the push with
-    the paths. The work skill grants `git merge --no-edit origin/*` and `git
-    merge --abort` for those steps. The helper changes no branch or working
+    the paths. The work skill grants `git merge --no-edit origin/*`, `git merge
+    --no-edit -s ours origin/*` and `git merge --abort` for those steps. The helper changes no branch or working
     tree, and anything it cannot determine (offline, no `gh`, old git) is
     reported as unchecked, never as a conflict. Its checks are named, so later
     checks plug into the same call.

@@ -12,19 +12,21 @@
 # CHECKS
 #   base  Predicts, with `git merge-tree`, the merges that bring the freshly
 #         fetched base into HEAD, and prints them as `merge` lines. A stack
-#         parent whose PR merged is replaced by the base it merged into, and
-#         its last head (refs/pull/<n>/head) is merged first, so a squash-merge
-#         is no false conflict; a merged batch/<slug> base holds no commits of
-#         the sibling, so only the new base is merged. A closed parent is
+#         parent whose PR merged is replaced by the base it merged into; after
+#         a squash-merge the parent's last head (refs/pull/<n>/head) and the
+#         base just before the squash are merged and the squash is recorded
+#         with `merge-ours`, so the parent's hunks never conflict with
+#         themselves. A merged batch/<slug> base holds no commits of the
+#         sibling, so only the new base is merged. A closed parent is
 #         reported. A parent GitHub hid by retargeting the PR to the default
-#         branch is found in the PR's base-change history. Long-lived bases
-#         (prod, production, staging, develop, release/*, releases/*) are never
-#         stack parents.
+#         branch is found in the PR's automatic base-change history. Long-lived
+#         bases (prod, production, staging, develop, release/*, releases/*) are
+#         never stack parents.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   Never HEAD, a branch, the index or the working tree. It fetches the base,
 #   and a merged parent's last head, into remote-tracking refs, and writes
-#   objects (one unreferenced merge commit for a two-step prediction). Never
+#   objects (unreferenced merge commits for a multi-step prediction). Never
 #   prompts: git and gh credential prompts are off.
 #
 # OUTPUT (stdout) - one TAB-separated line per finding:  <check>\t<status>\t<detail>
@@ -34,6 +36,7 @@
 #   base  clean
 #   base  conflict       <path>                    (one line per path, C-quoted)
 #   base  merge          <ref>                     (in order; none when up to date)
+#   base  merge-ours     <ref>                     (record a squash this branch holds)
 #   base  unchecked      <reason>
 #   Anything it cannot determine (no remote, offline, no gh, git < 2.38) is
 #   `unchecked`, never a conflict. A finding is never a nonzero exit.
@@ -134,13 +137,16 @@ check_base() {
 			target="${pr#* }"
 			pr="${pr%% *}"
 			if [ -n "${pr}" ] && [ "${target}" = "${default}" ]; then
+				# Only GitHub's own retarget hides a parent; a person's base change
+				# (BaseRefChangedEvent) is a deliberate un-stack.
 				if hidden="$(gh api graphql -F owner='{owner}' -F name='{repo}' -F n="${pr}" -f query='
 query($owner: String!, $name: String!, $n: Int!) {
   repository(owner: $owner, name: $name) { pullRequest(number: $n) {
-    timelineItems(itemTypes: [BASE_REF_CHANGED_EVENT, AUTOMATIC_BASE_CHANGE_SUCCEEDED_EVENT], last: 1) {
-      nodes { ... on BaseRefChangedEvent { previousRefName } ... on AutomaticBaseChangeSucceededEvent { oldBase } } } } } }' \
-					--jq '.data.repository.pullRequest.timelineItems.nodes[] | .oldBase // .previousRefName' 2>/dev/null)"; then
+    timelineItems(itemTypes: [AUTOMATIC_BASE_CHANGE_SUCCEEDED_EVENT], last: 1) {
+      nodes { ... on AutomaticBaseChangeSucceededEvent { oldBase newBase } } } } } }' \
+					--jq '.data.repository.pullRequest.timelineItems.nodes[] | "\(.oldBase) \(.newBase)"' 2>/dev/null)"; then
 					hidden="$(printf '%s\n' "${hidden}" | sed -n 1p)"
+					if [ "${hidden#* }" = "${target}" ]; then hidden="${hidden%% *}"; else hidden=""; fi
 				else
 					hidden=""
 					emit base unchecked "base history of PR #${pr}: gh unavailable, a merged stack parent would be missed"
@@ -153,38 +159,42 @@ query($owner: String!, $name: String!, $n: Int!) {
 	[ -n "${target}" ] || target="${default}"
 
 	parent="${hidden:-${target}}"
+	pline=""
 	src=""
+	squash=""
 	case "${parent}" in
 	"${default}" | prod | production | staging | develop | release/* | releases/*) ;;
 	*)
 		if have_gh &&
-			prs="$(gh pr list --head "${parent}" --state all --json state,number,headRefOid,baseRefName \
-				--jq 'sort_by(.number) | reverse | .[] | "\(.state) \(.number) \(.headRefOid) \(.baseRefName)"' 2>/dev/null)"; then
+			prs="$(gh pr list --head "${parent}" --state all --json state,number,baseRefName,mergeCommit \
+				--jq 'sort_by(.number) | reverse | .[] | "\(.state) \(.number) \(.baseRefName) \(.mergeCommit.oid // "-")"' 2>/dev/null)"; then
 			newest="$(printf '%s\n' "${prs}" | sed -n 1p)"
 			num="$(printf '%s' "${newest}" | cut -d' ' -f2)"
-			oid="$(printf '%s' "${newest}" | cut -d' ' -f3)"
-			into="$(printf '%s' "${newest}" | cut -d' ' -f4)"
+			into="$(printf '%s' "${newest}" | cut -d' ' -f3)"
+			squash="$(printf '%s' "${newest}" | cut -d' ' -f4)"
 			if printf '%s\n' "${prs}" | grep -q '^OPEN '; then
-				:
+				squash=""
+			elif [ "${newest%% *}" = MERGED ] && [ -n "${hidden}" ] && [ "${into}" != "${target}" ]; then
+				squash=""
+				emit base unchecked "parent ${parent} merged into ${into}, not ${target}: left alone"
 			elif [ "${newest%% *}" = MERGED ]; then
-				emit base parent-merged "${parent} #${num}"
+				pline="${parent} #${num}"
 				case "${parent}" in
-				batch/*) ;;
+				batch/*) squash="" ;;
 				*)
-					if git fetch -q --no-tags "${REMOTE}" \
-						"+refs/pull/${num}/head:refs/remotes/${REMOTE}/pull/${num}/head" 2>/dev/null; then
-						src="${REMOTE}/pull/${num}/head"
-					elif git cat-file -e "${oid}^{commit}" 2>/dev/null; then
-						src="${oid}"
-					else
-						emit base unchecked "head ${oid} of merged parent ${parent} not fetched"
+					git fetch -q --no-tags "${REMOTE}" \
+						"+refs/pull/${num}/head:refs/remotes/${REMOTE}/pull/${num}/head" 2>/dev/null || {
+						emit base parent-merged "${pline}"
+						emit base unchecked "last head of merged parent ${parent} not fetched"
 						return
-					fi
+					}
+					src="${REMOTE}/pull/${num}/head"
 					;;
 				esac
 				target="${into:-${default}}"
-			elif [ "${newest%% *}" = CLOSED ] && [ -z "${hidden}" ]; then
-				emit base parent-closed "${parent} #${num}"
+			else
+				squash=""
+				[ "${newest%% *}" = CLOSED ] && [ -z "${hidden}" ] && emit base parent-closed "${parent} #${num}"
 			fi
 		else
 			emit base unchecked "PR state of parent ${parent}: gh unavailable"
@@ -192,34 +202,66 @@ query($owner: String!, $name: String!, $n: Int!) {
 		;;
 	esac
 
-	emit base against "${REMOTE}/${target}"
 	ref="refs/remotes/${REMOTE}/${target}"
 	{ fetch "${target}" && git rev-parse -q --verify "${ref}^{commit}" >/dev/null; } || {
+		[ -z "${pline}" ] || emit base parent-merged "${pline}"
+		emit base against "${REMOTE}/${target}"
 		emit base unchecked "fetch of ${REMOTE}/${target} failed"
 		return
 	}
-	tip=HEAD
-	merges=""
-	if [ -n "${src}" ] && ! git merge-base --is-ancestor "${src}" HEAD 2>/dev/null; then
-		merges="${src}"
-		merge_tree HEAD "${src}"
-		if [ "${MT_RC}" -eq 0 ]; then
-			tip="$(GIT_AUTHOR_NAME=preflight GIT_AUTHOR_EMAIL=preflight@localhost \
-				GIT_COMMITTER_NAME=preflight GIT_COMMITTER_EMAIL=preflight@localhost \
-				git commit-tree "$(printf '%s\n' "${MT_OUT}" | sed -n 1p)" -p HEAD -p "${src}" -m preflight 2>/dev/null)" || {
-				emit base unchecked "could not stage the merge of ${src}"
-				return
-			}
-		else
-			report || return
-			emit base merge "${src}"
+
+	# The merges that bring the base in. After a squash- or rebase-merged
+	# parent: its last head, the base just before the squash, then the squash
+	# recorded with `-s ours` - this branch already holds its content - so the
+	# parent's hunks are never merged twice.
+	steps=""
+	if [ -n "${src}" ] && ! git merge-base --is-ancestor "${src}" "${ref}" 2>/dev/null; then
+		{ before="$(git name-rev --name-only --no-undefined --refs="${ref}" "${squash}^1" 2>/dev/null)" &&
+			after="$(git name-rev --name-only --no-undefined --refs="${ref}" "${squash}" 2>/dev/null)"; } || {
+			emit base parent-merged "${pline}"
+			emit base against "${REMOTE}/${target}"
+			emit base unchecked "merge commit of ${pline} not found on ${REMOTE}/${target}"
 			return
-		fi
+		}
+		steps="merge ${src}
+merge ${before#remotes/}
+merge-ours ${after#remotes/}
+"
 	fi
-	git merge-base --is-ancestor "${ref}" "${tip}" 2>/dev/null || merges="${merges:+${merges} }${REMOTE}/${target}"
-	merge_tree "${tip}" "${ref}"
-	report || return
-	for m in ${merges}; do emit base merge "${m}"; done
+	steps="${steps}merge ${REMOTE}/${target}"
+	if [ -n "${pline}" ] && { [ -z "${hidden}" ] || ! git merge-base --is-ancestor "${squash:-${src}}" HEAD 2>/dev/null; }; then
+		emit base parent-merged "${pline}"
+	fi
+	emit base against "${REMOTE}/${target}"
+
+	tip="$(git rev-parse HEAD)"
+	done=""
+	while read -r kind rev; do
+		git merge-base --is-ancestor "${rev}" "${tip}" 2>/dev/null && continue
+		if [ "${kind}" = merge-ours ]; then
+			tree="$(git rev-parse "${tip}^{tree}")"
+		else
+			merge_tree "${tip}" "${rev}"
+			if [ "${MT_RC}" -ne 0 ]; then
+				report || return
+				printf '%s%s %s\n' "${done}" "${kind}" "${rev}" | while read -r k r; do emit base "${k}" "${r}"; done
+				return
+			fi
+			tree="$(printf '%s\n' "${MT_OUT}" | sed -n 1p)"
+		fi
+		tip="$(GIT_AUTHOR_NAME=preflight GIT_AUTHOR_EMAIL=preflight@localhost \
+			GIT_COMMITTER_NAME=preflight GIT_COMMITTER_EMAIL=preflight@localhost \
+			git commit-tree "${tree}" -p "${tip}" -p "${rev}" -m preflight 2>/dev/null)" || {
+			emit base unchecked "could not stage the merge of ${rev}"
+			return
+		}
+		done="${done}${kind} ${rev}
+"
+	done <<EOF
+${steps}
+EOF
+	emit base clean
+	printf '%s' "${done}" | while read -r k r; do emit base "${k}" "${r}"; done
 }
 
 for c in "$@"; do

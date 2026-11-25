@@ -53,7 +53,11 @@ moves a repo between the two and reconciles the marker.
   nothing; the delivery skills (`work`, `init`, `adopt`, `intake`, `sync`,
   `build`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
   (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
-  the same grants - `gh pr edit` included. In
+  the same grants - `gh pr edit` included. `work` also grants the merges its
+  `finish` pre-flight prints - `git merge --no-edit origin/*`, `git merge
+  --no-edit -s ours origin/*` and `git merge --abort` - never a rebase or a
+  force-push. The wildcard also admits options after the ref (`-s ours`,
+  `--no-verify`); only the skill's prose keeps them out. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
   (gated by the `check-bash-actions` trunk-push hook only once graduation signals stand -
   see [Hooks](../reference/hooks.md)).

@@ -118,27 +118,22 @@ base${T}clean${T}"
 
 commit "${O}" p.txt p2
 git -C "${O}" push -q origin HEAD:refs/pull/12/head
-P2="$(git -C "${O}" rev-parse HEAD)"
 git -C "${O}" switch -q main
 commit "${O}" p.txt p2
+SQ="$(git -C "${O}" rev-parse HEAD)"
 git -C "${O}" push -q origin main :feat/parent
-printf 'MERGED 12 %s main\nCLOSED 9 %s main\n' "${P2}" "${P2}" >"${GHS}/all-feat_parent"
+printf 'MERGED 12 main %s\nCLOSED 9 main -\n' "${SQ}" >"${GHS}/all-feat_parent"
 merged="base${T}parent-merged${T}feat/parent #12
 base${T}against${T}origin/main
 base${T}clean${T}
 base${T}merge${T}origin/pull/12/head
-base${T}merge${T}origin/main"
+base${T}merge-ours${T}origin/main"
+before="$(state)"
 fp
-assert_eq "finish-preflight: merged parent -> merge its last head, then the base it merged into" "${out}" "${merged}"
+assert_eq "finish-preflight: squash-merged parent -> its last head, then the squash recorded" "${out}" "${merged}"
+assert_eq "finish-preflight: a multi-step prediction leaves HEAD, branches, index and tree untouched" "$(state)" "${before}"
 git -C "${R}" merge-tree --write-tree HEAD origin/main >/dev/null 2>&1
 assert_rc "finish-preflight: (control) merging the default branch alone would conflict" "$?" 1
-git -C "${R}" switch -q -c probe/merge-in
-git -C "${R}" merge -q --no-edit origin/pull/12/head >/dev/null 2>&1 &&
-	git -C "${R}" merge -q --no-edit origin/main >/dev/null 2>&1
-assert_rc "finish-preflight: the printed merges apply cleanly, no history rewrite" "$?" 0
-assert_eq "finish-preflight: after the merges the branch is up to date" \
-	"$(git -C "${R}" merge-base --is-ancestor origin/main HEAD && echo yes)" yes
-git -C "${R}" switch -q issue/3-stacked
 
 printf '3 main\n' >"${GHS}/open-issue_3-stacked"
 fp
@@ -146,15 +141,27 @@ assert_eq "finish-preflight: no base history -> the default branch alone" "${out
 	"base${T}against${T}origin/main
 base${T}conflict${T}p.txt
 base${T}merge${T}origin/main"
-printf 'feat/parent\n' >"${GHS}/history-3"
+printf 'feat/parent main\n' >"${GHS}/history-3"
 fp
 assert_eq "finish-preflight: a parent hidden by GitHub's retarget is found in the PR's history" "${out}" "${merged}"
+printf 'feat/parent batch/fixes\n' >"${GHS}/history-3"
+fp
+assert_has "finish-preflight: a retarget to another base is not this PR's hidden parent" "${out}" \
+	"^base${T}conflict${T}p.txt$"
+printf 'feat/parent main\n' >"${GHS}/history-3"
 : >"${GHS}/fail-history"
 fp
 assert_has "finish-preflight: base history unavailable -> unchecked" "${out}" \
 	"^base${T}unchecked${T}base history of PR #3: gh unavailable"
 rm -f "${GHS}/fail-history"
-printf 'CLOSED 7 %s main\n' "${P2}" >"${GHS}/all-feat_parent"
+printf 'MERGED 12 batch/fixes %s\n' "${SQ}" >"${GHS}/all-feat_parent"
+fp
+assert_eq "finish-preflight: a hidden parent merged elsewhere is left alone, unchecked" "${out}" \
+	"base${T}unchecked${T}parent feat/parent merged into batch/fixes, not main: left alone
+base${T}against${T}origin/main
+base${T}conflict${T}p.txt
+base${T}merge${T}origin/main"
+printf 'CLOSED 7 main -\n' >"${GHS}/all-feat_parent"
 fp
 assert_eq "finish-preflight: a hidden parent that closed unmerged is not reported" "${out}" \
 	"base${T}against${T}origin/main
@@ -162,17 +169,70 @@ base${T}conflict${T}p.txt
 base${T}merge${T}origin/main"
 printf '3 feat/parent\n' >"${GHS}/open-issue_3-stacked"
 
-printf 'MERGED 12 %s batch/fixes\n' "${P2}" >"${GHS}/all-feat_parent"
+printf 'MERGED 12 batch/fixes %s\n' "${SQ}" >"${GHS}/all-feat_parent"
 fp
 assert_has "finish-preflight: a parent merged into another branch is replaced by that branch" "${out}" \
 	"^base${T}against${T}origin/batch/fixes$"
-printf 'MERGED 13 %s main\n' 0123456789012345678901234567890123456789 >"${GHS}/all-feat_parent"
+assert_has "finish-preflight: ... and a squash not found there is unchecked" "${out}" \
+	"^base${T}unchecked${T}merge commit of feat/parent #12 not found on origin/batch/fixes$"
+printf 'MERGED 13 main %s\n' "${SQ}" >"${GHS}/all-feat_parent"
 fp
 assert_eq "finish-preflight: merged parent head unreachable -> unchecked" "${out}" \
 	"base${T}parent-merged${T}feat/parent #13
-base${T}unchecked${T}head 0123456789012345678901234567890123456789 of merged parent feat/parent not fetched"
+base${T}unchecked${T}last head of merged parent feat/parent not fetched"
 
-printf 'MERGED 40 %s main\n' "${P2}" >"${GHS}/all-develop"
+git -C "${O}" fetch -q origin
+git -C "${O}" switch -q -c feat/q origin/main
+commit "${O}" q.txt q1
+git -C "${O}" push -q origin feat/q HEAD:refs/pull/21/head
+git -C "${R}" fetch -q origin
+git -C "${R}" switch -q -c issue/7-q origin/feat/q
+commit "${R}" q.txt q1-child
+git -C "${O}" switch -q main
+commit "${O}" w.txt other-work
+commit "${O}" q.txt q1
+QSQ="$(git -C "${O}" rev-parse HEAD)"
+commit "${O}" z.txt later
+git -C "${O}" push -q origin main :feat/q
+printf 'MERGED 21 main %s\n' "${QSQ}" >"${GHS}/all-feat_q"
+printf '7 main\n' >"${GHS}/open-issue_7-q"
+printf 'feat/q main\n' >"${GHS}/history-7"
+fp
+assert_eq "finish-preflight: a child editing its squash-merged parent's lines merges cleanly" "${out}" \
+	"base${T}parent-merged${T}feat/q #21
+base${T}against${T}origin/main
+base${T}clean${T}
+base${T}merge${T}origin/main~2
+base${T}merge-ours${T}origin/main~1
+base${T}merge${T}origin/main"
+git -C "${R}" merge-tree --write-tree HEAD origin/main >/dev/null 2>&1
+assert_rc "finish-preflight: (control) merging the default branch alone would conflict" "$?" 1
+git -C "${R}" switch -q -c probe/merge-in
+git -C "${R}" merge -q --no-edit origin/main~2 >/dev/null 2>&1 &&
+	git -C "${R}" merge -q --no-edit -s ours origin/main~1 >/dev/null 2>&1 &&
+	git -C "${R}" merge -q --no-edit origin/main >/dev/null 2>&1
+assert_rc "finish-preflight: the printed merges apply cleanly, no history rewrite" "$?" 0
+assert_eq "finish-preflight: ... keeping the child's edit and the base's later work" \
+	"$(cat "${R}/q.txt") $(cat "${R}/z.txt")" "q1-child later"
+printf '7 main\n' >"${GHS}/open-probe_merge-in"
+fp
+assert_eq "finish-preflight: a merged hidden parent goes quiet once absorbed" "${out}" \
+	"base${T}against${T}origin/main
+base${T}clean${T}"
+git -C "${R}" switch -q issue/7-q
+git -C "${O}" switch -q feat/q
+commit "${O}" q.txt q2
+git -C "${O}" push -q origin +HEAD:refs/pull/21/head
+fp
+assert_eq "finish-preflight: a conflict with the parent's last head stops at that merge" "${out}" \
+	"base${T}parent-merged${T}feat/q #21
+base${T}against${T}origin/main
+base${T}conflict${T}q.txt
+base${T}merge${T}origin/pull/21/head"
+git -C "${O}" switch -q main
+git -C "${R}" switch -q issue/3-stacked
+
+printf 'MERGED 40 main -\n' >"${GHS}/all-develop"
 fp --base develop
 assert_eq "finish-preflight: a long-lived base is never a stack parent" "${out}" \
 	"base${T}against${T}origin/develop
@@ -227,7 +287,7 @@ commit "${R}" c.txt sibling
 commit "${O}" m.txt m2
 commit "${O}" x.txt batch
 git -C "${O}" push -q origin main
-printf 'MERGED 50 %s main\n' "$(git -C "${O}" rev-parse origin/batch/x)" >"${GHS}/all-batch_x"
+printf 'MERGED 50 main %s\n' "$(git -C "${O}" rev-parse origin/batch/x)" >"${GHS}/all-batch_x"
 fp --base batch/x
 assert_eq "finish-preflight: a merged batch base -> only its new base is merged, from the sibling's own merge base" "${out}" \
 	"base${T}parent-merged${T}batch/x #50
