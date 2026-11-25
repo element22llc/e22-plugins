@@ -88,7 +88,7 @@ assert_eq "numbers: ADR number taken on the default branch, a PR adding the same
 	"numbers${T}taken${T}spec/decisions/0002-mine.md${T}origin/main${T}spec/decisions/0002-theirs.md"
 assert_eq "numbers: HEAD, branches, index and tree untouched" "$(state)" "${before}"
 assert_eq "numbers: the open-PR query is the one the helper documents" "$(sed -n '$p' "${GHS}/calls")" \
-	"pr list --state open --limit 200 --json number,headRefName,isCrossRepository,changedFiles,files --jq \"count\\t\\(length)\", (.[] | . as \$p | (if .changedFiles > (.files | length) then \"partial\\t\\(.number)\\t\\(.headRefName)\\t\\(.isCrossRepository)\" else empty end), (.files[] | \"file\\t\\(\$p.number)\\t\\(\$p.headRefName)\\t\\(\$p.isCrossRepository)\\t\\(.path)\"))"
+	"pr list --state open --limit 200 --json number,headRefName,isCrossRepository,changedFiles,files --jq \"count\\t\\(length)\", (.[] | . as \$p | (if .changedFiles > (.files | length) then \"partial\\t\\(.number)\\t\\(.headRefName)\\t\\(.isCrossRepository)\" else empty end), ((.files // [])[] | \"file\\t\\(\$p.number)\\t\\(\$p.headRefName)\\t\\(\$p.isCrossRepository)\\t\\(.path)\"))"
 fp
 assert_eq "numbers: a full run prints the base lines, then the numbers lines" "${out}" \
 	"base${T}against${T}origin/main
@@ -134,7 +134,7 @@ mkdir -p "${R}/openspec/steer/decisions"
 printf 'x\n' >"${R}/openspec/steer/decisions/0002-os.md"
 fp numbers
 assert_eq "numbers: openspec ADRs share the sequence; truncated PR lists are unchecked" "${out}" \
-	"numbers${T}unchecked${T}open PRs: more than 200, the rest not read
+	"numbers${T}unchecked${T}open PRs: only the first 200 read
 numbers${T}unchecked${T}#30: more than 100 files, the rest not read
 numbers${T}taken${T}openspec/steer/decisions/0002-os.md${T}origin/main${T}spec/decisions/0002-theirs.md"
 rm -rf "${R}/openspec"

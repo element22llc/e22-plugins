@@ -64,7 +64,8 @@ the product repo, from the bundled template.
    open PR (`#<n>`) already uses that number: move the file to the next number
    up and re-run, until no `taken` line names it. `unchecked`, a nonzero exit
    or no helper on disk: keep the number and say in one line what went
-   unchecked.
+   unchecked - except under a bootstrap caller, whose new repo has nothing
+   to collide with yet.
 3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
 4. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
    `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/adr.md` -> `spec/decisions/000N-[slug].md`.

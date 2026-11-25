@@ -36,8 +36,9 @@
 #         or not, so /steer:spec adr can check a file it just wrote - against
 #         the same number in the same sequence on the fetched default branch
 #         and in the files of open PRs. Always the default branch, whatever
-#         --base says. Silent when the branch adds none. A file the branch
-#         itself also adds, or one it deleted or renamed, is not a collision.
+#         --base says. Silent when the branch adds none (an unreadable base
+#         is still `unchecked`). A file the branch itself also adds, or one
+#         it deleted or renamed, is not a collision.
 #         Not covered: Alembic hash revisions, Flyway `V1__`, Prisma's
 #         timestamped directories, Django `_squashed_` migrations, a file at
 #         the very path this branch adds, and paths holding a TAB, `"` or `\`.
@@ -424,12 +425,12 @@ check_numbers() {
 	n_branch="$(git symbolic-ref -q --short HEAD)"
 	if have_gh && n_out="$(gh pr list --state open --limit 200 \
 		--json number,headRefName,isCrossRepository,changedFiles,files \
-		--jq '"count\t\(length)", (.[] | . as $p | (if .changedFiles > (.files | length) then "partial\t\(.number)\t\(.headRefName)\t\(.isCrossRepository)" else empty end), (.files[] | "file\t\($p.number)\t\($p.headRefName)\t\($p.isCrossRepository)\t\(.path)"))' 2>/dev/null)"; then
+		--jq '"count\t\(length)", (.[] | . as $p | (if .changedFiles > (.files | length) then "partial\t\(.number)\t\(.headRefName)\t\(.isCrossRepository)" else empty end), ((.files // [])[] | "file\t\($p.number)\t\($p.headRefName)\t\($p.isCrossRepository)\t\(.path)"))' 2>/dev/null)"; then
 		# This branch's own PR holds the very files being checked; a fork's PR
 		# under the same branch name does not.
 		n_out="$(printf '%s\n' "${n_out}" | awk -F '\t' -v b="${n_branch}" '!($3 == b && $4 == "false")')"
 		[ "$(printf '%s\n' "${n_out}" | sed -n 's/^count	//p')" != 200 ] ||
-			emit numbers unchecked "open PRs: more than 200, the rest not read"
+			emit numbers unchecked "open PRs: only the first 200 read"
 		printf '%s\n' "${n_out}" | sed -n 's/^partial	\([^	]*\).*/\1/p' | while read -r n_pr; do
 			emit numbers unchecked "#${n_pr}: more than 100 files, the rest not read"
 		done
@@ -459,7 +460,8 @@ check_numbers() {
 		[ -n "${n_where}" ] || continue
 		if [ "${n_where}" = M ]; then
 			# Deleted or renamed by this branch itself: its number is free here.
-			n_git cat-file -e "${n_mb}:${n_q}" 2>/dev/null && [ ! -e "${n_top}/${n_q}" ] && continue
+			n_git cat-file -e "${n_mb}:${n_q}" 2>/dev/null && ! n_git cat-file -e "HEAD:${n_q}" 2>/dev/null &&
+				[ ! -e "${n_top}/${n_q}" ] && continue
 			n_where="${REMOTE}/${n_def}"
 		fi
 		emit numbers taken "${n_p}	${n_where}	${n_q}"

@@ -211,7 +211,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   --json number`), and otherwise keeps the number. Giving way, an ADR is
   renumbered; a migration is pushed as it is. A kept number or a pushed
   migration goes under *Notes for the reviewer*, naming `#<n>` - whichever
-  merges second renumbers. **Renumbering an ADR**: take the number after
+  merges second renumbers. **Renumbering an ADR** - only one this branch
+  adds, never one already on the default branch: take the number after
   the highest ADR on the branch, then bump it until the re-run pre-flight
   prints no `taken` for it; rename the file and update every reference on
   the branch (a `/spec/history/` entry included - it is immutable only once
