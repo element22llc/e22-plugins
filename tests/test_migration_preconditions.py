@@ -382,6 +382,8 @@ GIT_RM_ASKS = [
     "Bash(git rm* -q*)",
     "Bash(git rm*{*)",
     "Bash(git rm*$*)",
+    "Bash(git rm*\n*)",
+    "Bash(git rm*\n*\n*)",
 ]
 
 
@@ -420,4 +422,4 @@ def test_git_rm_migration_names_the_asks_the_template_ships():
     text = (REPO_ROOT / check_migrations.LEDGER).read_text(encoding="utf-8")
     (entry,) = [e for e in check_migrations.parse_entries(text) if BROAD_GIT_RM_ASK in e.what]
     what = entry.field("What & why") or ""
-    assert all(f"`{a}`" in what for a in GIT_RM_ASKS)
+    assert all(f"`{json.dumps(a)[1:-1]}`" in what for a in GIT_RM_ASKS)

@@ -392,6 +392,8 @@ def test_sync_without_the_migration_keeps_every_git_rm_gated(tmp_path: Path):
         "Bash(git rm* -q*)",
         "Bash(git rm*{*)",
         "Bash(git rm*$*)",
+        "Bash(git rm*\n*)",
+        "Bash(git rm*\n*\n*)",
     } <= set(perms["ask"])
 
 
