@@ -335,4 +335,4 @@ It covers, in detail:
 - **A dependent issue branch** - how `/steer:work` `start` cuts it from the
   parent and `finish` opens its PR on `--base <parent>`, then links it into a
   native stack only when the extension is installed and the parent's PR is
-  yours and in no stack, and why a stack is never repaired by hand.
+  yours, on the default branch and in no stack, and why a stack is never repaired by hand.

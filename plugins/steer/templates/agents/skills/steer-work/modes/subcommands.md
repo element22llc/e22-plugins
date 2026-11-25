@@ -19,8 +19,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   fetch it and cut from `origin/<that branch>` as `/steer-reference stacks`
   section 6 says - its PR targets that branch, names the dependency in its
   description, and joins a native stack where `gh stack` can link it. When the
-  dev batches fixes into one merge, branch from the default branch as usual and open the PR with `--base batch/<slug>` - a
-  sibling, not a stack - and **write the local work marker**
+  dev batches fixes into one merge, branch from the default branch as usual
+  and open the PR with `--base batch/<slug>` - a sibling, not a stack - and **write the local work marker**
   `spec/.work/<branch>.md` (slashes -> underscores) in the format `WORK-MARKER.md`
   defines (section "Marker format"), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
@@ -136,7 +136,7 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   as settled by this change, for its owner to confirm on the running change. A
   dependent branch's PR opens with `--base <parent>`, then is linked into a
   native stack (`gh stack link`) when the extension is installed and the
-  parent's PR is yours and in no stack; a parent that moved is followed with
+  parent's PR is yours, on the default branch and in no stack; a parent that moved is followed with
   `git rebase --onto`, never cherry-picks or `git branch -f`
   (`/steer-reference stacks` section 6). An
   answer its owner gave in-session is folded now (resolved, with its

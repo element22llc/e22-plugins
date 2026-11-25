@@ -132,16 +132,21 @@ builds a manual stack and, where it safely can, records it as a native one.
     returns `[]`. A parent already in a stack keeps this PR a manual layer;
     say so.
 
-  A failed `link` (exit 9: stacks are not enabled) leaves the PR as it is, a
-  manual layer; say so in one line. Never `submit`, `push` or `sync` here:
-  each pushes every branch in the stack, the parent included.
+  Link once, when the PR is first opened; a later `finish` whose PR the section
+  1 lookup already finds in a stack skips this step. A failed `link` (exit 9:
+  stacks are not enabled) leaves the PR as it is, a manual layer; say so in one
+  line. Never `submit`, `push` or `sync` here: each pushes every branch in the
+  stack, the parent included. A stack made by `link` has no local tracking, so
+  `gh stack view` reports these branches as unstacked; ask the API instead.
 - **When the parent moves, rebase this branch only.** Find where it left the
   old parent with `git merge-base --fork-point origin/<parent> HEAD`, then
   `git rebase --onto origin/<parent> <that commit>` and
   `git push --force-with-lease origin <branch>`. If `--fork-point` finds
   nothing (this checkout never saw the old parent tip), stop and report rather
-  than replay the parent's old commits. Rebasing the parent itself is its own
-  issue's work.
+  than replay the parent's old commits. A parent that merged is replaced by the
+  default branch: rebase onto `origin/<default>` from the same fork point and
+  retarget the PR (`gh pr edit --base <default>`). Rebasing the parent itself is
+  its own issue's work.
 - **Never repair a stack by hand** - no cherry-picking between layers, no
   `git branch -f`, no merging the parent into the child. Those break the linear
   history a native stack needs to merge and hide what changed from review.
