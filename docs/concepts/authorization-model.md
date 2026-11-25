@@ -197,7 +197,7 @@ one line. The grants: `scaffold_reconcile.py` in `/steer:setup init` and
 `/steer:build`, `/steer:spec-scaffold` and `/steer:setup sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:setup sync`,
 `scan-prereqs.sh` in `/steer:setup doctor`, `workspace-snapshot.sh` in `/steer:next`,
-`finish-preflight.sh` in `/steer:work`, and
+`finish-preflight.sh` in `/steer:work` and `/steer:spec adr`, and
 `scan-spine-state.sh` in `/steer:setup`, `/steer:setup sync`, `/steer:work`,
 `/steer:status` and `/steer:audit`.
 The `doctor` skill behind `/steer:setup doctor` carries one broad grant that is

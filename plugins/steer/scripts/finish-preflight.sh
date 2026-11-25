@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 # finish-preflight.sh - the deterministic checks /steer:work finish runs on the
 # committed HEAD before the push, so a defect a script can see never costs a
-# review round (issue #1025).
+# review round (issue #1025). /steer:spec adr runs `numbers` alone; that check
+# reads uncommitted files too.
 #
 # USAGE
 #   sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" [--remote <name>] [--base <branch>] [--body <file>] [<check>...]
@@ -41,12 +42,26 @@
 #         parent and this PR - then `unstack` comes first. When the PR or its
 #         stack cannot be read, the prediction still runs but no merge line
 #         is printed.
+#   numbers  The ADRs (spec/decisions/, openspec/steer/decisions/ - one
+#         sequence) and numbered migrations (a file `<digits>_` or
+#         `<digits>-` directly in a `migrations` or `drizzle` directory) this
+#         branch adds since its merge base with the default branch - committed
+#         or not, so /steer:spec adr can check a file it just wrote - against
+#         the same number in the same sequence on the fetched default branch
+#         and in the files of open PRs. Always the default branch, whatever
+#         --base says. Silent when the branch adds none (an unreadable base
+#         is still `unchecked`). A file the branch itself also adds, or one
+#         it deleted or renamed, is not a collision.
+#         Not covered: Alembic hash revisions, Flyway `V1__`, Prisma's
+#         timestamped directories, Django `_squashed_` migrations, a file at
+#         the very path this branch adds, and paths holding a TAB, `"` or `\`.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   Never HEAD, a branch, the index or the working tree. It fetches the base,
 #   and a merged parent's last head, into remote-tracking refs, pins a
 #   squash-merged parent's squash under refs/remotes/<remote>/pull/<n>/, writes
-#   objects (unreferenced merge commits for a multi-step prediction). Never
+#   objects (unreferenced merge commits for a multi-step prediction). `numbers`
+#   fetches the default branch the same way. Never
 #   prompts: git and gh credential prompts are off.
 #
 # OUTPUT (stdout) - one TAB-separated line per finding:  <check>\t<status>\t<detail>
@@ -64,6 +79,10 @@
 #   base  merge          <ref>                     (in order; none when up to date)
 #   base  merge-ours     <ref>                     (record a squash this branch holds)
 #   base  unchecked      <reason>
+#   numbers  taken       <path>\t<remote>/<default> | #<pr>\t<other path>
+#                        (the TABs are inside the detail; one line per pair)
+#   numbers  clean
+#   numbers  unchecked   <reason>
 #   Anything it cannot determine (no remote, offline, no gh, git < 2.38) is
 #   `unchecked`, never a conflict. A finding is never a nonzero exit.
 #
@@ -77,7 +96,7 @@ GIT_TERMINAL_PROMPT=0
 GH_PROMPT_DISABLED=1
 export GIT_TERMINAL_PROMPT GH_PROMPT_DISABLED
 
-CHECKS="base drift"
+CHECKS="base numbers drift"
 
 die() { # <rc> <message>
 	printf 'finish-preflight: %s\n' "$2" >&2
@@ -447,6 +466,121 @@ ${steps}
 EOF
 	emit base clean
 	[ -n "${withhold}" ] || printf '%s' "${done}" | while read -r k r; do emit base "${k}" "${r}"; done
+}
+
+default_branch() {
+	n_def="$(git ls-remote --symref "${REMOTE}" HEAD 2>/dev/null |
+		sed -n 's|^ref: refs/heads/\([^	]*\)	HEAD$|\1|p')"
+	if [ -z "${n_def}" ]; then
+		n_def="$(git symbolic-ref -q --short "refs/remotes/${REMOTE}/HEAD")"
+		n_def="${n_def#"${REMOTE}"/}"
+	fi
+	printf '%s' "${n_def}"
+}
+
+numbered() { # <tag>; stdin: TAB lines ending in a path -> <tag> <sequence> <number> <line>
+	# ADRs are one sequence across both spine layouts; a migration's sequence
+	# is its directory (each Django app numbers from 0001).
+	awk -F '\t' -v t="$1" '{
+		p = $NF; d = p
+		if (sub(/\/[^\/]*$/, "", d) == 0) next
+		b = substr(p, length(d) + 2); s = d; sub(/.*\//, "", s)
+		if (d == "spec/decisions" || d == "openspec/steer/decisions") k = "adr"
+		else if (s == "migrations" || s == "drizzle") k = d
+		else next
+		if (!match(b, /^[0-9]+[-_]/) || b ~ /_squashed_/) next
+		n = substr(b, 1, RLENGTH - 1); sub(/^0+/, "", n); if (n == "") n = "0"
+		printf "%s\t%s\t%s\t%s\n", t, k, n, $0
+	}'
+}
+
+n_git() { git -C "${n_top}" -c core.quotePath=false "$@"; }
+
+n_added() { # <commit> - numbered files added since it, committed or not
+	{
+		n_git diff --name-only --no-renames --diff-filter=A "$1"
+		n_git ls-files --others --exclude-standard
+	} | numbered O
+}
+
+check_numbers() {
+	n_top="$(git rev-parse --show-toplevel)"
+	[ -n "$({ n_git ls-files && n_git ls-files --others --exclude-standard; } | numbered L)" ] || return 0
+	git remote get-url -- "${REMOTE}" >/dev/null 2>&1 || {
+		emit numbers unchecked "no remote named ${REMOTE}"
+		return
+	}
+	n_def="$(default_branch)"
+	[ -n "${n_def}" ] || {
+		emit numbers unchecked "${REMOTE} unreachable or has no default branch"
+		return
+	}
+	n_ref="refs/remotes/${REMOTE}/${n_def}"
+	# A stale local copy of the base only widens what counts as added, so
+	# nothing added against it means nothing to fetch for - offline included.
+	if n_mb="$(git merge-base HEAD "${n_ref}" 2>/dev/null)"; then
+		[ -n "$(n_added "${n_mb}")" ] || return 0
+	fi
+	{ fetch "${n_def}" && git rev-parse -q --verify "${n_ref}^{commit}" >/dev/null; } || {
+		emit numbers unchecked "fetch of ${REMOTE}/${n_def} failed"
+		return
+	}
+	n_mb="$(git merge-base HEAD "${n_ref}" 2>/dev/null)" || {
+		emit numbers unchecked "no merge base with ${REMOTE}/${n_def}"
+		return
+	}
+	n_ours="$(n_added "${n_mb}")"
+	[ -n "${n_ours}" ] || return 0
+
+	n_prs=""
+	n_branch="$(git symbolic-ref -q --short HEAD)"
+	if have_gh && n_out="$(gh pr list --state open --limit 200 \
+		--json number,headRefName,isCrossRepository,changedFiles,files \
+		--jq '"count\t\(length)", (.[] | . as $p | (if .changedFiles > (.files | length) then "partial\t\(.number)\t\(.headRefName)\t\(.isCrossRepository)" else empty end), ((.files // [])[] | "file\t\($p.number)\t\($p.headRefName)\t\($p.isCrossRepository)\t\(.path)"))' 2>/dev/null)"; then
+		# This branch's own PR holds the very files being checked; a fork's PR
+		# under the same branch name does not.
+		n_out="$(printf '%s\n' "${n_out}" | awk -F '\t' -v b="${n_branch}" '!($3 == b && $4 == "false")')"
+		[ "$(printf '%s\n' "${n_out}" | sed -n 's/^count	//p')" != 200 ] ||
+			emit numbers unchecked "open PRs: only the first 200 read"
+		printf '%s\n' "${n_out}" | sed -n 's/^partial	\([^	]*\).*/\1/p' | while read -r n_pr; do
+			emit numbers unchecked "#${n_pr}: more than 100 files, the rest not read"
+		done
+		n_prs="$(printf '%s\n' "${n_out}" | sed -n 's/^file	//p' | cut -f1,4- | numbered P)"
+	else
+		emit numbers unchecked "open PRs: gh unavailable"
+	fi
+
+	n_hits="$({
+		printf '%s\n' "${n_ours}"
+		n_git ls-tree -r --name-only "${n_ref}" | numbered M
+		[ -z "${n_prs}" ] || printf '%s\n' "${n_prs}"
+	} | awk -F '\t' '
+		$1 == "O" { o[++no] = $2 FS $3; op[no] = $NF; own[$NF] = 1 }
+		$1 == "M" { m[++nm] = $2 FS $3; mp[nm] = $NF; onmain[$NF] = 1 }
+		$1 == "P" { r[++nr] = $2 FS $3; rn[nr] = $4; rp[nr] = $NF }
+		END {
+			for (i = 1; i <= no; i++) {
+				for (j = 1; j <= nm; j++)
+					if (m[j] == o[i] && !(mp[j] in own)) printf "M\t%s\t%s\n", op[i], mp[j]
+				for (j = 1; j <= nr; j++)
+					if (r[j] == o[i] && !(rp[j] in own) && !(rp[j] in onmain)) printf "#%s\t%s\t%s\n", rn[j], op[i], rp[j]
+			}
+		}')"
+	n_found=""
+	while IFS='	' read -r n_where n_p n_q; do
+		[ -n "${n_where}" ] || continue
+		if [ "${n_where}" = M ]; then
+			# Deleted or renamed by this branch itself: its number is free here.
+			n_git cat-file -e "${n_mb}:${n_q}" 2>/dev/null && ! n_git cat-file -e "HEAD:${n_q}" 2>/dev/null &&
+				[ ! -e "${n_top}/${n_q}" ] && continue
+			n_where="${REMOTE}/${n_def}"
+		fi
+		emit numbers taken "${n_p}	${n_where}	${n_q}"
+		n_found=1
+	done <<EOF
+${n_hits}
+EOF
+	[ -n "${n_found}" ] || emit numbers clean
 }
 
 for c in "$@"; do

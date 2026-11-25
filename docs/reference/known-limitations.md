@@ -253,6 +253,18 @@ Check with `gh auth status`. Skills never hit `gh`/MCP for issues directly -
 they go through `/steer:tracker-sync`, so the fallback is consistent, but the
 underlying capability still has to be there.
 
+## Number collisions: which files `finish` checks
+
+`/steer:work finish` and `/steer:spec adr` check ADR numbers
+(`spec/decisions/`, `openspec/steer/decisions/`) and numbered migrations - a
+file named `<digits>_...` or `<digits>-...` directly in a `migrations` or
+`drizzle` directory (Drizzle Kit, Django) - against the default branch and
+open PRs. They do not check Alembic revisions (hash ids, so a duplicate shows
+as two heads, not as a number), Flyway's `V<n>__` files, Prisma's timestamped
+directories, or Django `_squashed_` migrations. Open PRs are read with `gh`:
+without it only the default branch is checked, and past 200 open PRs or 100
+files in one PR the rest is reported unchecked.
+
 ## GitHub Projects automation
 
 `steer` does **not** automate or manage a GitHub Projects board. The backlog is
