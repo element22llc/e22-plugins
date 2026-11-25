@@ -11,10 +11,10 @@
 #   a second, which the SessionStart latency budget cannot absorb. So the hook
 #   prints what the previous session's refresh found, then re-runs itself as
 #   `--refresh` detached (the on-session-end.sh pattern) to update the cache for
-#   the next one. The cache lives in $TMPDIR, never in the repo, keyed by the
-#   primary checkout so every worktree shares it. A refresh that fails, times
-#   out or reads anything but PR numbers removes the cache: no gh, no auth or no
-#   network means no line.
+#   the next one. The cache lives in a private per-user directory under $TMPDIR,
+#   never in the repo, keyed by the primary checkout so every worktree shares
+#   it. A refresh that fails, times out or reads anything but PR numbers
+#   removes the cache: no gh, no auth or no network means no line.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq (gh's --jq is built into gh). Fail-open: always exit 0.
@@ -31,24 +31,21 @@ if [ "${1:-}" = --refresh ]; then
 	_root="$2"
 	_cache="$3"
 	_tmp="$(mktemp "${_cache}.XXXXXX" 2>/dev/null)" || exit 0
+	date '+%Y-%m-%d %H:%M' >"${_tmp}"
 	(cd "${_root}" && exec gh pr list --author @me --search review:changes_requested \
-		--limit 100 --json number --jq '.[].number') >"${_tmp}" 2>/dev/null </dev/null &
+		--limit 100 --json number --jq '.[].number') >>"${_tmp}" 2>/dev/null </dev/null &
 	_gh=$!
 	(sleep "${GH_TIMEOUT_S}" && kill "${_gh}") >/dev/null 2>&1 </dev/null &
 	_watchdog=$!
 	wait "${_gh}"
 	_rc=$?
-	# Killed before gh's pid can be reused, so the watchdog never signals a stranger.
+	# Killed straight after gh is reaped, so pid reuse cannot plausibly hit it.
 	kill "${_watchdog}" 2>/dev/null
-	if [ "${_rc}" -ne 0 ] || grep -qv '^[0-9][0-9]*$' "${_tmp}"; then
+	if [ "${_rc}" -ne 0 ] || sed 1d "${_tmp}" | grep -qv '^[0-9]\{1,7\}$'; then
 		rm -f "${_tmp}" "${_cache}"
 		exit 0
 	fi
-	{
-		date '+%Y-%m-%d %H:%M'
-		cat "${_tmp}"
-	} >"${_tmp}.w" && mv -f "${_tmp}.w" "${_cache}"
-	rm -f "${_tmp}" "${_tmp}.w"
+	mv -f "${_tmp}" "${_cache}" || rm -f "${_tmp}"
 	exit 0
 fi
 
@@ -72,19 +69,31 @@ managed | openspec) ;;
 esac
 command -v gh >/dev/null 2>&1 || exit 0
 
+# $TMPDIR may be a shared /tmp: only a directory this user owns, with no one
+# else's access, keeps another user's symlink, FIFO or numbers out of the cache.
+USER_ID="$(id -u)"
+DIR="${TMPDIR:-/tmp}/steer-${USER_ID}"
+mkdir -m 700 "${DIR}" 2>/dev/null
+# find, not `test -O` (not POSIX): a real directory, this user's, mode 700.
+[ -n "$(find "${DIR}" -prune -type d -user "${USER_ID}" -perm 700 2>/dev/null)" ] || exit 0
 KEY="$(steer_primary_worktree "${ROOT}" | cksum | cut -d' ' -f1)"
-CACHE="${TMPDIR:-/tmp}/steer-changes-requested.${KEY}"
+CACHE="${DIR}/changes-requested.${KEY}"
 
-# Every byte printed is validated: a shared /tmp lets anyone plant this file.
-CHECKED="$(head -n 1 "${CACHE}" 2>/dev/null)"
+# Read once and capped, and every byte printed is validated: a stamp, then PR
+# numbers of at most 7 digits, so the line stays well under the stdout cap.
+CONTENT=""
+[ -f "${CACHE}" ] && CONTENT="$(dd if="${CACHE}" bs=4096 count=1 2>/dev/null)"
+CHECKED="$(printf '%s\n' "${CONTENT}" | head -n 1)"
+LIST="$(printf '%s\n' "${CONTENT}" | sed 1d)"
 case "${CHECKED}" in
 [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\ [0-9][0-9]:[0-9][0-9]) ;;
 *) CHECKED="" ;;
 esac
-if [ -n "${CHECKED}" ] && ! sed 1d "${CACHE}" | grep -qv '^[0-9][0-9]*$'; then
-	COUNT="$(sed 1d "${CACHE}" | grep -c .)"
+if [ -n "${CHECKED}" ] && [ -n "${LIST}" ] &&
+	! printf '%s\n' "${LIST}" | grep -qv '^[0-9]\{1,7\}$'; then
+	COUNT="$(printf '%s\n' "${LIST}" | grep -c .)"
 	if [ "${COUNT}" -gt 0 ]; then
-		NUMBERS="$(sed 1d "${CACHE}" | head -n "${LISTED_MAX}" | sed 's/^/#/' | tr '\n' ' ')"
+		NUMBERS="$(printf '%s\n' "${LIST}" | head -n "${LISTED_MAX}" | sed 's/^/#/' | tr '\n' ' ')"
 		NUMBERS="${NUMBERS% }"
 		[ "${COUNT}" -gt "${LISTED_MAX}" ] && NUMBERS="${NUMBERS} ..."
 		printf '<!-- steer: changes requested on your PRs -->\n'

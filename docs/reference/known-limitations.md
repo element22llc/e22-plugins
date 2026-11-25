@@ -325,8 +325,8 @@ stacked-PR gates). Be honest about the tiers:
   first decision yours. Everything else the roster does is report-only. The same
   script also runs on `CwdChanged`, so a worktree *entered* mid-session gets the
   same inherited trust. `check-changes-requested.sh` is the one check that reads
-  the network, and it does so after session start: it reports from a cache in
-  `$TMPDIR` and refreshes it in a detached `gh pr list`, so its line is one
+  the network, and it does so after session start: it reports from a per-user
+  cache under `$TMPDIR` and refreshes it in a detached `gh pr list`, so its line is one
   session old.
 - **`SessionEnd` / `WorktreeRemove`** are the only hooks that act on your Docker
   state, and only ever inside a **linked worktree**: `SessionEnd` stops that

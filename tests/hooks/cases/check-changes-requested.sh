@@ -16,8 +16,10 @@ CR_CORE="${WORK}/cr-core"
 CR_GH="${WORK}/cr-gh"
 CR_TMP="${WORK}/cr-tmp"
 CR_HOOK="${HOOKS}/check-changes-requested.sh"
+CR_DIR="${CR_TMP}/steer-$(id -u)"
 mkdir -p "${CR_CORE}" "${CR_GH}" "${CR_TMP}"
-for _t in sh cat sed grep head tr awk find mktemp rm mv sleep dirname cksum cut date setsid perl; do
+mkdir -m 700 "${CR_DIR}"
+for _t in sh cat sed grep head tr awk find mktemp rm mv sleep dirname cksum cut date dd id setsid perl; do
 	_p="$(command -v "${_t}")" && ln -s "${_p}" "${CR_CORE}/${_t}"
 done
 cat >"${CR_GH}/gh" <<'EOF'
@@ -37,7 +39,7 @@ cr_case() { # <name> [tracker-system] -> sets CR_REPO, CR_CACHE, CR_LOG
 	CR_LOG="${WORK}/$1.gh.log"
 	: >"${CR_LOG}"
 	_k="$(sh -c '. "$1/lib/repo-root.sh"; steer_primary_worktree "$2" | cksum | cut -d" " -f1' _ "${HOOKS}" "${CR_REPO}")"
-	CR_CACHE="${CR_TMP}/steer-changes-requested.${_k}"
+	CR_CACHE="${CR_DIR}/changes-requested.${_k}"
 }
 cr_refresh() { # [stub env assignments...] - one synchronous --refresh of CR_REPO
 	env PATH="${CR_PATH}" GH_STUB_LOG="${CR_LOG}" "$@" sh "${CR_HOOK}" --refresh "${CR_REPO}" "${CR_CACHE}" \
@@ -90,7 +92,7 @@ cr_refresh 'GH_STUB_OUT=12\n' 'GH_STUB_SLEEP=30'
 _cr_elapsed=$(($(date +%s) - _cr_t0))
 [ ! -e "${CR_CACHE}" ] && ok || bad "changes-requested: gh hanging removes the cache"
 [ "${_cr_elapsed}" -le 8 ] && ok || bad "changes-requested: hung gh cut off by the watchdog (took ${_cr_elapsed}s)"
-assert_eq "changes-requested: refresh leaves no temp files" "$(ls "${CR_TMP}")" ""
+assert_eq "changes-requested: refresh leaves no temp files" "$(ls "${CR_DIR}")" ""
 
 # --- session start: print the cache, spawn the refresh ----------------------
 cr_case crPrint
@@ -139,6 +141,37 @@ cr_case crPlanted2
 printf '2026-11-25 09:30\n12 and more\n' >"${CR_CACHE}"
 cr_run startup 'GH_STUB_RC=1'
 assert_empty "changes-requested: planted cache with prose -> silent" "${out}"
+cr_case crPlanted3
+printf '2026-11-25 09:30\n12345678901234567890\n' >"${CR_CACHE}"
+cr_run startup 'GH_STUB_RC=1'
+assert_empty "changes-requested: planted cache with an oversized number -> silent" "${out}"
+cr_case crFifo
+mkfifo "${CR_CACHE}"
+_cr_t0="$(date +%s)"
+cr_run startup 'GH_STUB_RC=1'
+_cr_elapsed=$(($(date +%s) - _cr_t0))
+assert_empty "changes-requested: FIFO at the cache path -> silent" "${out}"
+[ "${_cr_elapsed}" -le 2 ] && ok || bad "changes-requested: FIFO at the cache path never blocks (took ${_cr_elapsed}s)"
+
+# A cache directory that is a symlink (someone else's, in a shared /tmp) is
+# refused outright: no line, no refresh.
+CR_SHARED="${WORK}/cr-shared"
+mkdir -p "${CR_SHARED}" "${WORK}/cr-elsewhere"
+ln -s "${WORK}/cr-elsewhere" "${CR_SHARED}/steer-$(id -u)"
+cr_case crSymlinkDir
+printf '2026-11-25 09:30\n12\n' >"${WORK}/cr-elsewhere/$(basename "${CR_CACHE}")"
+out="$(ENV="PATH=${CR_PATH} TMPDIR=${CR_SHARED} GH_STUB_LOG=${CR_LOG} GH_STUB_OUT=12\n" run_hook check-changes-requested.sh \
+	"$(session_json_src "${CR_REPO}" cr startup)")"
+assert_empty "changes-requested: symlinked cache dir -> silent" "${out}"
+sleep 1
+assert_eq "changes-requested: symlinked cache dir -> no refresh" "$(cr_calls)" "0"
+CR_OPEN="${WORK}/cr-open"
+mkdir -p "${CR_OPEN}/steer-$(id -u)"
+chmod 755 "${CR_OPEN}/steer-$(id -u)"
+printf '2026-11-25 09:30\n12\n' >"${CR_OPEN}/steer-$(id -u)/$(basename "${CR_CACHE}")"
+out="$(ENV="PATH=${CR_PATH} TMPDIR=${CR_OPEN} GH_STUB_LOG=${CR_LOG} GH_STUB_RC=1" run_hook check-changes-requested.sh \
+	"$(session_json_src "${CR_REPO}" cr startup)")"
+assert_empty "changes-requested: cache dir others can read -> silent" "${out}"
 
 cr_case crOrchestrated
 cr_seed 12
