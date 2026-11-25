@@ -82,7 +82,7 @@ below give the detail.
 | Work through several issues one after another | [`/steer:work queue #A #B`](work.md#issue-queue-steerwork-queue) (or just name two or more issues) |
 | Find a bug's root cause before fixing it ("why is this failing?") | [`/steer:work debug`](work.md#debugging-steerwork-debug) |
 | Click through the flows a UI change touches in a real browser before review | [`/steer:work qa`](work.md#browser-qa-steerwork-qa) |
-| Clear the PR review queue, or ready my own drafts | [`/steer:work review`](work.md#batch-review-steerwork-review) (`--mine` for your own) |
+| Clear the PR review queue, review one PR ("review PR #12"), or ready my own drafts | [`/steer:work review`](work.md#batch-review-steerwork-review) (`--mine` for your own) |
 | Ship what is merged to production | [`/steer:work promote`](work.md) |
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
