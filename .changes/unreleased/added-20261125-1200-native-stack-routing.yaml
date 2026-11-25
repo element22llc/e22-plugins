@@ -12,7 +12,9 @@ body: |
     stays a manual layer. A parent that moved or merged is followed by a
     rebase only while the branch is unpushed; once it is pushed, the parent
     (or, after it merged, the default branch) is merged in and pushed
-    normally, never with cherry-picks, `git branch -f` or a force-push. The
+    normally, never with cherry-picks, `git branch -f` or a force-push; a
+    native stack layer leaves the stack first when its parent merged, and
+    stops for its owner when the parent only moved. The
     steps live in `/steer:reference stacks` section 6.
     `/steer:setup doctor` now checks for the extension and reports it as an
     optional gap, only in a repo with open stacked PRs.

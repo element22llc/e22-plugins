@@ -139,11 +139,14 @@ builds a manual stack and, where it safely can, records it as a native one.
   pushes every branch in the stack, the parent included. A stack made by `link`
   has no local tracking, so `gh stack view` reports these branches as
   unstacked; ask the API instead.
+
 **Following the parent never rewrites a pushed branch.** Rewriting it would
 take a force-push, which the scaffold's permissions deny. Only a branch that
-is not pushed yet is rebased; once it is pushed, the parent is merged in and
-the push is a plain `git push`. Rebasing the parent itself is its own issue's
-work.
+is not pushed yet is rebased. Once it is pushed, the parent, or the default
+branch after the parent merged, is merged in and pushed with
+`git push origin <branch>` (`start` left the parent as its upstream). Fetch
+what you rebase onto or merge first. Rebasing the parent itself is its own
+issue's work.
 
 - **The parent moved, branch not pushed:** find where it left the old parent
   with `git merge-base --fork-point origin/<parent> HEAD`, then
@@ -151,7 +154,7 @@ work.
   nothing (this checkout never saw the old parent tip), stop and report rather
   than replay the parent's old commits.
 - **The parent moved, branch pushed:** on a manual layer,
-  `git merge origin/<parent>`, then `git push`. On a native stack layer, stop
+  `git merge origin/<parent>`, then push. On a native stack layer, stop
   and report: a merge commit breaks the linear history the stack needs to merge
   (section 4), and the rebase it needs (`gh stack rebase`, then
   `gh stack push`) force-pushes, so it is the stack owner's call.
@@ -161,14 +164,19 @@ work.
     keeps that ref). If `git log --oneline <headRefOid>..HEAD` shows commits
     that are not this branch's own (the parent was rewritten after this branch
     last followed it), stop and report. Otherwise
-    `git rebase --onto origin/<default> <headRefOid>`.
-  - *Branch pushed:* `git merge origin/<default>`, then `git push`.
+    `git rebase --onto origin/<default> <headRefOid>`, and `finish` opens the
+    PR on the default branch, not the merged parent.
+  - *Branch pushed:* on a native stack layer, first take it out of the stack
+    with `gh stack unstack <N>` (it pushes nothing; the merged parent stays
+    stacked), since a merge commit would break the linear history the stack
+    needs. Then `git merge origin/<default>` and push.
 
-  Either way, retarget the PR with `gh pr edit --base <default>` if GitHub
-  has not already (it retargets a child PR when the merged parent's branch is
-  deleted, and a native stack's layers itself).
+  Retarget an open PR with `gh pr edit --base <default>` if GitHub has not
+  already (it retargets a child PR when the merged parent's branch is deleted,
+  and a native stack's layers itself).
 - **Never repair a stack by hand** - no cherry-picking between layers, no
-  `git branch -f`, no force-push, and no merge beyond the two named above.
+  `git branch -f`, no force-push, and no merge beyond the two named above (each
+  on a manual layer).
   Those hide what changed from review, and in a native stack break the linear
   history it needs to merge.
 - **Each stacking command asks.** The stacked-PR gate asks on the
