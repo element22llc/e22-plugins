@@ -16,8 +16,10 @@
 #         a squash-merge the parent's last head (refs/pull/<n>/head) and the
 #         base just before the squash are merged and the squash is recorded
 #         with `merge-ours`, so the parent's hunks never conflict with
-#         themselves. A merged batch/<slug> base holds no commits of the
-#         sibling, so only the new base is merged. A closed parent is
+#         themselves; a branch already holding the squash skips those steps,
+#         and a rebase-merged parent is `unchecked`. A merged batch/<slug>
+#         base holds no commits of the sibling, so only the new base is
+#         merged. A closed parent is
 #         reported. A parent GitHub hid by retargeting the PR to the default
 #         branch is found in the PR's automatic base-change history. Long-lived
 #         bases (prod, production, staging, develop, release/*, releases/*) are
@@ -179,6 +181,11 @@ query($owner: String!, $name: String!, $n: Int!) {
 				squash=""
 				emit base unchecked "parent ${parent} merged into ${into}, not ${target}: left alone"
 			elif [ "${newest%% *}" = MERGED ]; then
+				case "${num}" in '' | *[!0-9]*)
+					emit base unchecked "PR number of parent ${parent} unreadable"
+					return
+					;;
+				esac
 				pline="${parent} #${num}"
 				case "${parent}" in
 				batch/*) squash="" ;;
@@ -215,8 +222,9 @@ query($owner: String!, $name: String!, $n: Int!) {
 	# The merges that bring the base in. After a squash-merged parent: its last
 	# head, the base just before the squash, then the squash recorded with
 	# `-s ours` - this branch already holds its content - so the parent's hunks
-	# are never merged twice. Both are pinned under refs that a later fetch
-	# cannot move, or `-s ours` could swallow a newer base commit.
+	# are never merged twice. Both are pinned under refs a fetch does not move
+	# (a pruning fetch deletes them, and the merge then fails closed), or
+	# `-s ours` could swallow a newer base commit.
 	steps=""
 	if [ -n "${src}" ] && ! git merge-base --is-ancestor "${src}" "${ref}" 2>/dev/null &&
 		! git merge-base --is-ancestor "${squash}" HEAD 2>/dev/null; then
@@ -224,10 +232,15 @@ query($owner: String!, $name: String!, $n: Int!) {
 		if ! pre="$(git rev-parse -q --verify "${squash}^1" 2>/dev/null)" ||
 			! git merge-base --is-ancestor "${squash}" "${ref}" 2>/dev/null; then
 			why="merge commit of ${pline} not found on ${REMOTE}/${target}"
-		elif git cherry "${pre}" "${src}" "$(git merge-base "${pre}" "${src}")" 2>/dev/null | grep -q '^-'; then
+		elif git log --format='%ae %at %s' "$(git merge-base "${pre}" "${src}")..${src}" 2>/dev/null |
+			grep -Fxq -- "$(git log -1 --format='%ae %at %s' "${pre}")"; then
+			# A rebase-merge replays the parent's commits with their author,
+			# date and subject; a squash's predecessor is somebody else's work.
 			why="${pline} was rebase-merged: bring the base in by hand"
-		elif ! git update-ref "refs/remotes/${REMOTE}/pull/${num}/pre-squash" "${pre}" ||
-			! git update-ref "refs/remotes/${REMOTE}/pull/${num}/squash" "${squash}"; then
+		elif ! printf 'update %s %s\nupdate %s %s\n' \
+			"refs/remotes/${REMOTE}/pull/${num}/pre-squash" "${pre}" \
+			"refs/remotes/${REMOTE}/pull/${num}/squash" "${squash}" |
+			git update-ref --stdin 2>/dev/null; then
 			why="could not pin the squash of ${pline}"
 		fi
 		[ -z "${why}" ] || {

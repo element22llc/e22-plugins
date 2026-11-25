@@ -249,8 +249,7 @@ git -C "${R}" switch -q -c issue/8-r origin/feat/r
 commit "${R}" r.txt a-child
 git -C "${O}" switch -q main
 commit "${O}" x2.txt meanwhile
-commit "${O}" r.txt a
-commit "${O}" r2.txt b
+git -C "${O}" cherry-pick feat/r~1 feat/r >/dev/null
 git -C "${O}" push -q origin main
 printf 'MERGED 31 main %s\n' "$(git -C "${O}" rev-parse HEAD)" >"${GHS}/all-feat_r"
 fp --base feat/r
