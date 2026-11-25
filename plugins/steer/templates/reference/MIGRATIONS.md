@@ -33,7 +33,9 @@ scope: leaving the old wording in place keeps the consumer executing the behavio
 the change exists to remove. **Below the bar:** a comment or prose line that only
 *describes* behaviour - one no skill reads and no human executes - needs no entry,
 even though it is technically a replaced line. The distinguishing question is whether
-anything acts on the words.
+anything acts on the words. **A removal is never below the bar:** a line or block
+the template no longer carries at all, with no replacement, stays in every
+instantiated copy until an entry removes it, whether or not anything reads it.
 
 ## How a migration is applied
 
@@ -93,6 +95,48 @@ Name the file and say what to carry forward.
 > Newest first. Each entry: the introducing **version** - `[Unreleased]` until the
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
+
+### [Unreleased] - `contract.md` drops the template's `Last updated` line
+
+- **What & why:** 7.27.1 removed `> Last updated: YYYY-MM-DD` from the
+  `templates/spec/feature-contract.md` header, because every PR touching a
+  contract rewrote that one line and any two open PRs on a feature conflicted
+  on it. Additive reconciliation never deletes, so every contract instantiated
+  before then still carries it, and the conflicts go on.
+- **Precondition:** a contract's header (the lines above its first `## `) still
+  holds the line in the template's form, the placeholder or one ISO date with
+  nothing after it -
+
+  ```sh
+  find spec/features -mindepth 2 -maxdepth 2 -name contract.md -exec awk '
+    FNR == 1 { head = 1 }
+    /^## / { head = 0 }
+    head && /^> Last updated: (YYYY-MM-DD|[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])[ \t\r]*$/ {
+      print FILENAME ":" FNR
+    }' {} + 2>/dev/null
+  ```
+
+  No output => already migrated, or no feature contracts => no-op. A polyrepo
+  member and an `openspec` repo hold no `spec/features/*/contract.md`, so it
+  is a no-op there.
+- **Action:** read-then-propose; show the diff and apply on a yes. Delete
+  exactly each line the precondition printed, matching it by content (a
+  line number shifts once a line above it goes), nothing else. A header
+  `> Last updated:` line in any other form (a note after the date, a list of
+  changes) is the product's own wording: leave it, and report what this
+  lists - in the sync PR, or in the `--check` report - so the dev can drop
+  each by hand -
+
+  ```sh
+  find spec/features -mindepth 2 -maxdepth 2 -name contract.md -exec awk '
+    FNR == 1 { head = 1 }
+    /^## / { head = 0 }
+    head && /^> Last updated:/ && !/^> Last updated: (YYYY-MM-DD|[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])[ \t\r]*$/ {
+      print FILENAME ":" FNR ": " $0
+    }' {} + 2>/dev/null
+  ```
+
+  **No history entry is earned.**
 
 ### [Unreleased] - `.claude/settings.json` allows plain `git rm`, asks only for recursive and forced forms
 

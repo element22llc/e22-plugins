@@ -29,7 +29,7 @@ read-only before acting:
 |---|---|---|
 | Is `N` a stack? | `gh api repos/{owner}/{repo}/stacks/N` | 404 |
 | Which stack holds PR `N`? | `gh api 'repos/{owner}/{repo}/stacks?pull_request=N'` | `[]` |
-| Is this branch in a stack? | `gh stack view --json` | exit 2 (exit 9: stacks not enabled) |
+| Is this branch tracked locally as a stack? | `gh stack view --json` | exit 2 (exit 9: stacks not enabled) - a stack made by `gh stack link` has no local tracking, so ask the API rows |
 
 The response lists the stack's `base.ref` and its `pull_requests` (observed
 bottom to top; the docs do not state the order), each with `number`, `state`, `draft` and `merged_at`. `gh stack checkout`
@@ -110,3 +110,78 @@ unapproved one cannot merge. An independent change riding a native stack is not
 fixed by retargeting one PR - removing it takes `gh stack modify` (interactive),
 the web UI, or unstacking and recreating the stack, so report it and leave the
 restructuring to the author.
+
+## 6. A dependent issue branch (`/steer:work`)
+
+When an issue needs another work branch's unmerged code (rule 45), `/steer:work`
+builds a manual stack and, where it safely can, records it as a native one.
+
+- **`start`** - `git fetch origin <parent>`, then
+  `git switch -c <branch> origin/<parent>`: the parent as GitHub has it.
+- **`finish`** - open the PR with `gh pr create --base <parent>` (the default
+  branch if the parent merged first, below), its description naming the
+  dependency, exactly as `finish` describes. Link once:
+  when `gh api 'repos/{owner}/{repo}/stacks?pull_request=<this-pr>'` already
+  finds this PR in a stack (a later `finish`), skip the rest of this step. Otherwise link it into a native stack
+  with `gh stack link <parent-pr> <this-pr>`, by PR number, only when all of
+  these hold:
+  - `gh extension list` lists `gh stack`;
+  - the parent has an open PR of yours on the default branch -
+    `gh pr list --head <parent> --author @me --state open --json number,baseRefName`
+    returns one whose base is the default branch (joining a PR to a stack
+    changes how it merges, which is its author's call);
+  - the parent is in no stack - the section 1 lookup
+    (`gh api 'repos/{owner}/{repo}/stacks?pull_request=<parent-pr>'`)
+    returns `[]`. A parent already in a stack keeps this PR a manual layer;
+    say so.
+
+  A failed `link` (exit 9: stacks are not enabled) leaves the PR as it is, a
+  manual layer; say so in one line. Never `submit`, `push` or `sync` here: each
+  pushes every branch in the stack, the parent included. A stack made by `link`
+  has no local tracking, so `gh stack view` reports these branches as
+  unstacked; ask the API instead.
+
+**Following the parent never rewrites a pushed branch.** Rewriting it would
+take a force-push, which the scaffold's permissions deny. Only a branch that
+is not pushed yet is rebased. Once it is pushed, the parent, or the default
+branch after the parent merged, is merged in and pushed with
+`git push origin <branch>` (`start` left the parent as its upstream). Fetch
+what you rebase onto or merge first. Rebasing the parent itself is its own
+issue's work.
+
+- **The parent moved, branch not pushed:** find where it left the old parent
+  with `git merge-base --fork-point origin/<parent> HEAD`, then
+  `git rebase --onto origin/<parent> <that commit>`. If `--fork-point` finds
+  nothing (this checkout never saw the old parent tip), stop and report rather
+  than replay the parent's old commits.
+- **The parent moved, branch pushed:** on a manual layer,
+  `git merge origin/<parent>`, then push. On a native stack layer, stop
+  and report: a merge commit breaks the linear history the stack needs to merge
+  (section 4), and the rebase it needs (`gh stack rebase`, then
+  `gh stack push`) force-pushes, so it is the stack owner's call.
+- **The parent merged.** Its remote branch is usually deleted by then, so start
+  from its PR: `gh pr list --head <parent> --state merged --json number,headRefOid`.
+  - *Branch not pushed:* `git fetch origin pull/<parent-pr>/head` (GitHub
+    keeps that ref). If `git log --oneline <headRefOid>..HEAD` shows commits
+    that are not this branch's own (the parent was rewritten after this branch
+    last followed it), stop and report. Otherwise
+    `git rebase --onto origin/<default> <headRefOid>`, and `finish` opens the
+    PR on the default branch, not the merged parent.
+  - *Branch pushed:* on a native stack layer, first take it out of the stack,
+    since a merge commit would break the linear history the stack needs. Read
+    `N` from `gh api 'repos/{owner}/{repo}/stacks?pull_request=<this-pr>'` and
+    run `gh stack unstack <N>` (it pushes nothing; the merged parent stays
+    stacked) only when its `pull_requests` are exactly the merged parent and
+    this PR; a stack someone else grew is theirs to restructure, so stop and
+    report (section 5). Then `git merge origin/<default>` and push.
+
+  Retarget an open PR with `gh pr edit --base <default>` if GitHub has not
+  already (it retargets a child PR when the merged parent's branch is deleted,
+  and a native stack's layers itself).
+- **Never repair a stack by hand** - no cherry-picking between layers, no
+  `git branch -f`, no force-push, and no merge beyond the two named above (each
+  on a manual layer, or after `unstack`).
+  Those hide what changed from review, and in a native stack break the linear
+  history it needs to merge.
+- **Each stacking command asks.** The stacked-PR gate asks on the
+  `gh pr create --base <parent>` and again on `gh stack link`.

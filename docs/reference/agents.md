@@ -59,7 +59,7 @@ section 4 rubric and returns the card the caller asked for.
 
 | Field | Value |
 | :---- | :---- |
-| **Tools** | `Read`, `Grep`, `Glob`, `Bash` - `Bash` for `git` and `gh` reads; read-only by its instructions, not by construction |
+| **Tools** | `Read`, `Grep`, `Glob`, `Bash` - `Bash` for `git` and `gh` reads; read-only by its instructions, not by construction. A harness without `Grep` or `Glob` drops them silently, and the reviewer searches with `grep` and `git ls-files` |
 | **Model** | `sonnet` - a bounded check on a mid tier; the plan gate and the code gate's general reviewer keep the session model |
 | **Turn cap** | `maxTurns: 60`, under a prose budget of about 40 tool calls |
 | **Invocation** | Explicit, by the calling skill - never auto-delegated |
@@ -69,6 +69,11 @@ section 4 rubric and returns the card the caller asked for.
 - **Diff-first.** It reads the diff and PR description, and leaves them only to
   answer a question the diff raises. A reviewer's cost is turns times context,
   so scope matters as much as tier.
+- **Reads files, keeps commands plain.** `/steer:work review` writes each
+  PR's view and diff to files and hands over their paths and the rubric's, so
+  the reviewer reads with `Read` instead of shelling out. Its commands run
+  from the checkout with no `cd` prefix or variable preamble, which keeps them
+  on the allowlist instead of each going to the auto-mode classifier.
 - **Delta re-review.** Given its previous findings (a card or a posted review)
   and their head SHA, it reviews only the commits since - the full diff when the
   history was rewritten - and settles each earlier finding.
