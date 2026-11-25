@@ -109,6 +109,14 @@ and the Definition of Done are unchanged. Committing to `main` is authorized in 
 mode; **deploy stays human-gated all the same**, and graduating the repo to the PR
 flow is [`/steer:setup protect`](../reference/skills.md)'s job, never this skill's.
 
+When an issue touches deployment, release or infrastructure work, `start` first
+compares the repo's `spec/.version` with the plugin. A minor version or more
+behind, it says so before claiming anything and offers
+[`/steer:setup sync`](../reference/skills.md) first, because the current
+scaffold may already ship what the issue asks for. Declined, under `--hotfix`,
+or in an unattended worker, it continues and notes the lag in the PR (in
+solo-trunk, the trunk commit body).
+
 ## Modes
 
 | Mode | What it does |
