@@ -118,8 +118,9 @@ builds a manual stack and, where it safely can, records it as a native one.
 
 - **`start`** - `git fetch origin <parent>`, then
   `git switch -c <branch> origin/<parent>`: the parent as GitHub has it.
-- **`finish`** - open the PR with `gh pr create --base <parent>`, its
-  description naming the dependency, exactly as `finish` describes. Link once:
+- **`finish`** - open the PR with `gh pr create --base <parent>` (the default
+  branch if the parent merged first, below), its description naming the
+  dependency, exactly as `finish` describes. Link once:
   when `gh api 'repos/{owner}/{repo}/stacks?pull_request=<this-pr>'` already
   finds this PR in a stack (a later `finish`), skip the rest of this step. Otherwise link it into a native stack
   with `gh stack link <parent-pr> <this-pr>`, by PR number, only when all of
@@ -166,17 +167,20 @@ issue's work.
     last followed it), stop and report. Otherwise
     `git rebase --onto origin/<default> <headRefOid>`, and `finish` opens the
     PR on the default branch, not the merged parent.
-  - *Branch pushed:* on a native stack layer, first take it out of the stack
-    with `gh stack unstack <N>` (it pushes nothing; the merged parent stays
-    stacked), since a merge commit would break the linear history the stack
-    needs. Then `git merge origin/<default>` and push.
+  - *Branch pushed:* on a native stack layer, first take it out of the stack,
+    since a merge commit would break the linear history the stack needs. Read
+    `N` from `gh api 'repos/{owner}/{repo}/stacks?pull_request=<this-pr>'` and
+    run `gh stack unstack <N>` (it pushes nothing; the merged parent stays
+    stacked) only when its `pull_requests` are exactly the merged parent and
+    this PR; a stack someone else grew is theirs to restructure, so stop and
+    report (section 5). Then `git merge origin/<default>` and push.
 
   Retarget an open PR with `gh pr edit --base <default>` if GitHub has not
   already (it retargets a child PR when the merged parent's branch is deleted,
   and a native stack's layers itself).
 - **Never repair a stack by hand** - no cherry-picking between layers, no
   `git branch -f`, no force-push, and no merge beyond the two named above (each
-  on a manual layer).
+  on a manual layer, or after `unstack`).
   Those hide what changed from review, and in a native stack break the linear
   history it needs to merge.
 - **Each stacking command asks.** The stacked-PR gate asks on the

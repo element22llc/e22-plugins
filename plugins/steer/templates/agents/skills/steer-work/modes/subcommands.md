@@ -135,12 +135,13 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   autonomy; merge is not yours), writing its **Spec delta** when the branch
   changes a `contract.md` (below), and listing each question `start` picked up
   as settled by this change, for its owner to confirm on the running change. A
-  dependent branch's PR opens with `--base <parent>`, then is linked into a
-  native stack (`gh stack link`) when the extension is installed and the
-  parent's PR is yours, on the default branch and in no stack; a parent that
-  moved or merged is rebased onto only while the branch is unpushed, then
-  merged in (a native stack layer whose parent moved stops and reports), never
-  cherry-picks, `git branch -f` or a force-push
+  dependent branch's PR opens with `--base <parent>` (the default branch if
+  the parent merged first), then is linked into a native stack
+  (`gh stack link`) when the extension is installed and the parent's PR is
+  yours, on the default branch and in no stack. A parent that moved or merged
+  is rebased onto while the branch is unpushed; once pushed, it is merged in
+  (a native layer leaves the stack when its parent merged, and stops when it
+  only moved), never cherry-picks, `git branch -f` or a force-push
   (`/steer-reference stacks` section 6). An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer-questions` step 6); otherwise the question stays
