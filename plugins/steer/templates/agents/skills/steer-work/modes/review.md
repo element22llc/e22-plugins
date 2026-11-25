@@ -104,10 +104,22 @@ Then, per PR:
 For every PR still to review, spawn a fresh **`steer-pr-reviewer`** in the same
 message (Claude Code: `subagent_type: "steer:steer-pr-reviewer"`; elsewhere a
 fresh read-only subagent on a mid-tier model), waves of up to 10, each with one
-PR - not `steer-reviewer`, which audits on-disk code. Give it the PR number,
-its head SHA, `gh pr view <n>` and `gh pr diff <n>` to read, and the code-gate
-rubric in
-[`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4 - the same one
+PR - not `steer-reviewer`, which audits on-disk code. First write every PR's
+view and diff to the session scratchpad, else a fresh `mktemp -d` directory,
+never a path in the repo, in one command for the batch, so each reviewer reads instead
+of shelling out:
+
+```sh
+for n in 12 15; do gh pr view "$n" >"<dir>/pr-$n.view"; gh pr diff "$n" >"<dir>/pr-$n.diff"; done
+```
+
+For a delta (`ahead` above), write the compare diff to `pr-<n>.diff` in place
+of `gh pr diff`, so the file holds only the delta.
+
+Give it the PR number, its head SHA, those two file paths, and the absolute
+path of [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md), whose
+section 4 is the code-gate rubric (no copy on disk: state the rubric in the
+brief) - the same one
 the author's `finish` ran: adversarial, with the specialist lenses the diff
 triggers applied inline. Tell it to spawn no subagents of its own, so a batch
 stays one reviewer per PR. The local checkout may sit at the base, not the PR
@@ -125,9 +137,9 @@ diff. Ask it to return a compact **card**:
 
 Then run the refute pass (`REVIEW-LOOP.md` section 4): every PR whose card
 from this step carries a high finding not already through a refute pass gets
-one fresh `steer-pr-reviewer` verifier for all of them, the whole batch in one
-message. A recalled card is never verified again. A refuted finding leaves the
-card; an unsure one stays, marked unconfirmed.
+one fresh `steer-pr-reviewer` verifier for all of them, given the same file
+paths, the whole batch in one message. A recalled card is never verified again.
+A refuted finding leaves the card; an unsure one stays, marked unconfirmed.
 
 **Store every new card before Step 4 asks anything** - the session can end
 before the human answers, and an unposted card is otherwise lost. Write it to
