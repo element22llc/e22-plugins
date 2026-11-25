@@ -135,7 +135,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
   (a stack parent, `batch/<slug>`, `prod` for a hotfix). It fetches and pins
   refs under `origin/pull/<n>/`, never touching the branch; a printed ref
-  that no longer resolves means pre-flight again. Its `merge` and `merge-ours` lines bring the base in, in order,
+  that no longer resolves means pre-flight again. Its `merge` and
+  `merge-ours` lines bring the base in, in order,
   each run as `git merge --no-edit <ref>` or, for `merge-ours` (a squash of
   a merged stack parent whose content this branch already holds), `git merge
   --no-edit -s ours <ref>`: merges, never a rebase, so a pushed branch needs
