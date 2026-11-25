@@ -138,8 +138,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   dependent branch's PR opens with `--base <parent>`, then is linked into a
   native stack (`gh stack link`) when the extension is installed and the
   parent's PR is yours, on the default branch and in no stack; a parent that
-  moved is followed with `git rebase --onto`, never cherry-picks or
-  `git branch -f`
+  moved or merged is rebased onto only while the branch is unpushed, then
+  merged in, never cherry-picks, `git branch -f` or a force-push
   (`/steer-reference stacks` section 6). An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer-questions` step 6); otherwise the question stays
