@@ -58,8 +58,8 @@ For every remaining PR, spawn a fresh **`steer-pr-reviewer`** in the same
 message (Claude Code: `subagent_type: "steer:steer-pr-reviewer"`; elsewhere a
 fresh read-only subagent on a mid-tier model), waves of up to 10, each with one
 PR - not `steer-reviewer`, which audits on-disk code. First write every PR's
-view and diff to the session scratchpad or a system temp directory, never a
-path in the repo, in one command for the batch, so each reviewer reads instead
+view and diff to the session scratchpad, else a fresh `mktemp -d` directory,
+never a path in the repo, in one command for the batch, so each reviewer reads instead
 of shelling out:
 
 ```sh

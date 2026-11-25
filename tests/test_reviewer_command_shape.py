@@ -29,7 +29,7 @@ def test_reviewer_body_carries_the_command_shape():
 
 def test_review_mode_hands_the_reviewer_files():
     step3 = (PLUGIN / "skills" / "work" / "modes" / "review.md").read_text()
-    step3 = step3.split("## Step 3", 1)[1].split("## Step 4", 1)[0]
+    step3 = " ".join(step3.split("## Step 3", 1)[1].split("## Step 4", 1)[0].split())
     assert 'gh pr diff "$n" >' in step3
     assert "those two file paths" in step3
-    assert "absolute\npath of [`REVIEW-LOOP.md`]" in step3
+    assert "absolute path of [`REVIEW-LOOP.md`]" in step3

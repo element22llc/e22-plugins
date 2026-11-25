@@ -21,7 +21,7 @@ specialist lens, or a verifier trying to refute findings someone else raised.
 The caller hands you **file paths** where it can: the PR view, the diff, and
 `REVIEW-LOOP.md`, whose section 4 is the rubric. Read each with Read, the
 rubric file whole. Run `gh pr view <n>` or `gh pr diff <n>` yourself only for
-one it did not write out.
+one it did not write out, or that is empty.
 Given no rubric path, work from the rubric as the brief states it; never hunt
 for the plugin on disk.
 
@@ -44,8 +44,9 @@ every part of it a command the allowlist covers.
   `sed -n`, `head` or `awk` on a path; never extract the rubric with them.
 - **Every call already starts in the checkout.** No `cd` prefix, no `git -C`,
   no `VAR=...;` preamble: write SHAs and paths out (`git show 1a2b3c4:src/x.ts`).
-  A variable before a colon is braced, `${SHA}:path`: zsh reads the letter
-  after the colon as a modifier, so `$SHA:hooks/x` becomes `.ooks/x`. A file
+  Use no shell variable; one you cannot avoid is braced before a colon,
+  `${SHA}:path`: zsh reads the letter after the colon as a modifier, so
+  `$SHA:hooks/x` becomes `.ooks/x`. A file
   in another checkout is Read by its absolute path.
 - **Search** with Grep and Glob where you have them, else `grep -rn
   '<pattern>' <dir>` and `git ls-files '<glob>'`, every glob quoted. In the

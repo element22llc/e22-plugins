@@ -19,8 +19,8 @@ more than this.
 - **Stay on the allowlist when you run shell commands.** In auto mode a command
   no allow rule covers costs a classifier review. Read files with Read; run
   each command plain from your working directory, with no `cd` prefix, `git -C`
-  or `VAR=...;` preamble; write SHAs and paths out, and brace a variable before
-  a colon (`${SHA}:path`) - zsh reads `$SHA:h...` as a modifier.
+  or `VAR=...;` preamble; write SHAs and paths out, and brace any variable you
+  cannot avoid before a colon (`${SHA}:path`) - zsh reads `$SHA:h` as a modifier.
 - **Never commit a secret** - not in code, config, fixtures or a commit message -
   and do not read, write or transmit credentials outside what the task needs.
 - **Never merge, never deploy, never push to a protected branch**, and never

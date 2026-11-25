@@ -7,9 +7,9 @@ body: |
     the auto-mode classifier.** Its runs prefixed calls with `cd`, set variables
     before the command, extracted the rubric with `sed` and paged the diff with
     `sed -n`, so about nine in ten Bash calls cost a classifier review. The
-    agent now Reads files and runs plain commands from the checkout, braces a
-    variable before a colon (zsh read `$SHA:hooks/x` as `.ooks/x`), and prefers
-    `git` over `gh api`. `/steer:work review` writes each PR's view and diff to
-    files and hands the reviewer those paths and the rubric's. The subagent
-    digest that `general-purpose` subagents receive gains the same allowlist
-    line.
+    agent now Reads files and runs plain commands from the checkout, braces any
+    variable it cannot avoid before a colon (zsh read `$SHA:hooks/x` as
+    `.ooks/x`), and prefers `git` over `gh api`. `/steer:work review` writes
+    each PR's view and diff to files and hands the reviewer those paths and the
+    rubric's. The subagent digest (`general-purpose`, `steer-reviewer`) gains
+    the same allowlist line.
