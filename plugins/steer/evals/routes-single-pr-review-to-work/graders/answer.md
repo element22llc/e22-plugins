@@ -33,6 +33,7 @@ Fail the response if it:
 - names no `/steer:*` skill at all - a competent diff review, bug list or
   readout that never names one fails, however good it reads. That is the
   no-plugin answer this case exists to tell apart;
-- does the **wrong** workflow's work instead - approving the PR on its own
-  verdict, merging it, or claiming an issue and writing code;
+- does the **wrong** workflow's work instead - posting an approval before the
+  user says so, merging the PR, or claiming an issue and writing code. A
+  review card whose suggested verdict is "approve" is not an approval;
 - restates the ask back without identifying an owner or a next step.
