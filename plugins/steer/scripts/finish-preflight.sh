@@ -92,6 +92,7 @@ while [ $# -gt 0 ]; do
 	case "$1" in
 	--body)
 		[ $# -ge 2 ] || die 2 "$1 needs a value"
+		case "$2" in -*) die 2 "not a file name: $2" ;; esac
 		BODY="$2"
 		shift 2
 		;;
@@ -178,15 +179,8 @@ check_drift() {
 		emit drift unchecked "no remote named ${REMOTE}"
 		return
 	}
-	d_target="${BASE}"
-	if [ -z "${d_target}" ]; then
-		d_target="$(git ls-remote --symref "${REMOTE}" HEAD 2>/dev/null |
-			sed -n 's|^ref: refs/heads/\([^	]*\)	HEAD$|\1|p')"
-		if [ -z "${d_target}" ]; then
-			d_target="$(git symbolic-ref -q --short "refs/remotes/${REMOTE}/HEAD")"
-			d_target="${d_target#"${REMOTE}"/}"
-		fi
-	fi
+	d_target="${BASE:-$(git ls-remote --symref "${REMOTE}" HEAD 2>/dev/null |
+		sed -n 's|^ref: refs/heads/\([^	]*\)	HEAD$|\1|p')}"
 	[ -n "${d_target}" ] || {
 		emit drift unchecked "${REMOTE} unreachable or has no default branch"
 		return

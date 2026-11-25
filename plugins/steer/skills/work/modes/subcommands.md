@@ -147,9 +147,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   fix like any other: commit it, local gates green, then one code-gate round on
   those commits unless they are Trivial; a new note from that round is asked
   the same way once, and any further one stays for the reviewer. Record each answer under the note as decided in-session, by
-  whom and when; `Decide later` leaves the note as it was. An open high finding
-  or a flagged drift class is never offered for a waiver here - it stays for
-  the reviewer.
+  whom and when; `Decide later` leaves the note as it was. An open high finding,
+  a flagged drift class or a box left unticked against a `drift unticked`
+  line is never offered for a waiver here - it stays for the reviewer.
   **Capture what was learned** -
   if the work turned on reasoning that is non-obvious and absent from the final
   code, tests and docs, put it on the first rung of the enforcement ladder that
@@ -161,7 +161,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   nothing is the normal outcome; whatever is written ships in this delivery.
   **Check the drift flags** (pr-flow) - compose the whole PR body first, the
   one you will open or update the PR with (Spec delta and *Notes for the
-  reviewer* included), write it to a file, and pass it to the pre-flight
+  reviewer* included; on an open PR, start from its live body, so a box
+  ticked on GitHub stays ticked), write it to a file, and pass it to the pre-flight
   below as `--body <file>`. It compares the drift boxes the branch's paths
   imply with the boxes ticked in that body and only reports; it never edits
   the body. `drift unticked <box> <path> <count>`: the diff touches a path
@@ -242,7 +243,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   design question is left unanswered under *Notes for the reviewer* (a vetted
   plan, findings already resolved, a note its author answered in-session and a
   skipped gate's one line are record, not reading); no drift class is
-  flagged; and no question awaits its owner's confirmation. Anything else
+  flagged, nor left unticked against a `drift unticked` line; and no
+  question awaits its owner's confirmation. Anything else
   stays a draft: its author reads it and marks it ready, which starts CI
   (`ready_for_review`) and makes that run theirs. A later `finish` that comes
   back clean readies its draft. A ready PR goes back to draft only when you

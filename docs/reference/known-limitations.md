@@ -215,7 +215,9 @@ against the branch's paths:
 - **Contract drift** - a modified or deleted `spec/features/<id>/contract.md`,
   or a changed file under `openspec/specs/`. A newly added contract is not
   drift; a feature PR that edits its own contract is, as the template's "or
-  the contract was changed to match" says.
+  the contract was changed to match" says. An OpenSpec change's delta specs
+  (`openspec/changes/<id>/specs/`) imply nothing until `/opsx:archive`
+  promotes them.
 - **Operational** - `.github/workflows/`, `.github/actions/`,
   `.github/dependabot.yml`, `infra/`, `scripts/ci-*.sh`, `policy/delivery.yml`,
   a `Dockerfile`, `*.tf`, `terragrunt.hcl`. Kubernetes manifests, Helm charts
@@ -232,7 +234,9 @@ Intent drift, undocumented behavior change, security-sensitive and
 compliance-impacting have no path signal and are never checked. The diff is
 taken against `--base`, else the default branch, never an open PR's base; a
 body without the checklist (a repo whose template drops it) is reported
-unchecked.
+unchecked. The first line naming a box counts, even inside an HTML comment or
+an example above the checklist, and a path holding a TAB, `"` or `\` is not
+matched.
 
 ## GitHub auth / `gh`
 

@@ -31,6 +31,8 @@ put() { # <repo> <path> <content> - write and commit
 }
 put "${R}" spec/features/a/contract.md v1
 put "${R}" spec/app/usage.md v1
+put "${R}" spec/features/c/contract.md v1
+put "${R}" openspec/specs/auth/spec.md v1
 git -C "${R}" push -q origin main
 O="${WORK}/fdOther"
 git clone -q "${WORK}/fd-origin.git" "${O}" 2>/dev/null
@@ -72,13 +74,19 @@ put "${R}" compose.override.yaml c
 put "${R}" .env.example e
 put "${R}" spec/app/usage.md v2
 put "${R}" docs/ARCHITECTURE.md a
+git -C "${R}" rm -q spec/features/c/contract.md && git -C "${R}" commit -q -m rm
+for p in openspec/specs/auth/spec.md openspec/steer/app/guide.md .github/actions/setup/action.yml \
+	.github/dependabot.yml scripts/ci-lint.sh policy/delivery.yml live/terragrunt.hcl Dockerfile.dev \
+	worker.Dockerfile .mise.toml docker-compose.yml docs/infra/notes.md src/compose.ts scripts/ci/x.sh; do
+	put "${R}" "${p}" x
+done
 cp "${TPL}" "${B}"
 fp --body "${B}" drift
-assert_eq "finish-preflight-drift: every derivable class, in template order; an added contract is not drift" "${out}" \
-	"drift${T}unticked${T}Contract drift${T}spec/features/a/contract.md${T}1
-drift${T}unticked${T}Operational${T}apps/web/Dockerfile${T}2
-drift${T}unticked${T}Local setup / deployment changed${T}.env.example${T}2
-drift${T}unticked${T}App docs invalidated${T}spec/app/usage.md${T}1
+assert_eq "finish-preflight-drift: every pattern, in template order; an added contract is not drift" "${out}" \
+	"drift${T}unticked${T}Contract drift${T}openspec/specs/auth/spec.md${T}3
+drift${T}unticked${T}Operational${T}.github/actions/setup/action.yml${T}9
+drift${T}unticked${T}Local setup / deployment changed${T}.env.example${T}4
+drift${T}unticked${T}App docs invalidated${T}openspec/steer/app/guide.md${T}2
 drift${T}unticked${T}Architecture/stack drift${T}docs/ARCHITECTURE.md${T}1"
 for l in "Contract drift" "Operational" "Local setup / deployment changed" \
 	"App docs invalidated" "Architecture/stack drift"; do
@@ -145,5 +153,7 @@ assert_eq "finish-preflight-drift: unreachable remote -> unchecked" "${out}" \
 	"drift${T}unchecked${T}gone unreachable or has no default branch"
 fp --body
 assert_rc "finish-preflight-drift: --body needs a value" "${rc}" 2
+fp --body --base main drift
+assert_rc "finish-preflight-drift: option-shaped body refused" "${rc}" 2
 
 finish
