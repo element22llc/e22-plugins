@@ -148,7 +148,7 @@ source of the same commands).
   A PR is stacked when its base is not the default branch, not `prod`,
   `production`, `staging`, `develop`, `release/*`, `releases/*` or `batch/*`,
   and its head is not the default branch - the stacked-PR gate's own test
-  (rule 45). If either command fails, or none of the 100 newest open PRs
+  (rule 45). If `gh pr list` fails, or none of the 100 newest open PRs
   qualifies, say nothing about `gh-stack`. Otherwise report it as an optional gap, naming one stacked PR:
   stacks there are built and repaired by hand until `gh extension install
   github/gh-stack` (`/steer:reference stacks`).
