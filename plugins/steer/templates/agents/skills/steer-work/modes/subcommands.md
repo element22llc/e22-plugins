@@ -77,7 +77,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   fresh read-only reviewer subagents, never this context and not
   `steer-reviewer` (no git), read `git diff origin/<default>...HEAD` and score
   it against the code-gate rubric in
-  [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4 - the
+  [`REVIEW-LOOP.md`](https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/reference/REVIEW-LOOP.md) section 4,
+  handing each its absolute path to Read - the
   general reviewer (a fresh general-purpose subagent on the session model,
   briefed diff-first to about 80 tool calls, `REVIEW-LOOP.md` section 6) plus
   one `steer-pr-reviewer` per specialist

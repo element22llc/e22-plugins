@@ -57,10 +57,19 @@ A **draft, red or conflicting PR is not reviewed** - it goes straight to the
 For every remaining PR, spawn a fresh **`steer-pr-reviewer`** in the same
 message (Claude Code: `subagent_type: "steer:steer-pr-reviewer"`; elsewhere a
 fresh read-only subagent on a mid-tier model), waves of up to 10, each with one
-PR - not `steer-reviewer`, which audits on-disk code. Give it the PR number,
-its head SHA, `gh pr view <n>` and `gh pr diff <n>` to read, and the code-gate
-rubric in
-[`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the same one
+PR - not `steer-reviewer`, which audits on-disk code. First write every PR's
+view and diff to the session scratchpad or a system temp directory, never a
+path in the repo, in one command for the batch, so each reviewer reads instead
+of shelling out:
+
+```sh
+for n in 12 15; do gh pr view "$n" >"<dir>/pr-$n.view"; gh pr diff "$n" >"<dir>/pr-$n.diff"; done
+```
+
+Give it the PR number, its head SHA, those two file paths, and the absolute
+path of [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md), whose
+section 4 is the code-gate rubric (no copy on disk: state the rubric in the
+brief) - the same one
 the author's `finish` ran: adversarial, with the specialist lenses the diff
 triggers applied inline. Tell it to spawn no subagents of its own, so a batch
 stays one reviewer per PR. The local checkout may sit at the base, not the PR
@@ -81,8 +90,8 @@ at an older head SHA, pass that card and SHA: the reviewer reads only the
 commits since, settles each previous finding, and reviews nothing unchanged.
 
 Then run the refute pass (`REVIEW-LOOP.md` section 4): every PR whose card
-carries a high finding gets one fresh `steer-pr-reviewer` verifier for all of them, the whole
-batch in one message. A refuted finding leaves the card; an unsure one stays,
+carries a high finding gets one fresh `steer-pr-reviewer` verifier for all of them, given
+the same file paths, the whole batch in one message. A refuted finding leaves the card; an unsure one stays,
 marked unconfirmed.
 
 The cards are input to the human's call, not the call. Read them; drop a
