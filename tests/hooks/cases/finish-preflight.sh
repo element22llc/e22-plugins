@@ -12,9 +12,17 @@ mkdir -p "${WORK}/bin" "${GHS}"
 cat >"${WORK}/bin/gh" <<'EOF'
 #!/usr/bin/env sh
 # Stub gh: `pr list --head H --state S` prints $GHS/<S>-<H, / as _>;
-# `api graphql ... -F n=N` prints $GHS/history-N; missing files print nothing.
+# `api graphql ... -F n=N` prints $GHS/history-N; `api .../stacks?pull_request=N`
+# prints $GHS/stack-N; missing files print nothing. `gh stack` is logged.
 [ -f "${GHS}/fail" ] && exit 1
 case "$1 $2" in
+"stack "*)
+	printf '%s\n' "$*" >>"${GHS}/stack-calls"
+	;;
+"api repos/"*"/stacks?pull_request="*)
+	[ -f "${GHS}/fail-stack" ] && exit 1
+	cat "${GHS}/stack-${2##*=}" 2>/dev/null
+	;;
 "api graphql")
 	[ -f "${GHS}/fail-history" ] && exit 1
 	for a in "$@"; do case "${a}" in n=*) n="${a#n=}" ;; esac; done
@@ -321,6 +329,78 @@ assert_eq "finish-preflight: a merged batch base -> only its new base is merged,
 base${T}against${T}origin/main
 base${T}clean${T}
 base${T}merge${T}origin/main"
+
+git -C "${O}" fetch -q origin
+git -C "${O}" switch -q -c feat/n origin/main
+commit "${O}" n.txt n1
+git -C "${O}" push -q origin feat/n
+git -C "${R}" fetch -q origin
+git -C "${R}" switch -q -c issue/9-n origin/feat/n
+commit "${R}" k.txt child
+commit "${O}" n.txt n2
+git -C "${O}" push -q origin feat/n
+printf '91 feat/n\n' >"${GHS}/open-issue_9-n"
+printf 'OPEN 90 main -\n' >"${GHS}/all-feat_n"
+fp
+assert_eq "finish-preflight: (control) a manual layer behind its open parent merges it in" "${out}" \
+	"base${T}against${T}origin/feat/n
+base${T}clean${T}
+base${T}merge${T}origin/feat/n"
+printf '60 90 91\n' >"${GHS}/stack-91"
+fp
+assert_eq "finish-preflight: a native layer behind its open parent takes no merge" "${out}" \
+	"base${T}against${T}origin/feat/n
+base${T}native-stack${T}60"
+fp --base feat/n
+assert_eq "finish-preflight: ... with --base too" "${out}" \
+	"base${T}against${T}origin/feat/n
+base${T}native-stack${T}60"
+git -C "${R}" switch -q -c issue/10-bottom origin/feat/n
+git -C "${O}" switch -q main
+commit "${O}" b.txt trunk-moved
+git -C "${O}" push -q origin main
+printf '95 main\n' >"${GHS}/open-issue_10-bottom"
+printf '61 95 96\n' >"${GHS}/stack-95"
+fp
+assert_eq "finish-preflight: a bottom native layer behind the trunk takes no merge" "${out}" \
+	"base${T}against${T}origin/main
+base${T}native-stack${T}61"
+
+git -C "${R}" switch -q issue/9-n
+git -C "${O}" push -q origin feat/n:refs/pull/90/head
+commit "${O}" n.txt n2
+git -C "${O}" push -q origin main :feat/n
+printf 'MERGED 90 main %s\n' "$(git -C "${O}" rev-parse HEAD)" >"${GHS}/all-feat_n"
+printf '91 main\n' >"${GHS}/open-issue_9-n"
+printf 'feat/n main\n' >"${GHS}/history-91"
+fp
+assert_eq "finish-preflight: a native layer whose parent merged leaves the stack, then merges" "${out}" \
+	"base${T}parent-merged${T}feat/n #90
+base${T}against${T}origin/main
+base${T}clean${T}
+base${T}unstack${T}60
+base${T}merge${T}origin/pull/90/head
+base${T}merge${T}origin/pull/90/pre-squash
+base${T}merge-ours${T}origin/pull/90/squash"
+printf '60 90 91 92\n' >"${GHS}/stack-91"
+fp
+assert_eq "finish-preflight: ... but not out of a stack that holds more than the two" "${out}" \
+	"base${T}parent-merged${T}feat/n #90
+base${T}against${T}origin/main
+base${T}native-stack${T}60"
+: >"${GHS}/fail-stack"
+fp
+assert_has "finish-preflight: stack lookup failing -> unchecked" "${out}" \
+	"^base${T}unchecked${T}native stack of PR #91: lookup failed"
+assert_has "finish-preflight: ... and the merges are still predicted" "${out}" \
+	"^base${T}merge-ours${T}origin/pull/90/squash$"
+rm -f "${GHS}/fail-stack"
+: >"${GHS}/fail"
+fp --base main
+assert_has "finish-preflight: --base with the PR lookup failing -> unchecked" "${out}" \
+	"^base${T}unchecked${T}PR of issue/9-n: gh unavailable, a native stack layer would be missed$"
+rm -f "${GHS}/fail"
+assert_eq "finish-preflight: never runs gh stack" "$(cat "${GHS}/stack-calls" 2>/dev/null)" ""
 
 fp --remote nope
 assert_eq "finish-preflight: no remote -> unchecked" "${out}" "base${T}unchecked${T}no remote named nope"

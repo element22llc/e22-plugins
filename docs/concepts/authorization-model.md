@@ -53,14 +53,16 @@ moves a repo between the two and reconciles the marker.
   nothing; the delivery skills (`work`, `init`, `adopt`, `intake`, `sync`,
   `build`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
   (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
-  the same grants - `gh pr edit` included. `work` also grants the merges its
-  `finish` pre-flight prints - `git merge --no-edit origin/*`, `git merge
-  --no-edit -s ours origin/*` and `git merge --abort` - never a rebase or a
-  force-push. Both wildcards are residuals that only the skill's prose
-  bounds: `-s ours` on any other ref than the pinned
-  `origin/pull/<n>/squash` the pre-flight prints would record base commits as
-  merged without their content, and options after the ref (`-s ours`,
-  `--no-verify`) pass either pattern. In
+  the same grants - `gh pr edit` included. `work` also grants the plain
+  merges its `finish` pre-flight prints - `git merge --no-edit origin/*` and
+  `git merge --abort` - never a rebase or a force-push. The `merge-ours` step
+  (`git merge --no-edit -s ours <ref>`, recording a squash-merged parent the
+  branch already holds) and `gh stack unstack` are not granted and prompt:
+  `-s ours` on any other ref than the pinned `origin/pull/<n>/squash` would
+  record base commits as merged without their content. The wildcard is a
+  residual only the skill's prose bounds: options after the ref (`-s ours`,
+  `--no-verify`) still pass it, which is why the skill writes `-s ours`
+  before the ref. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
   (gated by the `check-bash-actions` trunk-push hook only once graduation signals stand -
   see [Hooks](../reference/hooks.md)).

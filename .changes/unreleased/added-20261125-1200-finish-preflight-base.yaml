@@ -20,9 +20,15 @@ body: |
     the branch is behind or its parent merged - a merge, never a rebase, so a
     pushed branch needs no force-push and CI runs on the current base - over a
     conflict only when every conflicting path is mechanical, and otherwise
-    stops before the push with the paths. The work skill grants `git merge
-    --no-edit origin/*`, `git merge --no-edit -s ours origin/*` and `git merge
-    --abort` for those steps. The helper changes no branch or working tree,
-    and anything it cannot determine (offline, no `gh`, old git) is reported
+    stops before the push with the paths. This is now the one procedure for
+    following a stack parent, an unpushed branch included. A PR that is a
+    layer of a GitHub native stack takes no merge, since a merge commit
+    blocks the stack from merging: behind its base it stops the push, unless
+    its parent merged and the stack holds only that parent and this PR, when
+    `gh stack unstack` comes first. The work skill grants `git merge
+    --no-edit origin/*` and `git merge --abort` for those steps; the `-s ours`
+    merge and `gh stack unstack` prompt. The helper changes no branch or
+    working tree, and anything it cannot determine (offline, no `gh`, old
+    git) is reported
     as unchecked, never as a conflict. Its checks are named, so later checks
     plug into the same call.

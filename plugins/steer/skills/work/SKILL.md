@@ -35,7 +35,6 @@ allowed-tools:
   - Bash(git push -u origin *)
   - Bash(git push origin *)
   - Bash(git merge --no-edit origin/*)
-  - Bash(git merge --no-edit -s ours origin/*)
   - Bash(git merge --abort)
   - Bash(gh auth status *)
   - Bash(gh pr create *)

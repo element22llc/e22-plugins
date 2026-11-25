@@ -23,7 +23,10 @@
 #         reported. A parent GitHub hid by retargeting the PR to the default
 #         branch is found in the PR's automatic base-change history. Long-lived
 #         bases (prod, production, staging, develop, release/*, releases/*) are
-#         never stack parents.
+#         never stack parents. An open PR that is a layer of a GitHub native
+#         stack and is behind its base takes no merge: `native-stack` and no
+#         merge lines, unless its parent merged and the stack holds only that
+#         parent and this PR - then `unstack` comes first.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   Never HEAD, a branch, the index or the working tree. It fetches the base,
@@ -38,6 +41,8 @@
 #   base  against        <remote>/<branch>          (the base HEAD was checked against)
 #   base  clean
 #   base  conflict       <path>                    (one line per path, C-quoted)
+#   base  native-stack   <stack>                   (a native layer behind its base: no merges)
+#   base  unstack        <stack>                   (first step: `gh stack unstack <stack>`)
 #   base  merge          <ref>                     (in order; none when up to date)
 #   base  merge-ours     <ref>                     (record a squash this branch holds)
 #   base  unchecked      <reason>
@@ -131,15 +136,17 @@ check_base() {
 
 	target="${BASE}"
 	hidden=""
+	pr=""
+	prq=""
 	branch="$(git symbolic-ref -q --short HEAD)"
-	if [ -z "${target}" ] && [ -n "${branch}" ] && [ "${branch}" != "${default}" ]; then
+	if [ -n "${branch}" ] && [ "${branch}" != "${default}" ]; then
 		if have_gh &&
 			pr="$(gh pr list --head "${branch}" --state open --json number,baseRefName \
 				--jq '.[] | "\(.number) \(.baseRefName)"' 2>/dev/null)"; then
 			pr="$(printf '%s\n' "${pr}" | sed -n 1p)"
-			target="${pr#* }"
+			[ -n "${BASE}" ] || target="${pr#* }"
 			pr="${pr%% *}"
-			if [ -n "${pr}" ] && [ "${target}" = "${default}" ]; then
+			if [ -z "${BASE}" ] && [ -n "${pr}" ] && [ "${target}" = "${default}" ]; then
 				# Only GitHub's own retarget hides a parent; a person's base change
 				# (BaseRefChangedEvent) is a deliberate un-stack.
 				if hidden="$(gh api graphql -F owner='{owner}' -F name='{repo}' -F n="${pr}" -f query='
@@ -155,7 +162,11 @@ query($owner: String!, $name: String!, $n: Int!) {
 					emit base unchecked "base history of PR #${pr}: gh unavailable, a merged stack parent would be missed"
 				fi
 			fi
+		elif [ -n "${BASE}" ]; then
+			pr=""
+			prq=failed
 		else
+			pr=""
 			emit base unchecked "PR base of ${branch}: gh unavailable, a stack parent would be missed"
 		fi
 	fi
@@ -260,8 +271,39 @@ merge-ours ${REMOTE}/pull/${num}/squash
 	fi
 	emit base against "${REMOTE}/${target}"
 
-	tip="$(git rev-parse HEAD)"
+	behind=""
+	while read -r _ rev; do
+		git merge-base --is-ancestor "${rev}" HEAD 2>/dev/null || behind=1
+	done <<EOF
+${steps}
+EOF
+	# A merge commit blocks a native stack from merging, so a layer behind its
+	# base leaves the stack first - only when its merged parent is all the rest
+	# of it - or takes no merge at all.
 	done=""
+	if [ -n "${behind}" ] && [ -n "${pr}" ]; then
+		if sline="$(gh api "repos/{owner}/{repo}/stacks?pull_request=${pr}" \
+			--jq '.[] | "\(.number) \([.pull_requests[].number | tostring] | join(" "))"' 2>/dev/null)"; then
+			sline="$(printf '%s\n' "${sline}" | sed -n 1p)"
+			if [ -z "${sline}" ]; then
+				:
+			elif [ -n "${pline}" ] &&
+				[ "$(printf '%s\n' "${sline#* }" | tr ' ' '\n' | sort -n | tr '\n' ' ')" = \
+					"$(printf '%s\n' "${num}" "${pr}" | sort -n | tr '\n' ' ')" ]; then
+				done="unstack ${sline%% *}
+"
+			else
+				emit base native-stack "${sline%% *}"
+				return
+			fi
+		else
+			emit base unchecked "native stack of PR #${pr}: lookup failed, a stack layer would take a merge"
+		fi
+	elif [ -n "${behind}" ] && [ -n "${prq}" ]; then
+		emit base unchecked "PR of ${branch}: gh unavailable, a native stack layer would be missed"
+	fi
+
+	tip="$(git rev-parse HEAD)"
 	while read -r kind rev; do
 		git merge-base --is-ancestor "${rev}" "${tip}" 2>/dev/null && continue
 		if [ "${kind}" = merge-ours ]; then

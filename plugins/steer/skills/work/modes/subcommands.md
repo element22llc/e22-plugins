@@ -157,7 +157,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `${CLAUDE_PLUGIN_ROOT}/templates/spec/learning.md`, updating a matching
   learning over adding one (`/steer:reference traceability` section 3). Writing
   nothing is the normal outcome; whatever is written ships in this delivery.
-  **Pre-flight the base** (pr-flow): commit everything first - it checks the
+  **Pre-flight the base** (pr-flow) - the one procedure for bringing a base
+  in, a stack parent's included: commit everything first - it checks the
   committed `HEAD` - then, before the push, run
   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh"`
   when the PR targets the default branch, else
@@ -169,8 +170,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   each run as `git merge --no-edit <ref>` or, for `merge-ours` (a squash of
   a merged stack parent whose content this branch already holds), `git merge
   --no-edit -s ours <ref>`: merges, never a rebase, so a pushed branch needs
-  no force-push and CI runs on the current base. `clean`: run those lines,
-  get the local gates green, and push. After a
+  no force-push and CI runs on the current base; an unpushed branch merges
+  the same way, so one prediction covers both. `clean`: run those lines,
+  get the local gates green, and push. An `unstack <N>` line comes first
+  when this PR is a layer of native stack `N` whose parent merged and the
+  stack holds only the two: run `gh stack unstack <N>` (it pushes nothing;
+  if it fails, stop and report), then the merges. `native-stack <N>`: stop
+  before the push and report it - this PR is a native layer behind its
+  base, and a merge commit would block the stack from merging
+  (`/steer:reference stacks` section 6). After a
   `parent-merged` line the PR targets the `against` branch: a new PR opens on
   it, an open one still on the old parent is retargeted (`gh pr edit --base
   <it>`). `conflict`: run those lines only when every listed path is
@@ -187,14 +195,12 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   autonomy; merge is not yours), writing its **Spec delta** when the branch
   changes a `contract.md` (below), and listing each question `start` picked up
   as settled by this change, for its owner to confirm on the running change. A
-  dependent branch's PR opens with `--base <parent>` (the default branch if
-  the parent merged first), then is linked into a native stack
+  dependent branch's PR opens with `--base <parent>` (the `against` branch
+  if the parent merged first), then is linked into a native stack
   (`gh stack link`) when the extension is installed and the parent's PR is
-  yours, on the default branch and in no stack. A parent that moved or merged
-  is rebased onto while the branch is unpushed; once pushed, it is merged in
-  (a native layer leaves the stack when its parent merged, and stops when it
-  only moved), never cherry-picks, `git branch -f` or a force-push
-  (`/steer:reference stacks` section 6). An
+  yours, on the default branch and in no stack (`/steer:reference stacks`
+  section 6); a parent that moved or merged is followed by the pre-flight
+  above, never by a cherry-pick, `git branch -f` or a force-push. An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Prune the markers of closed
