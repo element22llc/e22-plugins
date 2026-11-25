@@ -131,6 +131,18 @@ pqscan "${PQ_GH}:${PQ_CORE}" "${PQR}"
 assert_eq "prereqs: gh without a token -> unauthenticated" "$(pqstatus "${out}" gh)" "unauthenticated"
 assert_has "prereqs: unauthenticated detail names the fix" "$(pqdetail "${out}" gh)" "gh auth login"
 
+# --- gh stack extension: optional, read from `gh extension list` ---
+assert_eq "prereqs: gh stack not in extension list -> missing" "$(pqstatus "${out}" gh-stack)" "missing"
+assert_has "prereqs: missing gh stack is optional" "$(pqdetail "${out}" gh-stack)" "optional"
+printf '#!/bin/sh\n[ "$1 $2" = "extension list" ] && printf "gh act\\tnektos/gh-act\\tv0.2.60\\ngh stack\\tgithub/gh-stack\\tv0.1.0\\n" && exit 0\necho "gh version 0.0-fake"\n' >"${PQ_GH}/gh"
+pqscan "${PQ_GH}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: gh stack in extension list -> ok" "$(pqstatus "${out}" gh-stack)" "ok"
+printf '#!/bin/sh\n[ "$1 $2" = "extension list" ] && printf "gh stacker\\tsomeone/gh-stacker\\tv1.0.0\\n" && exit 0\necho "gh version 0.0-fake"\n' >"${PQ_GH}/gh"
+pqscan "${PQ_GH}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: a similarly named extension is not gh stack" "$(pqstatus "${out}" gh-stack)" "missing"
+pqscan "${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: no gh -> gh stack n/a" "$(pqstatus "${out}" gh-stack)" "n/a"
+
 # --- language servers: advisory presence only, never executed ---
 PQ_LSP="${WORK}/pq-lspbin"
 mkdir -p "${PQ_LSP}"

@@ -12,11 +12,12 @@
 #   The host toolchain a repo needs before /steer:init, /steer:build, or
 #   `mise run dev:setup` will work: git, mise (the gateway), Docker (+ daemon),
 #   the mise-managed runtimes node / pnpm / uv, python3 (steer's own
-#   scaffold_reconcile.py helper), gh (+ whether it holds a token), and the two
+#   scaffold_reconcile.py helper), gh (+ whether it holds a token, and whether
+#   the optional `gh stack` extension is installed), and the two
 #   language servers plugin.json declares (pyright-langserver,
 #   typescript-language-server). Detection is `command -v`, `docker version`
-#   for the daemon and `gh auth token` (local, no network) - nothing is
-#   installed or modified here.
+#   for the daemon, `gh auth token` and `gh extension list` (local, no
+#   network) - nothing is installed or modified here.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   No. It only reads the host PATH + a few repo marker files and writes status
@@ -38,10 +39,11 @@
 #                 not a blocker: the tool runs, but it's the wrong (un-pinned) one.
 #     unauthenticated  gh installed but holds no token. Advisory.
 #     n/a         not applicable in this repo (pnpm or the TypeScript language
-#                 server in a Python-only repo, the Python one in a Node-only repo)
+#                 server in a Python-only repo, the Python one in a Node-only repo,
+#                 gh-stack without gh)
 #   `detail` carries requiredness for docker (required vs advisory) and marks
-#   gh and the language servers advisory, so the caller can tell a blocker from
-#   a nice-to-have. A gap is reported on STDOUT,
+#   gh and the language servers advisory and gh-stack optional, so the caller
+#   can tell a blocker from a nice-to-have. A gap is reported on STDOUT,
 #   NEVER via a nonzero exit, so a skill running this through a Bash wrapper does
 #   not see a normal "gaps found" run reported as a failure.
 #
@@ -213,6 +215,18 @@ elif $mise_present; then
 	emit "gh" "via-mise" "advisory; provided by 'mise install' (github-cli)"
 else
 	emit "gh" "unmanaged" "advisory; install mise first"
+fi
+
+# --- gh stack extension: optional; doctor reports it only where the repo has open stacked PRs ---
+if have gh; then
+	tab="$(printf '\t')"
+	if gh extension list 2>/dev/null | grep -q "^gh stack${tab}"; then
+		emit "gh-stack" "ok" "optional"
+	else
+		emit "gh-stack" "missing" "optional - a gap only in a repo with open stacked PRs"
+	fi
+else
+	emit "gh-stack" "n/a" "gh not installed"
 fi
 
 # --- language servers plugin.json declares; Claude Code warns when one is absent ---
