@@ -8,6 +8,8 @@ user-invocable: false
 allowed-tools:
   - Bash(grep -rl *)
   - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" *)
+  - Bash(git symbolic-ref --short refs/remotes/origin/HEAD)
+  - Bash(gh pr list --state open --limit 100 --json baseRefName,headRefName)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
@@ -82,7 +84,7 @@ It prints an `os` fingerprint line, then one TAB line per tool -
 | status | meaning | what to do |
 |---|---|---|
 | `ok` | installed (detail = version) | nothing |
-| `missing` | not installed | resolve (section 3) - a blocker unless `detail` says `advisory` |
+| `missing` | not installed | resolve (section 3) - a blocker unless `detail` says `advisory` or `optional` |
 | `down` | docker present, daemon not running | start the daemon (section 3) |
 | `via-mise` | runtime absent but mise present | one `mise install` provides it (section 3) |
 | `unmanaged` | runtime absent and mise absent | install mise first, then `mise install` |
@@ -92,7 +94,9 @@ It prints an `os` fingerprint line, then one TAB line per tool -
 
 The `detail` column carries requiredness: `docker` is `required (compose.yaml)`
 or `advisory`, and `gh` and the two language servers are always `advisory` -
-they degrade a session, they never block setup.
+they degrade a session, they never block setup. `gh-stack` (the `gh stack`
+extension) is `optional`: a `missing` line is a gap only in a repo with open
+stacked PRs (section 3), and otherwise is not reported at all.
 
 ## 2. Report
 
@@ -135,6 +139,18 @@ source of the same commands).
 - **`gh` unauthenticated** - `gh auth login` is interactive: hand it over as
   `! gh auth login` so it runs in the session. Until then, PR steps fall back
   to the GitHub MCP server (the plugin's `github_pat`), then to manual steps.
+- **`gh-stack` missing** - report it only when `gh` is `ok` and the repo has
+  an open stacked PR. Read the default branch with `git symbolic-ref --short
+  refs/remotes/origin/HEAD` (drop `origin/`; `main` when it fails), then list
+  the open PRs once:
+  `gh pr list --state open --limit 100 --json baseRefName,headRefName`.
+  A PR is stacked when its base is not the default branch, not `prod`,
+  `production`, `staging`, `develop`, `release/*`, `releases/*` or `batch/*`,
+  and its head is not the default branch - the stacked-PR gate's own test
+  (rule 45). If either command fails, or no PR qualifies, say nothing about
+  `gh-stack`. Otherwise report it as an optional gap, naming one stacked PR:
+  stacks there are built and repaired by hand until `gh extension install
+  github/gh-stack` (`/steer:reference stacks`).
 - **`pyright-langserver` / `typescript-language-server` missing** - Claude Code
   warns `couldn't start` whenever it opens a matching file. Offer a **global**
   install (a repo-local mise pin is not on Claude Code's `PATH` in other repos),
@@ -190,7 +206,7 @@ final scan.
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan - or WSL2 for CLI/IDE dev |
 | A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (section 3) - not a hard blocker, but the wrong, un-pinned version is in use |
 | No blocker, repo not yet set up (no `/spec`) | Recommended | Stand the repo up - `/steer:setup` (dev) or `/steer:build` (PO); advisory gaps can wait |
-| Repo set up, only advisory gaps remain (`gh` unauthenticated, a language server missing) | Recommended | Resolve them (section 3), or proceed - nothing is blocked |
+| Repo set up, only advisory or optional gaps remain (`gh` unauthenticated, a language server missing, `gh-stack` with open stacked PRs) | Recommended | Resolve them (section 3), or proceed - nothing is blocked |
 | All green, repo already set up, and this run installed or repaired a tool | Recommended | Install the project's deps against the toolchain just fixed - `mise run dev:setup`, then start work |
 | All green, repo already set up, and this run installed or repaired nothing | Complete | `No action is currently required.` - optionally `mise run dev:setup` if the project's deps aren't installed yet |
 

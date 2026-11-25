@@ -110,3 +110,36 @@ unapproved one cannot merge. An independent change riding a native stack is not
 fixed by retargeting one PR - removing it takes `gh stack modify` (interactive),
 the web UI, or unstacking and recreating the stack, so report it and leave the
 restructuring to the author.
+
+## 6. A dependent issue branch (`/steer:work`)
+
+When an issue needs another work branch's unmerged code (rule 45), `/steer:work`
+builds its branch as a native stack layer where it can and falls back to a
+manual stack where it cannot. Either way the PR targets the parent branch and
+its description names the dependency.
+
+**Probe, on the parent branch:** `gh stack view --json`. Exit 0 means the
+parent is already in a local stack; exit 2 means it is not, and the extension
+works. Anything else - `gh` reporting an unknown `stack` command (the extension
+is not installed), exit 9 (stacks are not enabled for the repository), any
+other failure - takes the manual path.
+
+| Step | Native stack | Manual stack (fallback) |
+|---|---|---|
+| `start`: cut the branch | on the parent: `gh stack init <parent>` unless the probe exited 0, then `gh stack add <branch>` (creates it at the parent's HEAD and checks it out) | `git switch -c <branch> origin/<parent>` |
+| `finish`: open the PR | `gh pr create --base <parent>` as `finish` describes, then `gh stack link <parent> <branch>` to record the stack on GitHub | `gh pr create --base <parent>` |
+| the parent or the trunk moved | `gh stack rebase`, then `gh stack push` | `git rebase --onto origin/<parent> <old-parent-tip>`, then `git push --force-with-lease` |
+
+- **Any failed `gh stack` step takes the manual path** from where it stopped,
+  with one line saying so: `add` refuses unless the parent is the stack's top
+  branch, and a worktree cannot check out a parent another worktree holds.
+- **`link`, not `submit`.** `submit` pushes every branch in the stack, including
+  a parent this issue does not own, and its PR title and body handling is not
+  documented; `link` reuses the PR `finish` opened. Name the parent's stack
+  number instead of `<parent>` when it is already in one (`gh stack link N
+  <branch>`).
+- **Each stacking command asks.** The stacked-PR gate asks on the
+  `gh pr create --base <parent>` and again on `gh stack link`.
+- **Never repair a stack by hand** - no cherry-picking between layers, no
+  `git branch -f`, no merging the parent into the child. Those break the linear
+  history a native stack needs to merge and hide what changed from review.

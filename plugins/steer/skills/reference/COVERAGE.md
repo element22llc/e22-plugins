@@ -332,3 +332,6 @@ It covers, in detail:
   stack.
 - **Reviewing a stacked PR** - per-layer diff, stack-wide merge readiness, and
   leaving restructuring to the author.
+- **A dependent issue branch** - how `/steer:work` `start` and `finish` build a
+  native stack layer when `gh stack` works and fall back to a plain
+  `--base <parent>`, and why a stack is never repaired by hand.
