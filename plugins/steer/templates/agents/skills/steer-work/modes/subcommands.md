@@ -40,19 +40,22 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   even without `--reviewed`; begin implementation - a defect through
   [`debug.md`](debug.md), cause before fix.
 
-  **A lagging scaffold, checked right after validating and before the claim or
-  any branch.** When the issue touches rule `60-high-risk`'s *Deployment &
-  release logic* or *Infrastructure*, or the scaffold's delivery files
-  (`compose.yaml`, `mise.toml` tasks, a `Dockerfile`, `policy/delivery.yml`),
-  Read `spec/.version` and `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json`.
-  The repo lags when its stamp is an older major, or the same major and a minor
-  one or more lower. Then say so, naming both versions - the current scaffold
-  may already ship what the issue asks for - and offer `/steer-setup sync`
-  first: on a yes, run it from the freshly fetched default branch (it branches
-  off, and targets, the checked-out branch) and re-run `start #N` once its PR
-  merges. Declined, under `--hotfix`, or with nobody to ask (a `queue` or
-  `drive` worker): continue and put the lag under the PR's *Notes for the
-  reviewer*. No `spec/.version` (an `openspec` repo): skip.
+  **A lagging scaffold - checked after the readiness check, before the claim
+  and any branch.** When the issue, as written, touches rule `60-high-risk`'s
+  *Deployment & release logic* or *Infrastructure*, or the delivery files steer
+  ships (`compose.yaml`, `mise.toml` tasks, a `Dockerfile`,
+  `policy/delivery.yml`), Read `spec/.version` and
+  `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/.claude-plugin/plugin.json`. The repo lags when its
+  stamp is an older major, or the same major and a minor one or more lower.
+  Then say so, naming both versions - the current scaffold may already ship
+  what the issue asks for - and offer `/steer-setup sync` first. On a yes, stop
+  `start` here and run the sync on the default branch, fast-forwarded
+  (`git switch <default>`, `git pull --ff-only`) - never a detached
+  `origin/<default>`, since sync takes its PR base from the checked-out branch
+  name - then re-run `start #N` once that PR merges. Declined, under
+  `--hotfix`, or with nobody to ask (a `queue` or `drive` worker): continue and
+  note the lag under the PR's *Notes for the reviewer* (in solo-trunk, the
+  trunk commit body). No stamp (an `openspec` or unmanaged repo): skip.
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
   branch that no longer exists, a PR that merged/closed while away) and prune

@@ -114,7 +114,8 @@ compares the repo's `spec/.version` with the plugin. A minor version or more
 behind, it says so before claiming anything and offers
 [`/steer:setup sync`](../reference/skills.md) first, because the current
 scaffold may already ship what the issue asks for. Declined, under `--hotfix`,
-or in an unattended worker, it continues and notes the lag in the PR.
+or in an unattended worker, it continues and notes the lag in the PR (in
+solo-trunk, the trunk commit body).
 
 ## Modes
 

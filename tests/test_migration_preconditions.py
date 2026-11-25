@@ -107,6 +107,20 @@ def test_last_updated_precondition_lists_every_stale_contract(tmp_path):
     ]
 
 
+def test_last_updated_action_lists_only_customized_header_lines(tmp_path):
+    text = (REPO_ROOT / check_migrations.LEDGER).read_text(encoding="utf-8")
+    (entry,) = [e for e in check_migrations.parse_entries(text) if LAST_UPDATED in e.what]
+    block = re.search(r"```sh\n(.*?)```", entry.field("Action") or "", re.S)
+    assert block, "action carries no ```sh block"
+    _contract(tmp_path, "refunds", "> Last updated: 2026-03-02\n")
+    _contract(tmp_path, "invoices", "> Last updated: 2026-03-02 - reworked\n")
+    _contract(tmp_path, "payouts", "", "## Behavior rules\n\n> Last updated: 2026-03-02 - quoted\n")
+    out = subprocess.run(["sh", "-c", block.group(1)], cwd=tmp_path, capture_output=True, text=True)
+    assert out.stdout.splitlines() == [
+        "spec/features/invoices/contract.md:4: > Last updated: 2026-03-02 - reworked"
+    ]
+
+
 def test_last_updated_precondition_is_silent_on_the_current_template(tmp_path):
     d = tmp_path / "spec/features/refunds"
     d.mkdir(parents=True)

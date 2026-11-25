@@ -120,14 +120,20 @@ Name the file and say what to carry forward.
   member and an `openspec` repo hold no `spec/features/*/contract.md`, so it
   is a no-op there.
 - **Action:** read-then-propose; show the diff and apply on a yes. Delete
-  exactly each line the precondition printed, nothing else. A header
+  exactly each line the precondition printed, matching it by content (a
+  line number shifts once a line above it goes), nothing else. A header
   `> Last updated:` line in any other form (a note after the date, a list of
-  changes) is the product's own wording: leave it. After applying, list what
-  remains in the sync PR so the dev can drop each by hand -
+  changes) is the product's own wording: leave it, and report what this
+  lists - in the sync PR, or in the `--check` report - so the dev can drop
+  each by hand -
 
   ```sh
-  find spec/features -mindepth 2 -maxdepth 2 -name contract.md \
-    -exec grep -nHE '^> Last updated:' {} + 2>/dev/null
+  find spec/features -mindepth 2 -maxdepth 2 -name contract.md -exec awk '
+    FNR == 1 { head = 1 }
+    /^## / { head = 0 }
+    head && /^> Last updated:/ && !/^> Last updated: (YYYY-MM-DD|[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])[ \t\r]*$/ {
+      print FILENAME ":" FNR ": " $0
+    }' {} + 2>/dev/null
   ```
 
   **No history entry is earned.**
