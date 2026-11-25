@@ -71,7 +71,10 @@ newer - the card's `built` against the review's `submittedAt` - of:
   `author.login` is yours and whose state is `APPROVED` or
   `CHANGES_REQUESTED`, at its `commit.oid`. Read `reviews`, never
   `latestReviews`, which leaves `commit.oid` empty. A `COMMENTED` review does
-  not count: a reply in a thread posts one at whatever head is current.
+  not count: a reply in a thread posts one at whatever head is current. A
+  `DISMISSED` one - stale-review dismissal turns an approval into it on the
+  next push - counts as the base of a delta, never as a review of the current
+  head.
 
 Then, per PR:
 
@@ -126,8 +129,9 @@ card; an unsure one stays, marked unconfirmed.
 before the human answers, and an unposted card is otherwise lost. Write it to
 `spec/.work/reviews/<n>-<head-sha>.md`, opening with `- pr: <n>`, `- head:
 <sha>`, `- built: <UTC timestamp>`, then the card; delete that PR's older
-cards. Store only where `git check-ignore -q spec/.work/reviews/` succeeds -
-the scaffold `.gitignore` ignores `spec/.work/`. Elsewhere store nothing: a
+cards. Store only where `git check-ignore -q spec/.work/reviews/`, run from the
+repository root like every path here, succeeds - the scaffold `.gitignore`
+ignores `spec/.work/`. Elsewhere store nothing: a
 repo that does not ignore it would get an untracked `spec/`, and its memory is
 your posted reviews alone. Ignored files are per checkout, so a card stored in
 one worktree is not seen from another.
@@ -175,7 +179,8 @@ shell - does not word-split an unquoted parameter, so `$2` comes back empty and
 every PR is reported as changed, approving nothing.
 
 Selected `Changes` PRs get `gh pr review <n> --request-changes --body-file
-<card>` the same way, the body being the card's findings with paths.
+<file>` the same way, the body being the card's findings with paths - never
+the stored card file, whose header lines are not for the author.
 
 **Then the `Look` PRs, one at a time. Line-by-line is how the reviewer reads,
 not how you report.** Each `Look` PR gets one message: its full card, findings

@@ -69,8 +69,9 @@ section 4 rubric and returns the card the caller asked for.
 - **Diff-first.** It reads the diff and PR description, and leaves them only to
   answer a question the diff raises. A reviewer's cost is turns times context,
   so scope matters as much as tier.
-- **Delta re-review.** Given its previous card and head SHA, it reviews only
-  the commits since and settles each earlier finding.
+- **Delta re-review.** Given its previous findings (a card or a posted review)
+  and their head SHA, it reviews only the commits since - the full diff when the
+  history was rewritten - and settles each earlier finding.
 - **Attributable cost.** Named, the reviewers show under steer in `/usage`
   instead of as `general-purpose` subagents inheriting the session model.
 - **Not `steer-reviewer`.** That agent has no shell and audits on-disk code
