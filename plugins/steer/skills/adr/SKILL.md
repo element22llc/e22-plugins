@@ -110,8 +110,9 @@ states what grounding verified, what it corrected, and what it could not check.
 - **Approve** -> run `accept <n>` (below), then continue into whatever the ADR was
   blocking, in the same pass.
 - **Reject** -> keep `Status: Proposed`, record the reason and who declined in the
-  ADR's Context (or supersede it later). Never delete or renumber a rejected ADR;
-  don't immediately re-draft the same proposal and re-ask.
+  ADR's Context (or supersede it later). Never delete a rejected ADR, or
+  renumber one already on the default branch; don't immediately re-draft the
+  same proposal and re-ask.
 - **Decide later** -> leave every field untouched. `/steer:next` keeps surfacing it
   as *Human decision required*.
 
@@ -145,7 +146,8 @@ On a clean acceptance, in one pass:
    `30-spec` -> Living documentation: one entry per ratified decision). **In a member** the ADR is
    this repo's but the history entry is the workspace's - per `/steer:reference polyrepo`.
 4. If this ADR supersedes an older one, mark that one
-   `Superseded by [link]` - never delete or renumber it.
+   `Superseded by [link]` - never delete it, or renumber it once it is on the
+   default branch.
 5. **Propagate to the tracker** - the decision is made, so the issues around it
    follow in the same pass, through `/steer:tracker-sync`:
    - **This ADR's `> Tracker:` issue** closes `completed` with the change that
@@ -184,7 +186,8 @@ decision record nobody reads. If you cannot name the work that a reversal would
 force you to redo, it is not an ADR yet.
 
 When superseding an ADR, mark the old one `Superseded by [link]` and link the new
-one - do not delete or renumber it. Full guidance:
+one - do not delete it, or renumber it once it is on the default branch. Full
+guidance:
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`.
 
 ADRs are **exempt from template reconciliation** - they are immutable,
