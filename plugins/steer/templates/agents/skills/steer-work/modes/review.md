@@ -85,11 +85,12 @@ Then, per PR:
   at an unchanged head happens only when the human asks to re-review it in so
   many words; naming the PR number is not that ask.
 - **Head moved** - a delta. `gh api
-  repos/{owner}/{repo}/compare/<old>...<head> -q .status` says how: `ahead`
-  -> pass the reviewer the prior findings (the card, or the posted review's
-  body) and the old SHA, with the delta to read in place of the full diff
-  (`gh api -H "Accept: application/vnd.github.diff"
-  repos/{owner}/{repo}/compare/<old>...<head>`); it settles each previous
+  'repos/{owner}/{repo}/compare/<old>...<head>' -q .status` says how (the
+  quotes matter: unquoted, `{` beside `...` is refused as brace expansion):
+  `ahead` -> pass the reviewer the prior findings (the card, or the posted
+  review's body) and the old SHA, with the delta to read in place of the full
+  diff (`gh api -H "Accept: application/vnd.github.diff"
+  'repos/{owner}/{repo}/compare/<old>...<head>'`); it settles each previous
   finding, reviews nothing unchanged, and skips what a merge from the base
   brought in - that is already on the base. The prior card's class and Step
   2's risk class are a floor for the delta card's class. Anything else -
@@ -149,7 +150,7 @@ Sort every PR into a bucket and print them in this order, one line per PR
 | **Ready** | CI green, Trivial or Behavioral, tests + contract in place, no findings, no drift flag | yes |
 | **Changes** | findings a reviewer would block on | no - post as a review |
 | **Look** | High-risk, or any checked drift flag | no - line-by-line review |
-| **Reviewed** | your own review is already posted at the current head | no - shown with that verdict |
+| **Reviewed** | your own review is already posted at the current head | no - shown with that verdict, tagged `re-requested` when it came from the `review-requested:@me` search (the author asked again since your review) |
 | **Blocked** | draft, red CI, conflicting | no - the author's move |
 
 **`Look` never batch-approves.** A High-risk change or a flagged drift class
