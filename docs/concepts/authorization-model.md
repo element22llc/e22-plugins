@@ -75,9 +75,13 @@ moves a repo between the two and reconciles the marker.
     The `build` skill carries the same grants in its frontmatter, so the
     non-technical PO flow is quiet even in a repo that predates the scaffold
     allowlist. `mise run dev` is a **named** task, not the banned `mise run:*`
-    wildcard - `mise run deploy` still prompts. Bare `git checkout -- <file>`
-    (discards work), destructive `git rm` (an unattended recursive/forced delete -
-    moved to `ask`), and every **merge/deploy** verb stay gated - `gh pr merge`
+    wildcard - `mise run deploy` still prompts. Plain `git rm` is allowed (without
+    `-f`, git refuses to drop uncommitted changes, except on an unmerged path
+    mid-merge or an assume-unchanged file), but recursive, forced and sparse
+    `git rm` (`-r`, `-f`, `--force`, `--sparse`, the `-n`/`-q` flag clusters
+    such as `-qr`, and any `{` or `$` expansion or mid-word line continuation
+    that could hide a flag) sits under `ask`, which outranks the allow. Bare `git checkout -- <file>`
+    (discards work) and every **merge/deploy** verb stay gated too - `gh pr merge`
     sits under `ask`. `git push` and `gh pr create`/`edit` are *not* gated: they
     are autonomous delivery (rule `45-delivery`). `check_standards.py` pins
     two of them - `Bash(git push)` and `Bash(gh pr create:*)` - so those cannot
@@ -194,7 +198,7 @@ one line. The grants: `scaffold_reconcile.py` in `/steer:setup init` and
 `finish-preflight.sh` in `/steer:work`, and
 `scan-spine-state.sh` in `/steer:setup`, `/steer:setup sync`, `/steer:work`,
 `/steer:status` and `/steer:audit`.
-The `doctor` skill behind `/steer:setup doctor` carries one grant that is
+The `doctor` skill behind `/steer:setup doctor` carries one broad grant that is
 deliberately *not* a helper script:
 `Bash(grep -rl *)`, for the section 0 plugin-integrity check that greps the installed
 `hooks/` and `scripts/` for CR bytes. It is broader than the paths it serves - an
@@ -204,7 +208,11 @@ script-based detector would share the failure it is meant to diagnose. The grant
 read-only (`grep -rl` lists names; it cannot mutate), which is what keeps the
 breadth acceptable - and the *repair* is handed over on the same principle: doctor
 prints the in-place `sed` unblock for the dev to run rather than running it, the
-same way it prints a shell-rc edit instead of making one.
+same way it prints a shell-rc edit instead of making one. Two more grants are
+exact, read-only commands for the optional `gh stack` check: reading the default
+branch (`git symbolic-ref --short refs/remotes/origin/HEAD`) and listing open
+PRs' base and head branches (`gh pr list --state open --limit 100 --json
+baseRefName,headRefName`).
 The `protect` skill likewise declares a scoped grant for what it routinely reads - `gh auth
 status`, `gh repo view`, `git remote`, `git rev-parse`, and the read-scoped
 `Bash(gh api repos/*)` above -

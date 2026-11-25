@@ -33,7 +33,9 @@ scope: leaving the old wording in place keeps the consumer executing the behavio
 the change exists to remove. **Below the bar:** a comment or prose line that only
 *describes* behaviour - one no skill reads and no human executes - needs no entry,
 even though it is technically a replaced line. The distinguishing question is whether
-anything acts on the words.
+anything acts on the words. **A removal is never below the bar:** a line or block
+the template no longer carries at all, with no replacement, stays in every
+instantiated copy until an entry removes it, whether or not anything reads it.
 
 ## How a migration is applied
 
@@ -93,6 +95,95 @@ Name the file and say what to carry forward.
 > Newest first. Each entry: the introducing **version** - `[Unreleased]` until the
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
+
+### [Unreleased] - `contract.md` drops the template's `Last updated` line
+
+- **What & why:** 7.27.1 removed `> Last updated: YYYY-MM-DD` from the
+  `templates/spec/feature-contract.md` header, because every PR touching a
+  contract rewrote that one line and any two open PRs on a feature conflicted
+  on it. Additive reconciliation never deletes, so every contract instantiated
+  before then still carries it, and the conflicts go on.
+- **Precondition:** a contract's header (the lines above its first `## `) still
+  holds the line in the template's form, the placeholder or one ISO date with
+  nothing after it -
+
+  ```sh
+  find spec/features -mindepth 2 -maxdepth 2 -name contract.md -exec awk '
+    FNR == 1 { head = 1 }
+    /^## / { head = 0 }
+    head && /^> Last updated: (YYYY-MM-DD|[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])[ \t\r]*$/ {
+      print FILENAME ":" FNR
+    }' {} + 2>/dev/null
+  ```
+
+  No output => already migrated, or no feature contracts => no-op. A polyrepo
+  member and an `openspec` repo hold no `spec/features/*/contract.md`, so it
+  is a no-op there.
+- **Action:** read-then-propose; show the diff and apply on a yes. Delete
+  exactly each line the precondition printed, matching it by content (a
+  line number shifts once a line above it goes), nothing else. A header
+  `> Last updated:` line in any other form (a note after the date, a list of
+  changes) is the product's own wording: leave it, and report what this
+  lists - in the sync PR, or in the `--check` report - so the dev can drop
+  each by hand -
+
+  ```sh
+  find spec/features -mindepth 2 -maxdepth 2 -name contract.md -exec awk '
+    FNR == 1 { head = 1 }
+    /^## / { head = 0 }
+    head && /^> Last updated:/ && !/^> Last updated: (YYYY-MM-DD|[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])[ \t\r]*$/ {
+      print FILENAME ":" FNR ": " $0
+    }' {} + 2>/dev/null
+  ```
+
+  **No history entry is earned.**
+
+### [Unreleased] - `.claude/settings.json` allows plain `git rm`, asks only for recursive and forced forms
+
+- **What & why:** the scaffold asked before every `git rm` (`Bash(git rm:*)`
+  under `permissions.ask`), which interrupts routine merge and rebase work,
+  often inside unattended subagents. Plain `git rm` is low-risk: without `-f`
+  git refuses a file with local or staged changes, so what it removes is
+  normally still in `HEAD`. The exceptions are an unmerged path mid-merge,
+  whose hand-resolved content it deletes, and a file marked
+  `assume-unchanged`. The scaffold now allows `Bash(git rm:*)` and keeps
+  recursive and forced deletes gated with ten narrower asks, which outrank the
+  allow: `Bash(git rm* -r*)`, `Bash(git rm* -f*)`, `Bash(git rm* --f*)`
+  (`--force` and its abbreviations), `Bash(git rm* --s*)` (`--sparse`, which
+  deletes a `skip-worktree` file's local edits, and its abbreviations),
+  `Bash(git rm* -n*)`, `Bash(git rm* -q*)`, `Bash(git rm*{*)`,
+  `Bash(git rm*$*)`, `Bash(git rm*\n*)` and `Bash(git rm*\n*\n*)`, written
+  here as their JSON strings (`\n` is a newline). The `-n` and `-q` asks exist
+  because short flags cluster into one token (`-qr`, `-nf`), and git rm has no
+  other short flags. The others exist because a brace or `$` expansion
+  (`-{r,f}`, `$'-rf'`) or a backslash-newline inside a word (`-\` then `r` on
+  the next line) hides the flag from the flag asks, and in auto mode the
+  classifier would then decide. A security review
+  that flags the `Bash(git rm:*)` allow on its own is reading it without these
+  asks, which still prompt on every form it would object to. The settings
+  reconcile cannot make this move: the new allow is the same string as the old
+  ask, so its tier dedupe keeps the ask.
+- **Precondition:** the installed file still asks for every `git rm` -
+
+  ```sh
+  test -f .claude/settings.json && \
+    python3 -c "import json,sys; p=json.load(open('.claude/settings.json')).get('permissions',{}).get('ask',[]); sys.exit(0 if 'Bash(git rm:*)' in p else 1)" && echo pending
+  ```
+
+  No output => already migrated, or no file => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes, as one
+  edit: remove `"Bash(git rm:*)"` from `permissions.ask`, add each of the ten
+  narrow asks it lacks to `permissions.ask` (copy them from the scaffold
+  template's `.claude/settings.json`, so the newline entries stay JSON escapes),
+  then add `"Bash(git rm:*)"` to `permissions.allow`. Never write the allow
+  unless all ten asks are present.
+  Leave every other entry. If the repo keeps the broad gate on purpose (an ADR,
+  or the PR that tightened it), surface the conflict instead of applying. A
+  repo that declines keeps its broad ask, and every later settings reconcile
+  reports the template's `Bash(git rm:*)` allow as added and then dropped
+  again; that pair is expected, not drift.
+
+  **No history entry is earned.**
 
 ### v7.28.0 - `ci:security` runs Semgrep pinned through `uvx`, not a `pipx:` tool
 

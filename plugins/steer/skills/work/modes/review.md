@@ -23,12 +23,19 @@ Two queues, chosen by argument:
 
 ```sh
 gh pr list --search "is:open review-requested:@me" --limit 100 --json \
-  number,title,author,isDraft,baseRefName,headRefName,headRefOid,additions,deletions,files,mergeable,reviewDecision,statusCheckRollup,url
+  number,title,author,isDraft,baseRefName,headRefName,headRefOid,additions,deletions,files,mergeable,reviewDecision,reviewRequests,reviews,statusCheckRollup,url
 ```
 
 `--mine` swaps the search for `--author @me`; explicit numbers take `gh pr view
 <n> --json` with the same fields. Record each `headRefOid` - Step 4 approves
-that exact commit and nothing pushed after it. Empty queue -> say so and stop.
+that exact commit and nothing pushed after it. Read your login once (`gh api
+user -q .login`) for Step 3's recall. A PR showing 100 `reviews` may hold more:
+read its full list with `gh api repos/{owner}/{repo}/pulls/<n>/reviews
+--paginate`, where the commit is `commit_id` and the login `user.login`.
+
+Before anything else stops the run, prune: a stored card (Step 3) whose PR is
+outside this queue is deleted when `gh pr view <n> --json state -q .state`
+says `CLOSED` or `MERGED`. Then, empty queue -> say so and stop.
 
 ## Step 2 - triage from metadata, before reading any diff
 
@@ -52,15 +59,67 @@ Compute per PR, from Step 1's JSON (plus one stack lookup for a stacked PR):
 A **draft, red or conflicting PR is not reviewed** - it goes straight to the
 `Blocked` bucket with its one blocking fact, and costs no subagent.
 
-## Step 3 - one reviewer per PR, in parallel
+## Step 3 - recall, then one reviewer per PR in parallel
 
-For every remaining PR, spawn a fresh **`steer-pr-reviewer`** in the same
+**Recall first: a head already reviewed costs no reviewer, in this session or
+any later one.** For each PR left after triage, the **prior review** is the
+newer - the card's `built` against the review's `submittedAt` - of:
+
+- **your card** for it - one this session holds, or a stored
+  `spec/.work/reviews/<n>-<sha>.md` (below);
+- **your own last posted review** - the newest `reviews` entry whose
+  `author.login` is yours and whose state is `APPROVED`, `CHANGES_REQUESTED`
+  or `DISMISSED`, at its `commit.oid`. Read `reviews`, never `latestReviews`,
+  which leaves `commit.oid` empty. A `COMMENTED` review does not count: a
+  reply in a thread posts one at whatever head is current. A `DISMISSED` one -
+  stale-review dismissal turns an approval into it on the next push - anchors
+  a delta, never a skip.
+
+Then, per PR:
+
+- **No prior review** - a full review, below.
+- **Prior review at the current `headRefOid`** - spawn nothing. An `APPROVED`
+  or `CHANGES_REQUESTED` review at this head puts the PR in `Reviewed` (Step 4)
+  with that verdict; a card goes to Step 4 as-is, marked with the date it was
+  built. A fresh look at an unchanged head happens only when the human asks to
+  re-review it in so many words; naming the PR number is not that ask.
+- **`DISMISSED` at the current head** - someone dismissed it by hand: a full
+  review, told to read the full diff and given that review's body, without its
+  SHA, to settle. Where no card is stored, this repeats each run until a new
+  review is posted.
+- **Head moved** - a delta. `gh api
+  'repos/{owner}/{repo}/compare/<old>...<head>' -q .status` says how (the
+  quotes matter: unquoted, `{` beside `...` is refused as brace expansion):
+  `ahead` -> pass the reviewer the prior findings (the card, or the posted
+  review's body) and the old SHA, with the delta to read in place of the full
+  diff (`gh api -H "Accept: application/vnd.github.diff"
+  'repos/{owner}/{repo}/compare/<old>...<head>'`); it settles each previous
+  finding, reviews nothing unchanged, and skips what a merge from the base
+  brought in - that is already on the base. The prior card's class and Step
+  2's risk class are a floor for the delta card's class. Anything else -
+  `diverged` after a force-push, a 404 for a SHA GitHub no longer has - is a
+  full review, told the history was rewritten and still given the prior
+  findings to settle.
+
+For every PR still to review, spawn a fresh **`steer-pr-reviewer`** in the same
 message (Claude Code: `subagent_type: "steer:steer-pr-reviewer"`; elsewhere a
 fresh read-only subagent on a mid-tier model), waves of up to 10, each with one
-PR - not `steer-reviewer`, which audits on-disk code. Give it the PR number,
-its head SHA, `gh pr view <n>` and `gh pr diff <n>` to read, and the code-gate
-rubric in
-[`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the same one
+PR - not `steer-reviewer`, which audits on-disk code. First write every PR's
+view and diff to the session scratchpad, else a fresh `mktemp -d` directory,
+never a path in the repo, in one command for the batch, so each reviewer reads instead
+of shelling out:
+
+```sh
+for n in 12 15; do gh pr view "$n" >"<dir>/pr-$n.view"; gh pr diff "$n" >"<dir>/pr-$n.diff"; done
+```
+
+For a delta (`ahead` above), write the compare diff to `pr-<n>.diff` in place
+of `gh pr diff`, so the file holds only the delta.
+
+Give it the PR number, its head SHA, those two file paths, and the absolute
+path of [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md), whose
+section 4 is the code-gate rubric (no copy on disk: state the rubric in the
+brief) - the same one
 the author's `finish` ran: adversarial, with the specialist lenses the diff
 triggers applied inline. Tell it to spawn no subagents of its own, so a batch
 stays one reviewer per PR. The local checkout may sit at the base, not the PR
@@ -76,14 +135,22 @@ diff. Ask it to return a compact **card**:
 - design questions the author should answer in the PR, or `none`;
 - a suggested verdict: `approve`, `changes` or `look`.
 
-**A re-review is a delta.** When this session already holds a card for the PR
-at an older head SHA, pass that card and SHA: the reviewer reads only the
-commits since, settles each previous finding, and reviews nothing unchanged.
-
 Then run the refute pass (`REVIEW-LOOP.md` section 4): every PR whose card
-carries a high finding gets one fresh `steer-pr-reviewer` verifier for all of them, the whole
-batch in one message. A refuted finding leaves the card; an unsure one stays,
-marked unconfirmed.
+from this step carries a high finding not already through a refute pass gets
+one fresh `steer-pr-reviewer` verifier for all of them, given the same file
+paths, the whole batch in one message. A recalled card is never verified again.
+A refuted finding leaves the card; an unsure one stays, marked unconfirmed.
+
+**Store every new card before Step 4 asks anything** - the session can end
+before the human answers, and an unposted card is otherwise lost. Write it to
+`spec/.work/reviews/<n>-<head-sha>.md`, opening with `- pr: <n>`, `- head:
+<sha>`, `- built: <UTC timestamp>`, then the card; delete that PR's older
+cards. Store only where `git check-ignore -q spec/.work/reviews/`, run from the
+repository root like every path here, succeeds - the scaffold `.gitignore`
+ignores `spec/.work/`. Elsewhere store nothing: a
+repo that does not ignore it would get an untracked `spec/`, and its memory is
+your posted reviews alone. Ignored files are per checkout, so a card stored in
+one worktree is not seen from another.
 
 The cards are input to the human's call, not the call. Read them; drop a
 finding you cannot reproduce from the diff or the checkout.
@@ -98,6 +165,7 @@ Sort every PR into a bucket and print them in this order, one line per PR
 | **Ready** | CI green, Trivial or Behavioral, tests + contract in place, no findings, no drift flag | yes |
 | **Changes** | findings a reviewer would block on | no - post as a review |
 | **Look** | High-risk, or any checked drift flag | no - line-by-line review |
+| **Reviewed** | your own `APPROVED` or `CHANGES_REQUESTED` review is already posted at the current head | no - shown with that verdict, tagged `re-requested` when your login is in `reviewRequests` (your review was requested again since) |
 | **Blocked** | draft, red CI, conflicting | no - the author's move |
 
 **`Look` never batch-approves.** A High-risk change or a flagged drift class
@@ -127,7 +195,8 @@ shell - does not word-split an unquoted parameter, so `$2` comes back empty and
 every PR is reported as changed, approving nothing.
 
 Selected `Changes` PRs get `gh pr review <n> --request-changes --body-file
-<card>` the same way, the body being the card's findings with paths.
+<file>` the same way, the body being the card's findings with paths - never
+the stored card file, whose header lines are not for the author.
 
 **Then the `Look` PRs, one at a time. Line-by-line is how the reviewer reads,
 not how you report.** Each `Look` PR gets one message: its full card, findings
@@ -166,4 +235,6 @@ Per `NEXT-ACTIONS.md`, from where the batch stopped:
 | Approved PRs now mergeable | Human decision required | The human merges them (no command) |
 | `Look` PRs remain | Human decision required | Review each line by line - `/steer:work review #<n>` |
 | `Blocked` or `--mine` items remain | Blocking now | The one move Step 5 named for the oldest |
+| A `re-requested` `Reviewed` PR remains | Human decision required | Read the replies since your review, then ask for a re-review of it in so many words - `/steer:work review #<n>` |
+| Only untagged `Reviewed` PRs remain | Human decision required | Their authors act on your posted reviews (no command) |
 | Queue empty | Complete | `No action is currently required.` |

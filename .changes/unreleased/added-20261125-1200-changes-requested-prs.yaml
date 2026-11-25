@@ -1,0 +1,19 @@
+kind: Added
+time: 2026-11-25T12:00:00.000000-05:00
+custom:
+  Slug: changes-requested-prs
+body: |
+  - **Added: session start names your own PRs with changes requested.** A new
+    session check, `check-changes-requested.sh`, runs on `startup` and
+    `resume` in a managed or OpenSpec repo whose tracker is GitHub. When the
+    session's GitHub user had open PRs there with changes requested at the
+    last check, the session gets one line with their count and numbers,
+    pointing to `/steer:work drive`. Session start never waits on the network:
+    the line comes from a private per-user cache under `$TMPDIR`, refreshed
+    after each session start by a detached `gh pr list` capped at 5 seconds,
+    so it is one session old. No `gh`, no auth or no network means no line.
+  - **Added: `/steer:work start` proposes closing a PR it recuts.** Reusing
+    the branch of your open PR for the issue stays the default. When `start`
+    cuts a new branch anyway, it proposes closing that PR with a comment
+    pointing at the new branch, and closes it only on a yes. A `queue` or
+    `drive` worker reports it on its card instead.

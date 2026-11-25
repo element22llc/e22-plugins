@@ -16,14 +16,25 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `git switch -c <branch> origin/<default>`), never from whatever is checked
   out: a branch cut from another work branch silently stacks on it. Base it on
   another work branch only when this issue needs that PR's unmerged code; then
-  open the PR with `--base <that branch>` and name the dependency in its
-  description. When the dev batches fixes into one merge, branch from the
-  default branch as usual and open the PR with `--base batch/<slug>` - a
-  sibling, not a stack - and **write the local work marker**
+  fetch it and cut from `origin/<that branch>` as `/steer:reference stacks`
+  section 6 says - its PR targets that branch, names the dependency in its
+  description, and joins a native stack where `gh stack` can link it. When the
+  dev batches fixes into one merge, branch from the default branch as usual
+  and open the PR with `--base batch/<slug>` - a sibling, not a stack - and
+  **write the local work marker**
   `spec/.work/<branch>.md` (slashes -> underscores) in the format `WORK-MARKER.md`
   defines (section "Marker format"), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
+  **(pr-flow) a new branch for work an open PR of yours already carries** -
+  one you authored whose head is an `issue/<N>-` branch or that closes #N
+  (`gh pr list --author @me --state open --json
+  number,headRefName,closingIssuesReferences,url`), other than the PR this
+  branch stacks on or a `batch/` PR - leaves that PR to rot: reusing its branch
+  stays the default, and when you cut a new one anyway, propose closing it with
+  a comment pointing at the new branch (and its PR once open); close it (`gh pr
+  close <n> --comment "<pointer>"`) only on a yes, and in a `queue` or
+  `drive` worker or an unattended run, report it on the card instead;
   prune the markers of closed issues (`WORK-MARKER.md` -> Removal); under
   Orca, link the issue to the workspace (Orca workspace links, below); load
   linked specs (`steer:spec-path`, acceptance criteria); **pick up the
@@ -39,6 +50,23 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   arguable) - High-risk runs the plan gate in [`reviewed.md`](reviewed.md)
   even without `--reviewed`; begin implementation - a defect through
   [`debug.md`](debug.md), cause before fix.
+
+  **A lagging scaffold - checked after the readiness check, before the claim
+  and any branch.** When the issue, as written, touches rule `60-high-risk`'s
+  *Deployment & release logic* or *Infrastructure*, or the delivery files steer
+  ships (`compose.yaml`, `mise.toml` tasks, a `Dockerfile`,
+  `policy/delivery.yml`), Read `spec/.version` and
+  `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`. The repo lags when its
+  stamp is an older major, or the same major and a minor one or more lower.
+  Then say so, naming both versions - the current scaffold may already ship
+  what the issue asks for - and offer `/steer:setup sync` first. On a yes, stop
+  `start` here and run the sync on the default branch, fast-forwarded
+  (`git switch <default>`, `git pull --ff-only`) - never a detached
+  `origin/<default>`, since sync takes its PR base from the checked-out branch
+  name - then re-run `start #N` once that PR merges. Declined, under
+  `--hotfix`, or with nobody to ask (a `queue` or `drive` worker): continue and
+  note the lag under the PR's *Notes for the reviewer* (in solo-trunk, the
+  trunk commit body). No stamp (an `openspec` or unmanaged repo): skip.
 - **`resume #N`** - reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
   branch that no longer exists, a PR that merged/closed while away) and prune
@@ -77,7 +105,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   fresh read-only reviewer subagents, never this context and not
   `steer-reviewer` (no git), read `git diff origin/<default>...HEAD` and score
   it against the code-gate rubric in
-  [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4 - the
+  [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md) section 4,
+  handing each its absolute path to Read - the
   general reviewer (a fresh general-purpose subagent on the session model,
   briefed diff-first to about 80 tool calls, `REVIEW-LOOP.md` section 6) plus
   one `steer-pr-reviewer` per specialist
@@ -157,7 +186,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch
   changes a `contract.md` (below), and listing each question `start` picked up
-  as settled by this change, for its owner to confirm on the running change. An
+  as settled by this change, for its owner to confirm on the running change. A
+  dependent branch's PR opens with `--base <parent>` (the default branch if
+  the parent merged first), then is linked into a native stack
+  (`gh stack link`) when the extension is installed and the parent's PR is
+  yours, on the default branch and in no stack. A parent that moved or merged
+  is rebased onto while the branch is unpushed; once pushed, it is merged in
+  (a native layer leaves the stack when its parent merged, and stops when it
+  only moved), never cherry-picks, `git branch -f` or a force-push
+  (`/steer:reference stacks` section 6). An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Prune the markers of closed

@@ -848,6 +848,20 @@ def _arbitrary_exec_allows(allow: set[str]) -> list[str]:
     return hits
 
 
+GIT_RM_ASKS = (
+    "Bash(git rm* -r*)",
+    "Bash(git rm* -f*)",
+    "Bash(git rm* --f*)",
+    "Bash(git rm* --s*)",
+    "Bash(git rm* -n*)",
+    "Bash(git rm* -q*)",
+    "Bash(git rm*{*)",
+    "Bash(git rm*$*)",
+    "Bash(git rm*\n*)",
+    "Bash(git rm*\n*\n*)",
+)
+
+
 def check_authorization(errors: list[str]) -> None:
     import json
 
@@ -1064,12 +1078,11 @@ def check_authorization(errors: list[str]) -> None:
         # Least-privilege scaffold posture (#294): these over-broad/write forms must
         # NOT sit in `allow` - a consumer's security review flags them as allowlist
         # escapes / prompt-injection-reachable writes on every `/steer:sync`. The broad
-        # `git remote:*` permits silent `set-url`/`add` (origin repoint -> exfil); `git
-        # rm` is an unattended destructive delete; the MCP write tools are re-granted
-        # per-skill via allowed-tools instead. Keep them under `ask`/`deny`.
+        # `git remote:*` permits silent `set-url`/`add` (origin repoint -> exfil); the
+        # MCP write tools are re-granted per-skill via allowed-tools instead. Keep them
+        # under `ask`/`deny`.
         for forbidden in (
             "Bash(git remote:*)",
-            "Bash(git rm:*)",
             "mcp__github__issue_write",
             "mcp__github__sub_issue_write",
             "mcp__plugin_steer_github__issue_write",
@@ -1096,6 +1109,20 @@ def check_authorization(errors: list[str]) -> None:
                     f"{settings}: '{required_deny}' should stay under permissions.deny "
                     f"(#294 - blocks origin-repoint exfil even if a stale `git remote:*` "
                     f"allow survives a consumer reconcile)"
+                )
+        # Plain `git rm` is allowed (#735); these asks outrank that allow and keep the
+        # recursive/forced forms #294 flagged gated. git rm's short flags (f, n, r, q)
+        # cluster into one token, so `-n`/`-q` are what catch `-qr` and `-nf`. In auto
+        # mode a brace or `$` expansion (`-{r,f}`, `$'-rf'`) skips the flag asks and
+        # reaches the classifier, so `{` and `$` ask too; so does a backslash-newline
+        # inside a word (`-\<newline>r`), which the newline asks catch. `--sparse` (and
+        # `--spa`, `--s`) deletes a skip-worktree file's local edits.
+        for required_ask in GIT_RM_ASKS:
+            if required_ask not in ask:
+                errors.append(
+                    f"{settings}: '{required_ask}' must stay under permissions.ask - "
+                    f"without it the `Bash(git rm:*)` allow runs a recursive, forced or "
+                    f"sparse `git rm` unprompted (#294, #735)"
                 )
         for entry in sorted(_arbitrary_exec_allows(allow)):
             errors.append(

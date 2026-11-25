@@ -52,7 +52,8 @@ for _check in \
 	surface-faults.sh \
 	check-graduation.sh \
 	check-worktree-trust.sh \
-	check-worktree-orphans.sh; do
+	check-worktree-orphans.sh \
+	check-changes-requested.sh; do
 	_out="$(printf '%s' "${STEER_SESSION_INPUT}" | sh "${HERE}/${_check}")" || :
 	[ -n "${_out}" ] && printf '%s\n' "${_out}"
 done

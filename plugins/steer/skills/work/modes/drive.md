@@ -87,9 +87,10 @@ reported, not worked.
 ## Step 2 - PRs waiting on your review
 
 **Attended:** run `modes/review.md` Steps 1-3 for the queue (one
-`steer-pr-reviewer` per PR, the refute pass). **Skip any PR this session already
-holds a card for at its current head SHA** - a repeated cycle must not re-review
-unchanged work. Hold the cards for the report: nothing is approved, commented or
+`steer-pr-reviewer` per PR, the refute pass on new cards). Step 3's recall
+skips every PR already reviewed at its current head SHA - by a card this
+session holds or stored, or by your own posted review - so a repeated cycle
+never re-reviews unchanged work. Hold the cards for the report: nothing is approved, commented or
 requested here. The human acts on them with `/steer:work review`.
 
 **Unattended:** spawn no reviewer. List the queue - number, title, head SHA -

@@ -22,12 +22,17 @@ for _t in general-purpose steer:steer-reviewer; do
 	esac
 	assert_has "subagent-digest: ${_t} is told to stay in scope" "${out}" 'Stay in the scope'
 	assert_has "subagent-digest: ${_t} is told never to merge or deploy" "${out}" 'Never merge, never deploy'
+	assert_has "subagent-digest: ${_t} is told to stay on the allowlist" "${out}" 'Stay on the allowlist'
+	assert_has "subagent-digest: ${_t} is told to drop the cd prefix" "${out}" 'no `cd` prefix'
+	assert_has "subagent-digest: ${_t} is told to brace a variable before a colon" "${out}" '`${SHA}:path`'
 done
 
 # (b) Explore and Plan pay NOTHING. They read and propose; widening the matcher to
 # them is the regression this asserts against - the script re-checks the type
 # rather than trusting hooks.json, so a widened matcher still injects nothing.
-for _t in Explore Plan general-purpose-ish steer:steer-reviewer-x ''; do
+# steer:steer-pr-reviewer is out too: its own body carries the command shape and
+# the read-only discipline, so the digest would add ~2 KB per spawn and nothing new.
+for _t in Explore Plan steer:steer-pr-reviewer general-purpose-ish steer:steer-reviewer-x ''; do
 	out="$(run_hook inject-subagent-digest.sh "$(sa_json "${_t}")")"
 	assert_empty "subagent-digest: '${_t}' gets nothing" "${out}"
 	assert_rc "subagent-digest: '${_t}' still exits 0" "$(last_rc)" 0

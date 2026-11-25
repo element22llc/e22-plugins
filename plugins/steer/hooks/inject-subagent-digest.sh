@@ -16,15 +16,18 @@
 #   requiring the parted delivery inject-standards.sh needs for the 10k
 #   per-command cap. The digest is one part, well under the cap, and carries only
 #   what governs an agent doing a bounded piece of work: stay in scope, report what
-#   you find, follow local patterns, test what you change, no secrets, never merge
-#   or deploy. Anything more specific it can read from rules/ - which the digest
-#   says.
+#   you find, follow local patterns, test what you change, keep shell commands on
+#   the auto-mode allowlist, no secrets, never merge or deploy. Anything more
+#   specific it can read from rules/ - which the digest says.
 #
 #   MATCHERS ARE THE SAFETY BOUNDARY, and they live in hooks.json: only
 #   `^general-purpose$` (the one that edits) and `^steer:steer-reviewer$` (a
 #   plugin-scoped id, so it is anchored - the colon puts it on the regex path).
 #   Explore and Plan are deliberately excluded: they read and propose, they pay
-#   nothing today, and they must stay that way. This script re-checks the type
+#   nothing today, and they must stay that way. steer:steer-pr-reviewer is
+#   excluded too: its own body carries the read-only discipline and the command
+#   shape, so the digest would cost every reviewer spawn and add nothing.
+#   This script re-checks the type
 #   rather than trusting the matcher, so a future hooks.json edit that widens a
 #   matcher cannot silently start injecting into every subagent.
 #

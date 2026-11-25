@@ -1,0 +1,17 @@
+kind: Fixed
+time: 2026-11-25T16:30:00.000000-05:00
+custom:
+  Slug: sync-retire-last-updated
+body: |
+  - **Fixed: `/steer:setup sync` removes the `Last updated` line 7.27.1 dropped
+    from the `contract.md` template.** 7.27.1 left existing contracts carrying
+    it, but additive reconciliation never deletes, so the line stayed in every
+    contract instantiated before then and two open PRs on one feature still
+    conflicted on it. A new migration finds the line in its template form only
+    (the placeholder or a single date, in the header) and proposes deleting it.
+    A line someone extended is left alone, and sync lists it for the dev. `/steer:work start` on deployment, release or infrastructure work
+    now compares `spec/.version` with the plugin; a minor version or more
+    behind, it says so and offers `/steer:setup sync` first, since the current
+    scaffold may already ship what the issue asks for. A template line or block
+    a release removes now ships the migration that removes it from
+    instantiated files.

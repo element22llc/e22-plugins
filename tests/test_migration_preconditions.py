@@ -47,6 +47,103 @@ def _settings(repo: Path, deny: list[str], allow: list[str] | None = None) -> No
     )
 
 
+LAST_UPDATED = "`contract.md` drops the template's `Last updated` line"
+TEMPLATE_CONTRACT = REPO_ROOT / "plugins/steer/templates/spec/feature-contract.md"
+
+
+def _contract(repo: Path, feature: str, header: str, body: str = "## Behavior rules\n") -> None:
+    d = repo / "spec/features" / feature
+    d.mkdir(parents=True)
+    text = f"# {feature} - Contract\n\n> Owner: dev team\n{header}> Implements: ./intent.md\n\n"
+    (d / "contract.md").write_bytes((text + body).encode())
+
+
+def _lines(cmd: str, repo: Path) -> list[str]:
+    out = subprocess.run(["sh", "-c", cmd], cwd=repo, capture_output=True, text=True)
+    return sorted(out.stdout.split())
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "> Last updated: 2026-03-02\n",
+        "> Last updated: YYYY-MM-DD\n",
+        "> Last updated: 2026-03-02  \n",
+        "> Last updated: 2026-03-02\r\n",
+    ],
+)
+def test_last_updated_precondition_fires_on_the_template_form(tmp_path, header):
+    _contract(tmp_path, "refunds", header)
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == ["spec/features/refunds/contract.md:4"]
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "> Last updated: 2026-03-02 - added partial refunds\n",
+        "> Last updated: 2026-03-02 (#123)\n",
+        ">  Last updated: 2026-03-02\n",
+        "> **Last updated:** 2026-03-02\n",
+        "",
+    ],
+)
+def test_last_updated_precondition_leaves_a_customized_line(tmp_path, header):
+    _contract(tmp_path, "refunds", header)
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+def test_last_updated_precondition_ignores_the_line_below_the_header(tmp_path):
+    _contract(tmp_path, "refunds", "", "## Behavior rules\n\n> Last updated: 2026-03-02\n")
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+def test_last_updated_precondition_lists_every_stale_contract(tmp_path):
+    _contract(tmp_path, "refunds", "> Last updated: 2026-03-02\n")
+    _contract(tmp_path, "invoices", "> Last updated: 2026-03-02 - reworked\n")
+    _contract(tmp_path, "payouts", "> Last updated: YYYY-MM-DD\n")
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == [
+        "spec/features/payouts/contract.md:4",
+        "spec/features/refunds/contract.md:4",
+    ]
+
+
+def test_last_updated_action_lists_only_customized_header_lines(tmp_path):
+    text = (REPO_ROOT / check_migrations.LEDGER).read_text(encoding="utf-8")
+    (entry,) = [e for e in check_migrations.parse_entries(text) if LAST_UPDATED in e.what]
+    block = re.search(r"```sh\n(.*?)```", entry.field("Action") or "", re.S)
+    assert block, "action carries no ```sh block"
+    _contract(tmp_path, "refunds", "> Last updated: 2026-03-02\n")
+    _contract(tmp_path, "invoices", "> Last updated: 2026-03-02 - reworked\n")
+    _contract(tmp_path, "payouts", "", "## Behavior rules\n\n> Last updated: 2026-03-02 - quoted\n")
+    out = subprocess.run(["sh", "-c", block.group(1)], cwd=tmp_path, capture_output=True, text=True)
+    assert out.stdout.splitlines() == [
+        "spec/features/invoices/contract.md:4: > Last updated: 2026-03-02 - reworked"
+    ]
+
+
+def test_last_updated_precondition_is_silent_on_the_current_template(tmp_path):
+    d = tmp_path / "spec/features/refunds"
+    d.mkdir(parents=True)
+    (d / "contract.md").write_bytes(TEMPLATE_CONTRACT.read_bytes())
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+def test_last_updated_precondition_without_features(tmp_path):
+    assert _lines(_precondition(LAST_UPDATED), tmp_path) == []
+
+
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+def test_last_updated_precondition_runs_under_zsh(tmp_path):
+    _contract(tmp_path, "refunds", "> Last updated: 2026-03-02\n")
+    out = subprocess.run(
+        ["zsh", "-f", "-c", _precondition(LAST_UPDATED)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert out.stdout.strip() == "spec/features/refunds/contract.md:4"
+
+
 WIDE_ENV_DENY = "retires the wide `Bash(git add*.env*)` deny"
 
 
@@ -371,3 +468,56 @@ def test_relock_precondition_is_silent_on_a_host_only_lock(tmp_path):
 
 def test_relock_precondition_without_a_lock(tmp_path):
     assert _out(_precondition(RELOCK), tmp_path) == []
+
+
+BROAD_GIT_RM_ASK = "allows plain `git rm`, asks only for recursive and forced forms"
+GIT_RM_ASKS = [
+    "Bash(git rm* -r*)",
+    "Bash(git rm* -f*)",
+    "Bash(git rm* --f*)",
+    "Bash(git rm* --s*)",
+    "Bash(git rm* -n*)",
+    "Bash(git rm* -q*)",
+    "Bash(git rm*{*)",
+    "Bash(git rm*$*)",
+    "Bash(git rm*\n*)",
+    "Bash(git rm*\n*\n*)",
+]
+
+
+@pytest.mark.parametrize(
+    ("perms", "expected"),
+    [
+        ({"ask": ["Bash(git rm:*)"]}, True),
+        ({"ask": ["Bash(git rm:*)", *GIT_RM_ASKS], "allow": ["Bash(git rm:*)"]}, True),
+        ({"ask": GIT_RM_ASKS, "allow": ["Bash(git rm:*)"]}, False),
+        ({"deny": ["Bash(git rm:*)"]}, False),
+        ({}, False),
+    ],
+)
+def test_broad_git_rm_ask_precondition(tmp_path, perms, expected):
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude/settings.json").write_text(
+        json.dumps({"permissions": perms}), encoding="utf-8"
+    )
+    assert _fires(_precondition(BROAD_GIT_RM_ASK), tmp_path) is expected
+
+
+def test_broad_git_rm_ask_precondition_without_settings(tmp_path):
+    assert not _fires(_precondition(BROAD_GIT_RM_ASK), tmp_path)
+
+
+def test_broad_git_rm_ask_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude/settings.json").write_bytes(TEMPLATE_SETTINGS.read_bytes())
+    assert not _fires(_precondition(BROAD_GIT_RM_ASK), tmp_path)
+
+
+def test_git_rm_migration_names_the_asks_the_template_ships():
+    perms = json.loads(TEMPLATE_SETTINGS.read_text(encoding="utf-8"))["permissions"]
+    assert set(GIT_RM_ASKS) <= set(perms["ask"])
+    assert "Bash(git rm:*)" in perms["allow"]
+    text = (REPO_ROOT / check_migrations.LEDGER).read_text(encoding="utf-8")
+    (entry,) = [e for e in check_migrations.parse_entries(text) if BROAD_GIT_RM_ASK in e.what]
+    what = entry.field("What & why") or ""
+    assert all(f"`{json.dumps(a)[1:-1]}`" in what for a in GIT_RM_ASKS)
