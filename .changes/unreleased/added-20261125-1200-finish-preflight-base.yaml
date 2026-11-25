@@ -4,19 +4,22 @@ custom:
   Slug: finish-preflight-base
 body: |
   - **Added: `/steer:work finish` pre-flights the base before the push.** A new
-    helper, `scripts/finish-preflight.sh`, runs `git merge-tree` of the
-    committed branch against the freshly fetched default branch, or against
-    the stack parent of a dependent branch, and lists the conflicting paths. It
-    also reports a parent whose PR merged or closed; after a merged parent it
-    checks against the branch the parent merged into, from the fork point, so
-    a squash-merge does not show as a false conflict. Long-lived bases (`prod`,
-    `production`, `staging`, `develop`, `release/*`, `releases/*`) are never
-    treated as stack parents.
-    `finish` moves a branch not yet pushed off a merged parent (a pushed one
-    stops for its author, since that takes a force-push), brings the base in
-    only where every conflict is mechanical, and otherwise stops before the
-    push with the paths. A PR that targets a `batch/<slug>` branch or `prod`
-    is checked against that base. The helper changes no branch or
-    working tree, and anything it cannot determine (offline, no `gh`, old git)
-    is reported as unchecked, never as a conflict. Its checks are named, so
-    later checks plug into the same call.
+    helper, `scripts/finish-preflight.sh`, predicts with `git merge-tree` how
+    the committed branch merges with the freshly fetched default branch, or
+    the base its PR targets (a stack parent, `batch/<slug>`, `prod`), lists
+    the conflicting paths, and prints the merges that bring the base in. It
+    reports a parent whose PR merged or closed, including one GitHub hid by
+    retargeting the PR to the default branch, which it finds in the PR's
+    base-change history. After a merged parent the branch merges that
+    parent's last head and then the base it merged into, so a squash-merge is
+    no false conflict. Long-lived bases (`prod`, `production`, `staging`,
+    `develop`, `release/*`, `releases/*`) are never treated as stack parents.
+    `finish` merges the base in whenever the branch is behind or its parent
+    merged - a merge, never a rebase, so a pushed branch needs no force-push
+    and CI runs on the current base - over a conflict only when every
+    conflicting path is mechanical, and otherwise stops before the push with
+    the paths. The work skill grants `git merge --no-edit origin/*` and `git
+    merge --abort` for those steps. The helper changes no branch or working
+    tree, and anything it cannot determine (offline, no `gh`, old git) is
+    reported as unchecked, never as a conflict. Its checks are named, so later
+    checks plug into the same call.

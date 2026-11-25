@@ -134,25 +134,22 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   when the PR targets the default branch, else
   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
   (a stack parent, `batch/<slug>`, `prod` for a hotfix). It only reads and
-  fetches; act on its lines in this order. `parent-merged` on a
-  `batch/<slug>` base: nothing to move - open or retarget the PR on the branch
-  its `against` line names. Any other `parent-merged`: on a branch never
-  pushed (`git ls-remote --heads origin <branch>` prints nothing), move it onto the branch its `against` line names (`git rebase --onto
-  origin/<that branch> <parent-head>`, the SHA it printed), get the local
-  gates green, and pre-flight again with that `--base`; the PR then opens on
-  it. On a pushed branch, stop before the push and report it with those
-  commands, the force-push and `gh pr edit --base <that branch>` - rewriting
-  a pushed branch is the author's call. `parent-closed`: stop before the push
-  and report it - the code this branch stacks on was abandoned, the author's
-  call.
-  `conflict`: bring the base in only when every listed path is mechanical (a
-  generated file regenerated, a lockfile re-resolved, independent additions to
-  one list) - rebase before the first push, merge the base in once the branch
-  is pushed - as a fix like any other (local gates green, then one code-gate
-  round on those commits unless they are Trivial), then pre-flight again. Any
-  other conflict, including one met mid-rebase (`git rebase --abort` / `git
-  merge --abort`), stops the push, reported with its paths. `unchecked`, or no
-  helper on disk: one line saying what went unchecked, and carry on.
+  fetches. Its `merge` lines bring the base in, in order - a merged stack
+  parent's last head, then the base its `against` line names - each run as
+  `git merge --no-edit <ref>`: a merge, never a rebase, so a pushed branch
+  needs no force-push and CI runs on the current base. `clean`: run the
+  `merge` lines, get the local gates green, and push. After a
+  `parent-merged` line the PR targets the `against` branch: a new PR opens on
+  it, an open one still on the old parent is retargeted (`gh pr edit --base
+  <it>`). `conflict`: run the `merge` lines only when every listed path is
+  mechanical (a generated file regenerated, a lockfile re-resolved,
+  independent additions to one list), as a fix like any other (local gates
+  green, then one code-gate round on those commits unless they are Trivial),
+  then pre-flight again. Any other conflict, including one met mid-merge
+  (`git merge --abort`), stops the push, reported with its paths.
+  `parent-closed`: stop before the push and report it - the code this branch
+  stacks on was abandoned, the author's call. `unchecked`, or no helper on
+  disk: one line saying what went unchecked, and carry on.
   Then update progress (`update-state` on the managed block + `comment`);
   commit, push, and open-or-update the PR (autonomous - Commit
   autonomy; merge is not yours), writing its **Spec delta** when the branch

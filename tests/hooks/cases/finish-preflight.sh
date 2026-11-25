@@ -3,25 +3,35 @@
 . "$(dirname -- "$0")/../lib.sh"
 
 # scripts/finish-preflight.sh - the /steer:work finish pre-flight. A local bare
-# repo stands in for GitHub and a stub `gh` serves PR lists from files, so every
-# path runs offline.
+# repo stands in for GitHub and a stub `gh` serves PR lists and base-change
+# history from files, so every path runs offline.
 FP="${PLUGIN}/scripts/finish-preflight.sh"
 T="$(printf '\t')"
 GHS="${WORK}/gh"
 mkdir -p "${WORK}/bin" "${GHS}"
 cat >"${WORK}/bin/gh" <<'EOF'
 #!/usr/bin/env sh
-# Stub gh: `pr list --head H --state S` prints $GHS/<S>-<H, / as _>, or nothing.
+# Stub gh: `pr list --head H --state S` prints $GHS/<S>-<H, / as _>;
+# `api graphql ... -F n=N` prints $GHS/history-N; missing files print nothing.
 [ -f "${GHS}/fail" ] && exit 1
-[ "$1 $2" = "pr list" ] || exit 1
-while [ $# -gt 0 ]; do
-	case "$1" in
-	--head) h="$(printf '%s' "$2" | tr / _)" ;;
-	--state) s="$2" ;;
-	esac
-	shift
-done
-cat "${GHS}/${s}-${h}" 2>/dev/null
+case "$1 $2" in
+"api graphql")
+	[ -f "${GHS}/fail-history" ] && exit 1
+	for a in "$@"; do case "${a}" in n=*) n="${a#n=}" ;; esac; done
+	cat "${GHS}/history-${n}" 2>/dev/null
+	;;
+"pr list")
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--head) h="$(printf '%s' "$2" | tr / _)" ;;
+		--state) s="$2" ;;
+		esac
+		shift
+	done
+	cat "${GHS}/${s}-${h}" 2>/dev/null
+	;;
+*) exit 1 ;;
+esac
 exit 0
 EOF
 chmod +x "${WORK}/bin/gh"
@@ -58,9 +68,10 @@ commit "${O}" h.txt main-moved
 git -C "${O}" push -q origin main
 fp
 assert_rc "finish-preflight: clean run exits 0" "${rc}" 0
-assert_eq "finish-preflight: clean against the fetched default branch" "${out}" \
+assert_eq "finish-preflight: behind and clean -> merge the fetched default branch in" "${out}" \
 	"base${T}against${T}origin/main
-base${T}clean${T}"
+base${T}clean${T}
+base${T}merge${T}origin/main"
 
 git -C "${R}" switch -q -c issue/2-conflict main
 commit "${R}" f.txt feat
@@ -74,7 +85,8 @@ assert_rc "finish-preflight: a conflict is a finding, not a failure" "${rc}" 0
 assert_eq "finish-preflight: every conflicting path reported" "${out}" \
 	"base${T}against${T}origin/main
 base${T}conflict${T}a b.txt
-base${T}conflict${T}f.txt"
+base${T}conflict${T}f.txt
+base${T}merge${T}origin/main"
 assert_eq "finish-preflight: HEAD, branches, index and tree untouched" "$(state)" "${before}"
 assert_eq "finish-preflight: the base was freshly fetched" \
 	"$(git -C "${R}" rev-parse origin/main)" "$(git -C "${O}" rev-parse main)"
@@ -88,10 +100,10 @@ git -C "${R}" switch -q -c issue/3-stacked origin/feat/parent
 commit "${R}" s.txt child
 printf 'OPEN 5 %s main\n' "$(git -C "${O}" rev-parse HEAD)" >"${GHS}/all-feat_parent"
 fp --base feat/parent
-assert_eq "finish-preflight: --base checks a dependent branch against its parent" "${out}" \
+assert_eq "finish-preflight: --base checks a dependent branch against its parent, up to date" "${out}" \
 	"base${T}against${T}origin/feat/parent
 base${T}clean${T}"
-printf 'feat/parent\n' >"${GHS}/open-issue_3-stacked"
+printf '3 feat/parent\n' >"${GHS}/open-issue_3-stacked"
 fp
 assert_eq "finish-preflight: an open PR's base is the stack parent" "${out}" \
 	"base${T}against${T}origin/feat/parent
@@ -111,15 +123,45 @@ git -C "${O}" switch -q main
 commit "${O}" p.txt p2
 git -C "${O}" push -q origin main :feat/parent
 printf 'MERGED 12 %s main\nCLOSED 9 %s main\n' "${P2}" "${P2}" >"${GHS}/all-feat_parent"
+merged="base${T}parent-merged${T}feat/parent #12
+base${T}against${T}origin/main
+base${T}clean${T}
+base${T}merge${T}origin/pull/12/head
+base${T}merge${T}origin/main"
 fp
-assert_has "finish-preflight: merged parent reported with its head" "${out}" \
-	"^base${T}parent-merged${T}feat/parent #12 ${P2}$"
-assert_has "finish-preflight: a merged parent is replaced by the default branch" "${out}" \
-	"^base${T}against${T}origin/main$"
-assert_has "finish-preflight: merged from the fork point, no squash-merge false conflict" "${out}" \
-	"^base${T}clean${T}$"
+assert_eq "finish-preflight: merged parent -> merge its last head, then the base it merged into" "${out}" "${merged}"
 git -C "${R}" merge-tree --write-tree HEAD origin/main >/dev/null 2>&1
-assert_rc "finish-preflight: (control) a naive merge-tree would conflict" "$?" 1
+assert_rc "finish-preflight: (control) merging the default branch alone would conflict" "$?" 1
+git -C "${R}" switch -q -c probe/merge-in
+git -C "${R}" merge -q --no-edit origin/pull/12/head >/dev/null 2>&1 &&
+	git -C "${R}" merge -q --no-edit origin/main >/dev/null 2>&1
+assert_rc "finish-preflight: the printed merges apply cleanly, no history rewrite" "$?" 0
+assert_eq "finish-preflight: after the merges the branch is up to date" \
+	"$(git -C "${R}" merge-base --is-ancestor origin/main HEAD && echo yes)" yes
+git -C "${R}" switch -q issue/3-stacked
+
+printf '3 main\n' >"${GHS}/open-issue_3-stacked"
+fp
+assert_eq "finish-preflight: no base history -> the default branch alone" "${out}" \
+	"base${T}against${T}origin/main
+base${T}conflict${T}p.txt
+base${T}merge${T}origin/main"
+printf 'feat/parent\n' >"${GHS}/history-3"
+fp
+assert_eq "finish-preflight: a parent hidden by GitHub's retarget is found in the PR's history" "${out}" "${merged}"
+: >"${GHS}/fail-history"
+fp
+assert_has "finish-preflight: base history unavailable -> unchecked" "${out}" \
+	"^base${T}unchecked${T}base history of PR #3: gh unavailable"
+rm -f "${GHS}/fail-history"
+printf 'CLOSED 7 %s main\n' "${P2}" >"${GHS}/all-feat_parent"
+fp
+assert_eq "finish-preflight: a hidden parent that closed unmerged is not reported" "${out}" \
+	"base${T}against${T}origin/main
+base${T}conflict${T}p.txt
+base${T}merge${T}origin/main"
+printf '3 feat/parent\n' >"${GHS}/open-issue_3-stacked"
+
 printf 'MERGED 12 %s batch/fixes\n' "${P2}" >"${GHS}/all-feat_parent"
 fp
 assert_has "finish-preflight: a parent merged into another branch is replaced by that branch" "${out}" \
@@ -127,7 +169,7 @@ assert_has "finish-preflight: a parent merged into another branch is replaced by
 printf 'MERGED 13 %s main\n' 0123456789012345678901234567890123456789 >"${GHS}/all-feat_parent"
 fp
 assert_eq "finish-preflight: merged parent head unreachable -> unchecked" "${out}" \
-	"base${T}parent-merged${T}feat/parent #13 0123456789012345678901234567890123456789
+	"base${T}parent-merged${T}feat/parent #13
 base${T}unchecked${T}head 0123456789012345678901234567890123456789 of merged parent feat/parent not fetched"
 
 printf 'MERGED 40 %s main\n' "${P2}" >"${GHS}/all-develop"
@@ -155,24 +197,26 @@ git -C "${R}" switch -q main
 fp
 assert_eq "finish-preflight: on the default branch, no PR lookup" "${out}" \
 	"base${T}against${T}origin/main
-base${T}clean${T}"
+base${T}clean${T}
+base${T}merge${T}origin/main"
 git -C "${R}" switch -q --detach issue/1-clean
 fp
 assert_eq "finish-preflight: detached HEAD, no PR lookup" "${out}" \
 	"base${T}against${T}origin/main
-base${T}clean${T}"
+base${T}clean${T}
+base${T}merge${T}origin/main"
 git -C "${O}" push -q origin main:refs/heads/prod
 fp --base prod
 assert_eq "finish-preflight: --base prod is checked, never looked up as a parent" "${out}" \
 	"base${T}against${T}origin/prod
-base${T}clean${T}"
+base${T}clean${T}
+base${T}merge${T}origin/prod"
 rm -f "${GHS}/fail"
 
 git -C "${O}" fetch -q origin
 git -C "${O}" switch -q -c batch/x origin/main
 commit "${O}" x.txt batch
 git -C "${O}" push -q origin batch/x
-BX="$(git -C "${O}" rev-parse HEAD)"
 git -C "${O}" switch -q main
 git -C "${O}" pull -q --no-rebase origin main
 commit "${O}" m.txt m1
@@ -183,12 +227,13 @@ commit "${R}" c.txt sibling
 commit "${O}" m.txt m2
 commit "${O}" x.txt batch
 git -C "${O}" push -q origin main
-printf 'MERGED 50 %s main\n' "${BX}" >"${GHS}/all-batch_x"
+printf 'MERGED 50 %s main\n' "$(git -C "${O}" rev-parse origin/batch/x)" >"${GHS}/all-batch_x"
 fp --base batch/x
-assert_eq "finish-preflight: a merged batch base is replaced, from the sibling's own merge base" "${out}" \
-	"base${T}parent-merged${T}batch/x #50 ${BX}
+assert_eq "finish-preflight: a merged batch base -> only its new base is merged, from the sibling's own merge base" "${out}" \
+	"base${T}parent-merged${T}batch/x #50
 base${T}against${T}origin/main
-base${T}clean${T}"
+base${T}clean${T}
+base${T}merge${T}origin/main"
 
 fp --remote nope
 assert_eq "finish-preflight: no remote -> unchecked" "${out}" "base${T}unchecked${T}no remote named nope"
