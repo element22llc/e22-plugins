@@ -131,16 +131,18 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   **Pre-flight the base** (pr-flow): commit everything first - it checks the
   committed `HEAD` - then, before the push, run
   `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh"`
-  on a branch cut from the default branch, or
-  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <parent>`
-  on a dependent one. It only reads and fetches; act on its lines in this
-  order. `parent-merged`: move the branch onto the branch its `against` line
-  names (`git rebase --onto origin/<that branch> <parent-head>`, the SHA it
-  printed), retarget the PR (`gh pr edit --base <that branch>`), force-push
-  as `git push --force-with-lease origin <branch>` (it asks), and pre-flight
-  again with that `--base`; an unattended run or a `queue` or `drive` worker
-  stops and reports it instead. `parent-closed`: stop before the push and
-  report it - the code this branch stacks on was abandoned, the author's call.
+  when the PR targets the default branch, else
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
+  (a stack parent, `batch/<slug>`, `prod` for a hotfix). It only reads and
+  fetches; act on its lines in this order. `parent-merged`: on a branch never
+  pushed, move it onto the branch its `against` line names (`git rebase --onto
+  origin/<that branch> <parent-head>`, the SHA it printed), get the local
+  gates green, and pre-flight again with that `--base`; the PR then opens on
+  it. On a pushed branch, stop before the push and report it with those
+  commands, the force-push and `gh pr edit --base <that branch>` - rewriting
+  a pushed branch is the author's call. `parent-closed`: stop before the push
+  and report it - the code this branch stacks on was abandoned, the author's
+  call.
   `conflict`: bring the base in only when every listed path is mechanical (a
   generated file regenerated, a lockfile re-resolved, independent additions to
   one list) - rebase before the first push, merge the base in once the branch

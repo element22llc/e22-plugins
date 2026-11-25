@@ -13,7 +13,8 @@
 #         or the stack parent; a parent whose PR merged or closed is reported.
 #         A merged parent is replaced by the base it merged into, merged from
 #         the fork point, which predicts `git rebase --onto` after a squash-merge.
-#         Long-lived bases (prod, staging, develop, release/*) are no parents.
+#         Long-lived bases (prod, production, staging, develop, release/*,
+#         releases/*) are never stack parents.
 #         GitHub retargets a child PR when its merged parent's branch is
 #         deleted, which hides that parent: pass --base <parent> for a stack.
 #
