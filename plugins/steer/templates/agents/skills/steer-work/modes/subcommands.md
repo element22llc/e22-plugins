@@ -24,6 +24,15 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   defines (section "Marker format"), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed - **in solo-trunk, skip both: stay on `main`, no marker**;
+  **(pr-flow) a new branch for work an open PR of yours already carries** -
+  one you authored whose head is an `issue/<N>-` branch or that closes #N
+  (`gh pr list --author @me --state open --json
+  number,headRefName,closingIssuesReferences,url`), other than the PR this
+  branch stacks on or a `batch/` PR - leaves that PR to rot: reusing its branch
+  stays the default, and when you cut a new one anyway, propose closing it with
+  a comment pointing at the new branch (and its PR once open); close it (`gh pr
+  close <n> --comment`) only on a yes, and in a `queue` or `drive` worker or an
+  unattended run, report it on the card instead;
   prune the markers of closed issues (`WORK-MARKER.md` -> Removal); under
   Orca, link the issue to the workspace (Orca workspace links, below); load
   linked specs (`steer:spec-path`, acceptance criteria); **pick up the
