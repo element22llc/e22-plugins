@@ -101,8 +101,8 @@ Name the file and say what to carry forward.
   often inside unattended subagents. Plain `git rm` is low-risk: without `-f`
   git refuses a file with local or staged changes, so what it removes is
   normally still in `HEAD`. The exceptions are an unmerged path mid-merge,
-  whose hand-resolved content it deletes, and a file marked
-  `assume-unchanged` or `skip-worktree`. The scaffold now allows
+  whose hand-resolved content it deletes, a file marked `assume-unchanged`,
+  and a `skip-worktree` file when `--sparse` is passed. The scaffold now allows
   `Bash(git rm:*)` and keeps recursive and forced deletes gated with nine
   narrower asks, which outrank the allow: `Bash(git rm* -r*)`,
   `Bash(git rm* -f*)`, `Bash(git rm* --f*)` (`--force` and its
