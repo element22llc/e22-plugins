@@ -122,8 +122,9 @@ heading's `git blame` date) against those thresholds. Wherever a step below says
    checkboxes:
 
    ```sh
-   grep -rn -A8 '^### Q-' spec/vision.md spec/features/*/intent.md \
-     spec/PRODUCTIONIZATION.md 2>/dev/null
+   grep -n -A8 '^### Q-' spec/vision.md spec/PRODUCTIONIZATION.md 2>/dev/null
+   find spec/features -mindepth 2 -maxdepth 2 -type f -name intent.md \
+     -exec grep -Hn -A8 '^### Q-' {} + 2>/dev/null
    ```
 
    The `-A8` window carries the whole field block - **don't read each owning

@@ -32,9 +32,11 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   is a decision the build makes: build the option it names (else the simplest)
   and keep the list for `finish` (a *blocking* one already fails readiness,
   above); **check prior
-  learnings** - grep `spec/learnings/*.md` frontmatter (`area:`, `symptoms:`,
+  learnings** - grep the `spec/learnings/` frontmatter (`area:`, `symptoms:`,
   `applies_when:`) for terms from the issue and the paths you expect to touch,
-  and read only the files that match (no directory, nothing to do);
+  with `if [ -d spec/learnings ]; then grep -rlE --include='*.md' '<terms>' spec/learnings; fi`
+  (never a bare `*.md` glob, which zsh aborts on when nothing matches), and
+  read only the files that match (no directory, nothing to do);
   **classify the change** (rule `80-change-class`, the heavier class when
   arguable) - High-risk runs the plan gate in [`reviewed.md`](reviewed.md)
   even without `--reviewed`; begin implementation - a defect through
@@ -46,8 +48,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   marker's session list (`WORK-MARKER.md` -> Claude Code sessions) has a head
   session different from the current
   one, surface it as a context source** - offer `claude --resume <id>` to re-enter
-  that conversation, and (if present) the transcript located by globbing
-  `"$CLAUDE_CONFIG_DIR"/projects/*/<id>.jsonl`. Treat it as a best-effort
+  that conversation, and (if present) the transcript located with
+  `find "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects" -maxdepth 2 -name '<id>.jsonl' 2>/dev/null`. Treat it as a best-effort
   breadcrumb, never authority: the session may be gone or on another machine, so
   fall back cleanly to reconstruction from the issue + tree. Then record the
   current session at the head of the list. Continue from the actual lifecycle

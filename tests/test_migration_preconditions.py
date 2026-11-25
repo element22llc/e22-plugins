@@ -371,3 +371,75 @@ def test_relock_precondition_is_silent_on_a_host_only_lock(tmp_path):
 
 def test_relock_precondition_without_a_lock(tmp_path):
     assert _out(_precondition(RELOCK), tmp_path) == []
+
+
+DEPENDABOT = "Dependabot groups security updates, and docker covers `apps/*`"
+UNGROUPED = "version: 2\nupdates:\n  - package-ecosystem: npm\n    directory: /\n"
+DOCKER_AT_ROOT = (
+    "version: 2\nupdates:\n  - package-ecosystem: docker\n    directory: /\n"
+    "    groups:\n      security:\n        applies-to: security-updates\n"
+)
+
+
+def _dependabot(repo: Path, config: str, apps: tuple[str, ...] = ()) -> None:
+    (repo / ".github").mkdir()
+    (repo / ".github/dependabot.yml").write_text(config, encoding="utf-8")
+    for app in apps:
+        (repo / "apps" / app).mkdir(parents=True)
+        (repo / "apps" / app / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("config", "apps", "expected"),
+    [
+        (UNGROUPED, (), True),
+        (DOCKER_AT_ROOT, (), False),
+        (DOCKER_AT_ROOT, ("web",), True),
+    ],
+)
+def test_dependabot_precondition(tmp_path, config, apps, expected):
+    _dependabot(tmp_path, config, apps)
+    assert _fires(_precondition(DEPENDABOT), tmp_path) is expected
+
+
+def test_dependabot_precondition_ignores_a_dockerfile_directly_under_apps(tmp_path):
+    _dependabot(tmp_path, DOCKER_AT_ROOT)
+    (tmp_path / "apps").mkdir()
+    (tmp_path / "apps/Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+    assert not _fires(_precondition(DEPENDABOT), tmp_path)
+
+
+def test_dependabot_precondition_without_a_config(tmp_path):
+    assert not _fires(_precondition(DEPENDABOT), tmp_path)
+
+
+def _zsh(cmd: str, repo: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["zsh", "-f", "-c", cmd], cwd=repo, capture_output=True, text=True)
+
+
+# Without an apps/*/Dockerfile, `set -- apps/*/Dockerfile` aborted the whole
+# precondition under zsh, so it read "already migrated".
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+def test_dependabot_precondition_fires_under_zsh_without_apps(tmp_path):
+    _dependabot(tmp_path, UNGROUPED)
+    out = _zsh(_precondition(DEPENDABOT), tmp_path)
+    assert (out.stdout.strip(), out.stderr) == ("pending", "")
+
+
+HISTORY_DIR = "`spec/HISTORY.md` -> `spec/history/`, one immutable file per entry"
+
+
+def test_history_precondition_reads_source_files(tmp_path):
+    brief = tmp_path / "spec/sources/brief"
+    (brief / "old").mkdir(parents=True)
+    (brief / "source.md").write_text("[HISTORY entry, x]\n", encoding="utf-8")
+    (brief / "old/source.md").write_text("[HISTORY entry]\n", encoding="utf-8")
+    assert _out(_precondition(HISTORY_DIR), tmp_path) == ["spec/sources/brief/source.md"]
+
+
+# With no spec/sources/*/source.md, zsh used to skip the whole grep, CLAUDE.md included.
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+def test_history_precondition_fires_under_zsh_without_sources(tmp_path):
+    (tmp_path / "CLAUDE.md").write_text("See `HISTORY.md`.\n", encoding="utf-8")
+    out = _zsh(_precondition(HISTORY_DIR), tmp_path)
+    assert (out.stdout.split(), out.stderr) == (["CLAUDE.md"], "")
