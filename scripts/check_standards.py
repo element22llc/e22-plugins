@@ -1115,13 +1115,14 @@ def check_authorization(errors: list[str]) -> None:
         # cluster into one token, so `-n`/`-q` are what catch `-qr` and `-nf`. In auto
         # mode a brace or `$` expansion (`-{r,f}`, `$'-rf'`) skips the flag asks and
         # reaches the classifier, so `{` and `$` ask too; so does a backslash-newline
-        # inside a word (`-\<newline>r`), which the newline asks catch.
+        # inside a word (`-\<newline>r`), which the newline asks catch. `--sparse` (and
+        # `--spa`, `--s`) deletes a skip-worktree file's local edits.
         for required_ask in GIT_RM_ASKS:
             if required_ask not in ask:
                 errors.append(
                     f"{settings}: '{required_ask}' must stay under permissions.ask - "
-                    f"without it the `Bash(git rm:*)` allow runs a recursive or forced "
-                    f"`git rm` unprompted (#294, #735)"
+                    f"without it the `Bash(git rm:*)` allow runs a recursive, forced or "
+                    f"sparse `git rm` unprompted (#294, #735)"
                 )
         for entry in sorted(_arbitrary_exec_allows(allow)):
             errors.append(
