@@ -127,7 +127,7 @@ merged="base${T}parent-merged${T}feat/parent #12
 base${T}against${T}origin/main
 base${T}clean${T}
 base${T}merge${T}origin/pull/12/head
-base${T}merge-ours${T}origin/main"
+base${T}merge-ours${T}origin/pull/12/squash"
 before="$(state)"
 fp
 assert_eq "finish-preflight: squash-merged parent -> its last head, then the squash recorded" "${out}" "${merged}"
@@ -179,6 +179,7 @@ printf 'MERGED 13 main %s\n' "${SQ}" >"${GHS}/all-feat_parent"
 fp
 assert_eq "finish-preflight: merged parent head unreachable -> unchecked" "${out}" \
 	"base${T}parent-merged${T}feat/parent #13
+base${T}against${T}origin/main
 base${T}unchecked${T}last head of merged parent feat/parent not fetched"
 
 git -C "${O}" fetch -q origin
@@ -202,18 +203,21 @@ assert_eq "finish-preflight: a child editing its squash-merged parent's lines me
 	"base${T}parent-merged${T}feat/q #21
 base${T}against${T}origin/main
 base${T}clean${T}
-base${T}merge${T}origin/main~2
-base${T}merge-ours${T}origin/main~1
+base${T}merge${T}origin/pull/21/pre-squash
+base${T}merge-ours${T}origin/pull/21/squash
 base${T}merge${T}origin/main"
 git -C "${R}" merge-tree --write-tree HEAD origin/main >/dev/null 2>&1
 assert_rc "finish-preflight: (control) merging the default branch alone would conflict" "$?" 1
+commit "${O}" y.txt after-preflight
+git -C "${O}" push -q origin main
+git -C "${R}" fetch -q origin
 git -C "${R}" switch -q -c probe/merge-in
-git -C "${R}" merge -q --no-edit origin/main~2 >/dev/null 2>&1 &&
-	git -C "${R}" merge -q --no-edit -s ours origin/main~1 >/dev/null 2>&1 &&
+git -C "${R}" merge -q --no-edit origin/pull/21/pre-squash >/dev/null 2>&1 &&
+	git -C "${R}" merge -q --no-edit -s ours origin/pull/21/squash >/dev/null 2>&1 &&
 	git -C "${R}" merge -q --no-edit origin/main >/dev/null 2>&1
 assert_rc "finish-preflight: the printed merges apply cleanly, no history rewrite" "$?" 0
-assert_eq "finish-preflight: ... keeping the child's edit and the base's later work" \
-	"$(cat "${R}/q.txt") $(cat "${R}/z.txt")" "q1-child later"
+assert_eq "finish-preflight: ... keeping the child's edit and all base work, even after a later fetch" \
+	"$(cat "${R}/q.txt") $(cat "${R}/z.txt") $(cat "${R}/y.txt")" "q1-child later after-preflight"
 printf '7 main\n' >"${GHS}/open-probe_merge-in"
 fp
 assert_eq "finish-preflight: a merged hidden parent goes quiet once absorbed" "${out}" \
@@ -229,7 +233,31 @@ assert_eq "finish-preflight: a conflict with the parent's last head stops at tha
 base${T}against${T}origin/main
 base${T}conflict${T}q.txt
 base${T}merge${T}origin/pull/21/head"
+git -C "${R}" switch -q probe/merge-in
+fp
+assert_eq "finish-preflight: a branch already holding the squash skips the parent's head" "${out}" \
+	"base${T}against${T}origin/main
+base${T}clean${T}"
 git -C "${O}" switch -q main
+
+git -C "${O}" switch -q -c feat/r origin/main
+commit "${O}" r.txt a
+commit "${O}" r2.txt b
+git -C "${O}" push -q origin feat/r HEAD:refs/pull/31/head
+git -C "${R}" fetch -q origin
+git -C "${R}" switch -q -c issue/8-r origin/feat/r
+commit "${R}" r.txt a-child
+git -C "${O}" switch -q main
+commit "${O}" x2.txt meanwhile
+commit "${O}" r.txt a
+commit "${O}" r2.txt b
+git -C "${O}" push -q origin main
+printf 'MERGED 31 main %s\n' "$(git -C "${O}" rev-parse HEAD)" >"${GHS}/all-feat_r"
+fp --base feat/r
+assert_eq "finish-preflight: a rebase-merged parent is unchecked, never guessed" "${out}" \
+	"base${T}parent-merged${T}feat/r #31
+base${T}against${T}origin/main
+base${T}unchecked${T}feat/r #31 was rebase-merged: bring the base in by hand"
 git -C "${R}" switch -q issue/3-stacked
 
 printf 'MERGED 40 main -\n' >"${GHS}/all-develop"

@@ -25,7 +25,8 @@
 #
 # WHETHER IT MODIFIES ANYTHING
 #   Never HEAD, a branch, the index or the working tree. It fetches the base,
-#   and a merged parent's last head, into remote-tracking refs, and writes
+#   and a merged parent's last head, into remote-tracking refs, pins a
+#   squash-merged parent's squash under refs/remotes/<remote>/pull/<n>/, writes
 #   objects (unreferenced merge commits for a multi-step prediction). Never
 #   prompts: git and gh credential prompts are off.
 #
@@ -185,6 +186,7 @@ query($owner: String!, $name: String!, $n: Int!) {
 					git fetch -q --no-tags "${REMOTE}" \
 						"+refs/pull/${num}/head:refs/remotes/${REMOTE}/pull/${num}/head" 2>/dev/null || {
 						emit base parent-merged "${pline}"
+						emit base against "${REMOTE}/${into:-${default}}"
 						emit base unchecked "last head of merged parent ${parent} not fetched"
 						return
 					}
@@ -210,22 +212,33 @@ query($owner: String!, $name: String!, $n: Int!) {
 		return
 	}
 
-	# The merges that bring the base in. After a squash- or rebase-merged
-	# parent: its last head, the base just before the squash, then the squash
-	# recorded with `-s ours` - this branch already holds its content - so the
-	# parent's hunks are never merged twice.
+	# The merges that bring the base in. After a squash-merged parent: its last
+	# head, the base just before the squash, then the squash recorded with
+	# `-s ours` - this branch already holds its content - so the parent's hunks
+	# are never merged twice. Both are pinned under refs that a later fetch
+	# cannot move, or `-s ours` could swallow a newer base commit.
 	steps=""
-	if [ -n "${src}" ] && ! git merge-base --is-ancestor "${src}" "${ref}" 2>/dev/null; then
-		{ before="$(git name-rev --name-only --no-undefined --refs="${ref}" "${squash}^1" 2>/dev/null)" &&
-			after="$(git name-rev --name-only --no-undefined --refs="${ref}" "${squash}" 2>/dev/null)"; } || {
+	if [ -n "${src}" ] && ! git merge-base --is-ancestor "${src}" "${ref}" 2>/dev/null &&
+		! git merge-base --is-ancestor "${squash}" HEAD 2>/dev/null; then
+		why=""
+		if ! pre="$(git rev-parse -q --verify "${squash}^1" 2>/dev/null)" ||
+			! git merge-base --is-ancestor "${squash}" "${ref}" 2>/dev/null; then
+			why="merge commit of ${pline} not found on ${REMOTE}/${target}"
+		elif git cherry "${pre}" "${src}" "$(git merge-base "${pre}" "${src}")" 2>/dev/null | grep -q '^-'; then
+			why="${pline} was rebase-merged: bring the base in by hand"
+		elif ! git update-ref "refs/remotes/${REMOTE}/pull/${num}/pre-squash" "${pre}" ||
+			! git update-ref "refs/remotes/${REMOTE}/pull/${num}/squash" "${squash}"; then
+			why="could not pin the squash of ${pline}"
+		fi
+		[ -z "${why}" ] || {
 			emit base parent-merged "${pline}"
 			emit base against "${REMOTE}/${target}"
-			emit base unchecked "merge commit of ${pline} not found on ${REMOTE}/${target}"
+			emit base unchecked "${why}"
 			return
 		}
 		steps="merge ${src}
-merge ${before#remotes/}
-merge-ours ${after#remotes/}
+merge ${REMOTE}/pull/${num}/pre-squash
+merge-ours ${REMOTE}/pull/${num}/squash
 "
 	fi
 	steps="${steps}merge ${REMOTE}/${target}"

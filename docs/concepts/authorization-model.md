@@ -56,8 +56,11 @@ moves a repo between the two and reconciles the marker.
   the same grants - `gh pr edit` included. `work` also grants the merges its
   `finish` pre-flight prints - `git merge --no-edit origin/*`, `git merge
   --no-edit -s ours origin/*` and `git merge --abort` - never a rebase or a
-  force-push. The wildcard also admits options after the ref (`-s ours`,
-  `--no-verify`); only the skill's prose keeps them out. In
+  force-push. Both wildcards are residuals that only the skill's prose
+  bounds: `-s ours` on any other ref than the pinned
+  `origin/pull/<n>/squash` the pre-flight prints would record base commits as
+  merged without their content, and options after the ref (`-s ours`,
+  `--no-verify`) pass either pattern. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
   (gated by the `check-bash-actions` trunk-push hook only once graduation signals stand -
   see [Hooks](../reference/hooks.md)).

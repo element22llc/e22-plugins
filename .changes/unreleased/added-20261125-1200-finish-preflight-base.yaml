@@ -14,14 +14,15 @@ body: |
     merges that parent's last head and the base from just before the squash,
     then records the squash with `-s ours`, since it already holds that
     content, so a child that edits its parent's lines does not conflict with
-    the squash. Long-lived bases (`prod`, `production`, `staging`,
-    `develop`, `release/*`, `releases/*`) are never treated as stack parents.
-    `finish` merges the base in whenever the branch is behind or its parent
-    merged - a merge, never a rebase, so a pushed branch needs no force-push
-    and CI runs on the current base - over a conflict only when every
-    conflicting path is mechanical, and otherwise stops before the push with
-    the paths. The work skill grants `git merge --no-edit origin/*`, `git merge
-    --no-edit -s ours origin/*` and `git merge --abort` for those steps. The helper changes no branch or working
-    tree, and anything it cannot determine (offline, no `gh`, old git) is
-    reported as unchecked, never as a conflict. Its checks are named, so later
-    checks plug into the same call.
+    the squash; a rebase-merged parent is reported unchecked. Long-lived bases
+    (`prod`, `production`, `staging`, `develop`, `release/*`, `releases/*`)
+    are never treated as stack parents. `finish` merges the base in whenever
+    the branch is behind or its parent merged - a merge, never a rebase, so a
+    pushed branch needs no force-push and CI runs on the current base - over a
+    conflict only when every conflicting path is mechanical, and otherwise
+    stops before the push with the paths. The work skill grants `git merge
+    --no-edit origin/*`, `git merge --no-edit -s ours origin/*` and `git merge
+    --abort` for those steps. The helper changes no branch or working tree,
+    and anything it cannot determine (offline, no `gh`, old git) is reported
+    as unchecked, never as a conflict. Its checks are named, so later checks
+    plug into the same call.
