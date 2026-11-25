@@ -16,9 +16,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `git switch -c <branch> origin/<default>`), never from whatever is checked
   out: a branch cut from another work branch silently stacks on it. Base it on
   another work branch only when this issue needs that PR's unmerged code; then
-  cut it as a native stack layer when `gh stack` works there, else with
-  `git switch -c <branch> origin/<that branch>` (`/steer:reference stacks`
-  section 6), and its PR targets that branch (`--base <that branch>`) and names
+  fetch that branch and cut it as a native stack layer where `gh stack` can
+  build one, else with `git switch -c <branch> origin/<that branch>`
+  (`/steer:reference stacks` section 6), and its PR targets that branch (`--base <that branch>`) and names
   the dependency in its description. When the dev batches fixes into one
   merge, branch from the
   default branch as usual and open the PR with `--base batch/<slug>` - a
@@ -137,9 +137,10 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   changes a `contract.md` (below), and listing each question `start` picked up
   as settled by this change, for its owner to confirm on the running change. A
   dependent branch's PR opens with `--base <parent>`, then joins the stack
-  `start` built (`gh stack link`); a parent that moved is rebased with
-  `gh stack rebase` or `git rebase --onto`, never repaired by cherry-picking or
-  `git branch -f` (`/steer:reference stacks` section 6). An
+  `start` built (`gh stack link`); its code gate reads
+  `origin/<parent>...HEAD`, and a parent that moved is followed with
+  `git rebase --onto`, never cherry-picks or `git branch -f`
+  (`/steer:reference stacks` section 6). An
   answer its owner gave in-session is folded now (resolved, with its
   `_Resolution:_`, per `/steer:questions` step 6); otherwise the question stays
   open and the confirmation at review is its answer. Prune the markers of closed

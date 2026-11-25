@@ -96,7 +96,8 @@ The `detail` column carries requiredness: `docker` is `required (compose.yaml)`
 or `advisory`, and `gh` and the two language servers are always `advisory` -
 they degrade a session, they never block setup. `gh-stack` (the `gh stack`
 extension) is `optional`: a `missing` line is a gap only in a repo with open
-stacked PRs (section 3), and otherwise is not reported at all.
+stacked PRs (section 3); otherwise it is not reported and counts as green,
+in the report and in the next-action rows alike.
 
 ## 2. Report
 
@@ -147,8 +148,8 @@ source of the same commands).
   A PR is stacked when its base is not the default branch, not `prod`,
   `production`, `staging`, `develop`, `release/*`, `releases/*` or `batch/*`,
   and its head is not the default branch - the stacked-PR gate's own test
-  (rule 45). If either command fails, or no PR qualifies, say nothing about
-  `gh-stack`. Otherwise report it as an optional gap, naming one stacked PR:
+  (rule 45). If either command fails, or none of the 100 newest open PRs
+  qualifies, say nothing about `gh-stack`. Otherwise report it as an optional gap, naming one stacked PR:
   stacks there are built and repaired by hand until `gh extension install
   github/gh-stack` (`/steer:reference stacks`).
 - **`pyright-langserver` / `typescript-language-server` missing** - Claude Code

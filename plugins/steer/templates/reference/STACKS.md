@@ -118,26 +118,41 @@ builds its branch as a native stack layer where it can and falls back to a
 manual stack where it cannot. Either way the PR targets the parent branch and
 its description names the dependency.
 
-**Probe, on the parent branch:** `gh stack view --json`. Exit 0 means the
-parent is already in a local stack; exit 2 means it is not, and the extension
-works. Anything else - `gh` reporting an unknown `stack` command (the extension
-is not installed), exit 9 (stacks are not enabled for the repository), any
-other failure - takes the manual path.
+Start from the parent as GitHub has it: `git fetch origin <parent>` first, on
+either path.
 
-| Step | Native stack | Manual stack (fallback) |
+**Native only when all of these hold**, else the manual path:
+
+- `gh stack view --json` exits 0 or 2 (exit 9: stacks are not enabled; an
+  unknown `stack` command: the extension is not installed);
+- the parent's open PR is yours (`gh pr view <parent> --json author,baseRefName`
+  against `gh api user`) - joining it to a stack changes how it merges, which is
+  its author's call - and targets the default branch, or is the top PR of a
+  stack (`gh api 'repos/{owner}/{repo}/stacks?pull_request=<parent-pr>'`, the
+  last entry of its `pull_requests`);
+- this checkout can switch to the parent (a branch another worktree holds
+  cannot be checked out here).
+
+| Step | Native stack | Manual stack |
 |---|---|---|
-| `start`: cut the branch | on the parent: `gh stack init <parent>` unless the probe exited 0, then `gh stack add <branch>` (creates it at the parent's HEAD and checks it out) | `git switch -c <branch> origin/<parent>` |
-| `finish`: open the PR | `gh pr create --base <parent>` as `finish` describes, then `gh stack link <parent> <branch>` to record the stack on GitHub | `gh pr create --base <parent>` |
-| the parent or the trunk moved | `gh stack rebase`, then `gh stack push` | `git rebase --onto origin/<parent> <old-parent-tip>`, then `git push --force-with-lease` |
+| `start`: cut the branch | `git switch <parent>` and `git merge --ff-only origin/<parent>`; in stack `N`: `gh stack checkout N`, else `gh stack init <parent>`; then `gh stack add <branch>` (creates it at the parent's HEAD and checks it out) | `git switch -c <branch> origin/<parent>` |
+| `finish`: open the PR | `gh pr create --base <parent>` as `finish` describes; then, if the parent is still its stack's top (or in no stack), `gh stack link N <branch>` (or `gh stack link <parent> <branch>`) | `gh pr create --base <parent>` |
 
-- **Any failed `gh stack` step takes the manual path** from where it stopped,
-  with one line saying so: `add` refuses unless the parent is the stack's top
-  branch, and a worktree cannot check out a parent another worktree holds.
-- **`link`, not `submit`.** `submit` pushes every branch in the stack, including
-  a parent this issue does not own, and its PR title and body handling is not
-  documented; `link` reuses the PR `finish` opened. Name the parent's stack
-  number instead of `<parent>` when it is already in one (`gh stack link N
-  <branch>`).
+- **When the parent moves, rebase this branch only**, on either path:
+  `git rebase --onto origin/<parent> <old-parent-tip>`, then
+  `git push --force-with-lease origin <branch>`.
+- **Any failed step takes the manual path** from where it stopped, with one line
+  saying so - a PR already open on `--base <parent>` stays as it is.
+- **`link`, not `submit`; never `gh stack push` or `sync` from here.** Each
+  pushes every branch in the stack, the parent included, and `submit`'s PR title
+  and body handling is not documented. `link` reuses the PR `finish` opened and
+  pushes nothing. Rebasing the parent onto the trunk is its own issue's work
+  (`gh stack rebase`, then `gh stack push`, from there).
+- **`link` appends to the top.** `gh stack link N <branch>` adds the PR above
+  the stack's current top and corrects its base to match, so a layer added
+  above the parent since `start` would retarget this PR: check first.
+- **The code gate reads this layer only** - `git diff origin/<parent>...HEAD`,
+  not the parent's commits.
 - **Each stacking command asks.** The stacked-PR gate asks on the
   `gh pr create --base <parent>` and again on `gh stack link`.
 - **Never repair a stack by hand** - no cherry-picking between layers, no

@@ -5,12 +5,12 @@ custom:
 body: |
   - **Added: `/steer:work` builds a dependent branch as a native stack layer.**
     When an issue needs another work branch's unmerged code, `start` now cuts
-    the branch with `gh stack init` + `gh stack add` where the `gh stack`
-    extension works, and `finish` links its PR into the stack with
-    `gh stack link`; without the extension, or with stacks disabled, both keep
-    the plain `--base <parent>` path. A parent that moved is rebased
-    (`gh stack rebase`, or `git rebase --onto`), never repaired by
-    cherry-picking or `git branch -f`. The steps live in
+    the branch with `gh stack init` (or `checkout`) + `gh stack add` where the
+    `gh stack` extension works and the parent PR is yours, and `finish` links
+    its PR into the stack with `gh stack link`, which pushes nothing; otherwise
+    both keep the plain `--base <parent>` path. The code gate reads only the
+    layer's own diff, and a parent that moved is followed with
+    `git rebase --onto`, never cherry-picks or `git branch -f`. The steps live in
     `/steer:reference stacks` section 6. `/steer:setup doctor` now checks for
     the extension and reports it as an optional gap, only in a repo with open
     stacked PRs.
