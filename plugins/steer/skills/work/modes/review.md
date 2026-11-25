@@ -68,13 +68,13 @@ newer - the card's `built` against the review's `submittedAt` - of:
 - **your card** for it - one this session holds, or a stored
   `spec/.work/reviews/<n>-<sha>.md` (below);
 - **your own last posted review** - the newest `reviews` entry whose
-  `author.login` is yours and whose state is `APPROVED` or
-  `CHANGES_REQUESTED`, at its `commit.oid`. Read `reviews`, never
-  `latestReviews`, which leaves `commit.oid` empty. A `COMMENTED` review does
-  not count: a reply in a thread posts one at whatever head is current. A
-  `DISMISSED` one - stale-review dismissal turns an approval into it on the
-  next push - counts as the base of a delta, never as a review of the current
-  head.
+  `author.login` is yours and whose state is `APPROVED`, `CHANGES_REQUESTED`
+  or `DISMISSED`, at its `commit.oid`. Read `reviews`, never `latestReviews`,
+  which leaves `commit.oid` empty. A `COMMENTED` review does not count: a
+  reply in a thread posts one at whatever head is current. A `DISMISSED` one -
+  stale-review dismissal turns an approval into it on the next push - only
+  ever anchors a delta: at the current head it means a full review, given its
+  body to settle.
 
 Then, per PR:
 
