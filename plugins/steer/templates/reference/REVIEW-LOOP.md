@@ -238,7 +238,8 @@ silently.
 - **`steer-pr-reviewer`** is the shipped diff reviewer: the per-PR reviewer in
   `/steer:work review`, each specialist lens, and every refute-pass verifier.
   It has git access, reads diff-first on a tool-call budget, and re-reviews
-  only the commits since its previous card.
+  only the delta since its previous card or posted review (the full diff when
+  the history was rewritten).
 
 ## 6. Cost
 

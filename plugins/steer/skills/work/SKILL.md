@@ -27,6 +27,7 @@ allowed-tools:
   - Bash(git log *)
   - Bash(git show *)
   - Bash(git rev-parse *)
+  - Bash(git check-ignore -q spec/.work/reviews/)
   - Bash(git add *)
   - Bash(git commit *)
   - Bash(git push)
