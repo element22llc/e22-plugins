@@ -1,0 +1,19 @@
+kind: Added
+time: 2026-11-25T16:36:00.000000-05:00
+custom:
+  Slug: finish-preflight-numbers
+body: |
+  - **Added: `/steer:work finish` catches ADR and migration number
+    collisions before the push.** The pre-flight helper gains a `numbers`
+    check: each ADR (`spec/decisions/`, `openspec/steer/decisions/`) and
+    numbered migration (a `<digits>_` or `<digits>-` file directly in a
+    `migrations` or `drizzle` directory - Drizzle Kit, Django) the branch
+    adds is checked against the same number on the freshly fetched default
+    branch and in open PRs' files, and a collision names the other file and
+    the PR. Taken on the default branch, `finish` renumbers an ADR and stops
+    the push for a migration; taken by an open PR, the branch with no PR yet
+    or the higher PR number renumbers its ADR, and a collision left in place
+    is listed for the reviewer. `/steer:spec adr` runs the same check on the
+    ADR it just wrote and moves it up until no open PR or the default branch
+    holds its number. Alembic revisions, Flyway and Prisma migrations are not
+    checked; without `gh` only the default branch is.
