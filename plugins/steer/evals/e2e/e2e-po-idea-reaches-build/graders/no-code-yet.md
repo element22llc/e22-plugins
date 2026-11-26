@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '\\.(jsx?|tsx?|py)$'
+pattern: '\.(jsx?|tsx?|py)$'
 flags: m
 match: not_contains
 target: files

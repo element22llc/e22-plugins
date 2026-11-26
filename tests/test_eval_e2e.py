@@ -124,3 +124,26 @@ def test_git_command_graders_match_an_aliased_git():
             for cmd in misses:
                 assert not re.search(pattern, cmd), f"{g}: matches {cmd!r}"
     assert seen == set(expect)
+
+
+def test_no_code_file_graders_catch_a_code_path():
+    # Single-quoted YAML keeps `'\\.py$'` as two backslashes: a regex no path
+    # matches, so the `not_contains` grader passes vacuously.
+    expect = {
+        "no-code.md": (["checkout2.py"], ["spec/glossary.md"]),
+        "no-new-code.md": (["x/checkout2.py"], ["spec/features/x/intent.md"]),
+        "no-code-yet.md": (["src/App.tsx", "api/main.py"], ["spec/vision.md"]),
+    }
+    seen = set()
+    for d in _cases():
+        for g in (d / "graders").glob("*.md"):
+            front, _ = _frontmatter(g)
+            if front.get("match") != "not_contains" or front.get("target") != "files":
+                continue
+            seen.add(g.name)
+            hits, misses = expect[g.name]
+            for path in hits:
+                assert re.search(front["pattern"], path), f"{g}: misses {path!r}"
+            for path in misses:
+                assert not re.search(front["pattern"], path), f"{g}: matches {path!r}"
+    assert seen == set(expect)

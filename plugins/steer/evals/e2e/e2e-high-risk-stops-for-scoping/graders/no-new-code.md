@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '\\.py$'
+pattern: '\.py$'
 flags: m
 match: not_contains
 target: files
