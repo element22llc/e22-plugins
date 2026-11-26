@@ -95,8 +95,8 @@ orca worktree create --name issue-<n> --base-branch origin/<default> \
 ```
 
 When `subcommands.md` -> Orca parent workspace finds one, add
-`--parent-worktree "id:<workspace.id>"`; otherwise Orca nests the workspace under
-this session's, as before. Orca runs the repo's setup hooks as its own policy says. Add `--reviewed` to
+`--parent-worktree "id:<workspace.id>"`; otherwise leave it out and Orca's
+inferred default applies, as before. Orca runs the repo's setup hooks as its own policy says. Add `--reviewed` to
 the prompt when the queue has it. The default plan gate is
 not added: it stands in for nobody watching each start, and here the dev does.
 Launch them all; they run in parallel. Each is a top-level session: it loads

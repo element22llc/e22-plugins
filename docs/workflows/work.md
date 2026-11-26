@@ -412,8 +412,10 @@ Outside Orca nothing runs.
 Those links also group an epic's work. When `queue` or `drive` opens an Orca
 workspace for an issue that has a tracker parent, and exactly one workspace in
 the repo has that parent's URL attached, the new workspace is nested under it,
-so Orca's sidebar shows the epic with its children. A URL Orca only saw in a
-terminal does not count. With no parent, or zero or several matches, the
+so Orca's sidebar shows the epic with its children. The epic's URL gets
+attached when you open its workspace from the issue in Orca, or with `orca
+reference add`; a URL Orca only saw in a terminal does not count. Only the
+direct parent is looked up. With no parent, or zero or several matches, the
 workspace is created as before.
 
 ## Native Claude Code delivery features

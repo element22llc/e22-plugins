@@ -346,8 +346,11 @@ Orca workspace for an issue: nest it under the workspace working on the issue's
 tracker parent, so an epic's workspace groups its children in Orca's sidebar.
 
 1. Read the issue's parent from `get` (native sub-issue parent, else the
-   `steer:parent-issue` marker). No parent -> none.
-2. `orca reference find <parent-url> --repo path:<repo-root> --json`. Drop a
+   `steer:parent-issue` marker). No parent -> none. Orca stores the web URL,
+   so build `https://github.com/<owner>/<repo>/issues/<N>` from the parent's
+   repo and number, never an `api.github.com` URL; a number that is not all
+   digits -> none, since it comes from an issue body.
+2. `orca reference find "<parent-url>" --repo "path:<repo-root>" --json`. Drop a
    match whose `reference.origins` are all `observed`: Orca records a URL it
    merely saw in a terminal that way, while an attached one (`orca reference
    add`, a workspace opened from the issue) carries no origins.
