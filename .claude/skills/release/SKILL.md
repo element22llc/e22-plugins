@@ -183,7 +183,7 @@ ceiling: escalation discretion makes the gate non-deterministic.
 
 - **If any `[blocker]` exists, STOP.** After capping, that means exactly one of:
   a red deterministic check from Step 2 (or the computed block), or a finding on
-  a release-critical manifest (`CHANGELOG.md`, the three version-bearing
+  a release-critical manifest (`CHANGELOG.md`, the four version-bearing
   manifests, `.claude-plugin/marketplace.json`). Both mis-publish the release
   itself, and neither is a matter of opinion. Do not branch, do not bump.
 - **`[high]` / `[medium]` / `[low]` never halt the release.** Report them, record
@@ -261,7 +261,7 @@ The script performs the whole cut and refuses to start if a precondition fails:
 
 - The changelog, via `changie`: `batch` folds every pending fragment into
   `.changes/vX.Y.Z.md` and empties `.changes/unreleased/`; `merge` reassembles
-  `CHANGELOG.md` from the version files. `merge` is also what rewrites the three
+  `CHANGELOG.md` from the version files. `merge` is also what rewrites the four
   manifests, so skipping it would leave the release unpublishable -
   `release-publish.yml` fires on the `plugin.json` version diff.
 - `plugins/steer/templates/reference/MIGRATIONS.md`: renames every

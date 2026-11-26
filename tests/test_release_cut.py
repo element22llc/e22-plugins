@@ -11,6 +11,7 @@ key, and the preconditions changie itself has no opinion on.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 
 import pytest
@@ -43,6 +44,9 @@ replacements:
     find: '^  "version": ".*",$'
     replace: '  "version": "{{.VersionNoPrefix}}",'
   - path: plugins/steer/.github/plugin/plugin.json
+    find: '^  "version": ".*",$'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
+  - path: plugins/steer/.codex-plugin/plugin.json
     find: '^  "version": ".*",$'
     replace: '  "version": "{{.VersionNoPrefix}}",'
   - path: .github/plugin/marketplace.json
@@ -89,6 +93,7 @@ MIGRATIONS = """\
 def repo(tmp_path, monkeypatch):
     (tmp_path / "plugins/steer/.claude-plugin").mkdir(parents=True)
     (tmp_path / "plugins/steer/.github/plugin").mkdir(parents=True)
+    (tmp_path / "plugins/steer/.codex-plugin").mkdir(parents=True)
     (tmp_path / "plugins/steer/templates/reference").mkdir(parents=True)
     (tmp_path / ".github/plugin").mkdir(parents=True)
     (tmp_path / ".changes/unreleased").mkdir(parents=True)
@@ -106,6 +111,7 @@ def repo(tmp_path, monkeypatch):
         "MIGRATIONS": tmp_path / "plugins/steer/templates/reference/MIGRATIONS.md",
         "PLUGIN_JSON": tmp_path / "plugins/steer/.claude-plugin/plugin.json",
         "COPILOT_PLUGIN_JSON": tmp_path / "plugins/steer/.github/plugin/plugin.json",
+        "CODEX_PLUGIN_JSON": tmp_path / "plugins/steer/.codex-plugin/plugin.json",
         "COPILOT_MARKETPLACE": tmp_path / ".github/plugin/marketplace.json",
         "CHANGES_DIR": tmp_path / ".changes",
         "UNRELEASED_DIR": tmp_path / ".changes/unreleased",
@@ -120,6 +126,10 @@ def repo(tmp_path, monkeypatch):
     )
     files["COPILOT_PLUGIN_JSON"].write_text(
         '{\n  "name": "steer",\n  "version": "6.0.0",\n  "skills": "skills/"\n}\n',
+        encoding="utf-8",
+    )
+    files["CODEX_PLUGIN_JSON"].write_text(
+        '{\n  "name": "steer",\n  "version": "6.0.0",\n  "skills": "./skills/"\n}\n',
         encoding="utf-8",
     )
     files["COPILOT_MARKETPLACE"].write_text(
@@ -137,6 +147,15 @@ def repo(tmp_path, monkeypatch):
     return tmp_path
 
 
+def test_every_manifest_changie_stamps_is_version_checked():
+    """The fixture carries its own replacements block, so only this ties the
+    real `.changie.yaml` to the manifests the cut checks."""
+    changie = (rc.REPO_ROOT / ".changie.yaml").read_text(encoding="utf-8")
+    stamped = set(re.findall(r"^  - path: (\S+\.json)$", changie, flags=re.MULTILINE))
+    checked = {p.relative_to(rc.REPO_ROOT).as_posix() for p in rc._manifest_versions()}
+    assert stamped == checked
+
+
 def test_cut_batches_fragments_and_empties_unreleased(repo):
     rc.apply_cut("6.1.0")
     version_file = (repo / ".changes/v6.1.0.md").read_text(encoding="utf-8")
@@ -149,12 +168,13 @@ def test_cut_batches_fragments_and_empties_unreleased(repo):
     assert changelog.index("## 6.1.0") < changelog.index("## 6.0.0")
 
 
-def test_cut_bumps_all_three_manifests_and_leaves_marketplace_metadata_alone(repo):
+def test_cut_bumps_all_four_manifests_and_leaves_marketplace_metadata_alone(repo):
     """release-publish.yml fires on the plugin.json version diff, so the merge
     step is what makes the release publishable at all."""
     rc.apply_cut("6.1.0")
     assert json.loads(rc.PLUGIN_JSON.read_text())["version"] == "6.1.0"
     assert json.loads(rc.COPILOT_PLUGIN_JSON.read_text())["version"] == "6.1.0"
+    assert json.loads(rc.CODEX_PLUGIN_JSON.read_text())["version"] == "6.1.0"
     marketplace = json.loads(rc.COPILOT_MARKETPLACE.read_text())
     assert marketplace["plugins"][0]["version"] == "6.1.0"
     assert marketplace["metadata"]["version"] == "1.0.0"
@@ -176,6 +196,7 @@ def test_dry_run_writes_nothing_and_prints_the_plan(repo, capsys):
     assert "- **Added:** a new skill." in out
     assert "6.0.0 -> 6.1.0" in out
     assert "metadata.version is left alone" in out
+    assert ".codex-plugin/plugin.json" in out
     assert "### v6.1.0 - `foo` -> `bar`" in out  # the migrations diff
     after = {p: p.read_text(encoding="utf-8") for p in repo.rglob("*") if p.is_file()}
     assert before == after
@@ -194,12 +215,22 @@ def test_cut_refuses_non_ascending_or_malformed_version(repo, version):
         rc.apply_cut(version)
 
 
-def test_cut_refuses_when_manifests_already_disagree(repo):
-    rc.COPILOT_PLUGIN_JSON.write_text(
+@pytest.mark.parametrize("manifest", ["COPILOT_PLUGIN_JSON", "CODEX_PLUGIN_JSON"])
+def test_cut_refuses_when_manifests_already_disagree(repo, manifest):
+    getattr(rc, manifest).write_text(
         '{\n  "name": "steer",\n  "version": "5.0.0",\n  "skills": "skills/"\n}\n', encoding="utf-8"
     )
     with pytest.raises(rc.CutError, match="disagree"):
         rc.apply_cut("6.1.0")
+
+
+def test_validate_cut_flags_a_codex_manifest_left_behind(repo):
+    rc.apply_cut("6.1.0")
+    rc.CODEX_PLUGIN_JSON.write_text(
+        '{\n  "name": "steer",\n  "version": "6.0.0",\n  "skills": "./skills/"\n}\n',
+        encoding="utf-8",
+    )
+    assert any(".codex-plugin/plugin.json" in e for e in rc.validate_cut("6.1.0"))
 
 
 def test_cut_refuses_to_overwrite_an_existing_version_file(repo):

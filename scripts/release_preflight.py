@@ -48,6 +48,7 @@ CHANGELOG = REPO_ROOT / "CHANGELOG.md"
 UNRELEASED_DIR = REPO_ROOT / ".changes/unreleased"
 PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 COPILOT_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.github/plugin/plugin.json"
+CODEX_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.codex-plugin/plugin.json"
 COPILOT_MARKETPLACE = REPO_ROOT / ".github/plugin/marketplace.json"
 LEDGER = REPO_ROOT / ".claude/audit/findings.jsonl"
 EVAL_LEDGER = REPO_ROOT / "plugins/steer/evals/ledger.jsonl"
@@ -374,6 +375,9 @@ def check_manifests() -> Check:
             "copilot plugin.json": json.loads(COPILOT_PLUGIN_JSON.read_text(encoding="utf-8")).get(
                 "version"
             ),
+            "codex plugin.json": json.loads(CODEX_PLUGIN_JSON.read_text(encoding="utf-8")).get(
+                "version"
+            ),
             "copilot marketplace": next(
                 (
                     p.get("version")
@@ -393,7 +397,7 @@ def check_manifests() -> Check:
             "blocker",
             "version drift: " + ", ".join(f"{k}={v}" for k, v in versions.items()),
         )
-    return Check("manifests", "ok", f"all three manifests at {versions['plugin.json']}")
+    return Check("manifests", "ok", f"all four manifests at {versions['plugin.json']}")
 
 
 def resolve_anchor() -> tuple[str | None, Check]:
