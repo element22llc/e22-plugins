@@ -183,7 +183,7 @@ ceiling: escalation discretion makes the gate non-deterministic.
 
 - **If any `[blocker]` exists, STOP.** After capping, that means exactly one of:
   a red deterministic check from Step 2 (or the computed block), or a finding on
-  a release-critical manifest (`CHANGELOG.md`, the three version-bearing
+  a release-critical manifest (`CHANGELOG.md`, the four version-bearing
   manifests, `.claude-plugin/marketplace.json`). Both mis-publish the release
   itself, and neither is a matter of opinion. Do not branch, do not bump.
 - **`[high]` / `[medium]` / `[low]` never halt the release.** Report them, record

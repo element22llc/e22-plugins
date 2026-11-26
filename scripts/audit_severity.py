@@ -86,6 +86,7 @@ RELEASE_CRITICAL = frozenset(
         ".github/plugin/marketplace.json",
         "plugins/steer/.claude-plugin/plugin.json",
         "plugins/steer/.github/plugin/plugin.json",
+        "plugins/steer/.codex-plugin/plugin.json",
     }
 )
 

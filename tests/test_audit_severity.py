@@ -28,6 +28,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
         ("CHANGELOG.md", "release-critical", "blocker"),
         ("plugins/steer/.claude-plugin/plugin.json", "release-critical", "blocker"),
         ("plugins/steer/.github/plugin/plugin.json", "release-critical", "blocker"),
+        ("plugins/steer/.codex-plugin/plugin.json", "release-critical", "blocker"),
         (".github/plugin/marketplace.json", "release-critical", "blocker"),
         (".claude-plugin/marketplace.json", "release-critical", "blocker"),
         # Shipped executables reach a consumer session.

@@ -3,7 +3,7 @@
 
 ``changie`` owns the changelog and the version bump: ``batch`` turns every pending
 fragment in ``.changes/unreleased/`` into ``.changes/vX.Y.Z.md``, and ``merge``
-reassembles ``CHANGELOG.md`` and rewrites the three version-bearing manifests
+reassembles ``CHANGELOG.md`` and rewrites the four version-bearing manifests
 through the ``replacements`` block in ``.changie.yaml``. What changie does *not*
 know about is the second ledger, and that is why this script still exists:
 
@@ -52,6 +52,7 @@ CHANGES_DIR = REPO_ROOT / ".changes"
 MIGRATIONS = REPO_ROOT / "plugins/steer/templates/reference/MIGRATIONS.md"
 PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 COPILOT_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.github/plugin/plugin.json"
+CODEX_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.codex-plugin/plugin.json"
 COPILOT_MARKETPLACE = REPO_ROOT / ".github/plugin/marketplace.json"
 
 UNRELEASED = "### [Unreleased]"
@@ -122,6 +123,9 @@ def _manifest_versions() -> dict[Path, str]:
     return {
         PLUGIN_JSON: json.loads(PLUGIN_JSON.read_text(encoding="utf-8")).get("version", ""),
         COPILOT_PLUGIN_JSON: json.loads(COPILOT_PLUGIN_JSON.read_text(encoding="utf-8")).get(
+            "version", ""
+        ),
+        CODEX_PLUGIN_JSON: json.loads(CODEX_PLUGIN_JSON.read_text(encoding="utf-8")).get(
             "version", ""
         ),
         COPILOT_MARKETPLACE: _steer_entry_version(
@@ -240,7 +244,7 @@ def apply_cut(version: str) -> None:
     _precheck(version)
     _changie("batch", f"v{version}")
     print(f"batched .changes/v{version}.md")
-    # merge rewrites CHANGELOG.md AND the three manifests (.changie.yaml
+    # merge rewrites CHANGELOG.md AND the four manifests (.changie.yaml
     # replacements). release-publish.yml fires on the plugin.json version diff,
     # so skipping this step would leave the release unpublished.
     _changie("merge")

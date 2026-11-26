@@ -262,6 +262,24 @@ def test_check_evals_dates_the_anchor_from_git(tmp_path, monkeypatch):
         assert ("predates HEAD" in rp.check_evals("HEAD").detail) is stale
 
 
+def test_check_manifests_blocks_on_a_drifted_codex_manifest(tmp_path, monkeypatch):
+    for attr in ("PLUGIN_JSON", "COPILOT_PLUGIN_JSON", "CODEX_PLUGIN_JSON"):
+        path = tmp_path / f"{attr}.json"
+        path.write_text(json.dumps({"version": "6.0.0"}), encoding="utf-8")
+        monkeypatch.setattr(rp, attr, path)
+    marketplace = tmp_path / "marketplace.json"
+    marketplace.write_text(
+        json.dumps({"plugins": [{"name": "steer", "version": "6.0.0"}]}), encoding="utf-8"
+    )
+    monkeypatch.setattr(rp, "COPILOT_MARKETPLACE", marketplace)
+    assert rp.check_manifests().status == "ok"
+
+    rp.CODEX_PLUGIN_JSON.write_text(json.dumps({"version": "5.9.0"}), encoding="utf-8")
+    check = rp.check_manifests()
+    assert check.status == "blocker"
+    assert "codex plugin.json=5.9.0" in check.detail
+
+
 def test_worst_and_render_roll_up_severity():
     checks = [
         rp.Check("a", "ok", "fine"),
