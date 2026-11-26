@@ -94,7 +94,9 @@ orca worktree create --name issue-<n> --base-branch origin/<default> \
   --prompt "/steer-work #<n> - reuse the checked-out issue/<n>-<slug>" --json
 ```
 
-Orca runs the repo's setup hooks as its own policy says. Add `--reviewed` to
+When `subcommands.md` -> Orca parent workspace finds one, add
+`--parent-worktree "id:<workspace.id>"`; otherwise leave it out and Orca's
+inferred default applies, as before. Orca runs the repo's setup hooks as its own policy says. Add `--reviewed` to
 the prompt when the queue has it. The default plan gate is
 not added: it stands in for nobody watching each start, and here the dev does.
 Launch them all; they run in parallel. Each is a top-level session: it loads

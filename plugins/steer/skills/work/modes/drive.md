@@ -167,6 +167,15 @@ orca orchestration worker-start --agent claude --task-title "#<n> <title>" \
   --base-branch origin/<default> --spec-file <brief>
 ```
 
+For a Step 3 issue whose parent has a workspace (`subcommands.md` -> Orca
+parent workspace), nest the new workspace the receipt names under it once the
+worker has started:
+
+```sh
+orca worktree set --worktree "id:<new workspace id>" \
+  --parent-worktree "id:<parent workspace.id>" --json
+```
+
 A Step 1 PR whose branch already has an Orca workspace (`orca worktree list
 --json`) takes `--worktree branch:<branch>` instead, unless an agent is working
 there - then skip it as before. The brief is the subagent's, with three changes:
