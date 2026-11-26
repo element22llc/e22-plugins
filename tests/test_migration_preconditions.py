@@ -645,3 +645,121 @@ def test_security_ignored_precondition_is_silent_on_the_current_template(tmp_pat
 
 def test_security_ignored_precondition_without_the_script(tmp_path):
     assert _out(_precondition(SECURITY_IGNORED), tmp_path) == []
+
+
+WORKSPACE_CI = "a workspace gets its own `ws:`-prefixed CI"
+WORKSPACE_TEMPLATE = REPO_ROOT / "plugins/steer/templates/scaffold/profiles/workspace/mise.toml"
+WS_PRE_COMMIT = '[tasks."ws:pre-commit"]\nrun = "true"\n'
+
+
+def _workspace(repo: Path, files: dict[str, str]) -> None:
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    (repo / "spec").mkdir()
+    (repo / "spec/workspace.yml").write_text("", encoding="utf-8")
+    for rel, text in files.items():
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+
+def test_workspace_ci_precondition_fires_without_the_task(tmp_path):
+    _workspace(tmp_path, {"mise.toml": "[tools]\n"})
+    assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+@pytest.mark.parametrize(
+    "files",
+    [
+        {"mise.toml": WS_PRE_COMMIT},
+        {".mise.toml": WS_PRE_COMMIT},
+        {".config/mise.toml": WS_PRE_COMMIT},
+        {"mise/config.toml": WS_PRE_COMMIT},
+        {".mise/tasks/hooks.toml": '["ws:pre-commit"]\nrun = "true"\n'},
+        {".mise/tasks/hooks.toml": "['ws:pre-commit']\nrun = 'true'\n"},
+        {"mise.toml": '[task_config]\nincludes = ["tasks"]\n', "tasks/ws.toml": WS_PRE_COMMIT},
+        {"mise.toml": '[tasks]\n"ws:pre-commit" = "true"\n'},
+        {"mise.toml": '[ tasks."ws:pre-commit" ]\nrun = "true"\n'},
+        {".mise/tasks/ws/pre-commit": "#!/bin/sh\n"},
+        {"mise-tasks/ws/pre-commit.sh": "#!/bin/sh\n"},
+        {".mise/tasks/ws/pre-commit/_default": "#!/bin/sh\n"},
+        {"mise-tasks/ws/pre-commit/_default.sh": "#!/bin/sh\n"},
+        {"mise-tasks/ws/pre-commit.bash": "#!/bin/sh\n"},
+        {"mise-tasks/ws/pre-commit.SH": "#!/bin/sh\n"},
+        {"mise.toml": '[task_config]\nincludes = ["ci"]\n', "ci/ws/pre-commit": "#!/bin/sh\n"},
+        {f"t{chr(0xE2)}ches/ws/pre-commit": "#!/bin/sh\n"},
+    ],
+)
+def test_workspace_ci_precondition_finds_the_task_outside_mise_toml(tmp_path, files):
+    _workspace(tmp_path, files)
+    assert not _fires(_precondition(WORKSPACE_CI), tmp_path)
+
+
+@pytest.mark.parametrize(
+    "files",
+    [
+        {".mise/tasks/ws/pre-commit.toml": '["ws:other"]\nrun = "true"\n'},
+        {".mise/tasks/ws/pre-commit.md": "#!/bin/sh\n"},
+        {".mise/tasks/ws/pre-commit.TOML": "#!/bin/sh\n"},
+        {".mise/tasks/ws/pre-commit/_default.yml": "#!/bin/sh\n"},
+    ],
+)
+def test_workspace_ci_precondition_fires_on_a_file_mise_names_otherwise(tmp_path, files):
+    _workspace(tmp_path, files)
+    assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+def test_workspace_ci_precondition_fires_on_a_mention_only(tmp_path):
+    _workspace(tmp_path, {"mise.toml": '[tasks.ci]\ndepends = ["ws:pre-commit"] # ws:pre-commit\n'})
+    assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+@pytest.mark.parametrize(
+    "files",
+    [
+        {".gitignore": "/frontend/\n", "frontend/mise.toml": WS_PRE_COMMIT},
+        {".git/info/exclude": "node_modules/\n", "node_modules/pkg/mise.toml": WS_PRE_COMMIT},
+    ],
+)
+def test_workspace_ci_precondition_ignores_files_outside_the_repo(tmp_path, files):
+    _workspace(tmp_path, files)
+    assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+def test_workspace_ci_precondition_ignores_a_nested_checkout(tmp_path):
+    _workspace(tmp_path, {})
+    member = tmp_path / ".claude/worktrees/feat"
+    member.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=member, check=True)
+    (member / "mise.toml").write_text(WS_PRE_COMMIT, encoding="utf-8")
+    assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+# git grep refuses --untracked when submodule.recurse is set, unless told not to recurse.
+@pytest.mark.parametrize(
+    "files", [{"mise.toml": WS_PRE_COMMIT}, {".mise/tasks/ws/pre-commit": "#!/bin/sh\n"}]
+)
+def test_workspace_ci_precondition_with_submodule_recurse(tmp_path, files):
+    _workspace(tmp_path, files)
+    subprocess.run(["git", "config", "submodule.recurse", "true"], cwd=tmp_path, check=True)
+    assert not _fires(_precondition(WORKSPACE_CI), tmp_path)
+
+
+def test_workspace_ci_precondition_is_silent_off_a_workspace(tmp_path):
+    (tmp_path / "mise.toml").write_text("[tools]\n", encoding="utf-8")
+    assert not _fires(_precondition(WORKSPACE_CI), tmp_path)
+
+
+def test_workspace_ci_precondition_is_silent_on_the_current_template(tmp_path):
+    _workspace(tmp_path, {"mise.toml": WORKSPACE_TEMPLATE.read_text(encoding="utf-8")})
+    workflows = tmp_path / ".github/workflows"
+    workflows.mkdir(parents=True)
+    ci = REPO_ROOT / "plugins/steer/templates/github/workflows/ci-workspace.yml"
+    (workflows / "ci.yml").write_bytes(ci.read_bytes())
+    assert not _fires(_precondition(WORKSPACE_CI), tmp_path)
+
+
+@pytest.mark.skipif(shutil.which("zsh") is None, reason="zsh not installed")
+def test_workspace_ci_precondition_fires_under_zsh_without_task_dirs(tmp_path):
+    _workspace(tmp_path, {})
+    out = _zsh(_precondition(WORKSPACE_CI), tmp_path)
+    assert (out.stdout.strip(), out.stderr) == ("stale", "")

@@ -47,8 +47,8 @@ steer_ci_endgroup
 # Pinned here and run through uvx, not as a mise pipx tool: a pipx tool can demand a
 # mise.lock format upgrade, which re-resolves every other tool in the lock. The two move
 # together: the date bounds Semgrep's transitive deps to the 7-day cooldown.
-STEER_SEMGREP_VERSION=1.185.0
-STEER_SEMGREP_EXCLUDE_NEWER=2026-11-16
+STEER_SEMGREP_VERSION=1.186.0
+STEER_SEMGREP_EXCLUDE_NEWER=2026-11-19
 
 # Every Semgrep output format and error message can quote the matched source, and
 # GitHub's masking misses a wrapped secret: only rule id, path and line reach the log.

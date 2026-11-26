@@ -1,0 +1,21 @@
+kind: Fixed
+time: 2026-11-26T13:00:00.000000000-05:00
+custom:
+  Slug: 938-include-aware-task-probes
+body: |-
+  - **Fixed: `/steer:setup sync` no longer reports `security-gate` and
+    `promotion-gate` as mis-wired, or re-proposes the v7.21.0 workspace
+    migration, when the mise tasks live outside `mise.toml`.** Both probes now
+    use the same file-only task lookup as `drift-gate` and `question-gate`, and
+    CI may reach their stage through a repo script `ci.yml` calls, as for those
+    two. The lookup now reads the project config files at the repo root -
+    `.mise.toml`, `mise.toml`, `mise/config.toml`, `.mise/config.toml`,
+    `.config/mise.toml` and `.config/mise/config.toml` - for tasks and for
+    `[task_config] includes`, taking the list of the highest-precedence file
+    that sets one, as mise does, and finds a file task with a script extension
+    (`ci/security.sh`) or a `_default` file. A `mise.toml` that only names `ci:security` or
+    `ci:promotion` (a `depends` entry, a comment) no longer counts as defining
+    it. The v7.21.0 precondition finds `ws:pre-commit` defined in any TOML file
+    or file task the repo tracks or would add, never in an ignored member
+    checkout or a nested worktree, and stays quiet under zsh. Still read-only:
+    nothing runs mise.
