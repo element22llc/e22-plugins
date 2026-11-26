@@ -735,7 +735,7 @@ Name the file and say what to carry forward.
   ```sh
   test -f spec/workspace.yml && grep -q 'mise run ci:hygiene' .github/workflows/ci.yml 2>/dev/null && echo stale
   test -f spec/workspace.yml && ! { git grep -q --untracked --no-recurse-submodules -E "^[[:space:]]*(\[[[:space:]]*(tasks\.)?[\"']?ws:pre-commit[\"']?[[:space:]]*\]|[\"']?ws:pre-commit[\"']?[[:space:]]*=)" -- '*.toml' ||
-    git -c core.quotePath=false ls-files --cached --others --exclude-standard | grep -E '(^|/)ws/pre-commit(/_default)?(\.[^/.]+)?$' | grep -v '\.toml$' | grep -q .; } 2>/dev/null && echo stale
+    git -c core.quotePath=false ls-files --cached --others --exclude-standard | grep -Eiq '(^|/)ws/pre-commit(/_default)?(\.(sh|bash|zsh|ksh|fish|nu|ps1|cmd|bat|exe|com|vbs|py|rb|pl|php|lua|js|mjs|cjs|ts|mts))?$'; } 2>/dev/null && echo stale
   ```
 
   No output => already migrated, or not a workspace => no-op. The task may sit

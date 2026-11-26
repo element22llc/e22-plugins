@@ -12,7 +12,7 @@ body: |-
     `.mise.toml`, `mise.toml`, `mise/config.toml`, `.mise/config.toml`,
     `.config/mise.toml` and `.config/mise/config.toml` - for tasks and for
     `[task_config] includes`, taking the list of the highest-precedence file
-    that sets one, as mise does, and finds a file task with an extension
+    that sets one, as mise does, and finds a file task with a script extension
     (`ci/security.sh`) or a `_default` file. A `mise.toml` that only names `ci:security` or
     `ci:promotion` (a `depends` entry, a comment) no longer counts as defining
     it. The v7.21.0 precondition finds `ws:pre-commit` defined in any TOML file

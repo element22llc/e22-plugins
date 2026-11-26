@@ -373,16 +373,16 @@ dg_task() {
 	done <<-EOF
 		$dg_cfgs
 	EOF
-	# mise drops one extension from a file task's name (a .toml is a task file, not a
-	# task), and names a dir's _default after the dir.
+	# mise drops a script extension (any case) from a file task's name, keeps any
+	# other, and names a dir's _default after the dir.
 	while IFS= read -r _i; do
 		[ -n "$_i" ] || continue
 		for _f in "$_tp" "$_tp/_default"; do
 			[ -f "$ROOT/$_i/$_f" ] && return 0
 			for _g in "$ROOT/$_i/$_f".*; do
-				case "${_g#"$ROOT/$_i/$_f".}" in
-				*.* | toml) ;;
-				*) [ -f "$_g" ] && return 0 ;;
+				[ -f "$_g" ] || continue
+				case "$(printf '%s' "${_g#"$ROOT/$_i/$_f".}" | tr '[:upper:]' '[:lower:]')" in
+				sh | bash | zsh | ksh | fish | nu | ps1 | cmd | bat | exe | com | vbs | py | rb | pl | php | lua | js | mjs | cjs | ts | mts) return 0 ;;
 				esac
 			done
 		done
