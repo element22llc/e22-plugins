@@ -30,8 +30,8 @@ set -- fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 
 [ -f .trivyignore.yaml ] && set -- "$@" --ignorefile .trivyignore.yaml
 # Trivy reads no .gitignore: skip each dir git ignores (installed deps, vendored tools). The skip
 # list is comma-split globs, so a comma name stays scanned and glob characters are escaped. A
-# trivy.yaml or TRIVY_SKIP_DIRS list would be replaced, not extended: those repos keep a full scan.
-if [ ! -f trivy.yaml ] && [ -z "${TRIVY_SKIP_DIRS:-}" ]; then
+# skip list in a Trivy config or TRIVY_SKIP_DIRS would be replaced, not extended: keep a full scan.
+if [ ! -f trivy.yaml ] && [ -z "${TRIVY_CONFIG:-}" ] && [ -z "${TRIVY_SKIP_DIRS:-}" ]; then
 	ignored="$(git -c core.fsmonitor=false -c core.quotePath=false ls-files --others --ignored --exclude-standard --directory |
 		git -c core.fsmonitor=false -c core.quotePath=false check-ignore --stdin | sed 's/[][*?{}]/\\&/g')"
 	while IFS= read -r dir; do

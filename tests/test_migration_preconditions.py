@@ -617,14 +617,24 @@ def test_iac_git_files_precondition_without_the_script(tmp_path):
     assert _out(_precondition(IAC_GIT_FILES), tmp_path) == []
 
 
+_V7_24_SECURITY = (
+    'trivy "$@" .\nsemgrep scan --config p/default --json --output "${findings}" >/dev/null 2>&1\n'
+)
+
+
 def test_security_ignored_precondition_fires_on_the_v7_28_script(tmp_path):
     (tmp_path / "scripts").mkdir()
     (tmp_path / "scripts/ci-security.sh").write_text(
-        'trivy "$@" .\n'
-        'uvx semgrep scan --config p/default --json --output "${findings}" >/dev/null 2>&1\n',
+        f"STEER_SEMGREP_VERSION=1.185.0\nSTEER_SEMGREP_EXCLUDE_NEWER=2026-11-16\n{_V7_24_SECURITY}",
         encoding="utf-8",
     )
     assert _out(_precondition(SECURITY_IGNORED), tmp_path) == ["trivy", "semgrep"]
+
+
+def test_security_ignored_precondition_waits_for_the_semgrep_pins(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(_V7_24_SECURITY, encoding="utf-8")
+    assert _out(_precondition(SECURITY_IGNORED), tmp_path) == ["trivy"]
 
 
 def test_security_ignored_precondition_is_silent_on_the_current_template(tmp_path):

@@ -179,12 +179,13 @@ def test_iac_formats_only_gits_non_ignored_tofu_files(repo: Repo) -> None:
     repo.write("live/terragrunt.hcl")
     repo.write("gone.tf")
     (repo.root / "gone.tf").unlink()
+    repo.write('q"uote.tf')
     r = repo.run("ci-iac.sh")
     assert r.code == 0
     version, fmt = r.calls
     assert version == "tofu version"
-    assert fmt.startswith("tofu fmt -check -diff ")
-    assert sorted(fmt.split()[4:]) == ["main.tf", "mod/x.tofu", "new.tfvars"]
+    assert fmt.startswith("tofu fmt -check -diff -- ")
+    assert sorted(fmt.split()[5:]) == ["main.tf", "mod/x.tofu", "new.tfvars", 'q"uote.tf']
 
 
 def test_iac_without_tofu_files_formats_nothing(repo: Repo) -> None:
@@ -216,18 +217,19 @@ def _ansible_repo(repo: Repo) -> None:
     repo.write(".yamllint")
     repo.write("site.yml")
     repo.write("roles/x.yml", track=False)
+    repo.write('roles/q"uote.yml')
     repo.write("vendor/v.yml", track=False)
     (repo.bin / "uvx").write_text(_YAMLLINT_STUB, encoding="utf-8")
 
 
 def test_iac_lints_only_yaml_both_yamllint_and_git_select(repo: Repo) -> None:
     _ansible_repo(repo)
-    listed = "./.yamllint\n./site.yml\n./roles/x.yml\n./vendor/v.yml"
+    listed = './.yamllint\n./site.yml\n./roles/x.yml\n./roles/q"uote.yml\n./vendor/v.yml'
     r = repo.run("ci-iac.sh", LIST_FILES=listed)
     assert r.code == 0
     assert r.calls == [
         f"{_YAMLLINT} --list-files .",
-        f"{_YAMLLINT} .yamllint roles/x.yml site.yml",
+        f'{_YAMLLINT} -- .yamllint roles/q"uote.yml roles/x.yml site.yml',
         "uvx ansible-lint@26.6.0",
     ]
 
@@ -331,12 +333,14 @@ def test_security_trivy_skips_the_dirs_git_ignores(repo: Repo) -> None:
     )
 
 
-@pytest.mark.parametrize("own_list", ["trivy.yaml", "TRIVY_SKIP_DIRS"])
+@pytest.mark.parametrize("own_list", ["trivy.yaml", "TRIVY_CONFIG", "TRIVY_SKIP_DIRS"])
 def test_security_trivy_keeps_a_repos_own_skip_list(repo: Repo, own_list: str) -> None:
     _ignored_tree(repo)
     env = {}
     if own_list == "trivy.yaml":
         repo.write("trivy.yaml", "scan:\n  skip-dirs: [testdata]\n")
+    elif own_list == "TRIVY_CONFIG":
+        env["TRIVY_CONFIG"] = "ci/trivy.yaml"
     else:
         env["TRIVY_SKIP_DIRS"] = "testdata"
     assert repo.run("ci-security.sh", **env).calls[1] == f"{_TRIVY} ."

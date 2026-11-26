@@ -20,8 +20,10 @@ if steer_ci_has_tf; then
 		steer_ci_group 'tofu fmt'
 		# Git's file list, not -recursive: a git-ignored vendored dir is not the repo's own code.
 		# Dot paths stay out, as tofu's walk left them; core.fsmonitor=false stops ls-files running a repo hook.
-		tf="$(git -c core.fsmonitor=false -c core.quotePath=false ls-files --cached --others --exclude-standard -- \
-			'*.tf' '*.tofu' '*.tfvars' '*.tftest.hcl' '*.tofutest.hcl' ':(exclude).*' ':(exclude)*/.*')"
+		# -z: git would C-quote a name holding '"' or '\', and the quoted form names no file.
+		tf="$(git -c core.fsmonitor=false ls-files -z --cached --others --exclude-standard -- \
+			'*.tf' '*.tofu' '*.tfvars' '*.tftest.hcl' '*.tofutest.hcl' ':(exclude).*' ':(exclude)*/.*' |
+			tr '\000' '\n')"
 		set --
 		# -f: a tracked file deleted in the work tree is still listed.
 		while IFS= read -r f; do
@@ -30,7 +32,7 @@ if steer_ci_has_tf; then
 ${tf}
 EOF
 		if [ "$#" -gt 0 ]; then
-			tofu fmt -check -diff "$@"
+			tofu fmt -check -diff -- "$@"
 		else
 			printf 'No OpenTofu files found - nothing to format.\n'
 		fi
@@ -47,12 +49,13 @@ if steer_ci_has_ansible; then
 	if [ -f .yamllint ] || [ -f .yamllint.yml ] || [ -f .yamllint.yaml ]; then
 		# yamllint walks git-ignored dirs: lint only what both its config and git's file list select.
 		yaml="$(uvx yamllint@1.38.0 --list-files .)"
-		tracked="$(git -c core.fsmonitor=false -c core.quotePath=false ls-files --cached --others --exclude-standard)"
+		# The pipe below would hide a git failure, which would then skip the lint.
+		git rev-parse --is-inside-work-tree >/dev/null
 		yaml="$({
 			printf '%s\n' "${yaml}" | sed 's|^\./||' | LC_ALL=C sort -u
-			printf '%s\n' "${tracked}" | LC_ALL=C sort -u
-		} | LC_ALL=C sort | uniq -d)"
-		[ -z "${yaml}" ] || printf '%s\n' "${yaml}" | tr '\n' '\000' | xargs -0 uvx yamllint@1.38.0
+			git -c core.fsmonitor=false ls-files -z --cached --others --exclude-standard | tr '\000' '\n' | LC_ALL=C sort -u
+		} | LC_ALL=C sort | LC_ALL=C uniq -d)"
+		[ -z "${yaml}" ] || printf '%s\n' "${yaml}" | tr '\n' '\000' | xargs -0 uvx yamllint@1.38.0 --
 	fi
 	uvx ansible-lint@26.6.0
 	steer_ci_endgroup

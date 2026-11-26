@@ -138,8 +138,8 @@ Name the file and say what to carry forward.
 - **What & why:** `trivy fs .` scanned git-ignored dirs, so a manifest inside
   a vendored third-party dir failed the stage as the repo's own dependency.
   The stage now passes Trivy a `--skip-dirs=` for each dir git ignores, unless
-  the repo keeps its own list in `trivy.yaml` or `TRIVY_SKIP_DIRS` (a CLI list
-  would replace it, not extend it). Semgrep's per-file errors and timeouts
+  the repo may keep its own list - a `trivy.yaml`, `TRIVY_CONFIG` or
+  `TRIVY_SKIP_DIRS` (a CLI list would replace it, not extend it). Semgrep's per-file errors and timeouts
   left no trace in the log since its output is withheld; the stage now prints
   their count, never a path or message. The script is not verbatim and the
   `security-gate` capability checks wiring only, so a repo carrying the older
@@ -150,10 +150,13 @@ Name the file and say what to carry forward.
   test -f scripts/ci-security.sh && grep -q 'trivy ' scripts/ci-security.sh &&
     ! grep -q -- '--ignored --exclude-standard --directory' scripts/ci-security.sh && echo trivy
   test -f scripts/ci-security.sh && grep -q -- '--json --output' scripts/ci-security.sh &&
+    grep -q '^STEER_SEMGREP_VERSION=' scripts/ci-security.sh &&
+    grep -q '^STEER_SEMGREP_EXCLUDE_NEWER=' scripts/ci-security.sh &&
     ! grep -q 'scan error(s)' scripts/ci-security.sh && echo semgrep
   ```
 
-  No output => already migrated, or no stage => no-op.
+  No output => already migrated, or no stage => no-op. The `semgrep` half
+  waits for the v7.28.0 pins, which its notice names: apply that entry first.
 - **Action:** read-then-propose; show the diff and apply on a yes. Copy each
   block from `templates/scaffold/scripts/ci-security.sh`, never from memory:
   - `trivy`: insert the template's block, from its `# Trivy reads no
