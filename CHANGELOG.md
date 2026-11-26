@@ -3,6 +3,187 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 7.29.0
+
+- **Fixed: ending a session in a linked worktree now actually stops its
+  stack.** `on-session-end.sh` ran `mise tasks ls` and `docker:down` inside
+  the 1.5s budget all `SessionEnd` hooks share, which a plugin cannot raise,
+  so it was usually cancelled and the containers stayed up. The hook now
+  keeps its cheap gates (linked worktree, compose file, opt-out) in line and
+  runs the stop detached, in its own process session, so it returns at once
+  and the containers stop a few seconds after the session exits. The stop is
+  skipped while another Claude Code session still has its working directory in
+  that worktree. Volumes are still kept.
+
+- **Fixed: "review PR #12" now routes to `/steer:work review`.** The `work`
+  skill's listing named only the queue phrasings ("review my PRs"), so a
+  single-PR ask went to the built-in code review, which costs far more and
+  returns no steer card. The `review` clause now names the single-PR forms
+  ("review PR #12", "review #12"), and a routing eval case covers the ask.
+
+- **Fixed: shell commands in skills no longer break under zsh when a glob
+  matches nothing.** zsh's default `nomatch` aborts such a command before it
+  runs. `/steer:work start`'s learnings check now tests `spec/learnings/` and
+  greps it recursively, so a repo without learnings is a quiet no-op instead
+  of an error, and `resume` finds a transcript with `find`. `/steer:spec
+  questions` no longer drops `vision.md` questions in a repo with no feature
+  directories. Two `/steer:setup sync` preconditions no longer read "already
+  migrated" under zsh: v7.25.0 (Dependabot security groups) when no
+  `apps/*/Dockerfile` exists, and v4.0.0 (`spec/history/`) when no
+  `spec/sources/*/source.md` exists.
+
+- **Fixed: `.terraform.lock.hcl` now counts as a lockfile.** The shared path
+  classifier had no pattern for it, so a Terraform or OpenTofu provider
+  lockfile was `unknown`. The issue-first Stop hook then reported an
+  untracked `.terraform.lock.hcl` as implementation-affecting and held up the
+  end of the session, even in read-only sessions. It is now exempt like every
+  other lockfile, at the repo root and in any subdirectory, in the Stop hook
+  and in the write-time issue-first and scaffold nudges alike.
+
+- **Changed: `/steer:work review` remembers what it already reviewed, across
+  sessions.** Before spawning a reviewer it now reads your own last posted
+  review on each PR (from `reviews`, since `latestReviews` carries no commit)
+  and any card stored for it. A PR whose head has not moved costs no reviewer:
+  a posted review lists it under a new `Reviewed` bucket with that verdict
+  (tagged `re-requested` when the author asked again), an unposted card goes
+  back to the decision as-is. A moved head is reviewed as a
+  delta from the GitHub compare diff, or in full after a force-push. Every new
+  card is stored in the git-ignored `spec/.work/reviews/`, keyed by PR and head
+  SHA, before the human is asked, so a session that ends first loses nothing;
+  repos that do not ignore `spec/.work/` store nothing. The workspace snapshot
+  no longer counts that directory as a work claim.
+
+- **Fixed: `steer-pr-reviewer` no longer sends nearly every shell command to
+  the auto-mode classifier.** Its runs prefixed calls with `cd`, set variables
+  before the command, extracted the rubric with `sed` and paged the diff with
+  `sed -n`, so about nine in ten Bash calls cost a classifier review. The
+  agent now Reads files and runs plain commands from the checkout, braces any
+  variable it cannot avoid before a colon (zsh read `$SHA:hooks/x` as
+  `.ooks/x`), and prefers `git` over `gh api`. `/steer:work review` writes
+  each PR's view and diff to files and hands the reviewer those paths and the
+  rubric's. The subagent digest (`general-purpose`, `steer-reviewer`) gains
+  the same allowlist line.
+
+- **Added: session start names your own PRs with changes requested.** A new
+  session check, `check-changes-requested.sh`, runs on `startup` and
+  `resume` in a managed or OpenSpec repo whose tracker is GitHub. When the
+  session's GitHub user had open PRs there with changes requested at the
+  last check, the session gets one line with their count and numbers,
+  pointing to `/steer:work drive`. Session start never waits on the network:
+  the line comes from a private per-user cache under `$TMPDIR`, refreshed
+  after each session start by a detached `gh pr list` capped at 5 seconds,
+  so it is one session old. No `gh`, no auth or no network means no line.
+- **Added: `/steer:work start` proposes closing a PR it recuts.** Reusing
+  the branch of your open PR for the issue stays the default. When `start`
+  cuts a new branch anyway, it proposes closing that PR with a comment
+  pointing at the new branch, and closes it only on a yes. A `queue` or
+  `drive` worker reports it on its card instead.
+
+- **Added: `/steer:work` links a dependent branch's PR into a native
+  stack.** When an issue needs another work branch's unmerged code, `start`
+  cuts the branch from the freshly fetched parent and `finish` opens the PR
+  with `--base <parent>` as before, then runs `gh stack link <parent-pr>
+  <this-pr>` when the `gh stack` extension is installed and the parent's PR
+  is yours, targets the default branch and is in no stack; otherwise the PR
+  stays a manual layer. A parent that moved or merged is followed by
+  `finish`'s pre-flight merges, never with cherry-picks, `git branch -f` or
+  a force-push; `/steer:reference stacks` section 6 says why a native layer
+  differs.
+  `/steer:setup doctor` now checks for the extension and reports it as an
+  optional gap, only in a repo with open stacked PRs.
+
+- **Added: `/steer:work finish` pre-flights the base before the push.** A new
+  helper, `scripts/finish-preflight.sh`, predicts with `git merge-tree` how
+  the committed branch merges with the freshly fetched default branch, or
+  the base its PR targets (a stack parent, `batch/<slug>`, `prod`), lists
+  the conflicting paths, and prints the merges that bring the base in. It
+  reports a parent whose PR closed or merged - a merged one even when GitHub
+  hid it by retargeting the PR to the default branch, found in the PR's
+  automatic base-change history. After a squash-merged parent the branch
+  merges that parent's last head and the base from just before the squash,
+  then records the squash with `-s ours`, since it already holds that
+  content, so a child that edits its parent's lines does not conflict with
+  the squash; a rebase-merged parent is reported unchecked. Long-lived bases
+  (`prod`, `production`, `staging`, `develop`, `release/*`, `releases/*`)
+  are never treated as stack parents. `finish` merges the base in whenever
+  the branch is behind or its parent merged - a merge, never a rebase, so a
+  pushed branch needs no force-push and CI runs on the current base - over a
+  conflict only when every conflicting path is mechanical, and otherwise
+  stops before the push with the paths. This is now the one procedure for
+  following a stack parent, an unpushed branch included. A PR that is a
+  layer of a GitHub native stack takes no merge, since a merge commit
+  blocks the stack from merging: behind its base it stops the push, unless
+  its parent merged and the stack holds only that parent and this PR, when
+  `gh stack unstack` comes first. The work skill grants `git merge
+  --no-edit origin/*` and `git merge --abort` for those steps; the `-s ours`
+  merge and `gh stack unstack` prompt. The helper changes no branch or
+  working tree, and anything it cannot determine (offline, no `gh`, old
+  git) is reported as unchecked, never as a conflict; when the branch is
+  behind and it cannot read the PR or its native stack (no `gh` included),
+  it still predicts conflicts but withholds the merges. A branch holding a
+  merge commit of its own is not linked into a native stack. Its checks
+  are named, so later checks plug into the same call.
+
+- **Changed: the scaffold `.claude/settings.json` no longer prompts for a
+  plain `git rm`.** Every `git rm` used to ask, which stalled merge and rebase
+  work, often inside unattended subagents. Plain `git rm` is now allowed:
+  without `-f`, git refuses a file with uncommitted changes, except on an
+  unmerged path mid-merge, where it deletes any hand-resolved content, or on
+  a file marked assume-unchanged. Recursive, forced and sparse forms stay
+  gated by ten narrower `ask` entries that outrank the allow: `-r`, `-f`,
+  `--force` and `--sparse` and their abbreviations, the `-n`/`-q` flag
+  clusters such as `-qr` and `-nf`, and any `{` or `$` expansion or mid-word
+  line continuation that could hide a flag.
+  `/steer:setup sync` offers a migration that moves existing repos and shows
+  the diff first. A repo that wants to keep the broad prompt can decline it.
+- **Added: `/steer:work start` flags a lagging scaffold before deployment,
+  release or infrastructure work.** It compares `spec/.version` with the
+  plugin; a minor version or more behind, it says so and offers `/steer:setup
+  sync` first, since the current scaffold may already ship what the issue
+  asks for.
+
+- **Fixed: `/steer:setup sync` removes the `Last updated` line 7.27.1 dropped
+  from the `contract.md` template.** 7.27.1 left existing contracts carrying
+  it, but additive reconciliation never deletes, so the line stayed in every
+  contract instantiated before then and two open PRs on one feature still
+  conflicted on it. A new migration finds the line in its template form only
+  (the placeholder or a single date, in the header) and proposes deleting it.
+  A line someone extended is left alone, and sync lists it for the dev. A
+  template line or block a release removes now ships the migration that
+  removes it from instantiated files.
+
+- **Added: `/steer:work finish` catches ADR and migration number
+  collisions before the push.** The pre-flight helper gains a `numbers`
+  check: each ADR (`spec/decisions/`, `openspec/steer/decisions/`) and
+  numbered migration (a `<digits>_` or `<digits>-` file directly in a
+  `migrations` or `drizzle` directory - Drizzle Kit, Django) the branch
+  adds is checked against the same number on the freshly fetched default
+  branch and in open PRs' files, and a collision names the other file and
+  the PR. Taken on the default branch, `finish` renumbers an ADR and stops
+  the push for a migration; taken by an open PR, the branch with no PR yet
+  or the higher PR number renumbers its ADR, and a collision left in place
+  is listed for the reviewer. `/steer:spec adr` runs the same check on the
+  ADR it just wrote and moves it up until no open PR or the default branch
+  holds its number. Alembic revisions, Flyway and Prisma migrations are not
+  checked; without `gh` only the default branch is.
+
+- **Added: `/steer:work finish` checks the PR body's drift boxes against
+  the diff before the push.** The pre-flight helper gains a `drift` check:
+  given the PR body `finish` is about to push (`--body <file>`), it derives
+  from the paths the branch changes since its merge base with the base
+  which drift boxes of the shipped PR template they imply - Contract drift
+  (a modified contract), Operational (workflows, `infra/`, a `Dockerfile`,
+  Terraform, CI scripts), Local setup (`mise.toml`, a compose file,
+  `.env.example`), App docs (`spec/app/`) and Architecture
+  (`ARCHITECTURE.md`) - and reports a box the diff implies but the body
+  leaves unticked, and a ticked box no path implies as one to confirm.
+  `finish` ticks the box or explains why under *Notes for the reviewer*, and
+  keeps any tick its author set; either way the PR opens as a draft. The
+  helper never edits the body and never decides drift; boxes no path can
+  imply (intent, security, compliance) are not checked, and without a body
+  or a reachable base it reports unchecked.
+
+
 ## 7.28.0
 
 - **Added: `/steer:work qa` attaches before/after screenshots to the PR.**
