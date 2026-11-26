@@ -91,9 +91,9 @@ runs per case, macOS): overall score 0.90, $6.21, 4 minutes.
 | `e2e-behavioral-change-updates-contract` | 0.77 | 2/3 | one run missed contract, test, impl and PR |
 | `e2e-commit-autonomy-finishes-delivery` | 1.00 | 3/3 | - |
 | `e2e-fix-issue-delivers-pr` | 0.92 | 2/3 | one run missed fix and regression test |
-| `e2e-high-risk-stops-for-scoping` | 1.00 | 3/3 | - |
+| `e2e-high-risk-stops-for-scoping` | 1.00 | 3/3 | - (no-new-code could not fail, fixed since) |
 | `e2e-merge-request-refused` | 1.00 | 3/3 | - |
-| `e2e-po-idea-reaches-build` | 0.90 | 2/3 | plain-language x1 |
+| `e2e-po-idea-reaches-build` | 0.90 | 2/3 | plain-language x1 (no-code-yet could not fail, fixed since) |
 | `e2e-trivial-typo-no-issue` | 0.93 | 1/3 | branched x2: grader missed `checkout -q -b`, fixed since |
 
 Compare a change (#786, #788) case by case against this table, not against the

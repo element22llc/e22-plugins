@@ -141,6 +141,7 @@ def test_no_code_file_graders_catch_a_code_path():
             if front.get("match") != "not_contains" or front.get("target") != "files":
                 continue
             seen.add(g.name)
+            assert g.name in expect, f"{g}: add hit and miss samples for this grader"
             hits, misses = expect[g.name]
             for path in hits:
                 assert re.search(front["pattern"], path), f"{g}: misses {path!r}"
