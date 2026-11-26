@@ -217,8 +217,10 @@ given - `/steer:work review #12` for one PR) and does the reviewer's legwork in 
    coverage, drift flags, findings with `path:line`, design questions for the
    author, a suggested verdict. A fresh verifier then tries to refute each
    card's high findings: a refuted one leaves the card, an unsure one stays
-   marked unconfirmed. Each card is stored before you are asked, so a session
-   that ends first loses nothing.
+   marked unconfirmed. Each card is stored in `spec/.work/reviews/` before you
+   are asked, so a session that ends first loses nothing - only in a repo that
+   git-ignores that directory, as the scaffold does; elsewhere nothing is
+   stored and your posted reviews are the only memory.
 4. **Five buckets** - *Ready*, *Changes*, *Look* (High-risk or drift-flagged:
    never batch-approved), *Reviewed* (your review is already posted at this
    head) and *Blocked*.

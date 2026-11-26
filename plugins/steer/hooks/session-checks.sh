@@ -4,7 +4,7 @@
 # WHY THIS EXISTS
 #   The startup/resume/clear matcher used to register five separate hook
 #   commands (template drift, open questions, unmanaged repo, fault surfacing,
-#   graduation) - six now, with worktree trust. Each registration pays the
+#   graduation) - eight now (see the list below). Each registration pays the
 #   harness's per-hook overhead -
 #   spawn, stdin delivery, timeout envelope, output collection - at every
 #   session start in every managed repo (PLAN.md Phase 1). This orchestrator
@@ -29,11 +29,13 @@
 #   one, so the two cannot drift. The pytest latency budget
 #   (tests/test_hook_latency.py) times this whole chain.
 #
-#   One check does more than print: check-worktree-trust.sh inherits the primary
+#   Two checks do more than print. check-worktree-trust.sh inherits the primary
 #   checkout's `mise trust` into a linked worktree (see its header for why that
-#   grants nothing new). It is gated on being in a linked worktree, so a plain
+#   grants nothing new); it is gated on being in a linked worktree, so a plain
 #   checkout - the common case the latency budget measures - exits before it
-#   invokes anything.
+#   invokes anything. check-changes-requested.sh writes a cache under $TMPDIR
+#   and starts a detached `gh pr list` refresh, so the network call never
+#   counts against session start.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq. Invoked via an explicit `sh` prefix from hooks.json, so

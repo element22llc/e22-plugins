@@ -96,7 +96,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `contract.md` drops the template's `Last updated` line
+### v7.29.0 - `contract.md` drops the template's `Last updated` line
 
 - **What & why:** 7.27.1 removed `> Last updated: YYYY-MM-DD` from the
   `templates/spec/feature-contract.md` header, because every PR touching a
@@ -138,7 +138,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned.**
 
-### [Unreleased] - `.claude/settings.json` allows plain `git rm`, asks only for recursive and forced forms
+### v7.29.0 - `.claude/settings.json` allows plain `git rm`, asks only for recursive and forced forms
 
 - **What & why:** the scaffold asked before every `git rm` (`Bash(git rm:*)`
   under `permissions.ask`), which interrupts routine merge and rebase work,
