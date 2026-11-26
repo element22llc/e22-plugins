@@ -306,7 +306,7 @@ dg_files="$F,$PRT,$MT,$CIH,$CIL"
 # The project config files mise reads whose config_root is the repo root, highest
 # precedence first.
 dg_cfgs=""
-for _c in mise.toml .mise.toml mise/config.toml .mise/config.toml .config/mise.toml .config/mise/config.toml; do
+for _c in .mise.toml mise.toml mise/config.toml .mise/config.toml .config/mise.toml .config/mise/config.toml; do
 	[ -f "$ROOT/$_c" ] && dg_cfgs="$dg_cfgs
 $_c"
 done
@@ -377,8 +377,10 @@ dg_task() {
 	# _default after the dir.
 	while IFS= read -r _i; do
 		[ -n "$_i" ] || continue
-		for _f in "$_tp" "$_tp.sh" "$_tp.py" "$_tp.js" "$_tp.ps1" "$_tp/_default"; do
-			[ -f "$ROOT/$_i/$_f" ] && return 0
+		for _f in "$_tp" "$_tp/_default"; do
+			for _x in "" .sh .py .js .ps1; do
+				[ -f "$ROOT/$_i/$_f$_x" ] && return 0
+			done
 		done
 	done <<-EOF
 		$dg_incs

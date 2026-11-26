@@ -630,6 +630,9 @@ def test_workspace_ci_precondition_fires_without_the_task(tmp_path):
         {".mise/tasks/ws/pre-commit": "#!/bin/sh\n"},
         {"mise-tasks/ws/pre-commit.sh": "#!/bin/sh\n"},
         {".mise/tasks/ws/pre-commit/_default": "#!/bin/sh\n"},
+        {"mise-tasks/ws/pre-commit/_default.sh": "#!/bin/sh\n"},
+        {"mise.toml": '[task_config]\nincludes = ["ci"]\n', "ci/ws/pre-commit": "#!/bin/sh\n"},
+        {f"t{chr(0xE2)}ches/ws/pre-commit": "#!/bin/sh\n"},
     ],
 )
 def test_workspace_ci_precondition_finds_the_task_outside_mise_toml(tmp_path, files):
@@ -647,7 +650,6 @@ def test_workspace_ci_precondition_fires_on_a_mention_only(tmp_path):
     [
         {".gitignore": "/frontend/\n", "frontend/mise.toml": WS_PRE_COMMIT},
         {".git/info/exclude": "node_modules/\n", "node_modules/pkg/mise.toml": WS_PRE_COMMIT},
-        {"docs/ws/pre-commit": "notes\n"},
     ],
 )
 def test_workspace_ci_precondition_ignores_files_outside_the_repo(tmp_path, files):
@@ -662,6 +664,13 @@ def test_workspace_ci_precondition_ignores_a_nested_checkout(tmp_path):
     subprocess.run(["git", "init", "-q"], cwd=member, check=True)
     (member / "mise.toml").write_text(WS_PRE_COMMIT, encoding="utf-8")
     assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+# git grep refuses --untracked when submodule.recurse is set, unless told not to recurse.
+def test_workspace_ci_precondition_with_submodule_recurse(tmp_path):
+    _workspace(tmp_path, {"mise.toml": WS_PRE_COMMIT})
+    subprocess.run(["git", "config", "submodule.recurse", "true"], cwd=tmp_path, check=True)
+    assert not _fires(_precondition(WORKSPACE_CI), tmp_path)
 
 
 def test_workspace_ci_precondition_is_silent_off_a_workspace(tmp_path):
