@@ -339,6 +339,24 @@ worktree's own entry. The issue URL is the tracker's, which may be another repo'
 solo-trunk has no PR to add. A repeat add changes nothing. Best-effort: on any
 failure say so in one line and carry on - it never blocks `start` or `finish`.
 
+## Orca parent workspace
+
+Only for `queue` and `drive`, inside their Orca sections, when they open an
+Orca workspace for an issue: nest it under the workspace working on the issue's
+tracker parent, so an epic's workspace groups its children in Orca's sidebar.
+
+1. Read the issue's parent from `get` (native sub-issue parent, else the
+   `steer:parent-issue` marker). No parent -> none.
+2. `orca reference find <parent-url> --repo path:<repo-root> --json`. Drop a
+   match whose `reference.origins` are all `observed`: Orca records a URL it
+   merely saw in a terminal that way, while an attached one (`orca reference
+   add`, a workspace opened from the issue) carries no origins.
+3. Exactly one match left -> the parent is `"id:<workspace.id>"`, quoted since
+   the id holds a path. Zero or several -> none; never guess between two.
+
+No parent leaves the mode's own command as it was. Best-effort: an `orca`
+failure means no parent, said in one line.
+
 ## Spec delta - derived, never staged
 
 When the branch changes any `spec/features/<id>/contract.md`, fill the PR

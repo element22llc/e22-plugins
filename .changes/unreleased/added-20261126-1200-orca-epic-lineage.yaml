@@ -1,0 +1,14 @@
+kind: Added
+time: 2026-11-26T12:00:00.000000-05:00
+custom:
+  Slug: orca-epic-lineage
+body: |
+  - **Added: under Orca, `/steer:work queue` and `drive` nest an issue's
+    workspace under its epic's.** When the issue has a tracker parent and
+    exactly one workspace in the repo has that parent's URL attached, the
+    queue's `orca worktree create` gets `--parent-worktree`, and a drive
+    worker's new workspace is re-parented with `orca worktree set`, so Orca's
+    sidebar groups an epic's children under it. URLs Orca only saw in a
+    terminal do not count. With no parent, or zero or several matches, both
+    commands run as before; nothing changes outside Orca. `/steer:work` now
+    pre-approves `orca reference find` and `orca worktree set` (metadata only).
