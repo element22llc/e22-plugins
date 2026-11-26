@@ -261,7 +261,7 @@ The script performs the whole cut and refuses to start if a precondition fails:
 
 - The changelog, via `changie`: `batch` folds every pending fragment into
   `.changes/vX.Y.Z.md` and empties `.changes/unreleased/`; `merge` reassembles
-  `CHANGELOG.md` from the version files. `merge` is also what rewrites the three
+  `CHANGELOG.md` from the version files. `merge` is also what rewrites the four
   manifests, so skipping it would leave the release unpublishable -
   `release-publish.yml` fires on the `plugin.json` version diff.
 - `plugins/steer/templates/reference/MIGRATIONS.md`: renames every

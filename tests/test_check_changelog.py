@@ -224,9 +224,10 @@ def test_is_behaviour_classification():
     assert f("plugins/steer/skills/spec/SKILL.md")
     assert f("plugins/steer/rules/10-x.md")
     assert f("plugins/steer/scripts/scan-prereqs.sh")
-    # all three version-bearing manifests count
+    # all four version-bearing manifests count
     assert f("plugins/steer/.claude-plugin/plugin.json")
     assert f("plugins/steer/.github/plugin/plugin.json")
+    assert f("plugins/steer/.codex-plugin/plugin.json")
     assert f(".github/plugin/marketplace.json")
     # tests are exempt wherever they live under the plugin
     assert not f("plugins/steer/hooks/tests/register.test.tsx")

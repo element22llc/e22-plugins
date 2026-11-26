@@ -132,7 +132,7 @@ def test_managed_scaffold_stamps_the_current_plugin_version():
     # drift to /steer:next, which injects a sync nudge into every run of the
     # managed cases - one more notice competing with the ask. `.changie.yaml`
     # re-stamps every stamping scaffold on `changie merge`, in the same pass as
-    # the three manifests, so this test guards that wiring rather than asking a
+    # the four manifests, so this test guards that wiring rather than asking a
     # human to remember.
     version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
     changie = (REPO_ROOT / ".changie.yaml").read_text(encoding="utf-8")

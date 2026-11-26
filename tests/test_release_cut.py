@@ -11,6 +11,7 @@ key, and the preconditions changie itself has no opinion on.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 
 import pytest
@@ -144,6 +145,15 @@ def repo(tmp_path, monkeypatch):
     for attr, path in files.items():
         monkeypatch.setattr(rc, attr, path)
     return tmp_path
+
+
+def test_every_manifest_changie_stamps_is_version_checked():
+    """The fixture carries its own replacements block, so only this ties the
+    real `.changie.yaml` to the manifests the cut checks."""
+    changie = (rc.REPO_ROOT / ".changie.yaml").read_text(encoding="utf-8")
+    stamped = set(re.findall(r"^  - path: (\S+\.json)$", changie, flags=re.MULTILINE))
+    checked = {p.relative_to(rc.REPO_ROOT).as_posix() for p in rc._manifest_versions()}
+    assert stamped == checked
 
 
 def test_cut_batches_fragments_and_empties_unreleased(repo):
