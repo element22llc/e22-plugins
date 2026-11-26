@@ -1,0 +1,17 @@
+kind: Fixed
+time: 2026-11-26T13:00:00.000000-05:00
+custom:
+  Slug: 939-ci-scanners-skip-ignored
+body: |
+  - **Fixed: the scaffold's IaC and security CI stages no longer check
+    git-ignored dirs, and Semgrep errors leave a count in the log.**
+    `ci-iac.sh` passes `tofu fmt` the OpenTofu files git lists and lints the
+    YAML both the repo's yamllint config and git select, so a vendored
+    third-party dir no longer fails the stage. `ci-security.sh` passes Trivy a
+    `--skip-dirs` for each dir git ignores; a repo with its own `trivy.yaml`
+    or `TRIVY_SKIP_DIRS` list keeps the full scan, since a CLI list would
+    replace it. Dependency coverage is unchanged: the tracked lockfiles are
+    still read, and Trivy never read installed packages in `node_modules` or
+    `.venv`. When Semgrep reports syntax errors or timeouts, the stage now
+    prints how many, never a path or message. `/steer:setup sync` carries both
+    scripts forward through two migration entries (#939).

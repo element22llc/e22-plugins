@@ -28,6 +28,18 @@ fi
 set -- fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
 # Trivy loads the YAML ignore file (with expired_at) only when named.
 [ -f .trivyignore.yaml ] && set -- "$@" --ignorefile .trivyignore.yaml
+# Trivy reads no .gitignore: skip each dir git ignores (installed deps, vendored tools). The skip
+# list is comma-split globs, so a comma name stays scanned and glob characters are escaped. A
+# trivy.yaml or TRIVY_SKIP_DIRS list would be replaced, not extended: those repos keep a full scan.
+if [ ! -f trivy.yaml ] && [ -z "${TRIVY_SKIP_DIRS:-}" ]; then
+	ignored="$(git -c core.fsmonitor=false -c core.quotePath=false ls-files --others --ignored --exclude-standard --directory |
+		git -c core.fsmonitor=false -c core.quotePath=false check-ignore --stdin | sed 's/[][*?{}]/\\&/g')"
+	while IFS= read -r dir; do
+		case "${dir}" in *,*) ;; ?*/) set -- "$@" --skip-dirs="${dir}" ;; esac
+	done <<EOF
+${ignored}
+EOF
+fi
 steer_ci_group 'trivy fs (dependency CVEs, HIGH/CRITICAL)'
 trivy "$@" .
 steer_ci_endgroup
@@ -52,6 +64,9 @@ uvx --exclude-newer "${STEER_SEMGREP_EXCLUDE_NEWER}" --from "semgrep==${STEER_SE
 listed="$(grep -oE '"check_id":"[^"]*","path":"([^"\\]|\\.)*","start":[{]"line":[0-9]+' "${findings}" |
 	sed 's/^"check_id":"\([^"]*\)","path":"\(.*\)","start":{"line":\([0-9]*\)$/\1 \2:\3/')"
 [ -z "${listed}" ] || printf '%s\n' "${listed}"
+# Count only: an error's path and message can quote the source. Each error object opens with code, then level.
+errors="$(grep -oE '[{]"code":[0-9]+,"level":"' "${findings}" | wc -l | tr -d ' ')"
+[ "${errors}" -eq 0 ] || steer_ci_notice "semgrep: ${errors} scan error(s) (syntax errors, timeouts): those files were partly or not scanned. Run 'uvx --exclude-newer ${STEER_SEMGREP_EXCLUDE_NEWER} --from semgrep==${STEER_SEMGREP_VERSION} semgrep scan --config p/default' locally to see them."
 steer_ci_endgroup
 # uvx exits 1 too when it cannot fetch the pin, so exit 1 alone does not mean findings.
 if [ "${rc}" -eq 1 ] && [ -n "${listed}" ]; then

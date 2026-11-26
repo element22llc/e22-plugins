@@ -28,7 +28,7 @@ mkdir -p "${AN}/scripts" "${AN}/bin"
 cp "${PLUGIN}/templates/scaffold/scripts/ci-lib.sh" "${PLUGIN}/templates/scaffold/scripts/ci-iac.sh" "${AN}/scripts/"
 (cd "${AN}" && git init -q && : >ansible.cfg)
 printf '#!/bin/sh
-echo "uvx $*"
+case "$*" in *--list-files*) echo ./.yamllint.yml ;; *) echo "uvx $*" ;; esac
 ' >"${AN}/bin/uvx"
 chmod +x "${AN}/bin/uvx"
 out="$(cd "${AN}" && PATH="${AN}/bin:${PATH}" sh scripts/ci-iac.sh 2>&1)"
