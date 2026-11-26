@@ -303,7 +303,8 @@ MT="mise.toml"
 CIH="scripts/ci-hygiene.sh"
 CIL="scripts/ci-lib.sh"
 dg_files="$F,$PRT,$MT,$CIH,$CIL"
-# The project config files mise reads whose config_root is the repo root.
+# The project config files mise reads whose config_root is the repo root, highest
+# precedence first.
 dg_cfgs=""
 for _c in mise.toml .mise.toml mise/config.toml .mise/config.toml .config/mise.toml .config/mise/config.toml; do
 	[ -f "$ROOT/$_c" ] && dg_cfgs="$dg_cfgs
@@ -311,8 +312,11 @@ $_c"
 done
 # mise reads task includes from `[task_config] includes` when the key is set (even
 # to nothing loadable), else from its default dirs. Each holds file tasks and TOML
-# files whose top-level tables are tasks. `@` marks that the key was found.
-dg_incs="$(printf '%s\n' "$dg_cfgs" | while IFS= read -r _c; do [ -n "$_c" ] && awk '
+# files whose top-level tables are tasks. `@` marks that the key was found; only the
+# first config file that sets it counts, since mise never merges two lists.
+dg_incs="$(printf '%s\n' "$dg_cfgs" | while IFS= read -r _c; do
+	[ -n "$_c" ] || continue
+	_o="$(awk '
 	/^[[:space:]]*\[/ { sect = $0; sub(/#.*/, "", sect); gsub(/[[:space:]]/, "", sect) }
 	(sect == "[task_config]" && /^[[:space:]]*includes[[:space:]]*=/) ||
 		(sect == "" && /^[[:space:]]*task_config\.includes[[:space:]]*=/) { on = 1; print "@" }
@@ -322,12 +326,16 @@ dg_incs="$(printf '%s\n' "$dg_cfgs" | while IFS= read -r _c; do [ -n "$_c" ] && 
 		if (index(s, "]")) on = 0
 		while (match(s, /["\047][^"\047]*["\047]/)) { print substr(s, RSTART + 1, RLENGTH - 2); s = substr(s, RSTART + RLENGTH) }
 	}
-' "$ROOT/$_c" 2>/dev/null; done | sed 's|^{{[[:space:]]*config_root[[:space:]]*}}/||; s|^\./||' | grep -Ev '^/|\.\.')"
-if printf '%s\n' "$dg_incs" | grep -qx @; then
-	dg_incs="$(printf '%s\n' "$dg_incs" | grep -vx @)"
-else
-	dg_incs="$(printf '%s\n' mise-tasks .mise-tasks mise/tasks .mise/tasks .config/mise/tasks)"
-fi
+' "$ROOT/$_c" 2>/dev/null)"
+	if [ "${_o#@}" != "$_o" ]; then
+		printf '%s\n' "$_o"
+		break
+	fi
+done | sed 's|^{{[[:space:]]*config_root[[:space:]]*}}/||; s|^\./||' | grep -Ev '^/|\.\.')"
+case "$dg_incs" in
+@*) dg_incs="${dg_incs#@}" ;;
+*) dg_incs="$(printf '%s\n' mise-tasks .mise-tasks mise/tasks .mise/tasks .config/mise/tasks)" ;;
+esac
 dg_tomls=""
 while IFS= read -r _i; do
 	case "$_i" in
@@ -361,18 +369,23 @@ dg_task() {
 	_tp="$(printf '%s' "$1" | tr ':' '/')"
 	while IFS= read -r _d; do
 		[ -n "$_d" ] &&
-			grep -Eq "^[[:space:]]*(\[tasks\.[\"']?$1[\"']?\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
+			grep -Eq "^[[:space:]]*(\[[[:space:]]*tasks\.[\"']?$1[\"']?[[:space:]]*\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
 	done <<-EOF
 		$dg_cfgs
 	EOF
+	# mise drops a script extension from a file task's name, and names a dir's
+	# _default after the dir.
 	while IFS= read -r _i; do
-		[ -n "$_i" ] && [ -f "$ROOT/$_i/$_tp" ] && return 0
+		[ -n "$_i" ] || continue
+		for _f in "$_tp" "$_tp.sh" "$_tp.py" "$_tp.js" "$_tp.ps1" "$_tp/_default"; do
+			[ -f "$ROOT/$_i/$_f" ] && return 0
+		done
 	done <<-EOF
 		$dg_incs
 	EOF
 	while IFS= read -r _d; do
 		[ -n "$_d" ] &&
-			grep -Eq "^[[:space:]]*(\[[\"']?$1[\"']?\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
+			grep -Eq "^[[:space:]]*(\[[[:space:]]*[\"']?$1[\"']?[[:space:]]*\]|[\"']?$1[\"']?[[:space:]]*=)" "$ROOT/$_d" 2>/dev/null && return 0
 	done <<-EOF
 		$dg_tomls
 	EOF
@@ -566,9 +579,9 @@ SG="scripts/ci-security.sh"
 sg_files=".github/workflows/ci.yml,mise.toml,$SG"
 if [ "$stack" = none ]; then
 	emit "security-gate" "n/a" "$sg_files"
-elif ! exists "$SG" && ! has ".github/workflows/ci.yml" "ci:security"; then
+elif ! exists "$SG" && ! reaches "ci:security"; then
 	emit "security-gate" "absent" "$sg_files"
-elif has ".github/workflows/ci.yml" "mise run ci:security" && dg_task "ci:security" && exists "$SG"; then
+elif reaches "mise run( --?[a-z-]+)* ci:security([^a-z:-]|\$)" && dg_task "ci:security" && exists "$SG"; then
 	emit "security-gate" "present-wired" "$sg_files"
 else
 	emit "security-gate" "mis-wired" "$sg_files"
@@ -595,9 +608,9 @@ pg_files=".github/workflows/ci.yml,mise.toml,$PG"
 # Not gated on prod_pr: the core ci.yml and mise.toml call the script on every gate.
 if exists "spec/workspace.yml"; then
 	emit "promotion-gate" "n/a" "$pg_files"
-elif ! exists "$PG" && ! has ".github/workflows/ci.yml" "ci:promotion"; then
+elif ! exists "$PG" && ! reaches "ci:promotion"; then
 	emit "promotion-gate" "absent" "$pg_files"
-elif has ".github/workflows/ci.yml" "mise run ci:promotion" && has ".github/workflows/ci.yml" 'release/\*\*' &&
+elif reaches "mise run( --?[a-z-]+)* ci:promotion([^a-z:-]|\$)" && has ".github/workflows/ci.yml" 'release/\*\*' &&
 	dg_task "ci:promotion" && exists "$PG"; then
 	emit "promotion-gate" "present-wired" "$pg_files"
 else

@@ -601,6 +601,7 @@ WS_PRE_COMMIT = '[tasks."ws:pre-commit"]\nrun = "true"\n'
 
 
 def _workspace(repo: Path, files: dict[str, str]) -> None:
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
     (repo / "spec").mkdir()
     (repo / "spec/workspace.yml").write_text("", encoding="utf-8")
     for rel, text in files.items():
@@ -625,7 +626,10 @@ def test_workspace_ci_precondition_fires_without_the_task(tmp_path):
         {".mise/tasks/hooks.toml": "['ws:pre-commit']\nrun = 'true'\n"},
         {"mise.toml": '[task_config]\nincludes = ["tasks"]\n', "tasks/ws.toml": WS_PRE_COMMIT},
         {"mise.toml": '[tasks]\n"ws:pre-commit" = "true"\n'},
+        {"mise.toml": '[ tasks."ws:pre-commit" ]\nrun = "true"\n'},
         {".mise/tasks/ws/pre-commit": "#!/bin/sh\n"},
+        {"mise-tasks/ws/pre-commit.sh": "#!/bin/sh\n"},
+        {".mise/tasks/ws/pre-commit/_default": "#!/bin/sh\n"},
     ],
 )
 def test_workspace_ci_precondition_finds_the_task_outside_mise_toml(tmp_path, files):
@@ -638,9 +642,25 @@ def test_workspace_ci_precondition_fires_on_a_mention_only(tmp_path):
     assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
 
 
-@pytest.mark.parametrize("skipped", ["member/.git", "node_modules/pkg", ".venv/lib"])
-def test_workspace_ci_precondition_skips_git_and_dependency_dirs(tmp_path, skipped):
-    _workspace(tmp_path, {f"{skipped}/tasks.toml": WS_PRE_COMMIT})
+@pytest.mark.parametrize(
+    "files",
+    [
+        {".gitignore": "/frontend/\n", "frontend/mise.toml": WS_PRE_COMMIT},
+        {".git/info/exclude": "node_modules/\n", "node_modules/pkg/mise.toml": WS_PRE_COMMIT},
+        {"docs/ws/pre-commit": "notes\n"},
+    ],
+)
+def test_workspace_ci_precondition_ignores_files_outside_the_repo(tmp_path, files):
+    _workspace(tmp_path, files)
+    assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
+
+
+def test_workspace_ci_precondition_ignores_a_nested_checkout(tmp_path):
+    _workspace(tmp_path, {})
+    member = tmp_path / ".claude/worktrees/feat"
+    member.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=member, check=True)
+    (member / "mise.toml").write_text(WS_PRE_COMMIT, encoding="utf-8")
     assert _out(_precondition(WORKSPACE_CI), tmp_path) == ["stale"]
 
 

@@ -490,9 +490,9 @@ and **Repair**.
 - **Conditional:** a Node or Python stack (`stack` is not `none`); without one
   it is `n/a`, so sync never proposes it to a workspace. A stack-less repo that
   carries the stage (the infra profile) still runs its secret scan.
-- **Wired-when:** `ci.yml` runs `mise run ci:security`, mise defines
-  `ci:security` (in a mise config file, a task include, or a file task), and
-  `scripts/ci-security.sh` is present.
+- **Wired-when:** `ci.yml`, or a repo script it calls, runs `mise run
+  ci:security`, mise defines `ci:security` (in a mise config file, a task
+  include, or a file task), and `scripts/ci-security.sh` is present.
 - **Repair:** copy the script from the scaffold, add the two `[tools]` entries
   (and `uv` if the repo pruned it), the `ci:security` task and its `ci` depends
   entry to `mise.toml`, and splice the `Security scan` step into `ci.yml` after
@@ -531,9 +531,10 @@ and **Repair**.
 - **Conditional:** not a workspace; otherwise `n/a`. Every `production_gate`
   needs it, because the core `ci.yml` and `mise.toml` call it; it no-ops off a
   PR into `prod`.
-- **Wired-when:** `ci.yml` runs `mise run ci:promotion` and triggers on
-  `release/**`, mise defines `ci:promotion` (in a mise config file, a task
-  include, or a file task), and the script is present.
+- **Wired-when:** `ci.yml`, or a repo script it calls, runs `mise run
+  ci:promotion`, `ci.yml` triggers on `release/**`, mise defines `ci:promotion`
+  (in a mise config file, a task include, or a file task), and the script is
+  present.
 - **Repair:** copy the script from the scaffold, add the task and its `ci`
   depends entry, splice the `Promotion` step (with its `STEER_CI_*` env,
   `STEER_CI_HEAD_REF` included) before the spec step, and add `release/**` and
