@@ -355,6 +355,12 @@ def test_a_later_hand_set_date_is_kept_on_a_bump(tmp_path: Path):
     assert "STEER_SEMGREP_EXCLUDE_NEWER=2026-11-21\n" in script.read_text()
 
 
+def test_versions_compare_numerically(tmp_path: Path):
+    script = _security(tmp_path)
+    bumps, _ = _semgrep(script, _pypi(_wheel("1.186.9", COOLED), _wheel("1.186.10", COOLED)))
+    assert bumps and "-> 1.186.10," in bumps[0]
+
+
 def test_pre_releases_and_yanked_releases_are_ignored(tmp_path: Path):
     script = _security(tmp_path)
     fetch = _pypi(
@@ -390,6 +396,13 @@ def test_a_failed_or_malformed_pypi_lookup_is_a_failure(tmp_path: Path):
         assert bumps == []
         assert failures and failures[0].startswith("ci-security.sh: semgrep - ")
     assert script.read_text() == PIN
+
+
+def test_an_impossible_pinned_date_is_a_failure(tmp_path: Path):
+    script = _security(tmp_path, PIN.replace("2026-11-16", "2026-13-45"))
+    bumps, failures = _semgrep(script, _pypi(_wheel("1.186.0", COOLED)))
+    assert bumps == []
+    assert failures and failures[0].startswith("ci-security.sh: semgrep - ")
 
 
 def test_a_reshaped_semgrep_pin_is_a_failure(tmp_path: Path):

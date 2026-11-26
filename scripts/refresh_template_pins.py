@@ -291,13 +291,14 @@ def refresh_semgrep(
     day = (now.astimezone(UTC) - COOLDOWN).date()
     cutoff = datetime.combine(day, time(), UTC) - EARLIEST_OFFSET
     try:
+        old_date = date.fromisoformat(m["date"])
         newest = _newest_cooled(fetch("semgrep"), m["ver"], cutoff)
     except (LookupError, KeyError, TypeError, ValueError, AttributeError) as exc:
-        return [], [f"{script.name}: semgrep - {exc!r}"]
+        return [], [f"{script.name}: semgrep - {exc}"]
     if newest is None:
         return [], []
     # Bump-up only, like every other pin: a later hand-set date stays.
-    new_date = max(date.fromisoformat(m["date"]), day).isoformat()
+    new_date = max(old_date, day).isoformat()
     pair = f"STEER_SEMGREP_VERSION={newest}\nSTEER_SEMGREP_EXCLUDE_NEWER={new_date}"
     if write:
         script.write_text(text[: m.start()] + pair + text[m.end() :], encoding="utf-8")

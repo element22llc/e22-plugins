@@ -99,7 +99,8 @@ jobs:
           body = (
               "- **Changed:** the shipped templates' pins (workflow action tags, the "
               "gh-actions-lock version, the scaffold's Semgrep version and exclude-newer "
-              "date) were refreshed to their current upstream releases (automated by "
+              "date) were refreshed to their current upstream releases, Semgrep's to "
+              "the newest past a 7-day cooldown (automated by "
               f"`template-pin-refresh.yml`): {summary}. Dependabot cannot see the "
               "templates tree, so this is what keeps the pins a freshly bootstrapped "
               "repo receives from rotting; bump-up only, always via this PR."
