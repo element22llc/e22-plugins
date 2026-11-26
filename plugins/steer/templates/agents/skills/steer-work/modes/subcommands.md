@@ -147,9 +147,9 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   fix like any other: commit it, local gates green, then one code-gate round on
   those commits unless they are Trivial; a new note from that round is asked
   the same way once, and any further one stays for the reviewer. Record each answer under the note as decided in-session, by
-  whom and when; `Decide later` leaves the note as it was. An open high finding
-  or a flagged drift class is never offered for a waiver here - it stays for
-  the reviewer.
+  whom and when; `Decide later` leaves the note as it was. An open high finding,
+  a flagged drift class or a box left unticked against a `drift unticked`
+  line is never offered for a waiver here - it stays for the reviewer.
   **Capture what was learned** -
   if the work turned on reasoning that is non-obvious and absent from the final
   code, tests and docs, put it on the first rung of the enforcement ladder that
@@ -159,12 +159,30 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   `https://raw.githubusercontent.com/element22llc/e22-plugins/main/plugins/steer/templates/spec/learning.md`, updating a matching
   learning over adding one (`/steer-reference traceability` section 3). Writing
   nothing is the normal outcome; whatever is written ships in this delivery.
+  **Check the drift flags** (pr-flow) - compose the whole PR body first, the
+  one you will open or update the PR with (Spec delta and *Notes for the
+  reviewer* included; on an open PR, start from its live body, so a box
+  ticked on GitHub stays ticked), write it to a file, and pass it to the pre-flight
+  below as `--body <file>`. It compares the drift boxes the branch's paths
+  imply with the boxes ticked in that body and only reports; it never edits
+  the body. `drift unticked <box> <path> <count>`: the diff touches a path
+  that box names - tick it, unless reading the change shows the class does
+  not apply; then leave it unticked and say why under *Notes for the
+  reviewer*, a note for the reviewer to answer, so either way the PR opens a
+  draft (Draft or ready, below). `drift confirm <box>`: a ticked box no path
+  implies - keep the tick (never untick a box its author set) and ask the
+  reviewer to confirm it under *Notes for the reviewer*. `unchecked`: one
+  line, carry on; no drift line stops the push. The boxes no path can imply
+  (intent, undocumented behavior, security, compliance) stay your judgment.
+  After a `parent-merged` line, check again once its merges are in
+  (`--base <the against branch> --body <file> drift`): until then the merged
+  parent's paths read as this branch's.
   **Pre-flight the base** (pr-flow) - the one procedure for bringing a base
   in, a stack parent's included: commit everything first - it checks the
   committed `HEAD` - then, before the push, run
-  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh"`
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --body <file>`
   when the PR targets the default branch, else
-  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base>`
+  `sh "${STEER_PLUGIN_ROOT}/scripts/finish-preflight.sh" --base <its base> --body <file>`
   (a stack parent, `batch/<slug>`, `prod` for a hotfix). It fetches and pins
   refs under `origin/pull/<n>/`, never touching the branch; a printed ref
   that no longer resolves means pre-flight again. Its `merge` and
@@ -247,7 +265,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   design question is left unanswered under *Notes for the reviewer* (a vetted
   plan, findings already resolved, a note its author answered in-session and a
   skipped gate's one line are record, not reading); no drift class is
-  flagged; and no question awaits its owner's confirmation. Anything else
+  flagged, nor left unticked against a `drift unticked` line; and no
+  question awaits its owner's confirmation. Anything else
   stays a draft: its author reads it and marks it ready, which starts CI
   (`ready_for_review`) and makes that run theirs. A later `finish` that comes
   back clean readies its draft. A ready PR goes back to draft only when you

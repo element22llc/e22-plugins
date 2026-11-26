@@ -5,12 +5,24 @@
 # reads uncommitted files too.
 #
 # USAGE
-#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" [--remote <name>] [--base <branch>] [<check>...]
+#   sh "${CLAUDE_PLUGIN_ROOT}/scripts/finish-preflight.sh" [--remote <name>] [--base <branch>] [--body <file>] [<check>...]
 #   No <check> runs them all. --base names the base the PR targets (a stack
 #   parent, batch/<slug>, prod); without it an open PR's base is read, else
-#   the default branch.
+#   the default branch. --body is the PR body finish is about to push.
 #
 # CHECKS
+#   drift  Runs only with --body. Derives, from the paths this branch changes
+#         since its merge base with the freshly fetched --base (else the
+#         default branch; never an open PR's base), which drift boxes of the
+#         shipped PR template they imply, and compares them with the boxes
+#         ticked in the body. Only the boxes a path can imply: Contract drift
+#         (a modified or deleted spec/features/*/contract.md, openspec/specs/),
+#         Operational (.github/workflows/, .github/actions/,
+#         .github/dependabot.yml, infra/, scripts/ci-*.sh, policy/delivery.yml,
+#         a Dockerfile, *.tf, terragrunt.hcl), Local setup / deployment changed
+#         (mise.toml, a compose file, .env.example), App docs invalidated
+#         (spec/app/, openspec/steer/app/), Architecture/stack drift
+#         (ARCHITECTURE.md). It reports; it never edits the body.
 #   base  Predicts, with `git merge-tree`, the merges that bring the freshly
 #         fetched base into HEAD, and prints them as `merge` lines. A stack
 #         parent whose PR merged is replaced by the base it merged into; after
@@ -53,6 +65,10 @@
 #   prompts: git and gh credential prompts are off.
 #
 # OUTPUT (stdout) - one TAB-separated line per finding:  <check>\t<status>\t<detail>
+#   drift  unticked  <box>\t<first path>\t<number of paths>   (the diff implies it)
+#   drift  confirm   <box>                     (ticked, but no path implies it)
+#   drift  clean
+#   drift  unchecked <reason>
 #   base  parent-merged  <branch> #<pr>
 #   base  parent-closed  <branch> #<pr>
 #   base  against        <remote>/<branch>          (the base HEAD was checked against)
@@ -80,7 +96,7 @@ GIT_TERMINAL_PROMPT=0
 GH_PROMPT_DISABLED=1
 export GIT_TERMINAL_PROMPT GH_PROMPT_DISABLED
 
-CHECKS="base numbers"
+CHECKS="base numbers drift"
 
 die() { # <rc> <message>
 	printf 'finish-preflight: %s\n' "$2" >&2
@@ -90,8 +106,15 @@ emit() { printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}"; }
 
 REMOTE=origin
 BASE=""
+BODY=""
 while [ $# -gt 0 ]; do
 	case "$1" in
+	--body)
+		[ $# -ge 2 ] || die 2 "$1 needs a value"
+		case "$2" in -*) die 2 "not a file name: $2" ;; esac
+		BODY="$2"
+		shift 2
+		;;
 	--remote | --base)
 		[ $# -ge 2 ] || die 2 "$1 needs a value"
 		case "$2" in -*) die 2 "not a name: $2" ;; esac
@@ -133,6 +156,93 @@ report() { # from MT_RC/MT_OUT; returns 0 when the result is known
 	else
 		emit base unchecked "git merge-tree failed (rc ${MT_RC}; needs git 2.38+ and shared history)"
 		return 1
+	fi
+}
+
+d_classify() { # stdin: `git diff --name-status` lines -> <box>\t<path>
+	# An added contract is a new feature's spec, not drift from one.
+	awk -F '\t' '{
+		s = $1; p = $2; b = p; sub(/.*\//, "", b)
+		if (s != "A" && (p ~ /^spec\/features\/[^\/]+\/contract\.md$/ || p ~ /^openspec\/specs\//))
+			print "Contract drift\t" p
+		if (p ~ /^\.github\/(workflows|actions)\// || p == ".github/dependabot.yml" || p ~ /^infra\// ||
+			p ~ /^scripts\/ci-[^\/]*\.sh$/ || p == "policy/delivery.yml" || b == "Dockerfile" ||
+			b ~ /^Dockerfile\./ || b ~ /\.Dockerfile$/ || b ~ /\.tf$/ || b == "terragrunt.hcl")
+			print "Operational\t" p
+		if (b == "mise.toml" || b == ".mise.toml" || b ~ /^(docker-)?compose(\.[^.]+)?\.ya?ml$/ || b == ".env.example")
+			print "Local setup / deployment changed\t" p
+		if (p ~ /^(spec|openspec\/steer)\/app\//)
+			print "App docs invalidated\t" p
+		if (b == "ARCHITECTURE.md")
+			print "Architecture/stack drift\t" p
+	}'
+}
+
+d_boxes() { # stdin: a PR body -> <x| >\t<label> per bold checklist line
+	tr -d '\r' | awk '
+		match($0, /^[ \t]*[-*+] \[[ xX]\] \*\*/) {
+			s = substr($0, RSTART + RLENGTH - 5, 1); l = substr($0, RSTART + RLENGTH)
+			e = index(l, "**"); if (e == 0) next
+			print (s == " " ? " " : "x") "\t" substr(l, 1, e - 1)
+		}'
+}
+
+check_drift() {
+	[ -n "${BODY}" ] || return 0
+	[ -f "${BODY}" ] && [ -r "${BODY}" ] || {
+		emit drift unchecked "PR body not readable: ${BODY}"
+		return
+	}
+	d_box="$(d_boxes <"${BODY}")"
+	git remote get-url -- "${REMOTE}" >/dev/null 2>&1 || {
+		emit drift unchecked "no remote named ${REMOTE}"
+		return
+	}
+	d_target="${BASE:-$(git ls-remote --symref "${REMOTE}" HEAD 2>/dev/null |
+		sed -n 's|^ref: refs/heads/\([^	]*\)	HEAD$|\1|p')}"
+	[ -n "${d_target}" ] || {
+		emit drift unchecked "${REMOTE} unreachable or has no default branch"
+		return
+	}
+	d_ref="refs/remotes/${REMOTE}/${d_target}"
+	{ fetch "${d_target}" && git rev-parse -q --verify "${d_ref}^{commit}" >/dev/null; } || {
+		emit drift unchecked "fetch of ${REMOTE}/${d_target} failed"
+		return
+	}
+	d_mb="$(git merge-base HEAD "${d_ref}" 2>/dev/null)" || {
+		emit drift unchecked "no merge base with ${REMOTE}/${d_target}"
+		return
+	}
+	d_hits="$(git -c core.quotePath=false diff --name-status --no-renames "${d_mb}" HEAD | d_classify)"
+	d_out=""
+	d_known=""
+	while IFS= read -r d_label; do
+		d_state="$(printf '%s\n' "${d_box}" | awk -F '\t' -v l="${d_label}" '$2 == l { print $1; exit }')"
+		[ -z "${d_state}" ] || d_known=1
+		d_paths="$(printf '%s\n' "${d_hits}" | awk -F '\t' -v l="${d_label}" '$1 == l { print $2 }')"
+		if [ -n "${d_paths}" ] && [ -z "${d_state}" ]; then
+			d_out="${d_out}$(emit drift unchecked "${d_label}: no such box in the PR body")
+"
+		elif [ -n "${d_paths}" ] && [ "${d_state}" != x ]; then
+			d_out="${d_out}$(emit drift unticked "${d_label}	$(printf '%s\n' "${d_paths}" | sed -n 1p)	$(printf '%s\n' "${d_paths}" | wc -l | tr -d ' ')")
+"
+		elif [ -z "${d_paths}" ] && [ "${d_state}" = x ]; then
+			d_out="${d_out}$(emit drift confirm "${d_label}")
+"
+		fi
+	done <<EOF
+Contract drift
+Operational
+Local setup / deployment changed
+App docs invalidated
+Architecture/stack drift
+EOF
+	if [ -z "${d_known}" ]; then
+		emit drift unchecked "no drift checklist in the PR body"
+	elif [ -z "${d_out}" ]; then
+		emit drift clean
+	else
+		printf '%s' "${d_out}"
 	fi
 }
 
