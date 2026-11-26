@@ -495,6 +495,49 @@ assert_eq "cap: CI runs ci:specs, not ci:spec -> question-gate mis-wired" "$(cap
 printf '      - run: mise run ci:spec\n' >"${CRT}/.github/workflows/ci.yml"
 rm -r "${CRT}/tasks"
 
+# security-gate and promotion-gate find their tasks wherever mise defines them (#938).
+CRS="${WORK}/cap-stage-tasks"
+mkdir -p "${CRS}/.github/workflows" "${CRS}/scripts" "${CRS}/.mise/tasks"
+printf '{}\n' >"${CRS}/package.json"
+cp "${PLUGIN}/templates/scaffold/scripts/ci-security.sh" "${PLUGIN}/templates/scaffold/scripts/ci-promotion.sh" "${CRS}/scripts/"
+printf 'on:\n  pull_request:\n    branches: [main, "release/**"]\njobs:\n  ci:\n    steps:\n      - run: mise run ci:security\n      - run: mise run ci:promotion\n' >"${CRS}/.github/workflows/ci.yml"
+cap_stage_tasks='["ci:security"]\nrun = "sh scripts/ci-security.sh"\n["ci:promotion"]\nrun = "sh scripts/ci-promotion.sh"\n'
+printf '[tools]\n' >"${CRS}/mise.toml"
+# shellcheck disable=SC2059
+printf "${cap_stage_tasks}" >"${CRS}/.mise/tasks/ci.toml"
+capscan_nomise "${CRS}"
+assert_eq "cap: ci:security in a task include -> security-gate present-wired" "$(capstatus "${out}" security-gate)" "present-wired"
+assert_eq "cap: ci:promotion in a task include -> promotion-gate present-wired" "$(capstatus "${out}" promotion-gate)" "present-wired"
+rm "${CRS}/.mise/tasks/ci.toml"
+printf '[tasks.ci]\ndepends = ["ci:security", "ci:promotion"] # ci:security\n' >"${CRS}/mise.toml"
+capscan_nomise "${CRS}"
+assert_eq "cap: mise.toml only names ci:security -> security-gate mis-wired" "$(capstatus "${out}" security-gate)" "mis-wired"
+assert_eq "cap: mise.toml only names ci:promotion -> promotion-gate mis-wired" "$(capstatus "${out}" promotion-gate)" "mis-wired"
+printf '[tools]\n' >"${CRS}/mise.toml"
+for _cfg in .mise.toml .config/mise.toml mise/config.toml .mise/config.toml .config/mise/config.toml; do
+	mkdir -p "$(dirname "${CRS}/${_cfg}")"
+	printf '[tasks."ci:security"]\nrun = "sh scripts/ci-security.sh"\n[tasks."ci:promotion"]\nrun = "sh scripts/ci-promotion.sh"\n' >"${CRS}/${_cfg}"
+	capscan_nomise "${CRS}"
+	assert_eq "cap: tasks in ${_cfg} -> security-gate present-wired" "$(capstatus "${out}" security-gate)" "present-wired"
+	assert_eq "cap: tasks in ${_cfg} -> promotion-gate present-wired" "$(capstatus "${out}" promotion-gate)" "present-wired"
+	rm "${CRS}/${_cfg}"
+done
+# shellcheck disable=SC2059
+printf "${cap_stage_tasks}" >"${CRS}/.mise.toml"
+capscan_nomise "${CRS}"
+assert_eq "cap: a top-level table in a config file is no task -> security-gate mis-wired" "$(capstatus "${out}" security-gate)" "mis-wired"
+rm "${CRS}/.mise.toml"
+mkdir -p "${CRS}/.config" "${CRS}/ci-tasks"
+printf '[task_config]\nincludes = ["ci-tasks"]\n' >"${CRS}/.config/mise.toml"
+# shellcheck disable=SC2059
+printf "${cap_stage_tasks}" >"${CRS}/ci-tasks/stages.toml"
+capscan_nomise "${CRS}"
+assert_eq "cap: [task_config] includes in .config/mise.toml -> security-gate present-wired" "$(capstatus "${out}" security-gate)" "present-wired"
+assert_eq "cap: [task_config] includes in .config/mise.toml -> promotion-gate present-wired" "$(capstatus "${out}" promotion-gate)" "present-wired"
+mv "${CRS}/ci-tasks/stages.toml" "${CRS}/.mise/tasks/stages.toml"
+capscan_nomise "${CRS}"
+assert_eq "cap: .config/mise.toml includes hide the default dirs -> security-gate mis-wired" "$(capstatus "${out}" security-gate)" "mis-wired"
+
 # The scanner never asks mise, even when the files show no task: in a trusted repo
 # mise evaluates the repo's config, and this helper never executes repo content.
 CAP_STUBS="${WORK}/cap-stubs"

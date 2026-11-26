@@ -251,7 +251,8 @@ and **Repair**.
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** `ci.yml`, or a repo script it calls, reaches the hygiene stage -
   via `mise run ci:hygiene`, which runs `scan-version-pins.sh` - **and** mise
-  defines the `check` + `ci` tasks (in `mise.toml`, a task include such as
+  defines the `check` + `ci` tasks (in `mise.toml` or another project config
+  file such as `.mise.toml` or `.config/mise.toml`, a task include such as
   `.mise/tasks/*.toml`, or a file task) **and** every `ci:*` stage CI runs **and**
   every `scripts/ci-*.sh` that CI or a TOML task file names is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
@@ -317,9 +318,10 @@ and **Repair**.
 ### commit-gate - the pre-commit hook wired to `mise run pre-commit`
 - **Files:** `.git/hooks/pre-commit` (**not versioned** - per-clone local state),
   backed by the `pre-commit` task in `mise.toml`
-- **Conditional:** repos whose `mise.toml` defines a `pre-commit` task
-  (`ws:pre-commit` in a workspace - a repo with `spec/workspace.yml`)
-- **Wired-when:** `mise.toml` defines that task **and** `.git/hooks/pre-commit`
+- **Conditional:** repos where mise defines a `pre-commit` task (in a mise config
+  file, a task include, or a file task; `ws:pre-commit` in a workspace - a repo
+  with `spec/workspace.yml`)
+- **Wired-when:** mise defines that task **and** `.git/hooks/pre-commit`
   exists and invokes it (`mise run pre-commit`, or `mise run ws:pre-commit`). A
   steer hook calling the other name is `mis-wired`.
 - **Repair:** run `mise generate git-pre-commit --task=pre-commit --write`
@@ -488,8 +490,9 @@ and **Repair**.
 - **Conditional:** a Node or Python stack (`stack` is not `none`); without one
   it is `n/a`, so sync never proposes it to a workspace. A stack-less repo that
   carries the stage (the infra profile) still runs its secret scan.
-- **Wired-when:** `ci.yml` runs `mise run ci:security`, `mise.toml` defines
-  `ci:security`, and `scripts/ci-security.sh` is present.
+- **Wired-when:** `ci.yml` runs `mise run ci:security`, mise defines
+  `ci:security` (in a mise config file, a task include, or a file task), and
+  `scripts/ci-security.sh` is present.
 - **Repair:** copy the script from the scaffold, add the two `[tools]` entries
   (and `uv` if the repo pruned it), the `ci:security` task and its `ci` depends
   entry to `mise.toml`, and splice the `Security scan` step into `ci.yml` after
@@ -529,7 +532,8 @@ and **Repair**.
   needs it, because the core `ci.yml` and `mise.toml` call it; it no-ops off a
   PR into `prod`.
 - **Wired-when:** `ci.yml` runs `mise run ci:promotion` and triggers on
-  `release/**`, `mise.toml` defines `ci:promotion`, and the script is present.
+  `release/**`, mise defines `ci:promotion` (in a mise config file, a task
+  include, or a file task), and the script is present.
 - **Repair:** copy the script from the scaffold, add the task and its `ci`
   depends entry, splice the `Promotion` step (with its `STEER_CI_*` env,
   `STEER_CI_HEAD_REF` included) before the spec step, and add `release/**` and

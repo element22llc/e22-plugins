@@ -734,10 +734,16 @@ Name the file and say what to carry forward.
 
   ```sh
   test -f spec/workspace.yml && grep -q 'mise run ci:hygiene' .github/workflows/ci.yml 2>/dev/null && echo stale
-  test -f spec/workspace.yml && ! grep -q 'ws:pre-commit' mise.toml && echo stale
+  test -f spec/workspace.yml && ! { find . \( -name .git -o -name node_modules -o -name .venv \) -prune -o \
+    -type f -name '*.toml' -exec grep -lE "^[[:space:]]*(\[(tasks\.)?[\"']?ws:pre-commit[\"']?\]|[\"']?ws:pre-commit[\"']?[[:space:]]*=)" {} + -o \
+    -type f -path '*/ws/pre-commit' -print; } 2>/dev/null | grep -q . && echo stale
   ```
 
-  No output => already migrated, or not a workspace => no-op.
+  No output => already migrated, or not a workspace => no-op. The task may sit
+  in any mise config file, a task include anywhere (`[task_config] includes`),
+  or a file task, so the search covers every `.toml`, skipping member
+  checkouts' `.git` and dependency dirs; it counts a definition, never a
+  mention in `depends` or a comment.
 - **Action:** read-then-propose; show the diff.
   - `.github/workflows/ci.yml`: **whole-file re-take** from
     `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci-workspace.yml`. Carry
