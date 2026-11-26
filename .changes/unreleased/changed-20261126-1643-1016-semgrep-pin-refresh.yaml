@@ -1,0 +1,12 @@
+kind: Changed
+time: 2026-11-26T16:43:00.000000-05:00
+custom:
+  Slug: 1016-semgrep-pin-refresh
+body: |
+  - **Changed: the scaffold's Semgrep pin now moves on a schedule.**
+    `scripts/ci-security.sh` installs Semgrep 1.186.0 with its transitive deps
+    bounded at 2026-11-19, up from 1.185.0 and 2026-11-16. From now on the
+    weekly pin refresh moves the two together in a reviewed PR: the newest
+    PyPI release at least 7 days old (the scaffold Dependabot cooldown), and a
+    date 7 days before the run. A repo bootstrapped earlier keeps the pin it
+    has; edit its two `STEER_SEMGREP_*` lines to move it.

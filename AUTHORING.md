@@ -538,7 +538,11 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   PR - bump-up only, never auto-merged, the same shape as
   `version-policy-refresh.yml`. It also bumps the pinned `gh-actions-lock`
   version (`STEER_ACTIONS_LOCK_VERSION` in `ci-lib.sh` and
-  `scripts/lock-workflows.sh`, kept equal by a test). A stale tag is a PR waiting
+  `scripts/lock-workflows.sh`, kept equal by a test), and the scaffold's
+  `ci-security.sh` Semgrep pair together: `STEER_SEMGREP_VERSION` to the newest
+  PyPI release past the 7-day Dependabot cooldown, `STEER_SEMGREP_EXCLUDE_NEWER`
+  to 7 days before the run. No Dependabot sees that pair, so an installed
+  consumer keeps the pin it was bootstrapped with. A stale tag is a PR waiting
   to be opened, not a red build. Run the script yourself (no `--write`) to see
   what is behind.
 - **The re-listed plugin's SHA rides the same refresh.** The script also moves

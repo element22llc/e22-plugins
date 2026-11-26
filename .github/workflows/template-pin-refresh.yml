@@ -7,6 +7,9 @@ name: template-pin-refresh
 # once bootstrapped - its own shipped dependabot.yml takes over - so what rots is
 # the INITIAL pin a freshly bootstrapped repo receives.
 #
+# Also moves the scaffold ci-security.sh Semgrep version + exclude-newer pair,
+# past a 7-day cooldown, from PyPI: no Dependabot sees a shell variable.
+#
 # Also watches the git-subdir SHA pins in .claude-plugin/marketplace.json, which
 # nothing else does: a pinned path deleted upstream fails this run.
 #
@@ -65,7 +68,7 @@ jobs:
           # `shipped` is the subset check_changelog.py gates; a marketplace-only
           # bump needs no fragment.
           shipped=1
-          git diff --quiet -- plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh && shipped=0
+          git diff --quiet -- plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/templates/scaffold/scripts/ci-security.sh plugins/steer/scripts/lock-workflows.sh && shipped=0
           changed="${shipped}"
           git diff --quiet -- .claude-plugin/marketplace.json || changed=1
           echo "shipped=${shipped}" >> "$GITHUB_OUTPUT"
@@ -94,10 +97,12 @@ jobs:
           summary = "; ".join(seen) if seen else "action pins refreshed"
 
           body = (
-              "- **Changed:** the shipped workflow templates' action tags (and the pinned "
-              "gh-actions-lock version) were refreshed to their current upstream releases (automated by "
+              "- **Changed:** the shipped templates' pins (workflow action tags, the "
+              "gh-actions-lock version, the scaffold's Semgrep version and exclude-newer "
+              "date) were refreshed to their current upstream releases, Semgrep's to "
+              "the newest past a 7-day cooldown (automated by "
               f"`template-pin-refresh.yml`): {summary}. Dependabot cannot see the "
-              "templates tree, so this is what keeps the tag a freshly bootstrapped "
+              "templates tree, so this is what keeps the pins a freshly bootstrapped "
               "repo receives from rotting; bump-up only, always via this PR."
           )
 
@@ -132,11 +137,11 @@ jobs:
           # Bot-owned branch, reset from the current default-branch HEAD each run so
           # the diff is always "main + this bump" - a force push is intentional.
           git checkout -B "${branch}"
-          git add plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/scripts/lock-workflows.sh .claude-plugin/marketplace.json .changes/unreleased
+          git add plugins/steer/templates/github/workflows plugins/steer/templates/scaffold/scripts/ci-lib.sh plugins/steer/templates/scaffold/scripts/ci-security.sh plugins/steer/scripts/lock-workflows.sh .claude-plugin/marketplace.json .changes/unreleased
           git commit -m "chore(steer): refresh upstream pins"
           git push --force origin "${branch}"
           body="$(printf '%s\n\n%s\n' \
-            "Automated by \`template-pin-refresh.yml\`. The pins below are behind upstream. Action tags and the gh-actions-lock pin: Dependabot cannot maintain them - it scans only \`/.github/workflows\` - so this keeps what a freshly bootstrapped repo receives current; each consumer locks the commits in its own actions.lock. A \`marketplace.json\` line moves a re-listed plugin's SHA, which changes the skill text product repos install: read the commits behind its \`review:\` link, and if they make \`DESIGN-SOURCES.md\` wrong, land that fix in its own PR first - this branch is reset every run. Bump-up only. Review before merge; CI does not auto-run on token-opened PRs (close+reopen or push to trigger it)." \
+            "Automated by \`template-pin-refresh.yml\`. The pins below are behind upstream. Action tags and the gh-actions-lock pin: Dependabot cannot maintain them - it scans only \`/.github/workflows\` - so this keeps what a freshly bootstrapped repo receives current; each consumer locks the commits in its own actions.lock. A \`ci-security.sh\` line moves the Semgrep version and its exclude-newer date together, past a 7-day cooldown: check the Semgrep release notes. A \`marketplace.json\` line moves a re-listed plugin's SHA, which changes the skill text product repos install: read the commits behind its \`review:\` link, and if they make \`DESIGN-SOURCES.md\` wrong, land that fix in its own PR first - this branch is reset every run. Bump-up only. Review before merge; CI does not auto-run on token-opened PRs (close+reopen or push to trigger it)." \
             "${REPORT}")"
           existing="$(gh pr list --head "${branch}" --state open --json number --jq '.[0].number' 2>/dev/null)"
           if [ -n "${existing}" ]; then

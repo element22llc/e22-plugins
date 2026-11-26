@@ -1,14 +1,16 @@
-"""Tests for the pin refresher: action tags, gh-actions-lock, re-listed plugins.
+"""Tests for the pin refresher: action tags, gh-actions-lock, Semgrep, re-listed plugins.
 
 Every lookup is injected, so the suite never touches the network: what is under
 test is the tag rewrite (including a trailing zizmor-suppression comment), the
-gh-actions-lock extension pin, the marketplace SHA pins, the bump-up-only rule,
-and that a failed lookup is loud rather than a silent no-op.
+gh-actions-lock extension pin, the Semgrep version + exclude-newer pair and its
+cooldown, the marketplace SHA pins, the bump-up-only rule, and that a failed
+lookup is loud rather than a silent no-op.
 """
 
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import refresh_template_pins as rtp
@@ -244,7 +246,8 @@ def test_main_reports_a_marketplace_bump_and_its_review_link(tmp_path: Path, cap
 
     before = manifest.read_text()
     args = ["--workflows", str(_wf(tmp_path, "")), "--marketplace", str(manifest)]
-    assert rtp.main(args, fetch=fetch) == 1
+    args += ["--security-script", str(_security(tmp_path))]
+    assert rtp.main(args, fetch=fetch, pypi=_pypi(), now=NOW) == 1
     assert manifest.read_text() == before
     out = capsys.readouterr().out.splitlines()
     assert out[1].startswith("- marketplace.json: ")
@@ -255,6 +258,186 @@ def test_main_reports_a_marketplace_bump_and_its_review_link(tmp_path: Path, cap
 def test_main_fails_on_a_missing_manifest(tmp_path: Path):
     args = ["--workflows", str(_wf(tmp_path, "")), "--marketplace", str(tmp_path / "nope.json")]
     assert rtp.main(args) == 2
+
+
+NOW = datetime(2026, 11, 26, 6, 31, tzinfo=UTC)
+# NOW - 7 days is 2026-11-19; that date can start as early as 2026-11-18T10:00Z.
+COOLED = "2026-11-18T09:59:59Z"
+WARM = "2026-11-18T10:00:00Z"
+PIN = 'X=1\nSTEER_SEMGREP_VERSION=1.185.0\nSTEER_SEMGREP_EXCLUDE_NEWER=2026-11-16\nuvx "$X"\n'
+
+
+def _security(tmp_path: Path, body: str = PIN) -> Path:
+    path = tmp_path / "ci-security.sh"
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def _file(name: str, uploaded: str, yanked: bool | str = False) -> dict[str, object]:
+    return {"filename": name, "upload-time": uploaded, "yanked": yanked}
+
+
+def _wheel(ver: str, uploaded: str, yanked: bool | str = False) -> dict[str, object]:
+    return _file(f"semgrep-{ver}-cp310-abi3-manylinux_2_35_x86_64.whl", uploaded, yanked)
+
+
+def _pypi(*files: dict[str, object], fail: Exception | None = None):
+    def fetch(package: str):
+        assert package == "semgrep", package
+        if fail:
+            raise fail
+        return {"meta": {"api-version": "1.4"}, "files": list(files)}
+
+    return fetch
+
+
+def _semgrep(script: Path, fetch):
+    return rtp.refresh_semgrep(script, write=True, now=NOW, fetch=fetch)
+
+
+def test_bumps_the_semgrep_pair_together(tmp_path: Path):
+    script = _security(tmp_path)
+    fetch = _pypi(
+        _wheel("1.185.0", "2026-11-10T09:33:11Z"),
+        _wheel("1.186.0", "2026-11-18T00:22:47.885605Z"),
+        _file("semgrep-1.186.0.tar.gz", "2026-11-18T00:23:16Z"),
+    )
+    bumps, failures = _semgrep(script, fetch)
+    assert failures == []
+    assert bumps == [
+        "- ci-security.sh: semgrep 1.185.0 -> 1.186.0, exclude-newer 2026-11-16 -> 2026-11-19"
+    ]
+    assert script.read_text() == PIN.replace("1.185.0", "1.186.0").replace(
+        "2026-11-16", "2026-11-19"
+    )
+
+
+def test_a_release_inside_the_cooldown_is_skipped(tmp_path: Path):
+    script = _security(tmp_path)
+    fetch = _pypi(_wheel("1.186.0", COOLED), _wheel("1.187.0", "2026-11-24T21:39:35Z"))
+    bumps, _ = _semgrep(script, fetch)
+    assert bumps == [
+        "- ci-security.sh: semgrep 1.185.0 -> 1.186.0, exclude-newer 2026-11-16 -> 2026-11-19"
+    ]
+
+
+def test_the_cutoff_holds_for_the_earliest_timezone(tmp_path: Path):
+    # Past 7 days at NOW, but a UTC+14 machine reads 2026-11-19 as excluding it.
+    script = _security(tmp_path)
+    assert _semgrep(script, _pypi(_wheel("1.186.0", WARM))) == ([], [])
+    assert script.read_text() == PIN
+
+
+def test_a_late_file_holds_back_its_whole_release(tmp_path: Path):
+    script = _security(tmp_path)
+    fetch = _pypi(_wheel("1.186.0", COOLED), _file("semgrep-1.186.0.tar.gz", WARM))
+    assert _semgrep(script, fetch) == ([], [])
+    assert script.read_text() == PIN
+
+
+def test_a_current_semgrep_pin_is_a_no_op(tmp_path: Path):
+    script = _security(tmp_path)
+    fetch = _pypi(_wheel("1.184.0", "2026-11-05T19:17:23Z"), _wheel("1.185.0", COOLED))
+    assert _semgrep(script, fetch) == ([], [])
+    assert script.read_text() == PIN
+
+
+def test_never_moves_the_semgrep_pin_backwards(tmp_path: Path):
+    script = _security(tmp_path, PIN.replace("1.185.0", "1.190.0"))
+    assert _semgrep(script, _pypi(_wheel("1.186.0", COOLED))) == ([], [])
+    assert "STEER_SEMGREP_VERSION=1.190.0\n" in script.read_text()
+
+
+def test_a_later_hand_set_date_is_kept_on_a_bump(tmp_path: Path):
+    script = _security(tmp_path, PIN.replace("2026-11-16", "2026-11-21"))
+    bumps, _ = _semgrep(script, _pypi(_wheel("1.186.0", COOLED)))
+    assert bumps and bumps[0].endswith("exclude-newer 2026-11-21 -> 2026-11-21")
+    assert "STEER_SEMGREP_EXCLUDE_NEWER=2026-11-21\n" in script.read_text()
+
+
+def test_versions_compare_numerically(tmp_path: Path):
+    script = _security(tmp_path)
+    bumps, _ = _semgrep(script, _pypi(_wheel("1.186.9", COOLED), _wheel("1.186.10", COOLED)))
+    assert bumps and "-> 1.186.10," in bumps[0]
+
+
+def test_pre_releases_and_yanked_releases_are_ignored(tmp_path: Path):
+    script = _security(tmp_path)
+    fetch = _pypi(
+        _file("semgrep-1.186.0rc1.tar.gz", COOLED),
+        _file("semgrep-1.186.0.post1-py3-none-any.whl", COOLED),
+        _wheel("1.187.0", COOLED, yanked="broken wheel"),
+        _file("semgrep-1.187.0.tar.gz", COOLED),
+    )
+    assert _semgrep(script, fetch) == ([], [])
+    assert script.read_text() == PIN
+
+
+def test_a_malformed_old_release_does_not_fail_the_run(tmp_path: Path):
+    script = _security(tmp_path)
+    fetch = _pypi({"filename": "semgrep-0.1.0.tar.gz"}, _wheel("1.186.0", COOLED))
+    bumps, failures = _semgrep(script, fetch)
+    assert failures == []
+    assert len(bumps) == 1
+
+
+def test_a_failed_or_malformed_pypi_lookup_is_a_failure(tmp_path: Path):
+    # An exception here would exit 1, which the workflow reads as "bumps applied".
+    script = _security(tmp_path)
+    for fetch in (
+        _pypi(fail=LookupError("pypi.org/simple/semgrep: HTTP Error 503")),
+        lambda package: [],
+        lambda package: {"files": [None]},
+        _pypi({"filename": "semgrep-1.186.0.tar.gz"}),
+        _pypi(_wheel("1.186.0", "not a timestamp")),
+        _pypi(_wheel("1.186.0", "2026-11-10T00:00:00")),
+    ):
+        bumps, failures = _semgrep(script, fetch)
+        assert bumps == []
+        assert failures and failures[0].startswith("ci-security.sh: semgrep - ")
+    assert script.read_text() == PIN
+
+
+def test_an_impossible_pinned_date_is_a_failure(tmp_path: Path):
+    script = _security(tmp_path, PIN.replace("2026-11-16", "2026-13-45"))
+    bumps, failures = _semgrep(script, _pypi(_wheel("1.186.0", COOLED)))
+    assert bumps == []
+    assert failures and failures[0].startswith("ci-security.sh: semgrep - ")
+
+
+def test_a_reshaped_semgrep_pin_is_a_failure(tmp_path: Path):
+    script = _security(tmp_path, PIN.replace("\nSTEER_SEMGREP_EXC", "\n\nSTEER_SEMGREP_EXC"))
+    bumps, failures = _semgrep(script, _pypi(_wheel("1.186.0", COOLED)))
+    assert bumps == []
+    assert failures and "STEER_SEMGREP_VERSION" in failures[0]
+
+
+def test_main_fails_on_a_semgrep_lookup_failure(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir())
+    args = ["--workflows", str(_wf(tmp_path, "")), "--marketplace", str(manifest)]
+    args += ["--security-script", str(_security(tmp_path))]
+
+    upstream = _upstream({"plugins/ui": OLD})
+
+    def fetch(api: str):
+        return [{"tag_name": "v0.0.1"}] if "/releases?" in api else upstream(api)
+
+    pypi = _pypi(fail=LookupError("pypi.org/simple/semgrep: timed out"))
+    assert rtp.main(args, fetch=fetch, pypi=pypi, now=NOW) == 2
+
+
+def test_main_fails_on_a_missing_security_script(tmp_path: Path):
+    manifest = _manifest(tmp_path, _subdir())
+    args = ["--workflows", str(_wf(tmp_path, "")), "--marketplace", str(manifest)]
+    args += ["--security-script", str(tmp_path / "nope.sh")]
+    assert rtp.main(args) == 2
+
+
+def test_real_semgrep_pin_is_watched():
+    # A pin pair the regex cannot match is a pin this job would never refresh.
+    from conftest import REPO_ROOT
+
+    assert rtp.SEMGREP_PIN.search((REPO_ROOT / rtp.SECURITY_SCRIPT).read_text(encoding="utf-8"))
 
 
 def test_real_marketplace_pins_are_watched():
