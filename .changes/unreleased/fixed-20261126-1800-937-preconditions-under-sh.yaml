@@ -1,0 +1,15 @@
+kind: Fixed
+time: 2026-11-26T18:00:00.000000000-05:00
+custom:
+  Slug: 937-preconditions-under-sh
+body: |-
+  - **Fixed: `/steer:setup sync` and `/steer:setup adopt` run every migration
+    precondition under POSIX `sh`, so a check answers the same whatever the
+    user's shell.** Under zsh's default `nomatch`, a glob that matched nothing
+    aborted the whole command, the other files it named included, and the entry
+    read as already migrated. Sync step 4 and the ledger now feed each
+    precondition to `sh` through a quoted heredoc, read it from what it prints,
+    and treat `grep`'s `No such file or directory` on an unmatched glob as
+    nothing to inspect, never a match. The v6.2.0 hardened-workflows
+    precondition named its five workflows by brace expansion, which `dash` (`sh`
+    on Debian and Ubuntu) leaves literal; it now lists them.

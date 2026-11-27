@@ -763,3 +763,97 @@ def test_workspace_ci_precondition_fires_under_zsh_without_task_dirs(tmp_path):
     _workspace(tmp_path, {})
     out = _zsh(_precondition(WORKSPACE_CI), tmp_path)
     assert (out.stdout.strip(), out.stderr) == ("stale", "")
+
+
+HARDENED = "the shipped workflows are hardened (SHA pins, least privilege)"
+POSIX_SHELLS = [
+    "sh",
+    pytest.param(
+        "dash", marks=pytest.mark.skipif(shutil.which("dash") is None, reason="dash not installed")
+    ),
+]
+
+
+def _workflow_files(repo: Path, files: dict[str, str]) -> None:
+    (repo / ".github/workflows").mkdir(parents=True)
+    for name, body in files.items():
+        (repo / ".github/workflows" / name).write_text(body, encoding="utf-8")
+
+
+def _stdout(shell: str, cmd: str, repo: Path) -> list[str]:
+    out = subprocess.run([shell, "-c", cmd], cwd=repo, capture_output=True, text=True)
+    return out.stdout.splitlines()
+
+
+# The check named the workflows by brace expansion, which dash - sh on Debian
+# and Ubuntu - passes through as one literal path, so it never fired there.
+@pytest.mark.parametrize("shell", POSIX_SHELLS)
+def test_hardened_precondition_fires_on_a_tag_ref_without_a_lock(tmp_path, shell):
+    _workflow_files(tmp_path, {"claude.yml": "    - uses: actions/checkout@v4\n"})
+    assert _stdout(shell, _precondition(HARDENED), tmp_path) == [
+        ".github/workflows/claude.yml:1:    - uses: actions/checkout@v4"
+    ]
+
+
+@pytest.mark.parametrize("shell", POSIX_SHELLS)
+def test_hardened_precondition_fires_on_the_actor_gate(tmp_path, shell):
+    _workflow_files(
+        tmp_path,
+        {
+            "actions.lock": "",
+            "dependabot-auto-merge.yml": "    if: github.actor == 'dependabot[bot]'\n",
+        },
+    )
+    assert _stdout(shell, _precondition(HARDENED), tmp_path) == [
+        "1:    if: github.actor == 'dependabot[bot]'"
+    ]
+
+
+def test_hardened_precondition_is_silent_with_a_lock(tmp_path):
+    _workflow_files(tmp_path, {"actions.lock": "", "ci.yml": "    - uses: actions/checkout@v4\n"})
+    assert not _fires(_precondition(HARDENED), tmp_path)
+
+
+def test_hardened_precondition_ignores_a_product_workflow(tmp_path):
+    _workflow_files(tmp_path, {"deploy.yml": "    - uses: actions/checkout@v4\n"})
+    assert not _fires(_precondition(HARDENED), tmp_path)
+
+
+def _precondition_code() -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    text = (REPO_ROOT / check_migrations.LEDGER).read_text(encoding="utf-8")
+    blocks, spans = [], []
+    for entry in check_migrations.parse_entries(text):
+        field = entry.field("Precondition") or ""
+        blocks += [(entry.what, b) for b in re.findall(r"```sh\n(.*?)```", field, re.S)]
+        prose = re.sub(r"```.*?```", "", field, flags=re.S)
+        spans += [(entry.what, s) for s in re.findall(r"`([^`\n]+)`", prose)]
+    return blocks, spans
+
+
+PRECONDITION_BLOCKS, PRECONDITION_SPANS = _precondition_code()
+_QUOTED = re.compile(r"'[^']*'|\"(?:\\.|[^\"\\])*\"")
+_BRACE_EXPANSION = re.compile(r"(?<!\$)\{[^{}\s]*,[^{}\s]*\}")
+
+
+# sync and adopt run every precondition under sh, where {a,b} stays literal text.
+@pytest.mark.parametrize(
+    ("what", "code"), PRECONDITION_BLOCKS + PRECONDITION_SPANS, ids=lambda v: v[:50]
+)
+def test_precondition_uses_no_brace_expansion(what, code):
+    assert not _BRACE_EXPANSION.search(_QUOTED.sub("''", code))
+
+
+@pytest.mark.skipif(shutil.which("dash") is None, reason="dash not installed")
+@pytest.mark.parametrize(("what", "code"), PRECONDITION_BLOCKS, ids=lambda v: v[:50])
+def test_precondition_block_parses_under_dash(what, code):
+    out = subprocess.run(["dash", "-n", "-c", code], capture_output=True, text=True)
+    assert (out.returncode, out.stderr) == (0, "")
+
+
+@pytest.mark.parametrize(
+    "path", ["plugins/steer/skills/sync/SKILL.md", str(check_migrations.LEDGER)]
+)
+def test_ledger_walkers_run_preconditions_under_sh(path):
+    text = " ".join((REPO_ROOT / path).read_text(encoding="utf-8").split())
+    assert "precondition under POSIX `sh`" in text or "precondition runs under POSIX `sh`" in text
+    assert "sh <<'EOF'" in text

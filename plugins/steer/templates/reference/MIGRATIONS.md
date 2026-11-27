@@ -46,6 +46,18 @@ holds - so re-running is safe and a repo with no `/spec/.version` stamp (touched
 before stamping existed) can be brought current by walking the whole ledger and
 applying only the entries whose precondition still fires.
 
+**Every precondition runs under POSIX `sh`**, never the user's interactive
+shell: feed the entry's `sh` block, or the check derived from its prose, to `sh`
+through a quoted heredoc (`sh <<'EOF'` ... `EOF`). zsh's default `nomatch`
+aborts a command whose glob matches nothing, dropping every other file it names,
+so the same check answered differently by shell. Under `sh` an unmatched glob
+reaches `grep` as a literal path and draws `No such file or directory` - nothing
+of that shape exists, which is never a match and never satisfies a negated (`!`)
+check; a block fires on what it prints, not on its exit status. So write an
+entry's check in POSIX `sh` alone - no brace expansion, `[[`, or other bash/zsh
+syntax; `sh` is `dash` on Debian and Ubuntu, which passes `{a,b}` through as a
+literal path.
+
 The `/spec/.version` stamp records the plugin version a repo's spine was last
 materialized or synced at. It is an **optimization, not the safety mechanism**:
 a consumer skips entries at or below the stamp, then applies the rest by
@@ -1567,10 +1579,20 @@ Name the file and say what to carry forward.
   that tag meant on the day CI ran. These are copied into every managed repo, so
   one flaw multiplies across the org. Tracked as issue #492.
 - **Precondition:** any steer-shipped workflow still references an action by tag
-  while `.github/workflows/actions.lock` is absent -
-  `[ ! -f .github/workflows/actions.lock ] && grep -nE 'uses: [^@]+@v[0-9]' .github/workflows/{ci,claude,copilot-setup-steps,dependabot-auto-merge,steer-loop}.yml` -
-  **or** `dependabot-auto-merge.yml` still contains `github.actor ==`. A repo
-  with none of those files is `n/a`.
+  while `.github/workflows/actions.lock` is absent, **or**
+  `dependabot-auto-merge.yml` still contains `github.actor ==` - either check
+  prints a line:
+
+  ```sh
+  [ ! -f .github/workflows/actions.lock ] &&
+    grep -nE 'uses: [^@]+@v[0-9]' .github/workflows/ci.yml \
+      .github/workflows/claude.yml .github/workflows/copilot-setup-steps.yml \
+      .github/workflows/dependabot-auto-merge.yml \
+      .github/workflows/steer-loop.yml 2>/dev/null
+  grep -nF 'github.actor ==' .github/workflows/dependabot-auto-merge.yml 2>/dev/null
+  ```
+
+  No output => already migrated. A repo with none of those files is `n/a`.
 - **Action:** read-then-propose, show the diff. **Only** the five steer-shipped
   files above; a workflow the product wrote is theirs, and hardening it is a
   suggestion to make in the PR description, never an edit.
