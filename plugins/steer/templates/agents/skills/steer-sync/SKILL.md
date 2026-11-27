@@ -207,7 +207,16 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    walked** by its precondition, never skipped - that is the property that makes a
    forgotten release-time rename safe. Because the
    precondition is the real gate, when `FROM` is `unstamped` walk the **whole**
-   ledger by precondition. Apply each as the ledger directs - `git mv` for
+   ledger by precondition. **Run every precondition under POSIX `sh`**, never
+   the user's shell - the entry's `sh` block, or the check you derive from its
+   prose, fed to `sh` through a quoted heredoc (`sh <<'EOF'` ... `EOF`, so the
+   block needs no re-quoting): zsh's default `nomatch` aborts a command whose
+   glob matches nothing, dropping every other file it names, so the same check
+   answered differently by shell. A block fires on what it **prints**, never on
+   its exit status. Under `sh` an unmatched glob reaches `grep` as a literal path
+   and draws `No such file or directory` on stderr - expected, and it means
+   nothing of that shape exists to inspect: never read it as a match, and never
+   let it satisfy a negated (`!`) check. Apply each as the ledger directs - `git mv` for
    renames so history follows, `git rm` for deletions, an **in-file token
    rewrite** (replace only the exact old->new string pairs the entry enumerates,
    never a broader match), or a **whole-file or whole-section re-take** (the entry

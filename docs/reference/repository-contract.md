@@ -451,5 +451,12 @@ the release that names it - and the release PR renames it. A `[Unreleased]` head
 never "at or below" any stamp, so such an entry is always walked by its precondition
 rather than silently skipped.
 
+Sync and adopt run each precondition under POSIX `sh`, never the user's shell, so a
+check answers the same under bash and zsh. Under zsh's default `nomatch`, a glob that
+matched nothing aborted the whole command, files it also named included, and the entry
+read as already migrated. Under `sh` the glob reaches `grep` as a literal path that it
+reports missing. Entries are written in POSIX `sh` for the same reason: `sh` is `dash`
+on Debian and Ubuntu.
+
 Because the history is now append-only *per file*, a **correction is a new entry**
 carrying `- **Corrects:** <filename>` - never an edit to the entry it corrects.
