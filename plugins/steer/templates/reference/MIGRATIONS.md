@@ -96,6 +96,83 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `ci-iac.sh` formats and lints only git's non-ignored files
+
+- **What & why:** `tofu fmt -check -recursive` and `yamllint .` walked
+  git-ignored dirs, so a vendored third-party dir (`vendor/`, an installed
+  plugin dir) failed the stage as if it were the repo's own code. The scaffold
+  now passes `tofu fmt` the `.tf`/`.tofu`/`.tfvars`/`.tftest.hcl`/`.tofutest.hcl`
+  files git lists (tracked plus untracked-not-ignored, dot paths left out as
+  tofu's own walk left them), and lints the YAML that both
+  `yamllint --list-files .` and git select. `scripts/ci-iac.sh` is
+  materialized per repo and capability repair checks only that it is present,
+  so the fix needs this re-take.
+- **Precondition:** either check prints a line -
+
+  ```sh
+  test -f scripts/ci-iac.sh && grep -q 'tofu fmt' scripts/ci-iac.sh &&
+    ! grep -qF '*.tofutest.hcl' scripts/ci-iac.sh && echo tofu
+  test -f scripts/ci-iac.sh && grep -q 'yamllint@' scripts/ci-iac.sh &&
+    ! grep -q -- '--list-files' scripts/ci-iac.sh && echo yamllint
+  ```
+
+  No output => already migrated, or no stage => no-op.
+- **Action:** read-then-propose; show the diff and apply on a yes. Section
+  re-take of `scripts/ci-iac.sh`, copying from
+  `templates/scaffold/scripts/ci-iac.sh`, never from memory:
+  - `tofu`: replace the region from `steer_ci_group 'tofu fmt'` through its
+    `steer_ci_endgroup` with the template's. Carry any flag the product added
+    to its `tofu fmt` line onto the new `tofu fmt -check -diff "$@"` line.
+  - `yamllint`: replace the region from the `if` line that tests for a
+    yamllint config (`if [ -f .yamllint ] ...`, or the older
+    `if ls .yamllint ...`) through its `fi` with the template's. This also
+    covers the v7.24.0 rewrite of that `if` line. Carry any flag the product
+    added to its yamllint command onto both new yamllint lines.
+
+  Leave every other line unchanged.
+
+  **No history entry is earned.**
+
+### [Unreleased] - `ci:security` skips git-ignored dirs in Trivy and counts Semgrep errors
+
+- **What & why:** `trivy fs .` scanned git-ignored dirs, so a manifest inside
+  a vendored third-party dir failed the stage as the repo's own dependency.
+  The stage now passes Trivy a `--skip-dirs=` for each dir git ignores, unless
+  the repo may keep its own list - a `trivy.yaml`, `TRIVY_CONFIG` or
+  `TRIVY_SKIP_DIRS` (a CLI list would replace it, not extend it). Semgrep's per-file errors and timeouts
+  left no trace in the log since its output is withheld; the stage now prints
+  their count, never a path or message. The script is not verbatim and the
+  `security-gate` capability checks wiring only, so a repo carrying the older
+  script needs this entry.
+- **Precondition:** either check prints a line -
+
+  ```sh
+  test -f scripts/ci-security.sh && grep -q 'trivy ' scripts/ci-security.sh &&
+    ! grep -q -- '--ignored --exclude-standard --directory' scripts/ci-security.sh && echo trivy
+  test -f scripts/ci-security.sh && grep -q -- '--json --output' scripts/ci-security.sh &&
+    grep -q '^STEER_SEMGREP_VERSION=' scripts/ci-security.sh &&
+    grep -q '^STEER_SEMGREP_EXCLUDE_NEWER=' scripts/ci-security.sh &&
+    ! grep -q 'scan error(s)' scripts/ci-security.sh && echo semgrep
+  ```
+
+  No output => already migrated, or no stage => no-op. The `semgrep` half
+  waits for the v7.28.0 pins, which its notice names: apply that entry first.
+- **Action:** read-then-propose; show the diff and apply on a yes. Copy each
+  block from `templates/scaffold/scripts/ci-security.sh`, never from memory:
+  - `trivy`: insert the template's block, from its `# Trivy reads no
+    .gitignore` comment through the `fi` that closes
+    `if [ ! -f trivy.yaml ] ...`, directly above
+    `steer_ci_group 'trivy fs`. It appends to the `set --` argument list the
+    trivy line expands as `"$@"`; if the script builds Trivy's arguments some
+    other way, do not apply - report it in the PR for the dev to adapt.
+  - `semgrep`: insert the template's three lines, from the `# Count only`
+    comment through the `steer_ci_notice "semgrep: ...` line, directly after
+    the line that prints `listed`, inside the Semgrep group.
+
+  Leave every other line unchanged.
+
+  **No history entry is earned.**
+
 ### v7.29.0 - `contract.md` drops the template's `Last updated` line
 
 - **What & why:** 7.27.1 removed `> Last updated: YYYY-MM-DD` from the

@@ -833,10 +833,14 @@ fail", the Definition of Done, and review.
   This is the secret gate on every plan; GitHub secret scanning on a private
   repo needs the paid Secret Protection add-on.
 - **Dependencies** - Trivy reads `pnpm-lock.yaml` and `uv.lock` (production
-  dependencies). A CVE with no fixed version yet does not block: it stays a
-  Dependabot alert until a fix exists.
+  dependencies), skipping every dir git ignores, so a vendored tool's manifest
+  is not read as the repo's own; a repo with its own Trivy skip list (a
+  `trivy.yaml`, `TRIVY_CONFIG` or `TRIVY_SKIP_DIRS`) keeps a full scan. A CVE
+  with no fixed version yet does not block: it stays a Dependabot alert until a
+  fix exists.
 - **Code** - Semgrep's `p/default` rules at `ERROR` (high) severity. The log
-  shows each finding's rule id, path and line only, never the matched source;
+  shows each finding's rule id, path and line only, never the matched source,
+  and only the number of its scan errors (syntax errors, timeouts);
   run Semgrep locally to see the match.
 - Dependencies and code are scanned only with a Node or Python stack.
 - **Waivers are the exceptions register.** A dependency finding is waived in

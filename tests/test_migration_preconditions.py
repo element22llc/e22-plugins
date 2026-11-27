@@ -595,6 +595,58 @@ def test_git_rm_migration_names_the_asks_the_template_ships():
     assert all(f"`{json.dumps(a)[1:-1]}`" in what for a in GIT_RM_ASKS)
 
 
+IAC_GIT_FILES = "formats and lints only git's non-ignored files"
+SECURITY_IGNORED = "skips git-ignored dirs in Trivy and counts Semgrep errors"
+
+
+def test_iac_git_files_precondition_fires_on_the_tree_walks(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-iac.sh").write_text(
+        "\t\ttofu fmt -check -recursive -diff\n\t\tuvx yamllint@1.38.0 .\n", encoding="utf-8"
+    )
+    assert _out(_precondition(IAC_GIT_FILES), tmp_path) == ["tofu", "yamllint"]
+
+
+def test_iac_git_files_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-iac.sh").write_bytes(TEMPLATE_CI_IAC.read_bytes())
+    assert _out(_precondition(IAC_GIT_FILES), tmp_path) == []
+
+
+def test_iac_git_files_precondition_without_the_script(tmp_path):
+    assert _out(_precondition(IAC_GIT_FILES), tmp_path) == []
+
+
+_V7_24_SECURITY = (
+    'trivy "$@" .\nsemgrep scan --config p/default --json --output "${findings}" >/dev/null 2>&1\n'
+)
+
+
+def test_security_ignored_precondition_fires_on_the_v7_28_script(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(
+        f"STEER_SEMGREP_VERSION=1.185.0\nSTEER_SEMGREP_EXCLUDE_NEWER=2026-11-16\n{_V7_24_SECURITY}",
+        encoding="utf-8",
+    )
+    assert _out(_precondition(SECURITY_IGNORED), tmp_path) == ["trivy", "semgrep"]
+
+
+def test_security_ignored_precondition_waits_for_the_semgrep_pins(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_text(_V7_24_SECURITY, encoding="utf-8")
+    assert _out(_precondition(SECURITY_IGNORED), tmp_path) == ["trivy"]
+
+
+def test_security_ignored_precondition_is_silent_on_the_current_template(tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/ci-security.sh").write_bytes(TEMPLATE_CI_SECURITY.read_bytes())
+    assert _out(_precondition(SECURITY_IGNORED), tmp_path) == []
+
+
+def test_security_ignored_precondition_without_the_script(tmp_path):
+    assert _out(_precondition(SECURITY_IGNORED), tmp_path) == []
+
+
 WORKSPACE_CI = "a workspace gets its own `ws:`-prefixed CI"
 WORKSPACE_TEMPLATE = REPO_ROOT / "plugins/steer/templates/scaffold/profiles/workspace/mise.toml"
 WS_PRE_COMMIT = '[tasks."ws:pre-commit"]\nrun = "true"\n'

@@ -31,6 +31,7 @@ STUBBED = (
     "trivy",
     "semgrep",
     "gitleaks",
+    "tofu",
 )
 _STUB = """#!/bin/sh
 name="$(basename "$0")"
@@ -168,6 +169,85 @@ def test_lint_stops_at_the_first_failing_linter(repo: Repo) -> None:
     assert r.calls == ["biome ci ."]
 
 
+def test_iac_formats_only_gits_non_ignored_tofu_files(repo: Repo) -> None:
+    repo.write(".gitignore", "vendor/\n")
+    repo.write("main.tf")
+    repo.write("mod/x.tofu")
+    repo.write("new.tfvars", track=False)
+    repo.write("vendor/m/main.tf", track=False)
+    repo.write(".hidden/a.tf")
+    repo.write("live/terragrunt.hcl")
+    repo.write("gone.tf")
+    (repo.root / "gone.tf").unlink()
+    repo.write('q"uote.tf')
+    r = repo.run("ci-iac.sh")
+    assert r.code == 0
+    version, fmt = r.calls
+    assert version == "tofu version"
+    assert fmt.startswith("tofu fmt -check -diff -- ")
+    assert sorted(fmt.split()[5:]) == ["main.tf", "mod/x.tofu", "new.tfvars", 'q"uote.tf']
+
+
+def test_iac_without_tofu_files_formats_nothing(repo: Repo) -> None:
+    repo.write("live/terragrunt.hcl")
+    r = repo.run("ci-iac.sh")
+    assert (r.code, r.calls) == (0, ["tofu version"])
+    assert "nothing to format" in r.out
+
+
+def test_iac_fails_on_unformatted_tofu(repo: Repo) -> None:
+    repo.write("main.tf")
+    (repo.bin / "tofu").write_text(
+        '#!/bin/sh\nprintf "%s\\n" "tofu $*" >>"${STUB_LOG}"\n[ "$1" != fmt ]\n', encoding="utf-8"
+    )
+    assert repo.run("ci-iac.sh").code != 0
+
+
+# Answers `--list-files` with LIST_FILES, as yamllint prints a walk of `.`.
+_YAMLLINT_STUB = """#!/bin/sh
+printf '%s\\n' "uvx $*" >>"${STUB_LOG}"
+case "$*" in *--list-files*) printf '%s\\n' "${LIST_FILES}"; exit "${LIST_RC:-0}" ;; esac
+"""
+_YAMLLINT = "uvx yamllint@1.38.0"
+
+
+def _ansible_repo(repo: Repo) -> None:
+    repo.write(".gitignore", "vendor/\n")
+    repo.write("ansible.cfg")
+    repo.write(".yamllint")
+    repo.write("site.yml")
+    repo.write("roles/x.yml", track=False)
+    repo.write('roles/q"uote.yml')
+    repo.write("vendor/v.yml", track=False)
+    (repo.bin / "uvx").write_text(_YAMLLINT_STUB, encoding="utf-8")
+
+
+def test_iac_lints_only_yaml_both_yamllint_and_git_select(repo: Repo) -> None:
+    _ansible_repo(repo)
+    listed = './.yamllint\n./site.yml\n./roles/x.yml\n./roles/q"uote.yml\n./vendor/v.yml'
+    r = repo.run("ci-iac.sh", LIST_FILES=listed)
+    assert r.code == 0
+    assert r.calls == [
+        f"{_YAMLLINT} --list-files .",
+        f'{_YAMLLINT} -- .yamllint roles/q"uote.yml roles/x.yml site.yml',
+        "uvx ansible-lint@26.6.0",
+    ]
+
+
+def test_iac_skips_yamllint_when_only_ignored_yaml_is_selected(repo: Repo) -> None:
+    _ansible_repo(repo)
+    r = repo.run("ci-iac.sh", LIST_FILES="./vendor/v.yml")
+    assert r.code == 0
+    assert r.calls == [f"{_YAMLLINT} --list-files .", "uvx ansible-lint@26.6.0"]
+
+
+def test_iac_fails_when_yamllint_cannot_list_files(repo: Repo) -> None:
+    _ansible_repo(repo)
+    r = repo.run("ci-iac.sh", LIST_FILES="", LIST_RC="2")
+    assert r.code != 0
+    assert r.calls == [f"{_YAMLLINT} --list-files ."]
+
+
 def test_image_skips_without_a_dockerfile(repo: Repo) -> None:
     repo.write("Dockerfile", track=False)
     r = repo.run("ci-image.sh")
@@ -222,6 +302,48 @@ def test_security_scans_secrets_then_dependencies_then_code(repo: Repo) -> None:
     assert calls[:2] == [_GITLEAKS, f"{_TRIVY} ."]
     assert len(calls) == 3
     assert calls[2].startswith(_SEMGREP)
+    assert "scan error" not in r.out
+
+
+def _ignored_tree(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    repo.write(".gitignore", "node_modules/\n/vendor/\nodd\\[1\\]/\na,b/\n*.log\nbuild/\n")
+    repo.write("apps/web/package.json", "{}")
+    for rel in (
+        "node_modules/x/package-lock.json",
+        "apps/web/node_modules/y/yarn.lock",
+        "vendor/requirements.txt",
+        "odd[1]/requirements.txt",
+        "a,b/requirements.txt",
+        "logs/a.log",
+        "build/requirements.txt",
+    ):
+        repo.write(rel, track=False)
+    repo.git("add", "-f", "build/requirements.txt")
+    repo.write("apps/x/vendor/requirements.txt")
+
+
+def test_security_trivy_skips_the_dirs_git_ignores(repo: Repo) -> None:
+    _ignored_tree(repo)
+    r = repo.run("ci-security.sh")
+    assert r.code == 0
+    assert r.calls[1] == (
+        f"{_TRIVY} --skip-dirs=apps/web/node_modules/ --skip-dirs=node_modules/"
+        " --skip-dirs=odd\\[1\\]/ --skip-dirs=vendor/ ."
+    )
+
+
+@pytest.mark.parametrize("own_list", ["trivy.yaml", "TRIVY_CONFIG", "TRIVY_SKIP_DIRS"])
+def test_security_trivy_keeps_a_repos_own_skip_list(repo: Repo, own_list: str) -> None:
+    _ignored_tree(repo)
+    env = {}
+    if own_list == "trivy.yaml":
+        repo.write("trivy.yaml", "scan:\n  skip-dirs: [testdata]\n")
+    elif own_list == "TRIVY_CONFIG":
+        env["TRIVY_CONFIG"] = "ci/trivy.yaml"
+    else:
+        env["TRIVY_SKIP_DIRS"] = "testdata"
+    assert repo.run("ci-security.sh", **env).calls[1] == f"{_TRIVY} ."
 
 
 def test_security_fails_on_a_committed_secret(repo: Repo) -> None:
@@ -302,7 +424,7 @@ while [ $# -gt 0 ]; do
 	if [ "$1" = --output ]; then cp "${FINDINGS_JSON}" "$2"; fi
 	shift
 done
-exit 1
+exit "${SEMGREP_RC:-1}"
 """
 
 
@@ -316,8 +438,25 @@ def test_security_reports_code_findings_without_the_matched_source(repo: Repo) -
     assert _FAKE_TOKEN not in r.out
     assert "generic.secrets.security.detected-npm-token .npmrc:3" in r.out
     assert "javascript.lang.security.audit.eval src/a.js:12" in r.out
+    assert "::notice::semgrep: 1 scan error(s)" in r.out
+    assert "bad.js" not in r.out
     assert r.calls[-1].startswith(f"{_SEMGREP}{repo.tmp}{os.sep}")
     assert list(repo.tmp.iterdir()) == []
+
+
+def test_security_counts_semgrep_errors_without_quoting_them(repo: Repo) -> None:
+    repo.write("package.json", "{}")
+    errors_only = {**_FINDINGS, "results": [], "errors": _FINDINGS["errors"] * 2}
+    findings = repo.root.parent / "findings.json"
+    findings.write_text(json.dumps(errors_only, separators=(",", ":")), encoding="utf-8")
+    (repo.bin / "uvx").write_text(_SEMGREP_FINDINGS_STUB, encoding="utf-8")
+    r = repo.run(
+        "ci-security.sh", FAKE_TOKEN=_FAKE_TOKEN, FINDINGS_JSON=str(findings), SEMGREP_RC="0"
+    )
+    assert r.code == 0
+    assert "::notice::semgrep: 2 scan error(s)" in r.out
+    assert _FAKE_TOKEN not in r.out
+    assert "bad.js" not in r.out
 
 
 def test_security_does_not_report_findings_when_semgrep_wrote_none(repo: Repo) -> None:
