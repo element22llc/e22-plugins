@@ -133,6 +133,7 @@ and edit files with Read, Grep, Glob, Edit and Write, never an inline `python3`
 script or `sed -i`. Run plain commands from the session's directory: no `cd`
 prefix and no `VAR=...;` preamble - write the path out instead.
 
+
 ### Code comments - why-only
 
 The default is **no comment**. Names, types and structure carry the *what*; a

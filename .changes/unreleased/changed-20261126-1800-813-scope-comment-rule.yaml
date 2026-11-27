@@ -1,0 +1,12 @@
+kind: Changed
+time: 2026-11-26T18:00:00.000000-05:00
+custom:
+  Slug: 813-scope-comment-rule
+body: |
+  - **Changed: the code comments standard no longer reaches knowledge folders.**
+    The "Code comments - why-only" section moves out of `03-output` into its
+    own rule, `04-code-comments`, marked `code-project|advisory`. A code repo
+    and a declared advisory repo get the same text as before, in the same
+    place; a non-code knowledge folder (the Cowork product-owner case) no
+    longer pays for a standard about source code. The Copilot instructions
+    file still carries the section unqualified.

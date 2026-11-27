@@ -15,6 +15,9 @@ oq_grep "inject(kw): knowledge-mode banner present" 'knowledge-work mode' "${out
 oq_grep "inject(kw): always-on router present" 'You are the router' "${out}"
 oq_grep "inject(kw): spec-workflow rule present" 'Spec workflow' "${out}"
 oq_grep "inject(kw): secrets rule present" 'Secrets handling' "${out}"
+oq_grep "inject(kw): output rule present" 'Output discipline' "${out}"
+printf '%s' "${out}" | grep -q 'Code comments - why-only' &&
+	bad "inject(kw): code comments rule must be omitted in knowledge mode" || ok
 printf '%s' "${out}" | grep -q '## Stack' &&
 	bad "inject(kw): code-only stack rule must be omitted in knowledge mode" || ok
 printf '%s' "${out}" | grep -q 'isolate runtime, clean up after' &&
@@ -50,6 +53,7 @@ mkdir -p "${KWC}"
 printf '{}\n' >"${KWC}/package.json"
 out="$(run_inject "$(session_json "${KWC}" kw_pkg)")"
 oq_grep "inject(kw-pkg): code-mode includes stack rule" '## Stack' "${out}"
+oq_grep "inject(kw-pkg): code-mode includes code comments rule" 'Code comments - why-only' "${out}"
 printf '%s' "${out}" | grep -q 'knowledge-work mode' &&
 	bad "inject(kw-pkg): non-git folder with package.json must be code mode" || ok
 out="$(run_hook orient-session.sh "$(session_json "${KWC}" kw_pkg)")"
@@ -69,6 +73,7 @@ oq_grep "inject(adv): guest banner present" 'steer advisory mode' "${out}"
 oq_grep "inject(adv): router still present" 'You are the router' "${out}"
 oq_grep "inject(adv): testing rule carried as a review lens" '## Testing' "${out}"
 oq_grep "inject(adv): practices rule carried" 'Patterns we follow' "${out}"
+oq_grep "inject(adv): code comments rule carried" 'Code comments - why-only' "${out}"
 printf '%s' "${out}" | grep -q '## Stack' &&
 	bad "inject(adv): org stack rule must be omitted in advisory mode" || ok
 printf '%s' "${out}" | grep -q '## Commit autonomy' &&
