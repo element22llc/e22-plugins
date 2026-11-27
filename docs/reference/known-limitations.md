@@ -77,9 +77,9 @@ When a session opens a folder that is **confidently not a code project** - no gi
 work tree and no code/config markers nearby - steer injects a **lean,
 PO-relevant** ruleset instead of the full engineering manual. This is the typical
 **Claude Cowork** case: a product owner opens a connected folder of specs/docs.
-In that mode only the **unmarked** rules inject - six of nineteen: `00-router`, `03-output`, `05-roles`, `30-spec`, `60-high-risk`
+In that mode only the **unmarked** rules inject - six of twenty: `00-router`, `03-output`, `05-roles`, `30-spec`, `60-high-risk`
 and `61-gates`. Every rule carrying *any* `inject-when` marker is skipped, whichever
-token it is: the `code-project` set (`35-tracker`, `40-testing`, `45-delivery`,
+token it is: the `code-project` set (`04-code-comments`, `35-tracker`, `40-testing`, `45-delivery`,
 `50-done`, `80-change-class`, `85-practices`), the org pack (`10-stack`,
 `15-commands`, `12-stack-infra`), the OpenSpec backend, issue-first, the
 Compose rule (`47-worktree-services`), and the opt-in loop rule. The skip is **intentional** - it reclaims context budget and
@@ -114,8 +114,8 @@ switch takes effect at the next session start (`/clear` or a new session) withou
 restarting Claude Code; the status band switches at once.
 
 In advisory mode `inject-standards.sh` injects the six unmarked rules plus the
-rules whose marker names `advisory` - `40-testing`, `80-change-class` and
-`85-practices` (`code-project|advisory`), the review lens - under a banner that
+rules whose marker names `advisory` - `04-code-comments`, `40-testing`,
+`80-change-class` and `85-practices` (`code-project|advisory`), the review lens - under a banner that
 rules out bootstrap, spec files in the repo, and branching, committing or
 pushing unless asked. The org pack, delivery, tracker, issue-first and Definition
 of Done rules stay out: the guest repo's own conventions govern. The
@@ -436,7 +436,7 @@ stacked-PR gates). Be honest about the tiers:
   Cosmetic and non-blocking; it never rejects or reverts the write.
 - **`PostToolUse` -> `check-comment-density.sh`** notes a source or config file
   whose comment lines exceed a fifth of its non-blank lines (rule
-  `03-output` -> Code comments). A once-per-file-per-session notice, not a gate - the write
+  `04-code-comments`). A once-per-file-per-session notice, not a gate - the write
   already happened and is never reverted.
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that
   never got an issue. A report, not a gate - it cannot undo anything.

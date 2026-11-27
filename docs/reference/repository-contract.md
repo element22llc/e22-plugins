@@ -110,7 +110,7 @@ shipped rule today:
 | Expression | Rules |
 |---|---|
 | `code-project` | the code-loop rules, enumerated in [Configuration & rules](configuration.md#the-ruleset) |
-| `code-project\|advisory` | `40-testing`, `80-change-class`, `85-practices` |
+| `code-project\|advisory` | `04-code-comments`, `40-testing`, `80-change-class`, `85-practices` |
 | `org-e22` | `10-stack`, `15-commands` |
 | `has-iac&org-e22` | `12-stack-infra` |
 | `has-openspec` | `33-spec-workflow-openspec` |
